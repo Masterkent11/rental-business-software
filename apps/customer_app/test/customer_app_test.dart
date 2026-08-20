@@ -99,9 +99,14 @@ void main() {
       (tester) async {
     await _pumpApp(tester);
 
-    await tester.tap(
-      find.text('One-bedroom corner unit with cross-ventilation').first,
+    final listingFinder =
+        find.text('One-bedroom corner unit with cross-ventilation').first;
+    await tester.dragUntilVisible(
+      listingFinder,
+      find.byType(CustomScrollView).first,
+      const Offset(0, -300),
     );
+    await tester.tap(listingFinder, warnIfMissed: false);
     await tester.pumpAndSettle();
 
     expect(find.text('Walk through it'), findsOneWidget);
@@ -131,9 +136,14 @@ void main() {
       (tester) async {
     await _pumpApp(tester);
 
-    await tester.tap(
-      find.text('One-bedroom corner unit with cross-ventilation').first,
+    final listingFinder =
+        find.text('One-bedroom corner unit with cross-ventilation').first;
+    await tester.dragUntilVisible(
+      listingFinder,
+      find.byType(CustomScrollView).first,
+      const Offset(0, -300),
     );
+    await tester.tap(listingFinder, warnIfMissed: false);
     await tester.pumpAndSettle();
     expect(find.text('Apply to rent'), findsOneWidget);
 

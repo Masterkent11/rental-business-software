@@ -9,6 +9,7 @@ import '../../fixtures/sample_data.dart';
 import '../../fixtures/view_models.dart';
 import 'discovery_controller.dart';
 import 'filters_sheet.dart';
+import 'widgets/search_panel.dart';
 import 'widgets/featured_card.dart';
 import 'widgets/listing_card.dart';
 
@@ -19,11 +20,24 @@ import 'widgets/listing_card.dart';
 /// on this screen serves that — availability copy on every card, the move-in
 /// cost stated up front, and the tour badge as the first sign that a place can
 /// be judged without a trip across the city.
-class DiscoveryScreen extends ConsumerWidget {
+class DiscoveryScreen extends ConsumerStatefulWidget {
   const DiscoveryScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DiscoveryScreen> createState() => _DiscoveryScreenState();
+}
+
+class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
+  final _controller = ScrollController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final filters = ref.watch(filtersProvider);
     final results = ref.watch(resultsProvider);
@@ -32,6 +46,7 @@ class DiscoveryScreen extends ConsumerWidget {
 
     return Scaffold(
       body: CustomScrollView(
+        controller: _controller,
         physics: Tokens.scroll,
         slivers: [
           SliverSafeArea(
@@ -95,11 +110,20 @@ class DiscoveryScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: Tokens.s20),
-                    _SearchRow(
-                      query: filters.query,
-                      activeFilters: filters.activeCount,
-                      onChanged: ref.read(filtersProvider.notifier).setQuery,
-                      onFilters: () => showFiltersSheet(context),
+                    SearchPanel(
+                      onSearch: () => _controller.animateTo(
+                        320,
+                        duration: const Duration(milliseconds: 420),
+                        curve: Curves.easeOutCubic,
+                      ),
+                    ),
+                    const SizedBox(height: Tokens.s24),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: _FiltersChip(
+                        activeFilters: filters.activeCount,
+                        onTap: () => showFiltersSheet(context),
+                      ),
                     ),
                   ],
                 ),
@@ -199,88 +223,39 @@ class DiscoveryScreen extends ConsumerWidget {
   }
 }
 
-class _SearchRow extends StatelessWidget {
-  const _SearchRow({
-    required this.query,
-    required this.activeFilters,
-    required this.onChanged,
-    required this.onFilters,
-  });
+class _FiltersChip extends StatelessWidget {
+  const _FiltersChip({required this.activeFilters, required this.onTap});
 
-  final String query;
   final int activeFilters;
-  final ValueChanged<String> onChanged;
-  final VoidCallback onFilters;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    return Row(
-      children: [
-        Expanded(
-          child: TextField(
-            onChanged: onChanged,
-            textInputAction: TextInputAction.search,
-            style: theme.textTheme.bodyLarge,
-            decoration: InputDecoration(
-              hintText: 'Barangay, city, or property',
-              prefixIcon: Icon(
-                Icons.search,
-                size: 20,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              prefixIconConstraints: const BoxConstraints(
-                minWidth: 44,
-                minHeight: 44,
-              ),
-            ),
-          ),
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: theme.colorScheme.outlineVariant),
         ),
-        const SizedBox(width: Tokens.s8),
-        GestureDetector(
-          onTap: () {
-            HapticFeedback.selectionClick();
-            onFilters();
-          },
-          child: Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: activeFilters > 0
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(Tokens.rMd),
-              border: Border.all(color: theme.colorScheme.outlineVariant),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.tune, size: 16, color: theme.colorScheme.onSurface),
+            const SizedBox(width: 8),
+            Text(
+              activeFilters > 0 ? 'Filters ($activeFilters)' : 'Filters',
+              style: theme.textTheme.labelLarge,
             ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(
-                  Icons.tune,
-                  size: 20,
-                  color: activeFilters > 0
-                      ? theme.colorScheme.onPrimary
-                      : theme.colorScheme.onSurface,
-                ),
-                if (activeFilters > 0)
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: Container(
-                      width: 7,
-                      height: 7,
-                      decoration: const BoxDecoration(
-                        color: Tokens.accent,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

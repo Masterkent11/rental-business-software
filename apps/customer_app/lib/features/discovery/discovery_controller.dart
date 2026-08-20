@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../fixtures/sample_data.dart';
 import '../../fixtures/view_models.dart';
+import 'search_criteria.dart';
 
 /// Discovery filter state.
 ///
@@ -124,3 +125,53 @@ final resultsProvider = Provider<List<ListingCardView>>((ref) {
 final featuredLensProvider = StateProvider<FeaturedLens>(
   (ref) => FeaturedLens.popular,
 );
+
+/// Homepage search state.
+///
+/// Deliberately **separate from [filtersProvider]**. Criteria are what the
+/// customer is composing; filters are what the results list is currently
+/// showing. Keeping them apart means editing the search does not re-filter the
+/// page mid-edit, and it keeps this state clear of anything to do with
+/// submitting a booking or an application.
+final searchCriteriaProvider =
+    NotifierProvider<SearchCriteriaController, SearchCriteria>(
+  SearchCriteriaController.new,
+);
+
+/// Named to avoid colliding with Flutter's own `SearchController`.
+class SearchCriteriaController extends Notifier<SearchCriteria> {
+  @override
+  SearchCriteria build() => const SearchCriteria();
+
+  void setDestination(String value) =>
+      state = state.copyWith(destination: value);
+
+  /// Switching rental type reshapes the period — see [SearchCriteria.withMode].
+  void setMode(SearchMode mode) => state = state.withMode(mode);
+
+  void setPeriod(SearchPeriod period) => state = state.copyWith(period: period);
+
+  void setOccupancy(Occupancy occupancy) =>
+      state = state.copyWith(occupancy: occupancy);
+
+  void clearPeriod() => state = state.copyWith(
+        period: state.spec.usesNightRange
+            ? const NightRange()
+            : const TermFrom(),
+      );
+
+  /// Push the composed search into the existing discovery filters.
+  ///
+  /// Only destination, rental kind, and resource type cross over, because those
+  /// are the only parts this app can honestly narrow on. **Dates and occupancy
+  /// are carried, not applied**: whether a resource is free on given dates is a
+  /// question about one occupancy timeline, and that timeline is server-side
+  /// (U-01). A client that filtered on them would be inventing availability.
+  void apply() {
+    final spec = state.spec;
+    ref.read(filtersProvider.notifier)
+      ..setQuery(state.destination)
+      ..setKind(spec.listingKind)
+      ..setType(spec.resourceType);
+  }
+}
