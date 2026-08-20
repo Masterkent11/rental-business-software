@@ -1,0 +1,244 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-track: var(--track);
+  --color-money: var(--money);
+  --color-money-soft: var(--money-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-pending: var(--pending);
+  --color-pending-soft: var(--pending-soft);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, var(--font-geist-sans), "Helvetica Neue", Inter, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Palette shared with the Flutter customer app: warm neutrals, near-black
+     ink, one warm accent used sparingly. Same product, same skin. */
+  --background: #FBFAF8;
+  --foreground: #0E0F12;
+  --card: #FFFFFF;
+  --card-foreground: #0E0F12;
+  --popover: #FFFFFF;
+  --popover-foreground: #0E0F12;
+  --primary: #0E0F12;
+  --primary-foreground: #FBFAF8;
+  --secondary: #F3F1ED;
+  --secondary-foreground: #0E0F12;
+  --muted: #F3F1ED;
+  --muted-foreground: #787C85;
+  --accent: #F3F1ED;
+  --accent-foreground: #0E0F12;
+  --destructive: #A33A2E;
+  --border: #E6E4E0;
+  --input: #E6E4E0;
+  --ring: #B9B5AE;
+
+  /* Semantic tokens this product needs by name, not by colour. */
+  --track: #CBC5B9;          /* chart tracks — heavier than a hairline */
+  --money: #B4622A;          /* amounts owed and move-in cost */
+  --money-soft: #FBF2EA;
+  --ok: #1B7A55;             /* paid, resolved, available */
+  --ok-soft: #EAF4EF;
+  --bad: #A33A2E;            /* overdue, taken */
+  --bad-soft: #FBEDEB;
+  --pending: #8A6A1F;        /* awaiting someone else */
+  --pending-soft: #FAF3E2;
+
+  --chart-1: #B4622A;
+  --chart-2: #1B7A55;
+  --chart-3: #787C85;
+  --chart-4: #C9C4BC;
+  --chart-5: #0E0F12;
+  --radius: 1.125rem;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0E0F12;
+  --sidebar-primary: #0E0F12;
+  --sidebar-primary-foreground: #FBFAF8;
+  --sidebar-accent: #F3F1ED;
+  --sidebar-accent-foreground: #0E0F12;
+  --sidebar-border: #E6E4E0;
+  --sidebar-ring: #B9B5AE;
+}
+
+.dark {
+  --background: #0A0B0D;
+  --foreground: #F4F3F1;
+  --card: #15171B;
+  --card-foreground: #F4F3F1;
+  --popover: #15171B;
+  --popover-foreground: #F4F3F1;
+  --primary: #F4F3F1;
+  --primary-foreground: #15171B;
+  --secondary: #1E2126;
+  --secondary-foreground: #F4F3F1;
+  --muted: #1E2126;
+  --muted-foreground: #9A9EA7;
+  --accent: #1E2126;
+  --accent-foreground: #F4F3F1;
+  --destructive: #E0705F;
+  --border: #26282D;
+  --input: #2C2F35;
+  --ring: #55585F;
+
+  --track: #33373E;
+  --money: #E08A4C;
+  --money-soft: #2A1D13;
+  --ok: #4FBE90;
+  --ok-soft: #10231B;
+  --bad: #E0705F;
+  --bad-soft: #2A1614;
+  --pending: #D8B45C;
+  --pending-soft: #241E10;
+
+  --chart-1: #E08A4C;
+  --chart-2: #4FBE90;
+  --chart-3: #9A9EA7;
+  --chart-4: #3A3D44;
+  --chart-5: #F4F3F1;
+  --sidebar: #15171B;
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+/* ---------------------------------------------------------------------------
+   Shared with the Flutter customer app.
+
+   Two things carry most of the family resemblance: display type with real
+   negative tracking, and frosted chrome that floats over photography instead of
+   sitting on an opaque bar. Both are here rather than repeated per component.
+--------------------------------------------------------------------------- */
+
+@layer utilities {
+  /* Display sizes mirror tokens.dart: 34/-0.9, 27/-0.6, 22/-0.4. Tight
+     tracking is most of the difference between a considered screen and a
+     default one. */
+  .text-display {
+    font-size: 2.125rem;
+    line-height: 1.08;
+    font-weight: 700;
+    letter-spacing: -0.055em;
+  }
+  .text-display-sm {
+    font-size: 1.6875rem;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+  }
+  .text-title {
+    font-size: 1.375rem;
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: -0.028em;
+  }
+  /* Big money figures. Tabular so columns of pesos line up. */
+  .text-amount {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.04em;
+    font-weight: 650;
+  }
+  .label-caps {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* The glass from the mobile tour and listing chrome. */
+  .glass {
+    background: rgba(58, 58, 58, 0.42);
+    backdrop-filter: blur(14px) saturate(1.1);
+    -webkit-backdrop-filter: blur(14px) saturate(1.1);
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
+    color: #fff;
+  }
+
+  /* Soft lift, matching Tokens.lift. Borders do the structural work; shadow
+     only separates a surface from the canvas. */
+  .lift {
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.05),
+      0 8px 18px rgba(0, 0, 0, 0.06);
+  }
+  /* For short cards (~150px), where the two-stop scrim leaves the caption in
+     a transparent band. Bottom-weighted, single ramp. */
+  .scrim-card {
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.86) 0%,
+      rgba(0, 0, 0, 0.55) 38%,
+      rgba(0, 0, 0, 0.12) 72%,
+      rgba(0, 0, 0, 0.05) 100%
+    );
+  }
+  .scrim-b {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.32) 0%,
+      rgba(0, 0, 0, 0) 34%,
+      rgba(0, 0, 0, 0.12) 58%,
+      rgba(0, 0, 0, 0.78) 100%
+    );
+  }
+}

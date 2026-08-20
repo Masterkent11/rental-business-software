@@ -1,0 +1,41 @@
+# macOS
+.DS_Store
+
+# Flutter / Dart
+**/build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+*.iml
+
+# pubspec.lock IS committed for apps — see docs/06-frontend/flutter-toolchain.md
+
+# iOS / macOS
+**/ios/Pods/
+**/macos/Pods/
+**/ios/.symlinks/
+**/macos/Flutter/ephemeral/
+**/ios/Flutter/ephemeral/
+**/Flutter/Flutter.podspec
+
+# Android
+**/android/.gradle/
+**/android/local.properties
+**/android/key.properties
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+
+# IDE
+.idea/
+.vscode/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+.env*.local
+.vercel
+npm-debug.log*
