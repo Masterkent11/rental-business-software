@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../../design/money.dart';
+import '../../data/api_client.dart';
+import '../../fixtures/view_models.dart';
+import '../../data/application_repository.dart';
+import '../../data/listing_repository.dart';
 import '../../design/tokens.dart';
-import '../../fixtures/sample_data.dart';
 
 /// Long-term: submit an application.
 ///
@@ -18,16 +22,18 @@ import '../../fixtures/sample_data.dart';
 ///     judges them. No score, no credit check — permanently.
 ///   * **It has to be doable from a phone**, photographing documents on the
 ///     spot.
-class ApplyScreen extends StatefulWidget {
+class ApplyScreen extends ConsumerStatefulWidget {
   const ApplyScreen({required this.listingId, super.key});
 
   final String listingId;
 
   @override
-  State<ApplyScreen> createState() => _ApplyScreenState();
+  ConsumerState<ApplyScreen> createState() => _ApplyScreenState();
 }
 
-class _ApplyScreenState extends State<ApplyScreen> {
+class _ApplyScreenState extends ConsumerState<ApplyScreen> {
+  bool _submitting = false;
+
   DateTime _moveIn = DateTime.now().add(const Duration(days: 14));
   int _occupants = 1;
   final _documents = <String, bool>{
@@ -38,10 +44,56 @@ class _ApplyScreenState extends State<ApplyScreen> {
 
   bool get _ready => _documents.values.any((attached) => attached);
 
+  /// Submit, and say plainly what did and did not happen.
+  ///
+  /// The success message repeats that applying reserves nothing — the moment a
+  /// customer is most likely to assume otherwise is the moment they have just
+  /// pressed the button.
+  Future<void> _submit(ListingCardView card) async {
+    setState(() => _submitting = true);
+
+    try {
+      await ref.read(applicationRepositoryProvider).submit(
+            resourceId: card.resourceId,
+            desiredMoveIn: DateTime.now().add(const Duration(days: 30)),
+            desiredTermMonths: 12,
+          );
+      ref.invalidate(applicationsProvider);
+
+      if (!mounted) return;
+      Navigator.of(context).maybePop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Sent to the owner. This does not reserve the place — you will be '
+            'told the moment they decide.',
+          ),
+        ),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final detail = SampleData.detailById(widget.listingId);
-    if (detail == null) return const Scaffold();
+    final detailAsync = ref.watch(listingDetailProvider(widget.listingId));
+    final detail = detailAsync.valueOrNull;
+
+    if (detailAsync.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (detail == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Apply to rent')),
+        body: const Center(child: Text('This place is no longer available.')),
+      );
+    }
 
     final theme = Theme.of(context);
     final card = detail.card;
@@ -194,18 +246,18 @@ class _ApplyScreenState extends State<ApplyScreen> {
           child: Padding(
             padding: const EdgeInsets.all(Tokens.gutter),
             child: FilledButton(
-              onPressed: _ready
-                  ? () => ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Submitting needs the API contracts from Step 5.',
-                          ),
-                        ),
-                      )
-                  : null,
-              child: Text(
-                _ready ? 'Submit application' : 'Attach at least one document',
-              ),
+              onPressed: _ready && !_submitting ? () => _submit(card) : null,
+              child: _submitting
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(
+                      _ready
+                          ? 'Submit application'
+                          : 'Attach at least one document',
+                    ),
             ),
           ),
         ),

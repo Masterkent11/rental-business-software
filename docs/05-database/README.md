@@ -32,6 +32,25 @@
 it**. The auth schema is Supabase's, and depending on its shape is exactly the
 coupling ADR-0001 keeps out of the platform. The id is the contract.
 
+### Sprint 5 — applications and reservations
+
+| Table | Holds |
+|---|---|
+| `applications` | A request to rent long-term. **Places no hold** |
+| `application_documents` | Storage paths only — the bytes are in a private bucket |
+| `reservations` | The optional fee that *does* hold a place while the owner decides |
+
+`occupancies.application_id` traces a hold back to what caused it — a
+reservation fee, or an approval.
+
+**Two ledger entry types were added** beyond the set `money-model.md` names:
+`RESERVATION_FEE_CREDITED` and `RESERVATION_FEE_FORFEITED`. Neither an existing
+type nor a combination could say what happens to a reservation fee at the two
+moments that matter — credited is a claim the tenant holds against their first
+invoice, not a refund and not revenue; forfeited needs the reason attached,
+because the reason is what a customer disputes. This is a deliberate extension
+to the domain vocabulary and wants sign-off.
+
 `user_capabilities` carries `source_type` and `source_id` — the fact that makes
 the capability true. A bare list per user would drift from reality the moment a
 lease ended; closing the row that carried the reason keeps the two together. See

@@ -24,7 +24,13 @@ const url =
 const isTransactionPooler = url.includes('pooler.supabase.com');
 
 export const sql = postgres(url, {
-  max: 10,
+  /**
+   * Every authenticated request opens two transactions — one to resolve the
+   * principal, one for the endpoint's own work — so the pool is consumed twice
+   * as fast as the request count suggests. Ten was enough locally and queued
+   * under a handful of concurrent app requests against a remote database.
+   */
+  max: 20,
   idle_timeout: 20,
   prepare: !isTransactionPooler,
 });

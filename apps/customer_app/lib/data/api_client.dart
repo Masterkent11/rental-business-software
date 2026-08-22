@@ -59,6 +59,19 @@ class ApiException implements Exception {
 /// Deliberately thin: it speaks JSON and throws [ApiException]. It knows
 /// nothing about listings, and no screen knows anything about HTTP — repository
 /// classes sit between them and do the mapping.
+/// How long to wait before calling it a lost connection.
+///
+/// Twenty seconds, not the more usual ten. Two things push the tail out: a
+/// Philippine mobile connection, and an API whose database may be a region
+/// away — in development it demonstrably is, and the first burst of requests
+/// after a cold start went past twelve seconds while the server was working
+/// perfectly.
+///
+/// The cost of being generous is a customer waiting longer to see a failure.
+/// The cost of being strict is telling them the server is unreachable when it
+/// is merely far away, which is worse: one is slow, the other is a lie.
+const Duration kRequestTimeout = Duration(seconds: 20);
+
 class ApiClient {
   ApiClient({http.Client? client, String? baseUrl, TokenSource? tokenSource})
       : _client = client ?? http.Client(),
@@ -99,7 +112,7 @@ class ApiClient {
     try {
       response = await _client
           .get(uri, headers: _headers())
-          .timeout(const Duration(seconds: 12));
+          .timeout(kRequestTimeout);
     } catch (error) {
       // A phone on Philippine mobile data loses the connection routinely. That
       // is an ordinary state, not a crash, so it is typed rather than thrown
@@ -141,7 +154,7 @@ class ApiClient {
     late final http.Response response;
     try {
       final streamed =
-          await _client.send(request).timeout(const Duration(seconds: 12));
+          await _client.send(request).timeout(kRequestTimeout);
       response = await http.Response.fromStream(streamed);
     } catch (error) {
       throw ApiException(

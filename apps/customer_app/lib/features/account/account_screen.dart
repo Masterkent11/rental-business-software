@@ -102,7 +102,12 @@ class AccountScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Check your connection and pull to retry',
+                            // The specific failure, not a generic apology: a
+                            // customer who can read it can tell support
+                            // something useful, and so can we.
+                            '${account.error}',
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.bodySmall,
                           ),
                         ],

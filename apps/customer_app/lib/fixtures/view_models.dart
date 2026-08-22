@@ -260,6 +260,7 @@ enum ApplicationStatus {
   underReview('Under review'),
   approved('Approved'),
   rejected('Not this time'),
+  withdrawn('Withdrawn'),
   expired('Offer expired');
 
   const ApplicationStatus(this.label);

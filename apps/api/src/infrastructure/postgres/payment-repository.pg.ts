@@ -9,6 +9,7 @@ import {
 } from '../../application/ports/payment-repository.ts';
 import type { Payment } from '../../domain/money/payment.ts';
 import type { Centavos } from '../../domain/shared/money.ts';
+import { RESERVATION_DAYS } from '../../domain/applications/application.ts';
 
 interface PaymentRow {
   id: string;
@@ -38,40 +39,69 @@ const toPayment = (row: PaymentRow): Payment => ({
 export function postgresPaymentRepository(): PaymentRepository {
   return {
     async findPayableBooking(occupancyId) {
-      const rows = await sql<
-        {
-          occupancy_id: string;
-          organization_id: string;
-          amount_centavos: string;
-          nights: string;
-        }[]
-      >`
-        select
-          o.id as occupancy_id,
-          o.organization_id,
-          -- Priced from the listing, in the database, in integer centavos.
-          -- A client-supplied amount would be a client deciding what to pay.
-          (l.price_centavos * (upper(o.during) - lower(o.during)))::text
-            as amount_centavos,
-          (upper(o.during) - lower(o.during))::text as nights
-          from occupancies o
-          join listings l
-            on l.resource_id = o.resource_id
-           and l.kind = 'SHORT_TERM'
-           and l.state = 'PUBLISHED'
-         where o.id = ${occupancyId}
-           and o.state = 'HELD'
-           and o.expires_at > now()
-      `;
+      return sql.begin(async (tx) => {
+        // The occupancy is publicly readable for published inventory, but
+        // `reservations` is organization-isolated — so the scope has to be
+        // derived from the occupancy before the fee is visible. Read unscoped,
+        // the join silently matches nothing and a payable reservation looks
+        // like an expired hold.
+        const [occupancy] = await tx<
+          { organization_id: string; kind: string }[]
+        >`
+          select organization_id, kind
+            from occupancies
+           where id = ${occupancyId}
+             and state = 'HELD'
+             and expires_at > now()
+        `;
+        if (!occupancy) return null;
 
-      if (!rows[0]) return null;
+        await tx`select set_config('app.organization_id', ${occupancy.organization_id}, true)`;
 
-      return {
-        occupancyId: rows[0].occupancy_id,
-        organizationId: rows[0].organization_id,
-        amountCentavos: Number(rows[0].amount_centavos) as Centavos,
-        nights: Number(rows[0].nights),
-      } satisfies BookingForPayment;
+        if (occupancy.kind === 'RESERVATION') {
+          // A reservation fee is priced by the owner, not by nights. Different
+          // promises about money, not two shapes of the same one.
+          const [reservation] = await tx<{ fee: string }[]>`
+            select fee_centavos::text as fee
+              from reservations
+             where occupancy_id = ${occupancyId}
+               and state = 'PENDING_PAYMENT'
+          `;
+          if (!reservation) return null;
+
+          return {
+            occupancyId,
+            organizationId: occupancy.organization_id,
+            amountCentavos: Number(reservation.fee) as Centavos,
+            nights: 0,
+          } satisfies BookingForPayment;
+        }
+
+        const [booking] = await tx<
+          { amount_centavos: string; nights: string }[]
+        >`
+          select
+            -- Priced from the listing, in the database, in integer centavos.
+            -- A client-supplied amount would be a client deciding what to pay.
+            (l.price_centavos * (upper(o.during) - lower(o.during)))::text
+              as amount_centavos,
+            (upper(o.during) - lower(o.during))::text as nights
+            from occupancies o
+            join listings l
+              on l.resource_id = o.resource_id
+             and l.kind = 'SHORT_TERM'
+             and l.state = 'PUBLISHED'
+           where o.id = ${occupancyId}
+        `;
+        if (!booking) return null;
+
+        return {
+          occupancyId,
+          organizationId: occupancy.organization_id,
+          amountCentavos: Number(booking.amount_centavos) as Centavos,
+          nights: Number(booking.nights),
+        } satisfies BookingForPayment;
+      }) as Promise<BookingForPayment | null>;
     },
 
     async startPayment({ occupancyId, amountCentavos, providerRef }) {
@@ -157,6 +187,51 @@ export function postgresPaymentRepository(): PaymentRepository {
              set state = 'SUCCEEDED', received_at = ${input.occurredAt}
            where id = ${payment.id}
         `;
+
+        const [occupancy] = await tx<{ kind: string }[]>`
+          select kind from occupancies where id = ${payment.occupancy_id}
+        `;
+
+        if (occupancy?.kind === 'RESERVATION') {
+          // A paid reservation is not a confirmed stay. It stays HELD — the
+          // owner has not decided yet — but now for the full seven days rather
+          // than the short window that covered the payment itself.
+          await tx`
+            update occupancies
+               set expires_at = now() + interval '${sql.unsafe(String(RESERVATION_DAYS))} days'
+             where id = ${payment.occupancy_id}
+          `;
+          await tx`
+            update reservations
+               set state = 'ACTIVE',
+                   payment_id = ${payment.id},
+                   expires_at = now() + interval '${sql.unsafe(String(RESERVATION_DAYS))} days'
+             where occupancy_id = ${payment.occupancy_id}
+          `;
+
+          const [reservationRow] = await tx<{ id: string }[]>`
+            select id from reservations where occupancy_id = ${payment.occupancy_id}
+          `;
+
+          await tx`
+            insert into ledger_entries (
+              organization_id, entry_type, amount_centavos, origin,
+              actor_type, actor_id, cause_type, cause_id, occurred_at
+            ) values (
+              ${payment.organization_id}, 'PAYMENT_RECEIVED',
+              ${Number(payment.amount_centavos)}, 'ONLINE',
+              'PROVIDER', ${input.provider}, 'RESERVATION',
+              ${reservationRow!.id}, ${input.occurredAt}
+            )
+          `;
+
+          return {
+            payment: toPayment({ ...payment, state: 'SUCCEEDED' }),
+            // A reservation creates no stay: nobody is staying anywhere yet.
+            stayId: '',
+            applied: true,
+          };
+        }
 
         // The hold becomes real occupancy. Both HELD and COMMITTED sit inside
         // the exclusion constraint's predicate, so this row keeps its place in

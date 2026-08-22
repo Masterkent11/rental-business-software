@@ -272,3 +272,103 @@ stops retrying.
 `stateLabel` and `bucket` are the server's decision, not the client's.
 
 See [07-integrations/payments.md](../07-integrations/payments.md).
+
+
+---
+
+## Sprint 5 — applications and reservations
+
+### `POST /applications`
+
+```json
+{ "resourceId": "…", "desiredMoveIn": "2029-09-01",
+  "desiredTermMonths": 12, "message": "…" }
+```
+
+**Places no hold.** Many people may apply for one place; approval is what takes
+it off the market. Requires a token.
+
+| Situation | Status |
+|---|---|
+| No published **long-term** listing for the resource | `400` |
+| You already have a live application for that place | `400` |
+| No token | `401` |
+
+Re-applying after a decision is fine — the uniqueness rule covers only live
+applications.
+
+### `GET /me/applications` · `GET /me/applications/{id}`
+
+```json
+{ "id": "…", "reference": "ACA98E14", "state": "SUBMITTED",
+  "listingTitle": "…", "monthlyRentCentavos": 850000,
+  "moveInCostCentavos": 3400000, "desiredMoveIn": "2029-09-01",
+  "decisionReason": null, "holdExpiresAt": null,
+  "documentCount": 1, "documentNames": ["id.jpg"],
+  "reservation": null }
+```
+
+The single-application form additionally returns each document with a **signed
+read URL**, minted per request and valid for minutes — a screenshot of the
+response is not a lasting key to somebody's ID.
+
+### `POST /applications/{id}/documents`
+
+Two steps. Called without `storagePath`, it returns an upload ticket:
+
+```json
+{ "upload": { "storagePath": "…", "uploadUrl": "…", "expiresInSeconds": 300 } }
+```
+
+The client PUTs the file to `uploadUrl`, then calls again **with**
+`storagePath` to record it. The API never proxies the bytes: a large upload on
+a slow connection should not occupy an API worker for its duration.
+
+Refused: anything but JPEG, PNG, HEIC, or PDF; anything over 10 MB; and any
+attachment to an application that has already been decided — that would change
+the record the decision was made on.
+
+### `POST /applications/{id}/withdraw`
+
+Terminal. Forfeits a paid reservation fee.
+
+### `POST /applications/{id}/reservation`
+
+```json
+{ "reservationId": "…", "occupancyId": "…",
+  "feeCentavos": 200000, "state": "PENDING_PAYMENT" }
+```
+
+Places a `HELD` occupancy covering the **whole intended tenancy** — a
+reservation that blocked a token day would not reserve anything — with a
+60-minute window to pay. Paying extends it to seven days.
+
+Pay it through the ordinary payment endpoints:
+`POST /bookings/{occupancyId}/payment-intent`, then the webhook. A paid
+reservation creates **no stay**: nobody is staying anywhere, and the owner has
+not decided.
+
+| Situation | Status |
+|---|---|
+| The owner offers no reservation on that listing | `400` |
+| Already reserved | `400` |
+| Application already decided | `400` |
+
+### `GET /organizations/{id}/applications` · `POST …/{id}/decision`
+
+Owner side. Requires `OWNER` or `STAFF` **at that organization** — membership
+alone is not enough, and a customer gets `403`.
+
+```json
+{ "decision": "APPROVED" | "REJECTED" | "UNDER_REVIEW", "reason": "…" }
+```
+
+A rejection **must** carry a reason; the applicant reads it.
+
+**Approval places the hold** — 72 hours, while the applicant pays the advance
+and deposit. If the term overlaps an existing booking or lease the approval is
+refused with **409** and the conflict named, rather than discovered when the
+tenant arrives.
+
+The reservation fee is settled in the same transaction as the decision:
+credited on approval, refunded on rejection, forfeited on withdrawal.

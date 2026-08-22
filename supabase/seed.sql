@@ -108,3 +108,9 @@ insert into media_assets (organization_id, listing_id, kind, storage_url, positi
   ('22222222-2222-2222-2222-222222222222', 'c2222222-0000-0000-0000-000000000001', 'PHOTO', 'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?q=80&w=900&auto=format&fit=crop', 0),
   ('22222222-2222-2222-2222-222222222222', 'c2222222-0000-0000-0000-000000000002', 'PHOTO', 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?q=80&w=900&auto=format&fit=crop', 0),
   ('33333333-3333-3333-3333-333333333333', 'c3333333-0000-0000-0000-000000000001', 'PHOTO', 'https://images.unsplash.com/photo-1594295800284-990f74bb6928?q=80&w=900&auto=format&fit=crop', 0);
+
+-- One listing offers a reservation fee, so the flow has something to exercise.
+-- The others leave it null: reservations are opt-in, and "most owners have not
+-- set one" is the realistic starting state.
+update listings set reservation_fee_centavos = 200000
+ where id = 'c1111111-0000-0000-0000-000000000001';

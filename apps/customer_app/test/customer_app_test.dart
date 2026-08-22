@@ -147,6 +147,54 @@ MockClient _fakeTransport() {
   final client = MockClient((request) async {
     final segments = request.url.pathSegments;
 
+    if (segments.length == 2 &&
+        segments[0] == 'me' &&
+        segments[1] == 'applications') {
+      return http.Response(
+        jsonEncode({
+          'applications': [
+            for (final a in SampleData.applications)
+              {
+                'id': a.id,
+                'reference': a.reference,
+                'state': switch (a.status) {
+                  ApplicationStatus.underReview => 'UNDER_REVIEW',
+                  ApplicationStatus.approved => 'APPROVED',
+                  ApplicationStatus.rejected => 'REJECTED',
+                  ApplicationStatus.withdrawn => 'WITHDRAWN',
+                  ApplicationStatus.expired => 'EXPIRED',
+                  ApplicationStatus.submitted => 'SUBMITTED',
+                },
+                'listingTitle': a.listingTitle,
+                'propertyName': a.propertyName,
+                'areaLabel': a.areaLabel,
+                'cityLabel': '',
+                'photo': a.photo,
+                'monthlyRentCentavos': a.monthlyCentavos,
+                'moveInCostCentavos': a.moveInCostCentavos,
+                'desiredMoveIn': a.moveIn.toIso8601String().substring(0, 10),
+                'desiredTermMonths': 12,
+                'message': '',
+                'decisionReason': a.reason,
+                'decidedAt': a.decidedAt?.toIso8601String(),
+                'createdAt': a.submittedAt.toIso8601String(),
+                'documentCount': a.documents.length,
+                'documentNames': a.documents,
+                'reservation': a.holdExpiresAt == null
+                    ? null
+                    : {
+                        'state': 'ACTIVE',
+                        'feeCentavos': 200000,
+                        'expiresAt': a.holdExpiresAt!.toIso8601String(),
+                      },
+              },
+          ],
+        }),
+        200,
+        headers: {'content-type': 'application/json; charset=utf-8'},
+      );
+    }
+
     if (segments.length == 2 && segments[0] == 'me' && segments[1] == 'stays') {
       return http.Response(
         jsonEncode({
@@ -459,3 +507,4 @@ void main() {
     expect(find.textContaining('still on file'), findsOneWidget);
   });
 }
+

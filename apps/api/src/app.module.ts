@@ -3,6 +3,7 @@ import { ListingsModule } from './modules/listings/listings.module.ts';
 import { MeModule } from './modules/me/me.module.ts';
 import { BookingsModule } from './modules/bookings/bookings.module.ts';
 import { PaymentsModule } from './modules/payments/payments.module.ts';
+import { ApplicationsModule } from './modules/applications/applications.module.ts';
 
 @Controller()
 class HealthController {
@@ -19,5 +20,11 @@ class HealthController {
  * availability and bookings in Sprint 3 — rather than as empty folders waiting
  * for them.
  */
-@Module({ imports: [ListingsModule, MeModule, BookingsModule, PaymentsModule], controllers: [HealthController] })
+@Module({ imports: [
+    ListingsModule,
+    MeModule,
+    BookingsModule,
+    PaymentsModule,
+    ApplicationsModule,
+  ], controllers: [HealthController] })
 export class AppModule {}
