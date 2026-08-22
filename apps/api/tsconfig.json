@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    // Nest uses legacy (stage-2) decorators.
+    "experimentalDecorators": true,
+    // Deliberately NOT emitDecoratorMetadata: injection is by explicit token
+    // (ADR-0012), so nothing reflects over constructor types — which also lets
+    // the code run under esbuild-based tooling that never emits it.
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts"]
+}

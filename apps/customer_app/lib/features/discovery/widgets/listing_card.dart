@@ -23,7 +23,7 @@ class ListingCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final saved = ref.watch(savedIdsProvider).contains(listing.id);
+    final saved = ref.watch(isSavedProvider(listing.id));
 
     return GestureDetector(
       onTap: () {

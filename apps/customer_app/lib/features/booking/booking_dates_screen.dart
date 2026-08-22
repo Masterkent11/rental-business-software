@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/availability_repository.dart';
+import '../../data/listing_repository.dart';
 import '../../design/money.dart';
 import '../../design/tokens.dart';
-import '../../fixtures/sample_data.dart';
 
 /// Short-term: pick dates, see the total, then pay.
 ///
@@ -15,16 +17,16 @@ import '../../fixtures/sample_data.dart';
 ///     timeline — this screen renders them and derives nothing.
 ///   * **Total cost before committing.** Payment *is* the commitment on this
 ///     path; there is no approval step to change your mind during.
-class BookingDatesScreen extends StatefulWidget {
+class BookingDatesScreen extends ConsumerStatefulWidget {
   const BookingDatesScreen({required this.listingId, super.key});
 
   final String listingId;
 
   @override
-  State<BookingDatesScreen> createState() => _BookingDatesScreenState();
+  ConsumerState<BookingDatesScreen> createState() => _BookingDatesScreenState();
 }
 
-class _BookingDatesScreenState extends State<BookingDatesScreen> {
+class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
   DateTime? _checkIn;
   DateTime? _checkOut;
 
@@ -34,10 +36,20 @@ class _BookingDatesScreenState extends State<BookingDatesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final detail = SampleData.detailById(widget.listingId);
-    if (detail == null) return const Scaffold();
-
     final theme = Theme.of(context);
+    final detailAsync = ref.watch(listingDetailProvider(widget.listingId));
+    final detail = detailAsync.valueOrNull;
+
+    if (detailAsync.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (detail == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Select dates')),
+        body: const Center(child: Text('This place is no longer available.')),
+      );
+    }
+
     final card = detail.card;
     final minStay = detail.minimumStayNights ?? 1;
     final today = DateTime.now();
@@ -46,6 +58,29 @@ class _BookingDatesScreenState extends State<BookingDatesScreen> {
       DateTime(today.year, today.month + 1),
       DateTime(today.year, today.month + 2),
     ];
+
+    // The window the calendar shows, asked for in one request.
+    final windowFrom = DateTime(today.year, today.month);
+    final windowTo = DateTime(today.year, today.month + 3);
+    final nightsAsync = card.resourceId.isEmpty
+        ? const AsyncValue<List<NightView>>.data([])
+        : ref.watch(availabilityProvider((
+            resourceId: card.resourceId,
+            from: windowFrom,
+            to: windowTo,
+          )));
+
+    // Until the calendar has loaded, every night is treated as taken.
+    //
+    // The opposite default would show an empty calendar as fully open and let
+    // someone pick nights that are already gone — a screen that lies for a
+    // second is worse than one that waits.
+    final loaded = nightsAsync.hasValue;
+    final blocked = <DateTime>{
+      for (final night in nightsAsync.valueOrNull ?? const <NightView>[])
+        if (night.status.isTaken)
+          DateTime(night.night.year, night.night.month, night.night.day),
+    };
 
     final tooShort = _nights > 0 && _nights < minStay;
     final canBook = _nights >= minStay;
@@ -80,8 +115,8 @@ class _BookingDatesScreenState extends State<BookingDatesScreen> {
               month: month,
               checkIn: _checkIn,
               checkOut: _checkOut,
-              isBlocked: (day) => _isBlocked(day, detail.blockedRanges),
-              onTap: (day) => _select(day, detail.blockedRanges),
+              isBlocked: (day) => _isBlocked(day, blocked, loaded),
+              onTap: (day) => _select(day, blocked, loaded),
             ),
           if (tooShort)
             Padding(
@@ -112,17 +147,12 @@ class _BookingDatesScreenState extends State<BookingDatesScreen> {
 
   /// Half-open, exactly like the domain: `[from, to)`. A guest checking out on
   /// the 29th frees the 29th.
-  bool _isBlocked(
-    DateTime day,
-    List<({DateTime from, DateTime to})> ranges,
-  ) {
-    for (final range in ranges) {
-      if (!day.isBefore(range.from) && day.isBefore(range.to)) return true;
-    }
-    return false;
+  bool _isBlocked(DateTime day, Set<DateTime> blocked, bool loaded) {
+    if (!loaded) return true;
+    return blocked.contains(DateTime(day.year, day.month, day.day));
   }
 
-  void _select(DateTime day, List<({DateTime from, DateTime to})> ranges) {
+  void _select(DateTime day, Set<DateTime> blocked, bool loaded) {
     HapticFeedback.selectionClick();
 
     setState(() {
@@ -138,7 +168,7 @@ class _BookingDatesScreenState extends State<BookingDatesScreen> {
       for (var d = _checkIn!;
           d.isBefore(day);
           d = d.add(const Duration(days: 1))) {
-        if (_isBlocked(d, ranges)) {
+        if (_isBlocked(d, blocked, loaded)) {
           _checkIn = day;
           _checkOut = null;
           return;

@@ -31,7 +31,9 @@ class _FiltersSheet extends ConsumerWidget {
     final theme = Theme.of(context);
     final f = ref.watch(filtersProvider);
     final controller = ref.read(filtersProvider.notifier);
-    final matches = ref.watch(resultsProvider).length;
+    // Counts only what has actually arrived; a pending request shows 0
+    // rather than a stale number.
+    final matches = ref.watch(resultsProvider).valueOrNull?.length ?? 0;
 
     return SafeArea(
       top: false,

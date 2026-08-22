@@ -1,7 +1,15 @@
+import 'dart:convert';
+
 import 'package:customer_app/app/app.dart';
+import 'package:customer_app/data/api_client.dart';
+import 'package:customer_app/data/auth_repository.dart';
+import 'package:customer_app/data/listing_repository.dart';
+import 'package:customer_app/fixtures/sample_data.dart';
+import 'package:customer_app/fixtures/view_models.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:customer_app/design/money.dart';
 import 'package:customer_app/features/bookings/widgets/empty_bookings.dart';
-import 'package:customer_app/features/discovery/discovery_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -32,7 +40,196 @@ Future<void> _pumpApp(WidgetTester tester) async {
     ..devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
-  await tester.pumpWidget(const ProviderScope(child: CustomerApp()));
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        // Signed in, because bookings belong to an account now.
+        authRepositoryProvider.overrideWithValue(const _SignedInAuth()),
+        listingRepositoryProvider.overrideWithValue(_fakeApi()),
+        apiClientProvider.overrideWithValue(_fakeClient()),
+      ],
+      child: const CustomerApp(),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+
+/// A gateway that is simply signed in. The widget tests are not about auth.
+class _SignedInAuth implements AuthGateway {
+  const _SignedInAuth();
+
+  @override
+  String? get accessToken => 'test-token';
+
+  @override
+  Stream<void> get changes => const Stream<void>.empty();
+
+  @override
+  Future<void> signInWithPassword({
+    required String email,
+    required String password,
+  }) async {}
+
+  @override
+  Future<void> signUpWithPassword({
+    required String email,
+    required String password,
+  }) async {}
+
+  @override
+  Future<void> sendMobileOtp(String mobile) async {}
+
+  @override
+  Future<void> verifyMobileOtp({
+    required String mobile,
+    required String code,
+  }) async {}
+
+  @override
+  Future<void> signOut() async {}
+}
+
+/// Serves the sample listings as the API would.
+///
+/// The fixtures are a **test double** here, not a production path: the request
+/// still goes through the real repository and the real JSON mapping, so a
+/// contract drift breaks these tests rather than sliding past them.
+ApiClient _fakeClient() =>
+    ApiClient(client: _fakeTransport(), baseUrl: 'http://test');
+
+ListingRepository _fakeApi() => ListingRepository(_fakeClient());
+
+/// The transport every fake shares, so one request handler serves listings,
+/// stays, and anything else the screens ask for.
+MockClient _fakeTransport() {
+  Map<String, dynamic> encode(ListingCardView l) => {
+        'id': l.id,
+        'title': l.title,
+        'description': SampleData.detailById(l.id)?.description ?? '',
+        'propertyName': l.propertyName,
+        'areaLabel': l.areaLabel,
+        'cityLabel': l.cityLabel,
+        'kind': l.kind == ListingKind.shortTerm ? 'SHORT_TERM' : 'LONG_TERM',
+        'resourceType': switch (l.resourceType) {
+          ResourceType.room => 'ROOM',
+          ResourceType.bedSpace => 'BED_SPACE',
+          ResourceType.parking => 'PARKING',
+          ResourceType.storage => 'STORAGE',
+          ResourceType.unit => 'UNIT',
+        },
+        'priceCentavos': l.priceCentavos,
+        'currency': 'PHP',
+        'hasTour': l.hasTour,
+        'sceneCount': l.sceneCount,
+        'photos': l.photos,
+        'availabilityLabel': l.availabilityLabel,
+        'isAvailable': l.isAvailable,
+        'amenities': SampleData.detailById(l.id)?.amenities ?? const <String>[],
+        'houseRules': SampleData.detailById(l.id)?.houseRules ?? const <String>[],
+        'terms': SampleData.detailById(l.id)?.terms ?? const <String>[],
+        'minStayNights': SampleData.detailById(l.id)?.minimumStayNights,
+        'sharedFacilities':
+            SampleData.detailById(l.id)?.sharedFacilities ?? const <String>[],
+        'ownerName': SampleData.detailById(l.id)?.ownerName ?? '',
+        'ownerVerified': SampleData.detailById(l.id)?.ownerVerified ?? false,
+        'moveInCost': l.moveInCost == null
+            ? null
+            : {
+                'lines': l.moveInCost!.lines
+                    .map((line) =>
+                        {'label': line.label, 'centavos': line.centavos})
+                    .toList(),
+                'totalCentavos': l.moveInCost!.totalCentavos,
+              },
+      };
+
+  final client = MockClient((request) async {
+    final segments = request.url.pathSegments;
+
+    if (segments.length == 2 && segments[0] == 'me' && segments[1] == 'stays') {
+      return http.Response(
+        jsonEncode({
+          'stays': [
+            for (final b in SampleData.bookings)
+              {
+                'id': b.id,
+                'reference': b.reference,
+                'listingTitle': b.listingTitle,
+                'propertyName': b.propertyName,
+                'areaLabel': b.areaLabel,
+                'cityLabel': '',
+                'startsOn': b.checkIn.toIso8601String().substring(0, 10),
+                'endsOn': b.checkOut.toIso8601String().substring(0, 10),
+                'nights': b.nights,
+                'paidCentavos': b.totalCentavos,
+                'paidAt': '2027-01-01T00:00:00.000Z',
+                'state': b.status == BookingStatus.cancelled
+                    ? 'CANCELLED'
+                    : 'CONFIRMED',
+                'photo': b.photo,
+                'stateLabel': b.stateLabel ?? b.status.label,
+                'bucket': switch (b.status) {
+                  BookingStatus.cancelled => 'CANCELLED',
+                  BookingStatus.past => 'PAST',
+                  BookingStatus.active => 'ACTIVE',
+                },
+              },
+          ],
+        }),
+        200,
+        headers: {'content-type': 'application/json; charset=utf-8'},
+      );
+    }
+
+    if (segments.length == 2) {
+      final match = SampleData.cardById(segments[1]);
+      if (match == null) {
+        return http.Response(jsonEncode({'title': 'Listing not found'}), 404,
+            headers: {'content-type': 'application/json; charset=utf-8'});
+      }
+      return http.Response(jsonEncode(encode(match)), 200,
+          headers: {'content-type': 'application/json; charset=utf-8'});
+    }
+
+    // The server filters; mirror only what the query asks for.
+    final q = request.url.queryParameters;
+    var rows = SampleData.listings;
+    if (q['kind'] != null) {
+      final want = q['kind'] == 'SHORT_TERM'
+          ? ListingKind.shortTerm
+          : ListingKind.longTerm;
+      rows = rows.where((l) => l.kind == want).toList();
+    }
+    if (q['hasTour'] == 'true') {
+      rows = rows.where((l) => l.hasTour).toList();
+    }
+    return http.Response(
+      jsonEncode({
+        'items': rows.map(encode).toList(),
+        'limit': 50,
+        'offset': 0,
+      }),
+      200,
+      headers: {'content-type': 'application/json; charset=utf-8'},
+    );
+  });
+
+  return client;
+}
+
+
+/// The page scroller, as opposed to the horizontal carousels inside it.
+/// `scrollUntilVisible` refuses to guess when several are on screen.
+Finder get _page => find.byType(Scrollable).first;
+
+/// Result cards sit below the search panel, so reaching one means scrolling —
+/// exactly as a thumb would.
+Future<void> _openListing(WidgetTester tester, String title) async {
+  final finder = find.text(title);
+  await tester.scrollUntilVisible(finder.first, 300, scrollable: _page);
+  await tester.pumpAndSettle();
+  await tester.tap(finder.first);
   await tester.pumpAndSettle();
 }
 
@@ -54,35 +251,6 @@ void main() {
     });
   });
 
-  group('Discovery filters', () {
-    test('narrow results without touching availability', () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-
-      final all = container.read(resultsProvider).length;
-
-      container.read(filtersProvider.notifier).setTourOnly(true);
-      final withTour = container.read(resultsProvider);
-
-      expect(withTour.length, lessThan(all));
-      expect(withTour.every((l) => l.hasTour), isTrue);
-
-      container.read(filtersProvider.notifier).clear();
-      expect(container.read(resultsProvider).length, all);
-    });
-
-    test('a budget filter is a price filter, never a date query', () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-
-      container.read(filtersProvider.notifier).setMax(500000);
-      final results = container.read(resultsProvider);
-
-      expect(results, isNotEmpty);
-      expect(results.every((l) => l.priceCentavos <= 500000), isTrue);
-    });
-  });
-
   testWidgets('discovery leads with price and move-in cost', (tester) async {
     await _pumpApp(tester);
 
@@ -92,22 +260,16 @@ void main() {
 
     // The number the journey says customers actually need: an ₱8,500 unit
     // costs ₱34,000 to enter.
-    expect(find.text('₱34,000 to move in'), findsOneWidget);
+    final moveIn = find.text('₱34,000 to move in');
+    await tester.scrollUntilVisible(moveIn, 300, scrollable: _page);
+    expect(moveIn, findsOneWidget);
   });
 
   testWidgets('a listing opens its tour and walks between scenes',
       (tester) async {
     await _pumpApp(tester);
 
-    final listingFinder =
-        find.text('One-bedroom corner unit with cross-ventilation').first;
-    await tester.dragUntilVisible(
-      listingFinder,
-      find.byType(CustomScrollView).first,
-      const Offset(0, -300),
-    );
-    await tester.tap(listingFinder, warnIfMissed: false);
-    await tester.pumpAndSettle();
+    await _openListing(tester, 'One-bedroom corner unit with cross-ventilation');
 
     expect(find.text('Walk through it'), findsOneWidget);
 
@@ -136,15 +298,7 @@ void main() {
       (tester) async {
     await _pumpApp(tester);
 
-    final listingFinder =
-        find.text('One-bedroom corner unit with cross-ventilation').first;
-    await tester.dragUntilVisible(
-      listingFinder,
-      find.byType(CustomScrollView).first,
-      const Offset(0, -300),
-    );
-    await tester.tap(listingFinder, warnIfMissed: false);
-    await tester.pumpAndSettle();
+    await _openListing(tester, 'One-bedroom corner unit with cross-ventilation');
     expect(find.text('Apply to rent'), findsOneWidget);
 
     await tester.tap(find.text('Apply to rent'));

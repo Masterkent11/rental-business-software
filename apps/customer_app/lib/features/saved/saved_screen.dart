@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../data/listing_repository.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
 import '../../design/money.dart';
 import '../../design/tokens.dart';
-import '../../fixtures/sample_data.dart';
 import '../../fixtures/view_models.dart';
 import '../discovery/widgets/listing_card.dart';
-import 'saved_controller.dart';
 
 /// Saved.
 ///
@@ -21,9 +21,8 @@ class SavedScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final savedIds = ref.watch(savedIdsProvider);
-    final saved =
-        SampleData.listings.where((l) => savedIds.contains(l.id)).toList();
+    final savedAsync = ref.watch(savedListingsProvider);
+    final saved = savedAsync.valueOrNull ?? const <ListingCardView>[];
 
     final comparable =
         saved.where((l) => l.moveInCost != null).toList();

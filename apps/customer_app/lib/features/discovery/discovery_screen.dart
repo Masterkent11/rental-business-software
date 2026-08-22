@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
+import '../../data/api_client.dart';
 import '../../design/tokens.dart';
-import '../../fixtures/sample_data.dart';
 import '../../fixtures/view_models.dart';
 import 'discovery_controller.dart';
 import 'filters_sheet.dart';
@@ -41,8 +41,13 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
     final theme = Theme.of(context);
     final filters = ref.watch(filtersProvider);
     final results = ref.watch(resultsProvider);
+    final items = results.valueOrNull ?? const <ListingCardView>[];
     final lens = ref.watch(featuredLensProvider);
-    final featured = SampleData.featuredFor(lens);
+    // The featured row is drawn from the same API results — listings with a
+    // tour. The lens still names the section, but it does not reorder yet:
+    // "popular" means view counts and tour completions, which only the server
+    // can know. Inventing an order here would be a client making up a ranking.
+    final featured = items.where((l) => l.hasTour).take(6).toList();
 
     return Scaffold(
       body: CustomScrollView(
@@ -189,34 +194,53 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
               title: filters.isFiltered || filters.query.isNotEmpty
                   ? 'Results'
                   : 'All rentals',
-              caption: results.isEmpty
+              caption: items.isEmpty
                   ? null
-                  : '${results.length} ${results.length == 1 ? "place" : "places"}',
+                  : '${items.length} ${items.length == 1 ? "place" : "places"}',
             ),
           ),
 
-          if (results.isEmpty)
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: _EmptyResults(),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                Tokens.gutter,
-                0,
-                Tokens.gutter,
-                Tokens.s40,
-              ),
-              sliver: SliverList.separated(
-                itemCount: results.length,
-                separatorBuilder: (_, __) => const SizedBox(height: Tokens.s32),
-                itemBuilder: (context, i) => ListingCard(
-                  listing: results[i],
-                  onTap: () => context.push(Routes.listing(results[i].id)),
+          ...switch (results) {
+            // A network failure is an ordinary state on Philippine mobile
+            // data, not a crash — so it renders, with a way out.
+            AsyncError(:final error) => [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _LoadFailed(
+                    error: error,
+                    onRetry: () => ref.invalidate(resultsProvider),
+                  ),
                 ),
-              ),
-            ),
+              ],
+            AsyncLoading() when items.isEmpty => [
+                const SliverToBoxAdapter(child: _ResultsSkeleton()),
+              ],
+            _ when items.isEmpty => [
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _EmptyResults(),
+                ),
+              ],
+            _ => [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    Tokens.gutter,
+                    0,
+                    Tokens.gutter,
+                    Tokens.s40,
+                  ),
+                  sliver: SliverList.separated(
+                    itemCount: items.length,
+                    separatorBuilder: (_, __) =>
+                        const SizedBox(height: Tokens.s32),
+                    itemBuilder: (context, i) => ListingCard(
+                      listing: items[i],
+                      onTap: () => context.push(Routes.listing(items[i].id)),
+                    ),
+                  ),
+                ),
+              ],
+          },
         ],
       ),
     );
@@ -477,6 +501,128 @@ class _LensRow extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Shown while the first page is in flight.
+///
+/// Card-shaped rather than a spinner: the layout does not jump when results
+/// land, which is most of what makes a list feel fast rather than merely be
+/// fast.
+class _ResultsSkeleton extends StatelessWidget {
+  const _ResultsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        Tokens.gutter,
+        0,
+        Tokens.gutter,
+        Tokens.s40,
+      ),
+      child: Column(
+        children: [
+          for (var i = 0; i < 3; i++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: Tokens.s32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AspectRatio(
+                    aspectRatio: 4 / 3,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(Tokens.rLg),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: Tokens.s12),
+                  Container(
+                    height: 14,
+                    width: 220,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(height: Tokens.s8),
+                  Container(
+                    height: 12,
+                    width: 140,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The API could not be reached, or refused.
+class _LoadFailed extends StatelessWidget {
+  const _LoadFailed({required this.error, required this.onRetry});
+
+  final Object error;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final message = error is ApiException
+        ? (error as ApiException).message
+        : 'Something went wrong loading places.';
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          Tokens.s32,
+          Tokens.s16,
+          Tokens.s32,
+          Tokens.s40,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.cloud_off_outlined,
+              size: 40,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: Tokens.s16),
+            Text(
+              'Could not load places',
+              style: theme.textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: Tokens.s8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: Tokens.s20),
+            SizedBox(
+              width: 200,
+              child: FilledButton(
+                onPressed: onRetry,
+                child: const Text('Try again'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

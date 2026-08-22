@@ -38,7 +38,12 @@ dependencies:
   # moment localization is added.
   intl: 0.19.0
 
+  # HTTP client. 1.2.2 is the last release verified against Dart 3.5; newer
+  # majors raise the SDK floor above this pinned toolchain.
+  http: 1.2.2
+
   cupertino_icons: 1.0.8
+  supabase_flutter: ^2.15.4
 
 dev_dependencies:
   flutter_test:
