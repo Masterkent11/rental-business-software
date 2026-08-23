@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'motion.dart';
 import 'tokens.dart';
 
 /// Light and dark themes.
@@ -52,13 +53,15 @@ abstract final class AppTheme {
       highlightColor: Colors.transparent,
       splashColor: Colors.transparent,
 
-      // iOS-style push/pop on every platform, so the app feels the same in the
-      // simulator and in Chrome while it is being reviewed.
+      // A rise-and-fade rather than a horizontal push, on every platform. A
+      // marketplace is browsed in short hops — open a place, go back, open
+      // another — and a full-width slide makes ten of those feel like a
+      // journey rather than a browse.
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: RiseTransitionsBuilder(),
+          TargetPlatform.macOS: RiseTransitionsBuilder(),
+          TargetPlatform.android: RiseTransitionsBuilder(),
         },
       ),
 

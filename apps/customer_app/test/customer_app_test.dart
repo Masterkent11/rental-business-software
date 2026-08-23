@@ -1,9 +1,13 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:customer_app/app/app.dart';
 import 'package:customer_app/data/api_client.dart';
 import 'package:customer_app/data/auth_repository.dart';
 import 'package:customer_app/data/listing_repository.dart';
+import 'package:customer_app/data/tour_repository.dart';
 import 'package:customer_app/fixtures/sample_data.dart';
 import 'package:customer_app/fixtures/view_models.dart';
 import 'package:http/http.dart' as http;
@@ -33,6 +37,10 @@ void _ignoreOfflineImages() {
 /// Tests run at iPhone 14 size rather than the 800x600 default, so layout
 /// assertions mean something about the device the app actually targets.
 Future<void> _pumpApp(WidgetTester tester) async {
+  // Decoded outside the fake async zone; `decodeImageFromPixels` completes on
+  // the engine and never resolves under `pump` alone.
+  final pixel = (await tester.runAsync(_pixel))!;
+
   _ignoreOfflineImages();
 
   tester.view
@@ -45,15 +53,36 @@ Future<void> _pumpApp(WidgetTester tester) async {
       overrides: [
         // Signed in, because bookings belong to an account now.
         authRepositoryProvider.overrideWithValue(const _SignedInAuth()),
+        // Widget tests must not open sockets, and image decoding needs the
+        // real async zone — so the pixel is decoded once up front via
+        // `runAsync` and handed back already resolved.
+        // A clone per call: the viewer disposes each image it replaces, and
+        // handing out one shared instance meant later loads touched freed
+        // memory — which crashed the test shell rather than failing an
+        // assertion.
+        panoramaImageLoaderProvider.overrideWithValue((_) async => pixel.clone()),
         listingRepositoryProvider.overrideWithValue(_fakeApi()),
         apiClientProvider.overrideWithValue(_fakeClient()),
       ],
-      child: const CustomerApp(),
+      child: const CustomerApp(showSplash: false),
     ),
   );
   await tester.pumpAndSettle();
 }
 
+
+/// A single decoded pixel, standing in for a panorama tile.
+Future<ui.Image> _pixel() {
+  final completer = Completer<ui.Image>();
+  ui.decodeImageFromPixels(
+    Uint8List.fromList(const [40, 60, 90, 255]),
+    1,
+    1,
+    ui.PixelFormat.rgba8888,
+    completer.complete,
+  );
+  return completer.future;
+}
 
 /// A gateway that is simply signed in. The widget tests are not about auth.
 class _SignedInAuth implements AuthGateway {
@@ -105,6 +134,9 @@ ListingRepository _fakeApi() => ListingRepository(_fakeClient());
 MockClient _fakeTransport() {
   Map<String, dynamic> encode(ListingCardView l) => {
         'id': l.id,
+        // The sample data predates resourceId. Derived so the tour endpoint has
+        // something stable to key on, exactly as the real API would.
+        'resourceId': 'res-${l.id}',
         'title': l.title,
         'description': SampleData.detailById(l.id)?.description ?? '',
         'propertyName': l.propertyName,
@@ -146,6 +178,66 @@ MockClient _fakeTransport() {
 
   final client = MockClient((request) async {
     final segments = request.url.pathSegments;
+
+    // The tour, in the shape the API serves it. Built from the sample scenes
+    // so the walkthrough test exercises the real API-driven viewer rather than
+    // a fixture path that no longer exists.
+    if (segments.length == 3 &&
+        segments[0] == 'resources' &&
+        segments[2] == 'tour') {
+      final listingId = segments[1].replaceFirst('res-', '');
+      final listing = SampleData.listings.firstWhere(
+        (l) => l.id == listingId,
+        orElse: () => SampleData.listings.first,
+      );
+      final scenes = SampleData.scenesFor(listing.id);
+      if (scenes.isEmpty) {
+        return http.Response(
+          jsonEncode({'title': 'No tour for this place'}),
+          404,
+          headers: {'content-type': 'application/json; charset=utf-8'},
+        );
+      }
+
+      return http.Response(
+        jsonEncode({
+          'id': 'tour-${listing.id}',
+          'resourceId': segments[1],
+          'entrySceneId': 'scene-0',
+          'scenes': [
+            for (final (i, scene) in scenes.indexed)
+              {
+                'id': 'scene-$i',
+                'label': scene.label,
+                'position': i,
+                'previewUrl': scene.imageUrl,
+                'thumbnailUrl': scene.imageUrl,
+                'tileUrlTemplate': '/tiles/scene-$i/{level}/{x}/{y}',
+                'tileLevels': 3,
+                'hotspots': [
+                  for (final (h, hotspot) in scene.hotspots.indexed)
+                    {
+                      'id': 'hs-$i-$h',
+                      'kind': hotspot.kind == HotspotKind.navigation
+                          ? 'NAVIGATION'
+                          : 'INFO',
+                      // Spread the doors across the forward view so they are
+                      // on screen at the default camera.
+                      'yaw': (hotspot.x - 0.5) * 60,
+                      'pitch': (0.5 - hotspot.y) * 30,
+                      'label': hotspot.label ?? hotspot.note ?? '',
+                      'targetSceneId': hotspot.targetScene == null
+                          ? null
+                          : 'scene-${hotspot.targetScene}',
+                    },
+                ],
+              },
+          ],
+        }),
+        200,
+        headers: {'content-type': 'application/json; charset=utf-8'},
+      );
+    }
 
     if (segments.length == 2 &&
         segments[0] == 'me' &&
@@ -319,11 +411,14 @@ void main() {
 
     await _openListing(tester, 'One-bedroom corner unit with cross-ventilation');
 
-    expect(find.text('Walk through it'), findsOneWidget);
-
-    await tester.ensureVisible(find.text('Walk through it'));
+    // The detail screen gives each section real air now, so the tour callout
+    // starts below the fold and the sliver has not built it yet.
+    final callout = find.text('Walk through it');
+    await tester.scrollUntilVisible(callout, 250, scrollable: _page);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Walk through it'));
+
+    expect(callout, findsOneWidget);
+    await tester.tap(callout);
 
     // Hotspots pulse forever by design, so the tour never "settles" — pump
     // fixed frames instead of waiting for stillness.
@@ -334,8 +429,13 @@ void main() {
     expect(find.text('Living room'), findsWidgets);
     expect(find.text('1/5'), findsOneWidget);
 
+    await tester.pump(const Duration(milliseconds: 600));
     // A navigation hotspot carries its destination, and tapping it walks there.
-    await tester.tap(find.text('Kitchen').first);
+    //
+    // `hitTestable` rather than `first`: during the route transition an
+    // off-stage copy of the outgoing page also matches, and tapping that hits
+    // nothing.
+    await tester.tap(find.text('Kitchen').hitTestable().first);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
 

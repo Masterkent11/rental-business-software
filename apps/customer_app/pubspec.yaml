@@ -52,3 +52,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Compiled to SPIR-V at build time and loaded with FragmentProgram. The
+  # panorama projection runs on the GPU because doing it in Dart cannot hold a
+  # frame budget on the mid-range Android phone story 6.4 targets.
+  shaders:
+    - shaders/panorama.frag

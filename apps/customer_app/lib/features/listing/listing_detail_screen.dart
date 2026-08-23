@@ -9,6 +9,7 @@ import '../../design/glass.dart';
 import '../../design/money.dart';
 import '../../data/api_client.dart';
 import '../../data/listing_repository.dart';
+import '../../design/motion.dart';
 import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
 import '../saved/saved_controller.dart';
@@ -88,26 +89,38 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(
                   Tokens.gutter,
-                  Tokens.s24,
+                  Tokens.s32,
                   Tokens.gutter,
-                  140,
+                  // Clears the commit bar with room to spare — a price pinned
+                  // to the last line of text reads as an advert.
+                  160,
                 ),
                 sliver: SliverList.list(
                   children: [
-                    Text(card.title, style: theme.textTheme.headlineMedium),
-                    const SizedBox(height: Tokens.s8),
-                    Text(
-                      '${card.resourceType.label} · ${card.propertyName}\n'
-                      '${card.location}',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                    // The name of the place is the largest thing on the
+                    // screen. Everything after it is a qualification of it.
+                    Reveal(
+                      child: Text(
+                        card.title,
+                        style: theme.textTheme.displaySmall,
                       ),
                     ),
-                    const SizedBox(height: Tokens.s16),
-                    _AvailabilityRow(card: card),
+                    const SizedBox(height: Tokens.s12),
+                    Reveal(
+                      order: 1,
+                      child: Text(
+                        '${card.resourceType.label} · ${card.propertyName}\n'
+                        '${card.location}',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: Tokens.s24),
+                    Reveal(order: 2, child: _AvailabilityRow(card: card)),
 
                     if (card.hasTour) ...[
-                      const SizedBox(height: Tokens.s24),
+                      const SizedBox(height: Tokens.sectionTight),
                       _TourCallout(
                         sceneCount: card.sceneCount,
                         firstScenes: detail.scenes
@@ -119,7 +132,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     ],
 
                     if (card.moveInCost != null) ...[
-                      const SizedBox(height: Tokens.s32),
+                      const SizedBox(height: Tokens.sectionTight),
                       MoveInCostCard(
                         cost: card.moveInCost!,
                         monthlyCentavos: card.priceCentavos,
@@ -682,16 +695,18 @@ class _Section extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: Tokens.s32),
+      padding: const EdgeInsets.only(bottom: Tokens.section),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title, style: theme.textTheme.headlineSmall),
           if (caption != null) ...[
-            const SizedBox(height: Tokens.s4),
+            const SizedBox(height: Tokens.s6),
             Text(caption!, style: theme.textTheme.bodySmall),
           ],
-          const SizedBox(height: Tokens.s12),
+          // A heading needs room to be a heading. At 12 it looked like a label
+          // stuck to the paragraph below it.
+          const SizedBox(height: Tokens.s16),
           child,
         ],
       ),
@@ -704,7 +719,7 @@ class _SectionGap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: Tokens.s24),
+        padding: const EdgeInsets.symmetric(vertical: Tokens.s32),
         child: Divider(color: Theme.of(context).colorScheme.outlineVariant),
       );
 }

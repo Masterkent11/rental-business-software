@@ -114,7 +114,7 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: Tokens.s20),
+                    const SizedBox(height: Tokens.sectionTight),
                     SearchPanel(
                       onSearch: () => _controller.animateTo(
                         320,
@@ -232,7 +232,7 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
                   sliver: SliverList.separated(
                     itemCount: items.length,
                     separatorBuilder: (_, __) =>
-                        const SizedBox(height: Tokens.s32),
+                        const SizedBox(height: Tokens.section),
                     itemBuilder: (context, i) => ListingCard(
                       listing: items[i],
                       onTap: () => context.push(Routes.listing(items[i].id)),
@@ -310,7 +310,7 @@ class _SectionHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: theme.textTheme.headlineSmall),
+          Text(title, style: theme.textTheme.headlineMedium),
           if (caption != null) ...[
             const SizedBox(height: 2),
             Text(caption!, style: theme.textTheme.bodySmall),

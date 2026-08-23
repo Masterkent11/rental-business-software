@@ -34,5 +34,52 @@
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
+  <style>
+    /*
+     * The gap before Flutter paints.
+     *
+     * Without this the customer gets a white rectangle for a second or two on
+     * a cold load, which on a phone reads as a broken page rather than a
+     * loading one. Matches the app's canvas so the handover is invisible.
+     */
+    html, body { margin: 0; height: 100%; background: #FBFAF8; }
+    @media (prefers-color-scheme: dark) {
+      html, body { background: #0A0B0D; }
+    }
+    #boot {
+      position: fixed; inset: 0; display: grid; place-items: center;
+      transition: opacity .4s ease; z-index: 1;
+    }
+    #boot.gone { opacity: 0; pointer-events: none; }
+    @media (prefers-color-scheme: dark) {
+      #boot path { stroke: #F4F3F1; }
+    }
+    #boot svg { animation: rise .8s cubic-bezier(.2,0,0,1) both; }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(6px) scale(.94); }
+      to   { opacity: 1; transform: none; }
+    }
+  </style>
+
+  <div id="boot" aria-hidden="true">
+    <svg width="76" height="76" viewBox="0 0 76 76" fill="none">
+      <path d="M12 71V32a26 26 0 0 1 52 0v39" stroke="#0E0F12"
+            stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M4 71h68" stroke="#0E0F12" stroke-width="2.4"
+            stroke-linecap="round"/>
+      <circle cx="50" cy="52" r="3.4" fill="#B4622A"/>
+    </svg>
+  </div>
+
+  <script>
+    // Removed as soon as Flutter's first frame lands, so the two never
+    // overlap and the customer never sees a flash of nothing.
+    window.addEventListener('flutter-first-frame', function () {
+      var boot = document.getElementById('boot');
+      if (!boot) return;
+      boot.classList.add('gone');
+      setTimeout(function () { boot.remove(); }, 450);
+    });
+  </script>
 </body>
 </html>

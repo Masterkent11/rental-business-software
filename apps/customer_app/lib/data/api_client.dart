@@ -81,6 +81,12 @@ class ApiClient {
   final http.Client _client;
   final String _baseUrl;
 
+  /// Where the API lives, for callers that must build absolute URLs of their
+  /// own — the panorama viewer hands tile URLs to the image loader, which has
+  /// no notion of an API base and would otherwise resolve them against the
+  /// page origin.
+  String get baseUrl => _baseUrl;
+
   /// Read fresh on every request rather than captured once: the SDK refreshes
   /// the access token in the background, and a token held from construction
   /// time would start failing an hour in.

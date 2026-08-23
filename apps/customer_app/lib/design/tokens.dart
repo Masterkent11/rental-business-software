@@ -18,9 +18,23 @@ abstract final class Tokens {
   static const double s24 = 24;
   static const double s32 = 32;
   static const double s40 = 40;
+  static const double s48 = 48;
+  static const double s56 = 56;
+  static const double s64 = 64;
 
   /// Horizontal page inset. 20 reads better than 16 on a 390pt iPhone.
   static const double gutter = 20;
+
+  /// Air between major sections of a screen.
+  ///
+  /// Deliberately large. A rental listing is a considered purchase, not a feed:
+  /// crowding the price against the photographs against the house rules makes
+  /// every one of them feel like a detail, and the customer skims instead of
+  /// reading. Space is what tells them this is worth their attention.
+  static const double section = 44;
+
+  /// Air above a heading that opens a new idea.
+  static const double sectionTight = 28;
 
   // ----------------------------------------------------------------- radius
   static const double rSm = 12;
@@ -80,6 +94,30 @@ abstract final class Tokens {
     'Inter',
     'Segoe UI',
   ];
+
+  // ----------------------------------------------------------------- motion
+  //
+  // One vocabulary, four durations. Scattered ad-hoc timings are what make an
+  // app feel assembled rather than designed — the eye notices inconsistent
+  // motion long before it can name it.
+
+  /// A control acknowledging a touch.
+  static const Duration quick = Duration(milliseconds: 140);
+
+  /// Something appearing or changing in place.
+  static const Duration medium = Duration(milliseconds: 280);
+
+  /// A screen or a scene arriving.
+  static const Duration slow = Duration(milliseconds: 440);
+
+  /// Content settling in after a screen has already appeared.
+  static const Duration reveal = Duration(milliseconds: 520);
+
+  /// Decelerating, never bouncy. iOS motion is confident, not playful.
+  static const Curve ease = Curves.easeOutCubic;
+
+  /// For things that grow into place — a sheet, a hero, a card.
+  static const Curve emphasised = Cubic(0.2, 0, 0, 1);
 
   /// iOS-feeling scroll behaviour, everywhere. Android gets it too, on purpose:
   /// a consistent overscroll beats a per-platform one in a product this visual.

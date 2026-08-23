@@ -10,7 +10,19 @@ import { sql } from './infrastructure/postgres/db.ts';
  * connections suit the `SERIALIZABLE` transactions and advisory locks that
  * Sprint 3's occupancy writes depend on.
  */
-const adapter = new FastifyAdapter();
+/**
+ * Bodies large enough for a panorama.
+ *
+ * Fastify defaults to 1 MB, which is right for JSON and wrong for a 360°
+ * photograph: the storage bucket accepts 25 MB and base64 inflates by a third,
+ * so the ceiling has to clear ~34 MB.
+ *
+ * Base64 inside JSON rather than multipart: it keeps one content type across
+ * the whole API and avoids a parser dependency for the single endpoint that
+ * takes a file. The cost is that third, paid on the owner's upload — once per
+ * room, at authoring time, never on the customer's path.
+ */
+const adapter = new FastifyAdapter({ bodyLimit: 40 * 1024 * 1024 });
 
 /**
  * Keep the raw request body.

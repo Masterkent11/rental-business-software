@@ -1,0 +1,3 @@
+export const TOUR_REPOSITORY = Symbol('TOUR_REPOSITORY');
+export const MEDIA_STORAGE = Symbol('MEDIA_STORAGE');
+export const PANORAMA_PROCESSOR = Symbol('PANORAMA_PROCESSOR');

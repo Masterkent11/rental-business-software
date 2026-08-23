@@ -1,0 +1,164 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import 'tokens.dart';
+
+/// Content arriving.
+///
+/// A short fade with a small upward drift. The drift matters more than the
+/// fade: things that rise into place read as *settling*, and a screen whose
+/// sections settle in order tells the customer what to read first without a
+/// single line of copy saying so.
+///
+/// [order] staggers siblings. Keep it small — past four or five the last item
+/// is visibly late and the screen feels sluggish rather than considered.
+class Reveal extends StatefulWidget {
+  const Reveal({
+    required this.child,
+    this.order = 0,
+    this.from = 14,
+    super.key,
+  });
+
+  final Widget child;
+  final int order;
+
+  /// How far it drifts up, in logical pixels.
+  final double from;
+
+  @override
+  State<Reveal> createState() => _RevealState();
+}
+
+class _RevealState extends State<Reveal> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: Tokens.reveal,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Staggered by starting late rather than by delaying the controller: a
+    // pending Timer would keep widget tests from ever settling.
+    final delay = (widget.order * 70).clamp(0, 420);
+    if (delay == 0) {
+      _controller.forward();
+    } else {
+      Future<void>.delayed(Duration(milliseconds: delay), () {
+        if (mounted) _controller.forward();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final curved = CurvedAnimation(parent: _controller, curve: Tokens.ease);
+
+    return AnimatedBuilder(
+      animation: curved,
+      builder: (context, child) => Opacity(
+        opacity: curved.value,
+        child: Transform.translate(
+          offset: Offset(0, widget.from * (1 - curved.value)),
+          child: child,
+        ),
+      ),
+      child: widget.child,
+    );
+  }
+}
+
+/// A control that answers the finger.
+///
+/// Scales down a couple of percent while held. Tiny on purpose — the point is
+/// that the surface feels physical, not that anything is animating. On a
+/// listing card it is the difference between tapping a photograph and tapping
+/// a button that happens to have a photograph on it.
+class Squeeze extends StatefulWidget {
+  const Squeeze({
+    required this.child,
+    required this.onTap,
+    this.scale = 0.975,
+    this.haptic = true,
+    super.key,
+  });
+
+  final Widget child;
+  final VoidCallback onTap;
+  final double scale;
+  final bool haptic;
+
+  @override
+  State<Squeeze> createState() => _SqueezeState();
+}
+
+class _SqueezeState extends State<Squeeze> {
+  bool _held = false;
+
+  void _set(bool held) {
+    if (_held != held && mounted) setState(() => _held = held);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => _set(true),
+      onTapCancel: () => _set(false),
+      onTapUp: (_) => _set(false),
+      onTap: () {
+        if (widget.haptic) HapticFeedback.selectionClick();
+        widget.onTap();
+      },
+      child: AnimatedScale(
+        scale: _held ? widget.scale : 1,
+        duration: Tokens.quick,
+        curve: Tokens.ease,
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+/// The transition between screens.
+///
+/// A gentle rise and fade rather than a full-width slide. A marketplace is
+/// browsed in short hops — open a place, go back, open another — and a heavy
+/// horizontal push makes ten of those feel like a journey.
+class RiseTransitionsBuilder extends PageTransitionsBuilder {
+  const RiseTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: Tokens.emphasised,
+      reverseCurve: Curves.easeInCubic,
+    );
+
+    return FadeTransition(
+      opacity: curved,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.035),
+          end: Offset.zero,
+        ).animate(curved),
+        child: child,
+      ),
+    );
+  }
+}
