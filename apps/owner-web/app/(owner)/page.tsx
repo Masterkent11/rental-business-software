@@ -1,34 +1,38 @@
+"use client";
+
 import Link from "next/link";
 import {
   AlertTriangle,
+  ArrowDownRight,
   ArrowRight,
+  ArrowUpRight,
   Banknote,
   ClipboardList,
   Plus,
-  Wrench,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, Card, Chip, Meter, Separator, Table } from "@heroui/react";
+
 import {
+  ButtonLink,
   Page,
-  Panel,
   SectionHeading,
   TopBar,
 } from "@/components/owner/shell";
 import {
   CollectionChart,
-  OccupancyBar,
-  Ring,
-  Sparkline,
-} from "@/components/owner/charts";
-import { OriginPill, Pill } from "@/components/owner/status";
+  OccupancyDonut,
+  Trend,
+} from "@/components/owner/nivo";
+import { OriginPill } from "@/components/owner/status";
 import {
   activity,
   arrears,
   claimedThisMonth,
   collectedThisMonth,
   collection,
-  occupancyRate,
   offlineShare,
+  offlineTrend,
+  previousOfflineShare,
   outstandingThisMonth,
   pendingApplications,
   pendingListings,
@@ -36,6 +40,7 @@ import {
   recentPayments,
   totalArrears,
   totalOccupied,
+  totalReserved,
   totalResources,
   totalVacant,
   unacknowledged,
@@ -53,11 +58,54 @@ import { formatDate, formatDateTime, peso } from "@/lib/money";
  *
  * Below it, the queue: everything waiting on a decision from this person today.
  * A dashboard that shows only figures makes an owner hunt for their own work.
+ *
+ * The furniture is HeroUI and the charts are Nivo. Both arrive with their own
+ * spacing, focus behaviour, and motion, so this file describes *what the owner
+ * is being told* and almost never how a box is drawn.
  */
+/**
+ * A change worth a glance.
+ *
+ * Deliberately blunt about direction and never about *goodness*: whether a
+ * rise is good depends on the number. Collection rising is good; the share of
+ * payments arriving as untracked cash rising is not. So the caller says which
+ * direction it wants coloured green.
+ */
+function Delta({
+  value,
+  suffix = "%",
+  goodWhen = "up",
+}: {
+  value: number;
+  suffix?: string;
+  goodWhen?: "up" | "down";
+}) {
+  const up = value > 0;
+  const good = up === (goodWhen === "up");
+  const Icon = up ? ArrowUpRight : ArrowDownRight;
+
+  return (
+    <Chip color={good ? "success" : "danger"} variant="soft" size="sm">
+      <Icon className="size-3" />
+      {`${Math.abs(value)}${suffix}`}
+    </Chip>
+  );
+}
+
 export default function DashboardPage() {
-  const collectionPct = Math.round((collectedThisMonth / claimedThisMonth) * 100);
+  const collectionPct = Math.round(
+    (collectedThisMonth / claimedThisMonth) * 100,
+  );
   const attention =
     pendingApplications.length + unacknowledged.length + arrears.length;
+
+  // Against last month, from the same series the chart draws. Nothing here is
+  // a figure someone chose to make the screen look busy.
+  const previous = collection[collection.length - 2];
+  const collectedChange = Math.round(
+    ((collectedThisMonth - previous.received) / previous.received) * 100,
+  );
+  const offlineChange = offlineShare - previousOfflineShare;
 
   return (
     <>
@@ -66,10 +114,10 @@ export default function DashboardPage() {
         caption="August 2026 · 3 properties · 50 rentable resources"
         action={
           <>
-            <Button variant="outline" className="rounded-[11px]">
+            <Button variant="outline" size="sm">
               <Banknote className="size-4" /> Record cash payment
             </Button>
-            <Button className="rounded-[11px]">
+            <Button variant="primary" size="sm">
               <Plus className="size-4" /> Add listing
             </Button>
           </>
@@ -79,75 +127,93 @@ export default function DashboardPage() {
       <Page>
         {/* ------------------------------------------------------------ KPIs */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Panel className="p-5">
-            <div className="flex items-start justify-between">
+          <Card className="p-5">
+            <div className="flex items-start justify-between gap-3">
               <p className="label-caps text-muted-foreground">
                 Collected in August
               </p>
-              <Sparkline
-                points={collection.map((c) => c.received)}
-                tone="money"
-              />
+              <Trend points={collection.map((c) => c.received)} />
             </div>
-            <p className="text-amount mt-3 text-[30px] leading-none">
-              {peso(collectedThisMonth)}
-            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <p className="text-amount text-[30px] leading-none">
+                {peso(collectedThisMonth)}
+              </p>
+              <Delta value={collectedChange} />
+            </div>
             <p className="text-muted-foreground mt-2 text-[12.5px]">
               of {peso(claimedThisMonth)} claimed
             </p>
-            <div className="bg-secondary mt-3 h-1.5 overflow-hidden rounded-full">
-              <div
-                className="h-full rounded-full bg-[var(--color-money)]"
-                style={{ width: `${collectionPct}%` }}
-              />
-            </div>
-          </Panel>
+            <Meter
+              aria-label="Share of this month's claim already collected"
+              value={collectionPct}
+              color="accent"
+              size="sm"
+              className="mt-3"
+            >
+              <Meter.Track>
+                <Meter.Fill />
+              </Meter.Track>
+            </Meter>
+          </Card>
 
-          <Panel tone="money" className="p-5">
-            <p className="label-caps text-money">Still owed to you</p>
-            <p className="text-amount text-money mt-3 text-[30px] leading-none">
+          {/* The one number an owner opens this page for. */}
+          <Card className="border-warning/25 bg-warning-soft p-5">
+            <p className="label-caps text-pending">Still owed to you</p>
+            <p className="text-amount text-pending mt-3 text-[30px] leading-none">
               {peso(outstandingThisMonth)}
             </p>
             <p className="text-muted-foreground mt-2 text-[12.5px]">
               {arrears.length} tenants · {peso(totalArrears)} past due
             </p>
-            <Button
-              asChild
-              size="sm"
+            <ButtonLink
+              href="/payments"
               variant="outline"
-              className="mt-3 w-full rounded-full bg-transparent"
+              size="sm"
+              className="mt-3 w-full bg-transparent"
             >
-              <Link href="/payments">Who owes me</Link>
-            </Button>
-          </Panel>
+              Who owes me
+            </ButtonLink>
+          </Card>
 
-          <Panel className="flex items-center gap-4 p-5">
-            <Ring value={occupancyRate} label="occupied" />
-            <div className="min-w-0">
+          <Card className="flex flex-row items-center gap-4 p-5">
+            <OccupancyDonut
+              occupied={totalOccupied}
+              reserved={totalReserved}
+              vacant={totalVacant}
+            />
+            <div className="min-w-0 flex-1">
               <p className="label-caps text-muted-foreground">Occupancy</p>
-              <p className="mt-2 text-[13px]">
+              <p className="mt-2 text-[13px] text-balance">
                 <span className="text-amount text-[17px]">{totalOccupied}</span>
-                <span className="text-muted-foreground"> of {totalResources} let</span>
+                <span className="text-muted-foreground">
+                  {" "}
+                  of {totalResources} let
+                </span>
               </p>
-              <p className="text-muted-foreground mt-1 text-[12.5px]">
+              <p className="text-muted-foreground mt-1 text-[12.5px] text-balance">
                 {totalVacant} vacant, earning nothing
               </p>
             </div>
-          </Panel>
+          </Card>
 
-          <Panel className="p-5">
-            <div className="flex items-start justify-between">
+          <Card className="p-5">
+            <div className="flex items-start justify-between gap-3">
               <p className="label-caps text-muted-foreground">Cash vs online</p>
-              <Sparkline points={[38, 44, 41, 52, 47, offlineShare]} tone="plain" />
+              <Trend points={[...offlineTrend, offlineShare]} tone="plain" />
             </div>
-            <p className="text-amount mt-3 text-[30px] leading-none">
-              {offlineShare}%
-            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <p className="text-amount text-[30px] leading-none">
+                {offlineShare}%
+              </p>
+              {/* More cash means less of the money is traceable, so a rise
+                  here is the bad direction. */}
+              <Delta value={offlineChange} suffix=" pts" goodWhen="down" />
+            </div>
             <p className="text-muted-foreground mt-2 text-[12.5px] leading-relaxed">
               of recent payments were cash recorded by staff, not processed by
               the platform
             </p>
-          </Panel>
+          </Card>
         </div>
 
         {/* ------------------------------------------- collection + attention */}
@@ -157,64 +223,86 @@ export default function DashboardPage() {
               title="Claimed against received"
               caption="An invoice is a claim. The gap is what you are chasing."
             />
-            <Panel className="p-6">
+            <Card className="p-5">
+              <div className="mb-1 flex items-center gap-4 text-[12px]">
+                <span className="flex items-center gap-1.5">
+                  <span className="bg-accent-soft size-2.5 rounded-full" />
+                  <span className="text-muted-foreground">Claimed</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="bg-accent size-2.5 rounded-full" />
+                  <span className="text-muted-foreground">Received</span>
+                </span>
+              </div>
               <CollectionChart data={collection} />
-            </Panel>
+            </Card>
 
             <div className="mt-6">
               <SectionHeading
                 title="Occupancy by property"
                 action={
-                  <Button asChild size="sm" variant="ghost" className="rounded-full">
-                    <Link href="/properties">All properties</Link>
-                  </Button>
+                  <ButtonLink href="/properties" variant="ghost">
+                    All properties
+                  </ButtonLink>
                 }
               />
-              <Panel className="divide-border divide-y overflow-hidden">
-                {properties.map((p) => (
-                  <Link
-                    key={p.id}
-                    href="/properties"
-                    className="hover:bg-secondary/40 block px-5 py-4 transition-colors"
-                  >
-                    <div className="flex items-baseline justify-between gap-4">
-                      <div className="min-w-0">
-                        <p className="truncate text-[14.5px] font-medium">
-                          {p.name}
-                        </p>
-                        <p className="text-muted-foreground mt-0.5 text-[12.5px]">
-                          {p.areaLabel}
-                        </p>
+              <Card className="overflow-hidden p-0">
+                {properties.map((p, i) => (
+                  <div key={p.id}>
+                    {i > 0 ? <Separator /> : null}
+                    <Link
+                      href="/properties"
+                      className="hover:bg-secondary/50 block px-5 py-4 transition-colors"
+                    >
+                      <div className="flex items-baseline justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="truncate text-[14.5px] font-medium">
+                            {p.name}
+                          </p>
+                          <p className="text-muted-foreground mt-0.5 text-[12.5px]">
+                            {p.areaLabel}
+                          </p>
+                        </div>
+                        <div className="shrink-0 text-right">
+                          <p className="text-amount text-[15px]">
+                            {peso(p.monthlyContracted)}
+                            <span className="text-muted-foreground text-[12px] font-normal">
+                              /mo
+                            </span>
+                          </p>
+                          <p className="text-muted-foreground mt-0.5 text-[12px]">
+                            of {peso(p.monthlyPotential)} possible
+                          </p>
+                        </div>
                       </div>
-                      <div className="shrink-0 text-right">
-                        <p className="text-amount text-[15px]">
-                          {peso(p.monthlyContracted)}
-                          <span className="text-muted-foreground text-[12px] font-normal">
-                            /mo
-                          </span>
-                        </p>
-                        <p className="text-muted-foreground mt-0.5 text-[12px]">
-                          of {peso(p.monthlyPotential)} possible
-                        </p>
-                      </div>
-                    </div>
 
-                    <OccupancyBar
-                      occupied={p.occupied}
-                      reserved={p.reserved}
-                      vacant={p.vacant}
-                      className="mt-3"
-                    />
-                    <div className="text-muted-foreground mt-2 flex gap-4 text-[12px]">
-                      <span>{p.occupied} occupied</span>
-                      <span>{p.reserved} reserved</span>
-                      <span className={p.vacant > 0 ? "text-foreground font-medium" : ""}>
-                        {p.vacant} vacant
-                      </span>
-                    </div>
-                  </Link>
+                      <Meter
+                        aria-label={`${p.name} occupancy`}
+                        value={Math.round((p.occupied / p.resourceCount) * 100)}
+                        color="success"
+                        size="sm"
+                        className="mt-3"
+                      >
+                        <Meter.Track>
+                          <Meter.Fill />
+                        </Meter.Track>
+                      </Meter>
+
+                      <div className="text-muted-foreground mt-2 flex gap-4 text-[12px]">
+                        <span>{p.occupied} occupied</span>
+                        <span>{p.reserved} reserved</span>
+                        <span
+                          className={
+                            p.vacant > 0 ? "text-foreground font-medium" : ""
+                          }
+                        >
+                          {p.vacant} vacant
+                        </span>
+                      </div>
+                    </Link>
+                  </div>
                 ))}
-              </Panel>
+              </Card>
             </div>
           </div>
 
@@ -227,7 +315,7 @@ export default function DashboardPage() {
 
             <div className="space-y-4">
               {unacknowledged.length > 0 ? (
-                <Panel tone="bad" className="p-5">
+                <Card className="border-bad/25 bg-bad-soft p-5">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="text-bad size-4" />
                     <p className="text-[14px] font-semibold">
@@ -248,22 +336,22 @@ export default function DashboardPage() {
                     Acknowledging matters as much as fixing — an unacknowledged
                     request feels ignored even when work has started.
                   </p>
-                  <Button asChild size="sm" className="mt-3 w-full rounded-full">
-                    <Link href="/maintenance">
-                      Acknowledge <ArrowRight className="size-3.5" />
-                    </Link>
-                  </Button>
-                </Panel>
+                  <ButtonLink
+                    href="/maintenance"
+                    variant="primary"
+                    className="mt-3 w-full"
+                  >
+                    Acknowledge <ArrowRight className="size-3.5" />
+                  </ButtonLink>
+                </Card>
               ) : null}
 
-              <Panel className="p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <ClipboardList className="text-muted-foreground size-4" />
-                    <p className="text-[14px] font-semibold">
-                      {pendingApplications.length} applications to review
-                    </p>
-                  </div>
+              <Card className="p-5">
+                <div className="flex items-center gap-2">
+                  <ClipboardList className="text-muted-foreground size-4" />
+                  <p className="text-[14px] font-semibold">
+                    {pendingApplications.length} applications to review
+                  </p>
                 </div>
 
                 <div className="mt-3 space-y-2.5">
@@ -280,7 +368,9 @@ export default function DashboardPage() {
                           {a.resourceLabel} · move-in {formatDate(a.moveIn)}
                         </p>
                       </div>
-                      <Pill variant="pending">{a.documents} docs</Pill>
+                      <Chip color="warning" variant="soft" size="sm">
+                        {a.documents} docs
+                      </Chip>
                     </div>
                   ))}
                 </div>
@@ -290,18 +380,17 @@ export default function DashboardPage() {
                   — until then it stays on the market.
                 </p>
 
-                <Button
-                  asChild
-                  size="sm"
+                <ButtonLink
+                  href="/applications"
                   variant="outline"
-                  className="mt-3 w-full rounded-full"
+                  className="mt-3 w-full"
                 >
-                  <Link href="/applications">Review applications</Link>
-                </Button>
-              </Panel>
+                  Review applications
+                </ButtonLink>
+              </Card>
 
               {pendingListings.length > 0 ? (
-                <Panel tone="pending" className="p-5">
+                <Card className="border-pending/30 bg-pending-soft p-5">
                   <p className="text-[14px] font-semibold">
                     {pendingListings.length} listing awaiting platform approval
                   </p>
@@ -309,14 +398,11 @@ export default function DashboardPage() {
                     {pendingListings[0].title} — submitted, not yet public.
                     Nothing goes live without review.
                   </p>
-                </Panel>
+                </Card>
               ) : null}
 
-              <Panel className="p-5">
-                <div className="flex items-center gap-2">
-                  <Wrench className="text-muted-foreground size-4" />
-                  <p className="text-[14px] font-semibold">Recent activity</p>
-                </div>
+              <Card className="p-5">
+                <p className="text-[14px] font-semibold">Recent activity</p>
                 <ul className="mt-3 space-y-3">
                   {activity.slice(0, 5).map((item) => (
                     <li key={item.id} className="flex gap-3">
@@ -332,7 +418,7 @@ export default function DashboardPage() {
                     </li>
                   ))}
                 </ul>
-              </Panel>
+              </Card>
             </div>
           </div>
         </div>
@@ -343,72 +429,74 @@ export default function DashboardPage() {
             title="Money in"
             caption="Online payments the platform processed, and cash staff recorded — never shown as the same thing"
             action={
-              <Button asChild size="sm" variant="ghost" className="rounded-full">
-                <Link href="/payments">All payments</Link>
-              </Button>
+              <ButtonLink href="/payments" variant="ghost">
+                All payments
+              </ButtonLink>
             }
           />
-          <Panel className="overflow-hidden">
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="border-border text-muted-foreground border-b">
-                  <th className="label-caps px-5 py-2.5 font-semibold">Tenant</th>
-                  <th className="label-caps hidden px-5 py-2.5 font-semibold md:table-cell">
+          <Table>
+            <Table.ScrollContainer>
+              {/* The label belongs on the grid itself — the root is a plain
+                  wrapper, so react-aria never sees one placed there. */}
+              <Table.Content aria-label="Recent payments">
+                <Table.Header>
+                  <Table.Column isRowHeader>Tenant</Table.Column>
+                  <Table.Column className="hidden md:table-cell">
                     Resource
-                  </th>
-                  <th className="label-caps px-5 py-2.5 text-right font-semibold">
-                    Amount
-                  </th>
-                  <th className="label-caps px-5 py-2.5 font-semibold">How</th>
-                  <th className="label-caps hidden px-5 py-2.5 font-semibold lg:table-cell">
+                  </Table.Column>
+                  <Table.Column className="text-right">Amount</Table.Column>
+                  <Table.Column>How</Table.Column>
+                  <Table.Column className="hidden lg:table-cell">
                     Money moved
-                  </th>
-                  <th className="label-caps hidden px-5 py-2.5 font-semibold lg:table-cell">
+                  </Table.Column>
+                  <Table.Column className="hidden lg:table-cell">
                     Recorded
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-border divide-y">
-                {recentPayments.map((p) => (
-                  <tr key={p.id} className="hover:bg-secondary/40 transition-colors">
-                    <td className="px-5 py-3">
-                      <p className="text-[13.5px] font-medium">{p.tenant}</p>
-                      <p className="text-muted-foreground font-mono text-[11px]">
-                        {p.reference}
-                      </p>
-                    </td>
-                    <td className="text-muted-foreground hidden px-5 py-3 text-[13px] md:table-cell">
-                      {p.resourceLabel}
-                    </td>
-                    <td className="text-amount px-5 py-3 text-right text-[14px]">
-                      {peso(p.amountCentavos)}
-                    </td>
-                    <td className="px-5 py-3">
-                      <OriginPill
-                        origin={p.origin}
-                        method={p.method}
-                        recordedBy={p.recordedBy}
-                      />
-                    </td>
-                    <td className="text-muted-foreground hidden px-5 py-3 text-[12.5px] lg:table-cell">
-                      {formatDateTime(p.receivedAt)}
-                    </td>
-                    <td className="hidden px-5 py-3 text-[12.5px] lg:table-cell">
-                      <span
-                        className={
-                          p.receivedAt === p.recordedAt
-                            ? "text-muted-foreground"
-                            : "text-money"
-                        }
-                      >
-                        {formatDateTime(p.recordedAt)}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Panel>
+                  </Table.Column>
+                </Table.Header>
+                <Table.Body>
+                  {recentPayments.map((p) => (
+                    <Table.Row key={p.id}>
+                      <Table.Cell>
+                        <p className="text-[13.5px] font-medium">{p.tenant}</p>
+                        <p className="text-muted-foreground font-mono text-[11px]">
+                          {p.reference}
+                        </p>
+                      </Table.Cell>
+                      <Table.Cell className="text-muted-foreground hidden md:table-cell">
+                        {p.resourceLabel}
+                      </Table.Cell>
+                      <Table.Cell className="text-amount text-right">
+                        {peso(p.amountCentavos)}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <OriginPill
+                          origin={p.origin}
+                          method={p.method}
+                          recordedBy={p.recordedBy}
+                        />
+                      </Table.Cell>
+                      <Table.Cell className="text-muted-foreground hidden lg:table-cell">
+                        {formatDateTime(p.receivedAt)}
+                      </Table.Cell>
+                      <Table.Cell className="hidden lg:table-cell">
+                        {/* A lag between money moving and being recorded is the
+                            thing worth noticing, so it is the thing coloured. */}
+                        <span
+                          className={
+                            p.receivedAt === p.recordedAt
+                              ? "text-muted-foreground"
+                              : "text-money"
+                          }
+                        >
+                          {formatDateTime(p.recordedAt)}
+                        </span>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Content>
+            </Table.ScrollContainer>
+          </Table>
         </div>
       </Page>
     </>

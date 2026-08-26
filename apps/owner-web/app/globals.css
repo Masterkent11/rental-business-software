@@ -1,4 +1,10 @@
 @import "tailwindcss";
+/* HeroUI must follow tailwindcss and precede the brand tokens below:
+   its theme lives in @layer base, so the unlayered :root block further
+   down wins wherever the two name the same variable. That is how the
+   HeroUI components come out in this product's palette rather than
+   HeroUI's default blue. */
+@import "@heroui/styles";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -16,7 +22,9 @@
   --color-pending-soft: var(--pending-soft);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, var(--font-geist-sans), "Helvetica Neue", Inter, "Segoe UI", sans-serif;
+  --font-sans:
+    "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
+    var(--font-geist-sans), "Helvetica Neue", Inter, "Segoe UI", sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -57,98 +65,60 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ---------------------------------------------------------------------------
+   Palette: HeroUI's, not our own.
+
+   Everything below is a *translation layer*, not a colour scheme. HeroUI's
+   default theme is the source of truth — its blue accent, its greens and reds,
+   its dark surfaces — and these rules only teach the older token names used
+   elsewhere in this app to point at it. Nothing here introduces a new hue.
+
+   The rule when adding a token: if HeroUI already names the colour, alias it.
+   Only invent a value when HeroUI genuinely has no equivalent.
+--------------------------------------------------------------------------- */
+
 :root {
-  /* Palette shared with the Flutter customer app: warm neutrals, near-black
-     ink, one warm accent used sparingly. Same product, same skin. */
-  --background: #FBFAF8;
-  --foreground: #0E0F12;
-  --card: #FFFFFF;
-  --card-foreground: #0E0F12;
-  --popover: #FFFFFF;
-  --popover-foreground: #0E0F12;
-  --primary: #0E0F12;
-  --primary-foreground: #FBFAF8;
-  --secondary: #F3F1ED;
-  --secondary-foreground: #0E0F12;
-  --muted: #F3F1ED;
-  --muted-foreground: #787C85;
-  --accent: #F3F1ED;
-  --accent-foreground: #0E0F12;
-  --destructive: #A33A2E;
-  --border: #E6E4E0;
-  --input: #E6E4E0;
-  --ring: #B9B5AE;
+  /* shadcn-era names, aliased onto HeroUI's. */
+  --card: var(--surface);
+  --card-foreground: var(--surface-foreground);
+  --popover: var(--overlay);
+  --popover-foreground: var(--overlay-foreground);
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-foreground);
+  --secondary: var(--surface-secondary);
+  --secondary-foreground: var(--foreground);
+  --muted-foreground: var(--muted);
+  --destructive: var(--danger);
+  --input: var(--field-background);
+  --ring: var(--focus);
 
-  /* Semantic tokens this product needs by name, not by colour. */
-  --track: #CBC5B9;          /* chart tracks — heavier than a hairline */
-  --money: #B4622A;          /* amounts owed and move-in cost */
-  --money-soft: #FBF2EA;
-  --ok: #1B7A55;             /* paid, resolved, available */
-  --ok-soft: #EAF4EF;
-  --bad: #A33A2E;            /* overdue, taken */
-  --bad-soft: #FBEDEB;
-  --pending: #8A6A1F;        /* awaiting someone else */
-  --pending-soft: #FAF3E2;
+  /* Semantic tokens this product needs *by name*, so a status is never a
+     hard-coded hue at the call site. Each is a HeroUI colour underneath. */
+  --track: var(--surface-tertiary);
+  --money: var(--accent);
+  --money-soft: var(--accent-soft);
+  --ok: var(--success);
+  --ok-soft: var(--success-soft);
+  --bad: var(--danger);
+  --bad-soft: var(--danger-soft);
+  --pending: var(--warning);
+  --pending-soft: var(--warning-soft);
 
-  --chart-1: #B4622A;
-  --chart-2: #1B7A55;
-  --chart-3: #787C85;
-  --chart-4: #C9C4BC;
-  --chart-5: #0E0F12;
-  --radius: 1.125rem;
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #0E0F12;
-  --sidebar-primary: #0E0F12;
-  --sidebar-primary-foreground: #FBFAF8;
-  --sidebar-accent: #F3F1ED;
-  --sidebar-accent-foreground: #0E0F12;
-  --sidebar-border: #E6E4E0;
-  --sidebar-ring: #B9B5AE;
-}
+  /* Chart series. Ordered by how often a reader needs to tell them apart. */
+  --chart-1: var(--accent);
+  --chart-2: var(--success);
+  --chart-3: var(--muted);
+  --chart-4: var(--surface-tertiary);
+  --chart-5: var(--warning);
 
-.dark {
-  --background: #0A0B0D;
-  --foreground: #F4F3F1;
-  --card: #15171B;
-  --card-foreground: #F4F3F1;
-  --popover: #15171B;
-  --popover-foreground: #F4F3F1;
-  --primary: #F4F3F1;
-  --primary-foreground: #15171B;
-  --secondary: #1E2126;
-  --secondary-foreground: #F4F3F1;
-  --muted: #1E2126;
-  --muted-foreground: #9A9EA7;
-  --accent: #1E2126;
-  --accent-foreground: #F4F3F1;
-  --destructive: #E0705F;
-  --border: #26282D;
-  --input: #2C2F35;
-  --ring: #55585F;
-
-  --track: #33373E;
-  --money: #E08A4C;
-  --money-soft: #2A1D13;
-  --ok: #4FBE90;
-  --ok-soft: #10231B;
-  --bad: #E0705F;
-  --bad-soft: #2A1614;
-  --pending: #D8B45C;
-  --pending-soft: #241E10;
-
-  --chart-1: #E08A4C;
-  --chart-2: #4FBE90;
-  --chart-3: #9A9EA7;
-  --chart-4: #3A3D44;
-  --chart-5: #F4F3F1;
-  --sidebar: #15171B;
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--accent);
+  --sidebar-primary-foreground: var(--accent-foreground);
+  --sidebar-accent: var(--surface-secondary);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--focus);
 }
 
 @layer base {

@@ -118,6 +118,7 @@ export const totalResources = properties.reduce(
 export const totalOccupied = properties.reduce((n, p) => n + p.occupied, 0);
 export const occupancyRate = Math.round((totalOccupied / totalResources) * 100);
 export const totalVacant = properties.reduce((n, p) => n + p.vacant, 0);
+export const totalReserved = properties.reduce((n, p) => n + p.reserved, 0);
 
 /* -------------------------------------------------------------- applications */
 
@@ -313,6 +314,16 @@ export const recentPayments: OwnerPayment[] = [
   },
 ];
 
+/**
+ * The cash share over the last six months, most recent last.
+ *
+ * Demo data like everything else in this file, but it lives here rather than
+ * inline in the dashboard so that it is obvious what it is. A trend drawn from
+ * an array typed into a view component is indistinguishable from a real one.
+ */
+export const offlineTrend = [38, 44, 41, 52, 47];
+export const previousOfflineShare = offlineTrend[offlineTrend.length - 1];
+
 /** Cash is roughly half of what comes in — the reason D-08 exists. */
 export const offlineShare = Math.round(
   (recentPayments
@@ -375,7 +386,9 @@ export const maintenance: OwnerMaintenance[] = [
   },
 ];
 
-export const openMaintenance = maintenance.filter((m) => m.state !== "RESOLVED");
+export const openMaintenance = maintenance.filter(
+  (m) => m.state !== "RESOLVED",
+);
 export const unacknowledged = maintenance.filter((m) => m.state === "REPORTED");
 
 /* -------------------------------------------------------------- listings */
@@ -391,11 +404,51 @@ export type ListingRow = {
 };
 
 export const listings: ListingRow[] = [
-  { id: "l-1", title: "One-bedroom corner unit", propertyName: "ABC Apartment", kind: "Monthly", state: "PUBLISHED", hasTour: true, priceCentavos: 850_000 },
-  { id: "l-2", title: "Furnished condo with balcony", propertyName: "Skyline Residences", kind: "Monthly", state: "PUBLISHED", hasTour: true, priceCentavos: 1_500_000 },
-  { id: "l-3", title: "Condo stay near IT Park", propertyName: "Skyline Residences", kind: "Nightly", state: "PENDING_APPROVAL", hasTour: true, priceCentavos: 150_000 },
-  { id: "l-4", title: "Bed space near USC", propertyName: "Villa Boarding House", kind: "Monthly", state: "PUBLISHED", hasTour: true, priceCentavos: 350_000 },
-  { id: "l-5", title: "Covered parking slot", propertyName: "ABC Apartment", kind: "Monthly", state: "DRAFT", hasTour: false, priceCentavos: 200_000 },
+  {
+    id: "l-1",
+    title: "One-bedroom corner unit",
+    propertyName: "ABC Apartment",
+    kind: "Monthly",
+    state: "PUBLISHED",
+    hasTour: true,
+    priceCentavos: 850_000,
+  },
+  {
+    id: "l-2",
+    title: "Furnished condo with balcony",
+    propertyName: "Skyline Residences",
+    kind: "Monthly",
+    state: "PUBLISHED",
+    hasTour: true,
+    priceCentavos: 1_500_000,
+  },
+  {
+    id: "l-3",
+    title: "Condo stay near IT Park",
+    propertyName: "Skyline Residences",
+    kind: "Nightly",
+    state: "PENDING_APPROVAL",
+    hasTour: true,
+    priceCentavos: 150_000,
+  },
+  {
+    id: "l-4",
+    title: "Bed space near USC",
+    propertyName: "Villa Boarding House",
+    kind: "Monthly",
+    state: "PUBLISHED",
+    hasTour: true,
+    priceCentavos: 350_000,
+  },
+  {
+    id: "l-5",
+    title: "Covered parking slot",
+    propertyName: "ABC Apartment",
+    kind: "Monthly",
+    state: "DRAFT",
+    hasTour: false,
+    priceCentavos: 200_000,
+  },
 ];
 
 export const pendingListings = listings.filter(
@@ -413,10 +466,46 @@ export type ActivityItem = {
 };
 
 export const activity: ActivityItem[] = [
-  { id: "a1", kind: "maintenance", text: "Marisol Cruz reported no water on the 3rd floor", detail: "Unit 305 · urgent · not yet acknowledged", at: "2026-08-20T07:10:00+08:00" },
-  { id: "a2", kind: "payment", text: "Grace Lim paid ₱3,500 online", detail: "GCash · Bed C, Room 204", at: "2026-08-19T18:22:00+08:00" },
-  { id: "a3", kind: "payment", text: "Marco Diaz recorded ₱6,000 cash from Kevin Tan", detail: "Room 102 · received 18 Aug, recorded 19 Aug", at: "2026-08-19T08:40:00+08:00" },
-  { id: "a4", kind: "application", text: "Ana Reyes applied for Unit 203", detail: "Move-in 1 Sep · 3 documents attached", at: "2026-08-18T09:12:00+08:00" },
-  { id: "a5", kind: "application", text: "Joel Mercado applied for Unit 203", detail: "Second applicant for the same unit", at: "2026-08-17T20:40:00+08:00" },
-  { id: "a6", kind: "listing", text: "Condo stay near IT Park submitted for approval", detail: "Awaiting platform review", at: "2026-08-17T10:02:00+08:00" },
+  {
+    id: "a1",
+    kind: "maintenance",
+    text: "Marisol Cruz reported no water on the 3rd floor",
+    detail: "Unit 305 · urgent · not yet acknowledged",
+    at: "2026-08-20T07:10:00+08:00",
+  },
+  {
+    id: "a2",
+    kind: "payment",
+    text: "Grace Lim paid ₱3,500 online",
+    detail: "GCash · Bed C, Room 204",
+    at: "2026-08-19T18:22:00+08:00",
+  },
+  {
+    id: "a3",
+    kind: "payment",
+    text: "Marco Diaz recorded ₱6,000 cash from Kevin Tan",
+    detail: "Room 102 · received 18 Aug, recorded 19 Aug",
+    at: "2026-08-19T08:40:00+08:00",
+  },
+  {
+    id: "a4",
+    kind: "application",
+    text: "Ana Reyes applied for Unit 203",
+    detail: "Move-in 1 Sep · 3 documents attached",
+    at: "2026-08-18T09:12:00+08:00",
+  },
+  {
+    id: "a5",
+    kind: "application",
+    text: "Joel Mercado applied for Unit 203",
+    detail: "Second applicant for the same unit",
+    at: "2026-08-17T20:40:00+08:00",
+  },
+  {
+    id: "a6",
+    kind: "listing",
+    text: "Condo stay near IT Park submitted for approval",
+    detail: "Awaiting platform review",
+    at: "2026-08-17T10:02:00+08:00",
+  },
 ];

@@ -158,7 +158,7 @@ class AccountScreen extends ConsumerWidget {
               ),
             ),
           ),
-          const SizedBox(height: Tokens.s32),
+          const SizedBox(height: Tokens.section),
           const _Group(
             title: 'Renting',
             items: [

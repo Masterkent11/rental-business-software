@@ -90,6 +90,38 @@ export type OwnerApplication = {
   } | null;
 };
 
+/** One month of the owner's money, as the API answers it. */
+export type Collection = {
+  month: string;
+  claimedCentavos: number;
+  receivedCentavos: number;
+  /** Everything still owed, not just this month's share. */
+  outstandingCentavos: number;
+  offlineSharePercent: number;
+  history: { month: string; claimedCentavos: number; receivedCentavos: number }[];
+  arrears: {
+    tenantId: string | null;
+    tenantName: string;
+    occupancyId: string;
+    resourceLabel: string;
+    owedCentavos: number;
+    oldestDueOn: string;
+    daysOverdue: number;
+    invoiceCount: number;
+  }[];
+  recentPayments: {
+    id: string;
+    tenantName: string;
+    resourceLabel: string;
+    amountCentavos: number;
+    origin: "ONLINE" | "OFFLINE_RECORDED";
+    reference: string | null;
+    recordedBy: string | null;
+    receivedAt: string | null;
+    recordedAt: string;
+  }[];
+};
+
 export type Me = {
   id: string;
   displayName: string;
@@ -98,6 +130,11 @@ export type Me = {
 
 export const api = {
   me: () => call<Me>("/me"),
+
+  collection: (organizationId: string) =>
+    call<Collection>(`/organizations/${organizationId}/collection`, {
+      organizationId,
+    }),
 
   applications: (organizationId: string) =>
     call<{ applications: OwnerApplication[] }>(
