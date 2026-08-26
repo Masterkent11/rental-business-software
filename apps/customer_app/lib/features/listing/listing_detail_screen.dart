@@ -7,8 +7,10 @@ import '../../app/router.dart';
 import '../../design/app_image.dart';
 import '../../design/glass.dart';
 import '../../design/money.dart';
+import '../../data/api_client.dart';
+import '../../data/listing_repository.dart';
+import '../../design/motion.dart';
 import '../../design/tokens.dart';
-import '../../fixtures/sample_data.dart';
 import '../../fixtures/view_models.dart';
 import '../saved/saved_controller.dart';
 import 'widgets/move_in_cost_card.dart';
@@ -44,13 +46,28 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final detail = SampleData.detailById(widget.listingId);
-    if (detail == null) return const _NotFound();
+    final async = ref.watch(listingDetailProvider(widget.listingId));
+
+    return switch (async) {
+      // "Listing taken while browsing" is a state the journey names as normal
+      // life, not an error — say so honestly rather than 404 silently.
+      AsyncData(value: null) => const _NotFound(),
+      AsyncError(:final error) => _DetailFailed(
+          error: error,
+          onRetry: () =>
+              ref.invalidate(listingDetailProvider(widget.listingId)),
+        ),
+      AsyncData(:final value) => _buildDetail(context, value!),
+      _ => const _DetailLoading(),
+    };
+  }
+
+  Widget _buildDetail(BuildContext context, ListingDetailView detail) {
 
     final card = detail.card;
     final theme = Theme.of(context);
     final isLongTerm = card.kind == ListingKind.longTerm;
-    final saved = ref.watch(savedIdsProvider).contains(card.id);
+    final saved = ref.watch(isSavedProvider(card.id));
 
     return Scaffold(
       body: Stack(
@@ -72,29 +89,41 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(
                   Tokens.gutter,
-                  Tokens.s24,
+                  Tokens.s32,
                   Tokens.gutter,
-                  140,
+                  // Clears the commit bar with room to spare — a price pinned
+                  // to the last line of text reads as an advert.
+                  160,
                 ),
                 sliver: SliverList.list(
                   children: [
-                    Text(card.title, style: theme.textTheme.headlineMedium),
-                    const SizedBox(height: Tokens.s8),
-                    Text(
-                      '${card.resourceType.label} · ${card.propertyName}\n'
-                      '${card.location}',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                    // The name of the place is the largest thing on the
+                    // screen. Everything after it is a qualification of it.
+                    Reveal(
+                      child: Text(
+                        card.title,
+                        style: theme.textTheme.displaySmall,
                       ),
                     ),
-                    const SizedBox(height: Tokens.s16),
-                    _AvailabilityRow(card: card),
+                    const SizedBox(height: Tokens.s12),
+                    Reveal(
+                      order: 1,
+                      child: Text(
+                        '${card.resourceType.label} · ${card.propertyName}\n'
+                        '${card.location}',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: Tokens.s24),
+                    Reveal(order: 2, child: _AvailabilityRow(card: card)),
 
                     if (card.hasTour) ...[
-                      const SizedBox(height: Tokens.s24),
+                      const SizedBox(height: Tokens.sectionTight),
                       _TourCallout(
                         sceneCount: card.sceneCount,
-                        firstScenes: SampleData.scenesFor(card.id)
+                        firstScenes: detail.scenes
                             .take(3)
                             .map((s) => s.label)
                             .toList(),
@@ -103,7 +132,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     ],
 
                     if (card.moveInCost != null) ...[
-                      const SizedBox(height: Tokens.s32),
+                      const SizedBox(height: Tokens.sectionTight),
                       MoveInCostCard(
                         cost: card.moveInCost!,
                         monthlyCentavos: card.priceCentavos,
@@ -393,7 +422,13 @@ class _TourCallout extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '$sceneCount rooms · ${firstScenes.join(", ")}…',
+                    // Scene labels arrive with the tour endpoint in Sprint 6.
+                    // Until then the room count is real (it comes from the API)
+                    // and the preview is simply omitted rather than rendered as
+                    // a dangling ellipsis.
+                    firstScenes.isEmpty
+                        ? '$sceneCount rooms to walk through'
+                        : '$sceneCount rooms · ${firstScenes.join(", ")}…',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
@@ -660,16 +695,18 @@ class _Section extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: Tokens.s32),
+      padding: const EdgeInsets.only(bottom: Tokens.section),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title, style: theme.textTheme.headlineSmall),
           if (caption != null) ...[
-            const SizedBox(height: Tokens.s4),
+            const SizedBox(height: Tokens.s6),
             Text(caption!, style: theme.textTheme.bodySmall),
           ],
-          const SizedBox(height: Tokens.s12),
+          // A heading needs room to be a heading. At 12 it looked like a label
+          // stuck to the paragraph below it.
+          const SizedBox(height: Tokens.s16),
           child,
         ],
       ),
@@ -682,7 +719,7 @@ class _SectionGap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: Tokens.s24),
+        padding: const EdgeInsets.symmetric(vertical: Tokens.s32),
         child: Divider(color: Theme.of(context).colorScheme.outlineVariant),
       );
 }
@@ -762,6 +799,104 @@ class _NotFound extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Waiting for the listing.
+class _DetailLoading extends StatelessWidget {
+  const _DetailLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(height: 380, color: theme.colorScheme.surfaceContainerHighest),
+          Padding(
+            padding: const EdgeInsets.all(Tokens.gutter),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 22,
+                  width: 260,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(height: Tokens.s12),
+                Container(
+                  height: 14,
+                  width: 180,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The listing could not be loaded — distinct from it being gone.
+class _DetailFailed extends StatelessWidget {
+  const _DetailFailed({required this.error, required this.onRetry});
+
+  final Object error;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final message = error is ApiException
+        ? (error as ApiException).message
+        : 'Something went wrong loading this place.';
+
+    return Scaffold(
+      appBar: AppBar(),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(Tokens.s32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.cloud_off_outlined,
+                size: 40,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: Tokens.s16),
+              Text('Could not load this place',
+                  style: theme.textTheme.headlineSmall),
+              const SizedBox(height: Tokens.s8),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: Tokens.s20),
+              SizedBox(
+                width: 200,
+                child: FilledButton(
+                  onPressed: onRetry,
+                  child: const Text('Try again'),
+                ),
               ),
             ],
           ),

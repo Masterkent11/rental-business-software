@@ -1,0 +1,3 @@
+export const OCCUPANCY_REPOSITORY = Symbol('OCCUPANCY_REPOSITORY');
+export const PLACE_HOLD = Symbol('PLACE_HOLD');
+export const VIEW_AVAILABILITY = Symbol('VIEW_AVAILABILITY');

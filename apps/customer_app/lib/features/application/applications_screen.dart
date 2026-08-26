@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -6,8 +7,8 @@ import 'package:intl/intl.dart';
 import '../../app/router.dart';
 import '../../design/app_image.dart';
 import '../../design/money.dart';
+import '../../data/application_repository.dart';
 import '../../design/tokens.dart';
-import '../../fixtures/sample_data.dart';
 import '../../fixtures/view_models.dart';
 
 /// Applications.
@@ -26,21 +27,76 @@ import '../../fixtures/view_models.dart';
 ///     expires. The countdown is the most important thing on an approved card.
 ///   * **Imply a claim on the place.** Applying reserves nothing, and the
 ///     submitted card says so.
-class ApplicationsScreen extends StatelessWidget {
+class ApplicationsScreen extends ConsumerWidget {
   const ApplicationsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final applications = SampleData.applications;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(applicationsProvider);
+    final applications = async.valueOrNull ?? const <ApplicationView>[];
+
+    final appBar = AppBar(
+      title: const Text('My applications'),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+        onPressed: () => Navigator.of(context).maybePop(),
+      ),
+    );
+
+    // "You have applied for nothing" and "we could not reach your
+    // applications" are different facts, and the second must not be shown as
+    // the first.
+    if (async.hasError) {
+      return Scaffold(
+        appBar: appBar,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(Tokens.gutter),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Could not load your applications',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: Tokens.s12),
+                FilledButton(
+                  onPressed: () => ref.invalidate(applicationsProvider),
+                  child: const Text('Try again'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (async.isLoading) {
+      return Scaffold(
+        appBar: appBar,
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (applications.isEmpty) {
+      return Scaffold(
+        appBar: appBar,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(Tokens.gutter),
+            child: Text(
+              'Nothing yet. Applying to a place is free, and it reserves '
+              'nothing until the owner says yes.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My applications'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-      ),
+      appBar: appBar,
       body: ListView.separated(
         physics: Tokens.scroll,
         padding: const EdgeInsets.fromLTRB(
@@ -312,6 +368,27 @@ class _Outcome extends StatelessWidget {
             ),
           ],
         );
+
+      case ApplicationStatus.withdrawn:
+        tint = theme.colorScheme.onSurfaceVariant;
+        body = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('You withdrew this', style: theme.textTheme.titleMedium),
+            const SizedBox(height: Tokens.s4),
+            Text(
+              // Said plainly, because it is the one outcome where the customer
+              // loses the fee — and they should learn that here, not from a
+              // ledger line they never see.
+              app.holdExpiresAt != null
+                  ? 'The place went back on the market, and any reservation fee '
+                      'was forfeited.'
+                  : 'The place went back on the market. You can apply again.',
+              style: theme.textTheme.bodyMedium,
+            ),
+          ],
+        );
+        break;
 
       case ApplicationStatus.rejected:
       case ApplicationStatus.expired:

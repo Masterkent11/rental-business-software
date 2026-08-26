@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../design/app_image.dart';
 import '../../../design/glass.dart';
 import '../../../design/money.dart';
+import '../../../design/motion.dart';
 import '../../../design/tokens.dart';
 import '../../../fixtures/view_models.dart';
 import '../../saved/saved_controller.dart';
@@ -23,13 +23,13 @@ class ListingCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final saved = ref.watch(savedIdsProvider).contains(listing.id);
+    final saved = ref.watch(isSavedProvider(listing.id));
 
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        onTap();
-      },
+    // Squeeze rather than a bare tap: the card is mostly photograph, and a
+    // photograph that does not answer the finger feels like an image rather
+    // than a way in.
+    return Squeeze(
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

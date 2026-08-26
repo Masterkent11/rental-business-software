@@ -1,160 +1,246 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/listing_repository.dart';
+import '../../data/tour_repository.dart';
+import '../../fixtures/view_models.dart';
 import '../../design/app_image.dart';
 import '../../design/glass.dart';
 import '../../design/tokens.dart';
-import '../../fixtures/sample_data.dart';
-import '../../fixtures/view_models.dart';
+import 'panorama/panorama_source.dart';
+import 'panorama/panorama_view.dart';
 
 /// Virtual tour viewer.
 ///
-/// **What this is:** the interaction model of a tour, complete. Drag to look,
-/// hotspots that walk you scene to scene, an always-visible room label, a scene
-/// selector, info notes, and a clear way back — plus the path straight into
-/// booking or applying that the customer journey asks for, because a customer
-/// convinced by the tour should not have to hunt for the next step.
+/// The interaction model is unchanged from the design this screen has always
+/// carried: drag to look, hotspots that walk you room to room, an always-
+/// visible room label that opens the scene list, info notes, a clear way back,
+/// and the path straight into booking or applying.
 ///
-/// **What this is not:** a 360° renderer. A real panorama needs an
-/// equirectangular projection, tiled delivery, and a decode budget that holds
-/// on a mid-range Android phone over mobile data. That is its own integration
-/// decision, and choosing a package for it now would settle it by accident.
-/// A flat photograph panned horizontally stands in — the *feel* of looking
-/// around is what is being proven here, and it is judgeable today.
-class TourScreen extends StatefulWidget {
+/// What changed is underneath. The flat photograph is gone; this now renders a
+/// real equirectangular panorama through a GPU shader, fed by the tiled
+/// pipeline from story 6.1 and the tour API from 6.2. Rooms, labels, and
+/// hotspots all come from the tour data — nothing here is hard-coded.
+class TourScreen extends ConsumerStatefulWidget {
   const TourScreen({required this.listingId, super.key});
 
   final String listingId;
 
   @override
-  State<TourScreen> createState() => _TourScreenState();
+  ConsumerState<TourScreen> createState() => _TourScreenState();
 }
 
-class _TourScreenState extends State<TourScreen> {
-  int _index = 0;
-  double _pan = 0;
+class _TourScreenState extends ConsumerState<TourScreen> {
+  String? _sceneId;
+  PanoramaSource? _source;
+  PanoramaCamera _camera = const PanoramaCamera();
   bool _hasLooked = false;
 
-  /// How much wider the scene is than the viewport. The overhang is what there
-  /// is to look around at.
-  ///
-  /// It also fixes where hotspots may sit: at 1.55x only the middle ~64% of a
-  /// scene is visible before the user drags, so authored hotspots belong in
-  /// x ∈ [0.18, 0.82]. One placed outside that band exists but cannot be found,
-  /// which is worse than not placing it.
-  static const double _overscan = 1.55;
+  /// True while a room the customer chose is still finding its first pixels.
+  bool _walking = false;
 
-  void _goToScene(int index) {
-    HapticFeedback.lightImpact();
+  @override
+  void dispose() {
+    _source?.dispose();
+    super.dispose();
+  }
+
+  /// Open a room: swap the source, reset the view, and start loading.
+  ///
+  /// The camera resets to level and forward. Arriving in a new room already
+  /// looking at the ceiling is disorienting, and the owner framed the panorama
+  /// expecting you to enter facing its centre.
+  void _open(TourSceneApiView scene) {
+    final previous = _source;
+
+    final source = _sourceFor(scene);
     setState(() {
-      _index = index;
-      _pan = 0;
+      _sceneId = scene.id;
+      _source = source;
+      _camera = const PanoramaCamera();
+      _walking = true;
     });
+
+    // Disposed after the swap so the outgoing texture is released only once
+    // nothing is drawing it.
+    previous?.dispose();
+
+    source.start();
+  }
+
+  /// A loader for one room, already listening for its first pixels.
+  PanoramaSource _sourceFor(TourSceneApiView scene) {
+    return PanoramaSource(
+      scene: scene,
+      loader: ref.read(panoramaImageLoaderProvider),
+    )..addListener(_onPixels);
+  }
+
+  /// Repaint when the room's pixels change quality.
+  ///
+  /// Every notification, not only while walking: the entry room never sets
+  /// `_walking`, so gating on it left the loading overlay up after the first
+  /// pixels had arrived — covering the hotspots and swallowing taps. The source
+  /// notifies a handful of times per room, so rebuilding on each is cheap.
+  void _onPixels() {
+    if (!mounted) return;
+    setState(() {
+      if (_source?.hasPixels ?? false) _walking = false;
+    });
+  }
+
+  void _onCamera(PanoramaCamera camera) {
+    setState(() {
+      _camera = camera;
+      _hasLooked = true;
+    });
+
+    // Refine as the customer zooms in. Level 2 is nearly 3 MB, so it is only
+    // fetched by somebody who has actually leaned in to look at something.
+    final source = _source;
+    if (source == null) return;
+
+    final wanted = camera.zoom > 0.66 ? 2 : (camera.zoom > 0.25 ? 1 : 0);
+    if (wanted > source.level) source.ensureLevel(wanted);
   }
 
   @override
   Widget build(BuildContext context) {
-    final scenes = SampleData.scenesFor(widget.listingId);
-    final card = SampleData.cardById(widget.listingId);
+    final detail = ref.watch(listingDetailProvider(widget.listingId));
+    final resourceId = detail.valueOrNull?.card.resourceId;
 
-    if (scenes.isEmpty || card == null) {
-      return const _NoTour();
-    }
+    if (detail.isLoading) return const _TourLoading();
+    if (resourceId == null || resourceId.isEmpty) return const _NoTour();
 
-    final scene = scenes[_index];
-    final size = MediaQuery.sizeOf(context);
-    final sceneWidth = size.width * _overscan;
-    final maxPan = (sceneWidth - size.width) / 2;
+    final tourAsync = ref.watch(tourProvider(resourceId));
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          GestureDetector(
-            onHorizontalDragUpdate: (details) => setState(() {
-              _pan = (_pan + details.delta.dx).clamp(-maxPan, maxPan);
-              _hasLooked = true;
-            }),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 420),
-              switchInCurve: Curves.easeOutCubic,
-              transitionBuilder: (child, animation) => FadeTransition(
-                opacity: animation,
-                // A touch of scale so moving between scenes reads as stepping
-                // forward rather than as a slide change.
-                child: ScaleTransition(
-                  scale: Tween<double>(begin: 1.06, end: 1).animate(animation),
-                  child: child,
+    return tourAsync.when(
+      loading: () => const _TourLoading(),
+      error: (_, __) => const _TourUnavailable(),
+      data: (tour) {
+        if (tour == null) return const _NoTour();
+
+        // The owner chose where the walkthrough opens. Picking a room here
+        // would override a deliberate decision (I-07 requires an entry scene).
+        final entry = tour.entryScene;
+        if (entry == null) return const _NoTour();
+
+        final scene = tour.sceneById(_sceneId ?? entry.id) ?? entry;
+
+        // First build for this tour: open the entry room now, in this build,
+        // rather than after a frame. Deferring it left the viewer with nothing
+        // mounted until a later frame happened to arrive — which on a slow
+        // first paint is exactly the black screen the pipeline exists to avoid.
+        if (_source == null) {
+          _sceneId = entry.id;
+          _source = _sourceFor(entry)..start();
+        }
+
+        final card = detail.valueOrNull?.card;
+        final index = tour.scenes.indexWhere((s) => s.id == scene.id);
+        final source = _source;
+
+        return Scaffold(
+          backgroundColor: Colors.black,
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (source != null)
+                _PanoramaLayer(
+                  key: ValueKey(scene.id),
+                  source: source,
+                  scene: scene,
+                  camera: _camera,
+                  onCamera: _onCamera,
+                  onInteraction: () {
+                    if (!_hasLooked) setState(() => _hasLooked = true);
+                  },
+                  onNavigate: (targetId) {
+                    final target = tour.sceneById(targetId);
+                    // A door to a room the API did not send is a door to
+                    // nothing. I-07 should have stopped this reaching a
+                    // customer; refusing quietly is better than a black screen.
+                    if (target == null || !target.isWalkable) {
+                      _sayUnavailable(context);
+                      return;
+                    }
+                    HapticFeedback.selectionClick();
+                    _open(target);
+                  },
+                  onInfo: (note) => _showNote(context, note),
+                ),
+
+              // Nothing to draw yet: the first pixels are still in flight.
+              if (source == null || !source.hasPixels)
+                _TourLoading(label: _walking ? scene.label : null),
+
+              // Chrome. Everything below floats over the panorama on frosted
+              // glass, never on an opaque bar.
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  bottom: false,
+                  child: _TourNav(
+                    title: 'Virtual Tour',
+                    onClose: () => Navigator.of(context).maybePop(),
+                  ),
                 ),
               ),
-              child: _SceneLayer(
-                key: ValueKey(_index),
-                scene: scene,
-                sceneWidth: sceneWidth,
-                pan: _pan,
-                onNavigate: (target) => _goToScene(target),
-                onInfo: (note) => _showNote(context, note),
-              ),
-            ),
-          ),
 
-          // Chrome. Everything below floats over the photograph on frosted
-          // glass, never on an opaque bar.
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              bottom: false,
-              child: _TourNav(
-                title: 'Virtual Tour',
-                onClose: () => Navigator.of(context).maybePop(),
-              ),
-            ),
-          ),
-
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  Tokens.gutter,
-                  0,
-                  Tokens.gutter,
-                  Tokens.s20,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (!_hasLooked) const _DragHint(),
-                    const SizedBox(height: Tokens.s16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      Tokens.gutter,
+                      0,
+                      Tokens.gutter,
+                      Tokens.s20,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // The room label is also the way into the scene list —
-                        // the same affordance the reference mockup uses.
-                        Flexible(
-                          child: _RoomLabel(
-                            label: scene.label,
-                            position: '${_index + 1}/${scenes.length}',
-                            onTap: () => _showScenePicker(context, scenes),
-                          ),
+                        if (!_hasLooked) const _DragHint(),
+                        const SizedBox(height: Tokens.s16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // The room label is also the way into the scene
+                            // list — the same affordance the design uses.
+                            Flexible(
+                              child: _RoomLabel(
+                                label: scene.label,
+                                position:
+                                    '${index + 1}/${tour.scenes.length}',
+                                onTap: () =>
+                                    _showScenePicker(context, tour, scene),
+                              ),
+                            ),
+                            const SizedBox(width: Tokens.s8),
+                            if (card != null) _NextStep(card: card),
+                          ],
                         ),
-                        const SizedBox(width: Tokens.s8),
-                        _NextStep(card: card),
                       ],
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
+    );
+  }
+
+  void _sayUnavailable(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('That room is not ready yet.')),
     );
   }
 
@@ -185,7 +271,11 @@ class _TourScreenState extends State<TourScreen> {
     );
   }
 
-  void _showScenePicker(BuildContext context, List<SceneView> scenes) {
+  void _showScenePicker(
+    BuildContext context,
+    TourView tour,
+    TourSceneApiView current,
+  ) {
     HapticFeedback.selectionClick();
     showModalBottomSheet<void>(
       context: context,
@@ -202,21 +292,23 @@ class _TourScreenState extends State<TourScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Jump to', style: Theme.of(sheetContext).textTheme.headlineSmall),
+              Text('Jump to',
+                  style: Theme.of(sheetContext).textTheme.headlineSmall),
               const SizedBox(height: Tokens.s16),
               SizedBox(
                 height: 112,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   physics: Tokens.scroll,
-                  itemCount: scenes.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: Tokens.s12),
+                  itemCount: tour.scenes.length,
+                  separatorBuilder: (_, __) =>
+                      const SizedBox(width: Tokens.s12),
                   itemBuilder: (context, i) => _SceneThumb(
-                    scene: scenes[i],
-                    selected: i == _index,
+                    scene: tour.scenes[i],
+                    selected: tour.scenes[i].id == current.id,
                     onTap: () {
                       Navigator.of(sheetContext).pop();
-                      _goToScene(i);
+                      _open(tour.scenes[i]);
                     },
                   ),
                 ),
@@ -229,71 +321,84 @@ class _TourScreenState extends State<TourScreen> {
   }
 }
 
-/// The photograph plus everything pinned to it. Hotspots live inside this layer
-/// so they travel with the image when you look around — a hotspot that stayed
-/// put while the room moved would break the illusion instantly.
-class _SceneLayer extends StatelessWidget {
-  const _SceneLayer({
+/// The panorama, with the doors pinned to it.
+///
+/// Hotspots are projected from their bearing every frame, so they stay on the
+/// door as the customer looks around — a hotspot that stayed put while the room
+/// moved would break the illusion instantly.
+class _PanoramaLayer extends StatelessWidget {
+  const _PanoramaLayer({
+    required this.source,
     required this.scene,
-    required this.sceneWidth,
-    required this.pan,
+    required this.camera,
+    required this.onCamera,
+    required this.onInteraction,
     required this.onNavigate,
     required this.onInfo,
     super.key,
   });
 
-  final SceneView scene;
-  final double sceneWidth;
-  final double pan;
-  final ValueChanged<int> onNavigate;
+  final PanoramaSource source;
+  final TourSceneApiView scene;
+  final PanoramaCamera camera;
+  final ValueChanged<PanoramaCamera> onCamera;
+  final VoidCallback onInteraction;
+  final ValueChanged<String> onNavigate;
   final ValueChanged<String> onInfo;
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.sizeOf(context).height;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
 
-    return ClipRect(
-      child: OverflowBox(
-        maxWidth: sceneWidth,
-        alignment: Alignment.center,
-        child: Transform.translate(
-          offset: Offset(pan, 0),
-          child: SizedBox(
-            width: sceneWidth,
-            height: height,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                AppImage(
-                  url: scene.imageUrl,
-                  fallbackIcon: Icons.threed_rotation,
-                  seed: scene.label.length,
-                ),
-                // A gentle vignette. Chrome sits top and bottom, and white text
-                // over an unknown photograph needs help.
-                const PhotoScrim(top: 0.42, bottom: 0.5),
-                for (final hotspot in scene.hotspots)
-                  Positioned(
-                    left: hotspot.x * sceneWidth,
-                    top: hotspot.y * height,
-                    child: FractionalTranslation(
-                      translation: const Offset(-0.5, -0.5),
-                      child: _Hotspot(
-                        hotspot: hotspot,
-                        onTap: () {
-                          if (hotspot.kind == HotspotKind.navigation &&
-                              hotspot.targetScene != null) {
-                            onNavigate(hotspot.targetScene!);
-                          } else if (hotspot.note != null) {
-                            onInfo(hotspot.note!);
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-              ],
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            PanoramaView(
+              source: source,
+              camera: camera,
+              onCameraChanged: onCamera,
+              onInteractionStart: onInteraction,
             ),
-          ),
+
+            // A gentle vignette. Chrome sits top and bottom, and white text
+            // over an unknown photograph needs help.
+            const IgnorePointer(child: PhotoScrim(top: 0.42, bottom: 0.5)),
+
+            for (final hotspot in scene.hotspots)
+              _positioned(hotspot, size),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _positioned(TourHotspotView hotspot, Size size) {
+    final at = projectHotspot(
+      yawDegrees: hotspot.yaw,
+      pitchDegrees: hotspot.pitch,
+      camera: camera,
+      size: size,
+    );
+
+    // Behind the customer, or well off the edge: not drawn at all.
+    if (at == null) return const SizedBox.shrink();
+
+    return Positioned(
+      left: at.dx,
+      top: at.dy,
+      child: FractionalTranslation(
+        translation: const Offset(-0.5, -0.5),
+        child: _Hotspot(
+          hotspot: hotspot,
+          onTap: () {
+            if (hotspot.isDoor) {
+              onNavigate(hotspot.targetSceneId!);
+            } else if (hotspot.label.isNotEmpty) {
+              onInfo(hotspot.label);
+            }
+          },
         ),
       ),
     );
@@ -306,7 +411,7 @@ class _SceneLayer extends StatelessWidget {
 class _Hotspot extends StatefulWidget {
   const _Hotspot({required this.hotspot, required this.onTap});
 
-  final HotspotView hotspot;
+  final TourHotspotView hotspot;
   final VoidCallback onTap;
 
   @override
@@ -327,7 +432,7 @@ class _HotspotState extends State<_Hotspot>
       vsync: this,
       duration: const Duration(milliseconds: 2400),
     );
-    if (widget.hotspot.kind == HotspotKind.navigation) _pulse.repeat();
+    if (widget.hotspot.isDoor) _pulse.repeat();
   }
 
   @override
@@ -338,7 +443,7 @@ class _HotspotState extends State<_Hotspot>
 
   @override
   Widget build(BuildContext context) {
-    final isNav = widget.hotspot.kind == HotspotKind.navigation;
+    final isNav = widget.hotspot.isDoor;
 
     // The whole thing is one target — circle *and* its label. Making only the
     // 43pt circle tappable looks fine on a desktop review and is miserable with
@@ -395,7 +500,7 @@ class _HotspotState extends State<_Hotspot>
               ],
             ),
           ),
-          if (isNav && widget.hotspot.label != null) ...[
+          if (isNav && widget.hotspot.label.isNotEmpty) ...[
             const SizedBox(height: Tokens.s4),
             Glass(
               padding: const EdgeInsets.symmetric(
@@ -403,7 +508,7 @@ class _HotspotState extends State<_Hotspot>
                 vertical: 3,
               ),
               child: Text(
-                widget.hotspot.label!,
+                widget.hotspot.label,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 12.5,
@@ -562,7 +667,7 @@ class _SceneThumb extends StatelessWidget {
     required this.onTap,
   });
 
-  final SceneView scene;
+  final TourSceneApiView scene;
   final bool selected;
   final VoidCallback onTap;
 
@@ -589,7 +694,7 @@ class _SceneThumb extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(Tokens.rSm - 2),
                 child: AppImage(
-                  url: scene.imageUrl,
+                  url: scene.thumbnailUrl ?? '',
                   fallbackIcon: Icons.threed_rotation,
                   seed: scene.label.length,
                 ),
@@ -674,6 +779,79 @@ class _DragHintState extends State<_DragHint>
 
 /// The journey names this as a normal state, not an error: a listing without a
 /// tour falls back to photos rather than showing a broken viewer.
+/// Waiting for the first pixels.
+///
+/// Named when walking to a room the customer chose, so the wait is attached to
+/// something they did rather than being an anonymous spinner.
+class _TourLoading extends StatelessWidget {
+  const _TourLoading({this.label});
+
+  final String? label;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: Colors.black,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              height: 28,
+              width: 28,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white70),
+            ),
+            if (label != null) ...[
+              const SizedBox(height: Tokens.s16),
+              Text(
+                label!,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(color: Colors.white),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The tour exists but could not be fetched.
+///
+/// Distinct from [_NoTour]: "this place has no tour" and "we could not load
+/// the tour" are different facts, and showing the first when the second is
+/// true tells the customer something untrue about the property.
+class _TourUnavailable extends StatelessWidget {
+  const _TourUnavailable();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        title: const Text('Virtual Tour'),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(Tokens.gutter),
+          child: Text(
+            'The tour could not be loaded. Check your connection and try again.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: Colors.white70),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _NoTour extends StatelessWidget {
   const _NoTour();
 

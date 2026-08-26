@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../fixtures/sample_data.dart';
+import '../../data/listing_repository.dart';
 import '../../fixtures/view_models.dart';
 import 'search_criteria.dart';
 
@@ -95,25 +95,21 @@ class FiltersController extends Notifier<DiscoveryFilters> {
   void clear() => state = DiscoveryFilters(query: state.query);
 }
 
-/// The filtered result list.
-final resultsProvider = Provider<List<ListingCardView>>((ref) {
-  final f = ref.watch(filtersProvider);
-  final q = f.query.trim().toLowerCase();
-
-  return SampleData.listings.where((listing) {
-    if (f.kind != null && listing.kind != f.kind) return false;
-    if (f.type != null && listing.resourceType != f.type) return false;
-    if (f.tourOnly && !listing.hasTour) return false;
-    if (f.availableOnly && !listing.isAvailable) return false;
-    if (f.maxCentavos != null && listing.priceCentavos > f.maxCentavos!) {
-      return false;
-    }
-    if (q.isEmpty) return true;
-    return listing.title.toLowerCase().contains(q) ||
-        listing.propertyName.toLowerCase().contains(q) ||
-        listing.areaLabel.toLowerCase().contains(q) ||
-        listing.cityLabel.toLowerCase().contains(q);
-  }).toList();
+/// The result list, from the API.
+///
+/// Async because it crosses the network. The filters are the request, not a
+/// predicate applied afterwards — **the server decides what matches**, and a
+/// client that re-filtered would be a second source of truth for rules the
+/// domain owns.
+///
+/// `.future` is not used anywhere; screens watch the [AsyncValue] so loading
+/// and failure are states they render rather than exceptions they hit.
+final resultsProvider = FutureProvider.autoDispose<List<ListingCardView>>((
+  ref,
+) async {
+  final filters = ref.watch(filtersProvider);
+  final repository = ref.watch(listingRepositoryProvider);
+  return repository.search(filters);
 });
 
 /// Which ordering the featured row is showing.

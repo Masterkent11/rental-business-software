@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../data/account_repository.dart';
+import '../../data/auth_repository.dart';
+import 'sign_in_sheet.dart';
 
 import '../../app/router.dart';
 
@@ -16,12 +21,28 @@ import '../../design/tokens.dart';
 ///
 /// Re-registration at that moment would be the single most damaging break in
 /// the product, so the app says so before it can happen.
-class AccountScreen extends StatelessWidget {
+/// What the server says this person may do, in plain words.
+///
+/// Read from the API response, never worked out from a token: capabilities are
+/// resolved server-side per request (ADR-0007), and a client that decided for
+/// itself would drift from the only authority that counts.
+String _capabilityLine(AccountView view) {
+  final held = <String>[
+    if (view.isTenant) 'Tenant',
+    if (view.isOwner) 'Owner',
+  ];
+  // D-15: renting does not create a second account. Customer is always true,
+  // and the others are added to it rather than replacing it.
+  return held.isEmpty ? 'Customer' : 'Customer · ${held.join(" · ")}';
+}
+
+class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final account = ref.watch(accountProvider);
 
     return Scaffold(
       body: ListView(
@@ -65,18 +86,74 @@ class AccountScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: Tokens.s16),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Not signed in', style: theme.textTheme.titleMedium),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Sign-in arrives with Step 3',
-                          style: theme.textTheme.bodySmall,
-                        ),
-                      ],
+                    child: account.when(
+                      loading: () => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Checking…', style: theme.textTheme.titleMedium),
+                        ],
+                      ),
+                      error: (_, __) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Could not reach your account',
+                            style: theme.textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            // The specific failure, not a generic apology: a
+                            // customer who can read it can tell support
+                            // something useful, and so can we.
+                            '${account.error}',
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                      data: (view) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            view?.displayName.isNotEmpty == true
+                                ? view!.displayName
+                                : 'Not signed in',
+                            style: theme.textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            view == null
+                                ? 'Sign in to keep your saved places'
+                                : _capabilityLine(view),
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
+                  if (account.valueOrNull == null && !account.isLoading)
+                    FilledButton(
+                      // The theme makes filled buttons full-width for page
+                      // CTAs, which cannot work inside a row. Overridden here
+                      // rather than weakening the theme everything else relies
+                      // on.
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 44),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: Tokens.s16,
+                        ),
+                      ),
+                      onPressed: () => showSignInSheet(context),
+                      child: const Text('Sign in'),
+                    )
+                  else if (account.valueOrNull != null)
+                    TextButton(
+                      onPressed: () async {
+                        await ref.read(authRepositoryProvider).signOut();
+                      },
+                      child: const Text('Sign out'),
+                    ),
                 ],
               ),
             ),

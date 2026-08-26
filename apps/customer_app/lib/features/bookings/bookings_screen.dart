@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/router.dart';
+import '../../data/account_repository.dart';
 import '../../design/app_image.dart';
 import '../../design/money.dart';
 import '../../design/tokens.dart';
-import '../../fixtures/sample_data.dart';
 import '../../fixtures/view_models.dart';
 import 'widgets/empty_bookings.dart';
 
@@ -22,20 +23,46 @@ import 'widgets/empty_bookings.dart';
 /// deliberate: the empty state is a screen a real customer meets constantly,
 /// and it should be reachable by tapping rather than existing only in a design
 /// file.
-class BookingsScreen extends StatefulWidget {
+class BookingsScreen extends ConsumerStatefulWidget {
   const BookingsScreen({super.key});
 
   @override
-  State<BookingsScreen> createState() => _BookingsScreenState();
+  ConsumerState<BookingsScreen> createState() => _BookingsScreenState();
 }
 
-class _BookingsScreenState extends State<BookingsScreen> {
+/// Turns a paid stay into the card this screen already knows how to draw.
+///
+/// The label and the tab it lands under are the server's decisions, carried
+/// straight through — this maps, it does not decide.
+BookingView _toBookingView(StayReceiptView stay) => BookingView(
+      id: stay.id,
+      reference: stay.reference,
+      listingTitle: stay.listingTitle,
+      propertyName: stay.propertyName,
+      areaLabel: '${stay.areaLabel}, ${stay.cityLabel}',
+      photo: stay.photo ?? '',
+      checkIn: stay.startsOn,
+      checkOut: stay.endsOn,
+      nights: stay.nights,
+      // Guest counts arrive with the booking form; the stay does not carry one
+      // yet, and inventing a number would be worse than showing the minimum.
+      guests: 1,
+      totalCentavos: stay.paidCentavos,
+      status: stay.bucket,
+      stateLabel: stay.stateLabel,
+    );
+
+class _BookingsScreenState extends ConsumerState<BookingsScreen> {
   BookingStatus _tab = BookingStatus.active;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bookings = SampleData.bookingsWith(_tab);
+    final staysAsync = ref.watch(staysProvider);
+    final all = (staysAsync.valueOrNull ?? const <StayReceiptView>[])
+        .map(_toBookingView)
+        .toList(growable: false);
+    final bookings = all.where((b) => b.status == _tab).toList(growable: false);
 
     return Scaffold(
       body: CustomScrollView(
@@ -64,7 +91,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
                     const SizedBox(height: Tokens.s20),
                     _StatusTabs(
                       selected: _tab,
-                      countFor: (s) => SampleData.bookingsWith(s).length,
+                      countFor: (s) => all.where((b) => b.status == s).length,
                       onSelected: (s) => setState(() => _tab = s),
                     ),
                   ],
@@ -73,7 +100,43 @@ class _BookingsScreenState extends State<BookingsScreen> {
             ),
           ),
 
-          if (bookings.isEmpty)
+          // "No stays booked yet" and "we could not load your stays" are
+          // different facts. Showing the first when the second is true is the
+          // screen lying quietly, which is worse than an error the customer
+          // can act on.
+          if (staysAsync.hasError)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Padding(
+                padding: const EdgeInsets.all(Tokens.gutter),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Could not load your stays',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: Tokens.s8),
+                    Text(
+                      '${staysAsync.error}',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: Tokens.s16),
+                    FilledButton(
+                      onPressed: () => ref.invalidate(staysProvider),
+                      child: const Text('Try again'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else if (staysAsync.isLoading)
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (bookings.isEmpty)
             SliverFillRemaining(
               hasScrollBody: false,
               child: _EmptyState(status: _tab),

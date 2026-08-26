@@ -96,6 +96,7 @@ class MoveInCostView {
 class ListingCardView {
   const ListingCardView({
     required this.id,
+    this.resourceId = '',
     required this.title,
     required this.propertyName,
     required this.areaLabel,
@@ -113,6 +114,14 @@ class ListingCardView {
   });
 
   final String id;
+
+  /// The resource this listing sells time on.
+  ///
+  /// Not the same as [id]: a hybrid unit has a monthly listing and a nightly
+  /// one over **one** timeline, so availability is asked for by resource. Empty
+  /// for fixture data that predates the availability endpoint.
+  final String resourceId;
+
   final String title;
   final String propertyName;
 
@@ -251,6 +260,7 @@ enum ApplicationStatus {
   underReview('Under review'),
   approved('Approved'),
   rejected('Not this time'),
+  withdrawn('Withdrawn'),
   expired('Offer expired');
 
   const ApplicationStatus(this.label);

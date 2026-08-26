@@ -1,6 +1,8 @@
 # ADR-0002 — A standalone TypeScript API service, not Edge Functions
 
-**Status:** Accepted · **Date:** 2026-08-20 · **Deciders:** Step 3
+**Status:** Superseded by [ADR-0012](0012-nestjs-decorator-free-application.md) · **Date:** 2026-08-20 · **Deciders:** Step 3
+
+> Superseded on 2026-08-22. The transport conclusions still hold — one deployable, Fastify, no microservices. What changed is the framework: NestJS is now required, and [ADR-0012](0012-nestjs-decorator-free-application.md) records how the coupling this ADR feared is avoided rather than accepted.
 
 ## Context
 
