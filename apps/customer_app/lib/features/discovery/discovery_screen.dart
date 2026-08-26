@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
 import '../../data/api_client.dart';
+import '../../design/motion.dart';
 import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
 import 'discovery_controller.dart';
@@ -67,7 +68,8 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Reveal(
+                      child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
@@ -114,20 +116,31 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
                         ),
                       ],
                     ),
+                    ),
                     const SizedBox(height: Tokens.sectionTight),
-                    SearchPanel(
-                      onSearch: () => _controller.animateTo(
-                        320,
-                        duration: const Duration(milliseconds: 420),
-                        curve: Curves.easeOutCubic,
+                    // The search panel is the first thing a customer acts on,
+                    // so it settles in a beat after the greeting rather than
+                    // arriving with it — the eye lands on the place name, then
+                    // on the thing to do about it.
+                    Reveal(
+                      order: 1,
+                      child: SearchPanel(
+                        onSearch: () => _controller.animateTo(
+                          320,
+                          duration: Tokens.slow,
+                          curve: Tokens.ease,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: Tokens.s24),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: _FiltersChip(
-                        activeFilters: filters.activeCount,
-                        onTap: () => showFiltersSheet(context),
+                    const SizedBox(height: Tokens.sectionTight),
+                    Reveal(
+                      order: 2,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: _FiltersChip(
+                          activeFilters: filters.activeCount,
+                          onTap: () => showFiltersSheet(context),
+                        ),
                       ),
                     ),
                   ],
@@ -227,15 +240,23 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
                     Tokens.gutter,
                     0,
                     Tokens.gutter,
-                    Tokens.s40,
+                    // The last card should clear the tab bar with room to
+                    // spare; a card touching the chrome reads as cut off.
+                    Tokens.s56,
                   ),
                   sliver: SliverList.separated(
                     itemCount: items.length,
                     separatorBuilder: (_, __) =>
                         const SizedBox(height: Tokens.section),
-                    itemBuilder: (context, i) => ListingCard(
-                      listing: items[i],
-                      onTap: () => context.push(Routes.listing(items[i].id)),
+                    // Only the first few are staggered. Past four the last one
+                    // is visibly late, and a list that keeps animating as you
+                    // scroll feels slow rather than considered.
+                    itemBuilder: (context, i) => Reveal(
+                      order: i.clamp(0, 3),
+                      child: ListingCard(
+                        listing: items[i],
+                        onTap: () => context.push(Routes.listing(items[i].id)),
+                      ),
                     ),
                   ),
                 ),
@@ -300,9 +321,9 @@ class _SectionHeader extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.fromLTRB(
         Tokens.gutter,
-        tight ? Tokens.s16 : Tokens.s32,
+        tight ? Tokens.s20 : Tokens.section,
         Tokens.gutter,
-        Tokens.s16,
+        Tokens.s20,
       ),
       // Title and caption stack rather than sharing a line. Side by side, a
       // 390pt phone truncates both of them into uselessness — and these are
@@ -312,8 +333,10 @@ class _SectionHeader extends StatelessWidget {
         children: [
           Text(title, style: theme.textTheme.headlineMedium),
           if (caption != null) ...[
-            const SizedBox(height: 2),
-            Text(caption!, style: theme.textTheme.bodySmall),
+            const SizedBox(height: Tokens.s6),
+            Text(caption!, style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            )),
           ],
         ],
       ),

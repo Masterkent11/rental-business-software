@@ -8,6 +8,7 @@ import '../../app/router.dart';
 import '../../data/account_repository.dart';
 import '../../design/app_image.dart';
 import '../../design/money.dart';
+import '../../design/motion.dart';
 import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
 import 'widgets/empty_bookings.dart';
@@ -152,7 +153,10 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
               sliver: SliverList.separated(
                 itemCount: bookings.length,
                 separatorBuilder: (_, __) => const SizedBox(height: Tokens.s16),
-                itemBuilder: (context, i) => _BookingCard(booking: bookings[i]),
+                itemBuilder: (context, i) => Reveal(
+                  order: i.clamp(0, 3),
+                  child: _BookingCard(booking: bookings[i]),
+                ),
               ),
             ),
         ],

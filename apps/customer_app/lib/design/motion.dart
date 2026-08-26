@@ -31,26 +31,28 @@ class Reveal extends StatefulWidget {
 }
 
 class _RevealState extends State<Reveal> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: Tokens.reveal,
+  /// The stagger is *inside* the animation rather than in front of it: the
+  /// controller runs for delay + reveal and an [Interval] holds the child
+  /// still for the first slice. A `Future.delayed` would do the same thing
+  /// visually, but it leaves a live timer behind, and a widget test can never
+  /// settle while one is pending.
+  late final Duration _delay = Duration(
+    milliseconds: (widget.order * 70).clamp(0, 420),
   );
 
-  @override
-  void initState() {
-    super.initState();
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: _delay + Tokens.reveal,
+  )..forward();
 
-    // Staggered by starting late rather than by delaying the controller: a
-    // pending Timer would keep widget tests from ever settling.
-    final delay = (widget.order * 70).clamp(0, 420);
-    if (delay == 0) {
-      _controller.forward();
-    } else {
-      Future<void>.delayed(Duration(milliseconds: delay), () {
-        if (mounted) _controller.forward();
-      });
-    }
-  }
+  late final Animation<double> _progress = CurvedAnimation(
+    parent: _controller,
+    curve: Interval(
+      _delay.inMilliseconds / (_delay + Tokens.reveal).inMilliseconds,
+      1,
+      curve: Tokens.ease,
+    ),
+  );
 
   @override
   void dispose() {
@@ -60,14 +62,12 @@ class _RevealState extends State<Reveal> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final curved = CurvedAnimation(parent: _controller, curve: Tokens.ease);
-
     return AnimatedBuilder(
-      animation: curved,
+      animation: _progress,
       builder: (context, child) => Opacity(
-        opacity: curved.value,
+        opacity: _progress.value,
         child: Transform.translate(
-          offset: Offset(0, widget.from * (1 - curved.value)),
+          offset: Offset(0, widget.from * (1 - _progress.value)),
           child: child,
         ),
       ),

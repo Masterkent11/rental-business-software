@@ -5,6 +5,7 @@ import { BookingsModule } from './modules/bookings/bookings.module.ts';
 import { PaymentsModule } from './modules/payments/payments.module.ts';
 import { ApplicationsModule } from './modules/applications/applications.module.ts';
 import { ToursModule } from './modules/tours/tours.module.ts';
+import { CollectionModule } from './modules/collection/collection.module.ts';
 
 @Controller()
 class HealthController {
@@ -28,5 +29,6 @@ class HealthController {
     PaymentsModule,
     ApplicationsModule,
     ToursModule,
+    CollectionModule,
   ], controllers: [HealthController] })
 export class AppModule {}

@@ -31,7 +31,7 @@ class MoveInCostCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(Tokens.s20),
       decoration: BoxDecoration(
-        color: Tokens.accent.withOpacity(0.06),
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(Tokens.rMd),
         border: Border.all(color: Tokens.accent.withOpacity(0.18)),
       ),

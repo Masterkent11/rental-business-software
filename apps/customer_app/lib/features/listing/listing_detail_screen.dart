@@ -37,8 +37,40 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
   final _photoPage = PageController();
   int _photoIndex = 0;
 
+  /// How solid the top chrome is, 0 to 1.
+  ///
+  /// The back and save buttons float over the photograph, which is the right
+  /// look while the photograph is behind them. Once it has scrolled away they
+  /// are floating over the title instead, and two glass circles sitting on top
+  /// of running text is unreadable. So the bar earns a background exactly when
+  /// it needs one, and the title passes behind it rather than through it.
+  double _chrome = 0;
+
+  /// The photograph is 380 tall and the chrome is about 100 deep with the
+  /// status bar, so the collision starts a little before 280.
+  static const _chromeFadeStart = 240.0;
+  static const _chromeFadeLength = 80.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scroll.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!_scroll.hasClients) return;
+
+    final next = ((_scroll.offset - _chromeFadeStart) / _chromeFadeLength)
+        .clamp(0.0, 1.0);
+
+    if ((next - _chrome).abs() > 0.01 && mounted) {
+      setState(() => _chrome = next);
+    }
+  }
+
   @override
   void dispose() {
+    _scroll.removeListener(_onScroll);
     _scroll.dispose();
     _photoPage.dispose();
     super.dispose();
@@ -63,7 +95,6 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
   }
 
   Widget _buildDetail(BuildContext context, ListingDetailView detail) {
-
     final card = detail.card;
     final theme = Theme.of(context);
     final isLongTerm = card.kind == ListingKind.longTerm;
@@ -123,10 +154,8 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                       const SizedBox(height: Tokens.sectionTight),
                       _TourCallout(
                         sceneCount: card.sceneCount,
-                        firstScenes: detail.scenes
-                            .take(3)
-                            .map((s) => s.label)
-                            .toList(),
+                        firstScenes:
+                            detail.scenes.take(3).map((s) => s.label).toList(),
                         onTap: () => context.push(Routes.tour(card.id)),
                       ),
                     ],
@@ -168,8 +197,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                         spacing: Tokens.s8,
                         runSpacing: Tokens.s8,
                         children: [
-                          for (final amenity in detail.amenities)
-                            _Tag(amenity),
+                          for (final amenity in detail.amenities) _Tag(amenity),
                         ],
                       ),
                     ),
@@ -212,6 +240,31 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                 ),
               ),
             ],
+          ),
+
+          // The background the top chrome earns on scroll. Its own layer,
+          // and deliberately ignored by the hit test: it exists to be looked
+          // through, and a transparent rectangle lying across the top of the
+          // screen must never be the thing that swallows a tap.
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: MediaQuery.paddingOf(context).top + 54,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface.withOpacity(_chrome),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: theme.colorScheme.outlineVariant.withOpacity(
+                        _chrome,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
 
           // Floating glass chrome, over the photograph rather than on a bar.
@@ -820,7 +873,8 @@ class _DetailLoading extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(height: 380, color: theme.colorScheme.surfaceContainerHighest),
+          Container(
+              height: 380, color: theme.colorScheme.surfaceContainerHighest),
           Padding(
             padding: const EdgeInsets.all(Tokens.gutter),
             child: Column(

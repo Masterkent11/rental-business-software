@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
 import '../../design/money.dart';
+import '../../design/motion.dart';
 import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
 import '../discovery/widgets/listing_card.dart';
@@ -83,10 +84,14 @@ class SavedScreen extends ConsumerWidget {
               ),
               sliver: SliverList.separated(
                 itemCount: saved.length,
-                separatorBuilder: (_, __) => const SizedBox(height: Tokens.s32),
-                itemBuilder: (context, i) => ListingCard(
-                  listing: saved[i],
-                  onTap: () => context.push(Routes.listing(saved[i].id)),
+                separatorBuilder: (_, __) =>
+                    const SizedBox(height: Tokens.section),
+                itemBuilder: (context, i) => Reveal(
+                  order: i.clamp(0, 3),
+                  child: ListingCard(
+                    listing: saved[i],
+                    onTap: () => context.push(Routes.listing(saved[i].id)),
+                  ),
                 ),
               ),
             ),
