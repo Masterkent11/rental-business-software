@@ -1,29 +1,34 @@
 import { Module } from '@nestjs/common';
-import { PaymentsController } from './payments.controller.ts';
+import { StartBookingPaymentController } from './controllers/start-booking-payment.controller.ts';
+import { ConfirmBookingPaymentController } from './controllers/confirm-booking-payment.controller.ts';
+import { SimulateBookingPaymentController } from './controllers/simulate-booking-payment.controller.ts';
 import {
   CONFIRM_BOOKING_PAYMENT,
   PAYMENT_GATEWAY,
   PAYMENT_REPOSITORY,
+  SIMULATE_BOOKING_PAYMENT,
   START_BOOKING_PAYMENT,
 } from './payment.tokens.ts';
-import { sandboxPaymentGateway } from '../../infrastructure/payments/sandbox-gateway.ts';
-import { postgresPaymentRepository } from '../../infrastructure/postgres/payment-repository.pg.ts';
-import {
-  confirmBookingPayment,
-  startBookingPayment,
-} from '../../features/pay-booking/pay-booking.ts';
-import type { PaymentGateway } from '../../application/ports/payment-gateway.ts';
-import type { PaymentRepository } from '../../application/ports/payment-repository.ts';
+import { sandboxPaymentGateway } from '@/infrastructure/payments/sandbox-payment-gateway.adapter.ts';
+import { postgresPaymentRepository } from '@/infrastructure/postgres/repositories/postgres-payment.repository.ts';
+import { startBookingPayment } from '@/application/payments/start-booking-payment/start-booking-payment.use-case.ts';
+import { confirmBookingPayment } from '@/application/payments/confirm-booking-payment/confirm-booking-payment.use-case.ts';
+import { simulateBookingPayment } from '@/application/payments/simulate-booking-payment/simulate-booking-payment.use-case.ts';
+import type { PaymentGateway } from '@/application/ports/providers/payment-gateway.port.ts';
+import type { PaymentRepository } from '@/application/ports/repositories/payment-repository.port.ts';
+import { IDENTITY_PROVIDER, RESOLVE_PRINCIPAL, USER_REPOSITORY } from '@/modules/me/me.tokens.ts';
+import { jwksIdentityProvider } from '@/infrastructure/supabase/jwks-identity.provider.ts';
+import { postgresUserRepository } from '@/infrastructure/postgres/repositories/postgres-user.repository.ts';
+import { resolvePrincipal } from '@/application/identity/resolve-principal/resolve-principal.use-case.ts';
+import type { IdentityProvider } from '@/application/ports/providers/identity-provider.port.ts';
+import type { UserRepository } from '@/application/ports/repositories/user-repository.port.ts';
 
-/**
- * Composition for payments.
- *
- * The sandbox provider is named here and nowhere else. Adopting a real one is
- * a change to this `useFactory` — which is the whole of what ADR-0008 meant by
- * deferring the choice.
- */
 @Module({
-  controllers: [PaymentsController],
+  controllers: [
+    StartBookingPaymentController,
+    ConfirmBookingPaymentController,
+    SimulateBookingPaymentController,
+  ],
   providers: [
     { provide: PAYMENT_GATEWAY, useFactory: (): PaymentGateway => sandboxPaymentGateway() },
     { provide: PAYMENT_REPOSITORY, useFactory: (): PaymentRepository => postgresPaymentRepository() },
@@ -38,6 +43,23 @@ import type { PaymentRepository } from '../../application/ports/payment-reposito
       inject: [PAYMENT_REPOSITORY, PAYMENT_GATEWAY],
       useFactory: (repo: PaymentRepository, gateway: PaymentGateway) =>
         confirmBookingPayment(repo, gateway),
+    },
+    {
+      provide: SIMULATE_BOOKING_PAYMENT,
+      inject: [PAYMENT_REPOSITORY, PAYMENT_GATEWAY, CONFIRM_BOOKING_PAYMENT],
+      useFactory: (
+        repo: PaymentRepository,
+        gateway: PaymentGateway,
+        confirm: ReturnType<typeof confirmBookingPayment>,
+      ) => simulateBookingPayment(repo, gateway, confirm),
+    },
+    { provide: IDENTITY_PROVIDER, useFactory: (): IdentityProvider => jwksIdentityProvider() },
+    { provide: USER_REPOSITORY, useFactory: (): UserRepository => postgresUserRepository() },
+    {
+      provide: RESOLVE_PRINCIPAL,
+      inject: [IDENTITY_PROVIDER, USER_REPOSITORY],
+      useFactory: (identity: IdentityProvider, users: UserRepository) =>
+        resolvePrincipal(identity, users),
     },
   ],
 })

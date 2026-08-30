@@ -7,7 +7,7 @@ import {
   nightsIn,
   overlaps,
   type Occupancy,
-} from '../occupancy.ts';
+} from '@/domain/occupancy/occupancy.ts';
 
 describe('dateRange', () => {
   it('refuses a zero-night stay rather than normalising it', () => {

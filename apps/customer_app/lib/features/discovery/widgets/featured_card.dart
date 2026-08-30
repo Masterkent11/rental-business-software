@@ -33,7 +33,7 @@ class FeaturedCard extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               AppImage(
-                url: listing.photos.first,
+                url: listing.photos.isEmpty ? '' : listing.photos.first,
                 fallbackIcon: Icons.apartment_outlined,
                 seed: listing.id.length + 3,
               ),

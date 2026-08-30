@@ -35,7 +35,10 @@ class BookingsScreen extends ConsumerStatefulWidget {
 ///
 /// The label and the tab it lands under are the server's decisions, carried
 /// straight through — this maps, it does not decide.
-BookingView _toBookingView(StayReceiptView stay) => BookingView(
+///
+/// Public (not `_`-prefixed) because [BookingDetailScreen] reuses it against
+/// the same [staysProvider] data rather than standing up a second mapping.
+BookingView toBookingView(StayReceiptView stay) => BookingView(
       id: stay.id,
       reference: stay.reference,
       listingTitle: stay.listingTitle,
@@ -61,7 +64,7 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
     final theme = Theme.of(context);
     final staysAsync = ref.watch(staysProvider);
     final all = (staysAsync.valueOrNull ?? const <StayReceiptView>[])
-        .map(_toBookingView)
+        .map(toBookingView)
         .toList(growable: false);
     final bookings = all.where((b) => b.status == _tab).toList(growable: false);
 

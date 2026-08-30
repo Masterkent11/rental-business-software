@@ -1,15 +1,23 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { postgresInvoiceRepository } from '../invoice-repository.pg.ts';
-import { sql, withScope } from '../db.ts';
-import { ownerCollection } from '../../../features/collect-rent/collect-rent.ts';
-import { OccupancyNotInOrganizationError } from '../../../application/ports/invoice-repository.ts';
-import type { Centavos } from '../../../domain/shared/money.ts';
+import { postgresInvoiceRepository } from '@/infrastructure/postgres/repositories/postgres-invoice.repository.ts';
+import { sql, withScope } from '@/infrastructure/postgres/db.ts';
+import { getOwnerCollection } from '@/application/collection/get-owner-collection/get-owner-collection.use-case.ts';
+import { OccupancyNotInOrganizationError } from '@/application/ports/repositories/invoice-repository.port.ts';
+import type { Centavos } from '@/domain/shared/money.ts';
+import type { Principal } from '@/domain/identity/identity.ts';
 
 const live = Boolean(process.env.DATABASE_URL);
 const suite = live ? describe : describe.skip;
 
 const SANTOS_ORG = '11111111-1111-1111-1111-111111111111';
 const VILLA_ORG = '33333333-3333-3333-3333-333333333333';
+
+const principalFor = (organizationId: string): Principal => ({
+  userId: 'test-user',
+  displayName: 'Test User',
+  capabilities: [{ capability: 'OWNER', organizationId }],
+  organizationId,
+});
 
 const peso = (amount: number) => (amount * 100) as Centavos;
 
@@ -22,7 +30,9 @@ const day = (offset: number) => {
 
 suite('invoices against real PostgreSQL', { timeout: 45_000 }, () => {
   const invoices = postgresInvoiceRepository();
-  const collection = ownerCollection(invoices);
+  const collectionUseCase = getOwnerCollection(invoices);
+  const collection = (organizationId: string) =>
+    collectionUseCase({ principal: principalFor(organizationId), organizationId });
 
   /**
    * An occupancy to bill, created per organization.
@@ -182,6 +192,47 @@ suite('invoices against real PostgreSQL', { timeout: 45_000 }, () => {
     const after = await invoices.findById(SANTOS_ORG, invoice.id);
     expect(after!.amountPaidCentavos).toBe(0);
     expect(after!.state).toBe('ISSUED');
+  });
+
+  it('refuses a second payment against an invoice already PAID — I-04, not just against overpaying ISSUED', async () => {
+    // The test above only exercises paying too much in one application. This
+    // is the other half of the same invariant: a second, individually
+    // reasonable application against a claim the *first* one already settled
+    // in full — the database has to refuse this on its own, because nothing
+    // upstream can be trusted to remember an invoice was already paid.
+    const occupancy = await anOccupancy(SANTOS_ORG);
+
+    const invoice = await invoices.issue({
+      organizationId: SANTOS_ORG,
+      occupancyId: occupancy,
+      periodStart: day(0),
+      periodEnd: day(30),
+      dueOn: day(5),
+      lines: [{ kind: 'RENT', description: 'Rent', amountCentavos: peso(5_000) }],
+    });
+
+    const firstPayment = await aPayment(SANTOS_ORG, occupancy, peso(5_000));
+    const settled = await invoices.applyPayment({
+      organizationId: SANTOS_ORG,
+      invoiceId: invoice.id,
+      paymentId: firstPayment,
+      amountCentavos: peso(5_000),
+    });
+    expect(settled.state).toBe('PAID');
+
+    const secondPayment = await aPayment(SANTOS_ORG, occupancy, peso(1_000));
+    await expect(
+      invoices.applyPayment({
+        organizationId: SANTOS_ORG,
+        invoiceId: invoice.id,
+        paymentId: secondPayment,
+        amountCentavos: peso(1_000),
+      }),
+    ).rejects.toThrow();
+
+    const after = await invoices.findById(SANTOS_ORG, invoice.id);
+    expect(after!.amountPaidCentavos).toBe(peso(5_000));
+    expect(after!.state).toBe('PAID');
   });
 
   it('numbers invoices gap-free, per organization', async () => {

@@ -1,14 +1,14 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { postgresOccupancyRepository } from '../occupancy-repository.pg.ts';
-import { sql, withScope } from '../db.ts';
-import { postgresUserRepository } from '../user-repository.pg.ts';
+import { postgresOccupancyRepository } from '@/infrastructure/postgres/repositories/postgres-occupancy.repository.ts';
+import { sql, withScope } from '@/infrastructure/postgres/db.ts';
+import { postgresUserRepository } from '@/infrastructure/postgres/repositories/postgres-user.repository.ts';
 import {
   NotBookableError,
   OccupancyConflictError,
   SerializationError,
-} from '../../../application/ports/occupancy-repository.ts';
-import { dateRange } from '../../../domain/occupancy/occupancy.ts';
-import { placeHold } from '../../../features/book-resource/place-hold.ts';
+} from '@/application/ports/repositories/occupancy-repository.port.ts';
+import { dateRange } from '@/domain/occupancy/occupancy.ts';
+import { placeHold } from '@/application/bookings/place-hold/place-hold.use-case.ts';
 
 /**
  * I-01 against real PostgreSQL.

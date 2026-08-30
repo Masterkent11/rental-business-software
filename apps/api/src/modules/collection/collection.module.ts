@@ -1,34 +1,31 @@
 import { Module } from '@nestjs/common';
-import { CollectionController } from './collection.controller.ts';
+import { GetOwnerCollectionController } from './controllers/get-owner-collection.controller.ts';
+import { IssueInvoiceController } from './controllers/issue-invoice.controller.ts';
+import { ApplyPaymentToInvoiceController } from './controllers/apply-payment-to-invoice.controller.ts';
 import {
   APPLY_PAYMENT_TO_INVOICE,
   INVOICE_REPOSITORY,
   ISSUE_INVOICE,
   OWNER_COLLECTION,
 } from './collection.tokens.ts';
-import { IDENTITY_PROVIDER, RESOLVE_PRINCIPAL, USER_REPOSITORY } from '../me/me.tokens.ts';
-import { postgresInvoiceRepository } from '../../infrastructure/postgres/invoice-repository.pg.ts';
-import { jwksIdentityProvider } from '../../infrastructure/supabase/jwks-identity-provider.ts';
-import { postgresUserRepository } from '../../infrastructure/postgres/user-repository.pg.ts';
-import { resolvePrincipal } from '../../features/authenticate/resolve-principal.ts';
-import {
-  applyPaymentToInvoice,
-  issueInvoice,
-  ownerCollection,
-} from '../../features/collect-rent/collect-rent.ts';
-import type { InvoiceRepository } from '../../application/ports/invoice-repository.ts';
-import type { IdentityProvider } from '../../application/ports/identity-provider.ts';
-import type { UserRepository } from '../../application/ports/user-repository.ts';
+import { IDENTITY_PROVIDER, RESOLVE_PRINCIPAL, USER_REPOSITORY } from '@/modules/me/me.tokens.ts';
+import { postgresInvoiceRepository } from '@/infrastructure/postgres/repositories/postgres-invoice.repository.ts';
+import { jwksIdentityProvider } from '@/infrastructure/supabase/jwks-identity.provider.ts';
+import { postgresUserRepository } from '@/infrastructure/postgres/repositories/postgres-user.repository.ts';
+import { resolvePrincipal } from '@/application/identity/resolve-principal/resolve-principal.use-case.ts';
+import { getOwnerCollection } from '@/application/collection/get-owner-collection/get-owner-collection.use-case.ts';
+import { issueInvoice } from '@/application/collection/issue-invoice/issue-invoice.use-case.ts';
+import { applyPaymentToInvoice } from '@/application/collection/apply-payment-to-invoice/apply-payment-to-invoice.use-case.ts';
+import type { InvoiceRepository } from '@/application/ports/repositories/invoice-repository.port.ts';
+import type { IdentityProvider } from '@/application/ports/providers/identity-provider.port.ts';
+import type { UserRepository } from '@/application/ports/repositories/user-repository.port.ts';
 
-/**
- * Composition for the owner's money.
- *
- * Principal resolution is re-provided here rather than imported, matching the
- * other feature modules: `MeModule` exports nothing, so each module composes
- * the identity ports it needs from the same two factories.
- */
 @Module({
-  controllers: [CollectionController],
+  controllers: [
+    GetOwnerCollectionController,
+    IssueInvoiceController,
+    ApplyPaymentToInvoiceController,
+  ],
   providers: [
     {
       provide: INVOICE_REPOSITORY,
@@ -37,7 +34,7 @@ import type { UserRepository } from '../../application/ports/user-repository.ts'
     {
       provide: OWNER_COLLECTION,
       inject: [INVOICE_REPOSITORY],
-      useFactory: (invoices: InvoiceRepository) => ownerCollection(invoices),
+      useFactory: (invoices: InvoiceRepository) => getOwnerCollection(invoices),
     },
     {
       provide: ISSUE_INVOICE,

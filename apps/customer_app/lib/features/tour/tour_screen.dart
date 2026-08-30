@@ -111,6 +111,10 @@ class _TourScreenState extends ConsumerState<TourScreen> {
     final resourceId = detail.valueOrNull?.card.resourceId;
 
     if (detail.isLoading) return const _TourLoading();
+    // A failed listing fetch is a network fact, not "this owner has no tour"
+    // — conflating the two would tell the customer something false about the
+    // listing instead of about their connection.
+    if (detail.hasError) return const _TourUnavailable();
     if (resourceId == null || resourceId.isEmpty) return const _NoTour();
 
     final tourAsync = ref.watch(tourProvider(resourceId));
@@ -549,7 +553,6 @@ class _TourNav extends StatelessWidget {
           Positioned(
             left: Tokens.s16,
             child: Glass.circle(
-              size: 38,
               onTap: onClose,
               child: const Icon(
                 Icons.arrow_back_ios_new,

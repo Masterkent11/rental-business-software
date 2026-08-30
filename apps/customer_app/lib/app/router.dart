@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../features/account/account_screen.dart';
 import '../features/application/applications_screen.dart';
 import '../features/application/apply_screen.dart';
+import '../features/booking/booking_checkout_screen.dart';
 import '../features/booking/booking_dates_screen.dart';
 import '../features/bookings/booking_detail_screen.dart';
 import '../features/bookings/bookings_screen.dart';
@@ -30,6 +31,20 @@ abstract final class Routes {
   static String book(String id) => '${listing(id)}/book';
   static String apply(String id) => '${listing(id)}/apply';
   static String booking(String id) => '$bookings/$id';
+
+  static String checkout({
+    required String listingId,
+    required String resourceId,
+    required DateTime checkIn,
+    required DateTime checkOut,
+  }) =>
+      '${book(listingId)}/checkout'
+      '?resourceId=$resourceId&checkIn=${_isoDay(checkIn)}&checkOut=${_isoDay(checkOut)}';
+
+  static String _isoDay(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-'
+      '${d.month.toString().padLeft(2, '0')}-'
+      '${d.day.toString().padLeft(2, '0')}';
 }
 
 /// The customer app's navigation.
@@ -75,6 +90,20 @@ GoRouter buildRouter() {
                         builder: (context, state) => BookingDatesScreen(
                           listingId: state.pathParameters['id']!,
                         ),
+                        routes: [
+                          GoRoute(
+                            path: 'checkout',
+                            parentNavigatorKey: _rootNavigatorKey,
+                            builder: (context, state) {
+                              final q = state.uri.queryParameters;
+                              return BookingCheckoutScreen(
+                                resourceId: q['resourceId']!,
+                                checkIn: DateTime.parse(q['checkIn']!),
+                                checkOut: DateTime.parse(q['checkOut']!),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                       GoRoute(
                         path: 'apply',

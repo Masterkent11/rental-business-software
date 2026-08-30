@@ -1,15 +1,15 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { postgresApplicationRepository } from '../application-repository.pg.ts';
-import { postgresUserRepository } from '../user-repository.pg.ts';
-import { sql, withScope } from '../db.ts';
+import { postgresApplicationRepository } from '@/infrastructure/postgres/repositories/postgres-application.repository.ts';
+import { postgresUserRepository } from '@/infrastructure/postgres/repositories/postgres-user.repository.ts';
+import { sql, withScope } from '@/infrastructure/postgres/db.ts';
 import {
   ApplicationNotFoundError,
   ApprovalConflictError,
   DuplicateApplicationError,
   NotApplicableError,
-} from '../../../application/ports/application-repository.ts';
-import { InvalidTransitionError } from '../../../domain/applications/application.ts';
+} from '@/application/ports/repositories/application-repository.port.ts';
+import { InvalidTransitionError } from '@/domain/applications/application.ts';
 
 const live = Boolean(process.env.DATABASE_URL);
 const suite = live ? describe : describe.skip;
@@ -203,6 +203,24 @@ suite('applications against real PostgreSQL', { timeout: 30_000 }, () => {
           deciderId: OWNER,
           next: 'REJECTED',
           reason: 'Changed my mind',
+        }),
+      ).rejects.toBeInstanceOf(InvalidTransitionError);
+    });
+
+    it('refuses to decide an application the applicant already withdrew', async () => {
+      // Withdrawn is terminal, the same as decided — an owner cannot approve
+      // a place someone no longer wants, and reading the state off the
+      // request the applicant already made is the guard, not a UI convention.
+      const application = await submit();
+      await applications.withdraw(APPLICANT, application.id);
+
+      await expect(
+        applications.decide({
+          organizationId: SANTOS_ORG,
+          applicationId: application.id,
+          deciderId: OWNER,
+          next: 'APPROVED',
+          reason: null,
         }),
       ).rejects.toBeInstanceOf(InvalidTransitionError);
     });

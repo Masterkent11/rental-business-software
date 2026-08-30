@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
-import { postgresTourRepository } from '../tour-repository.pg.ts';
-import { sql, withScope } from '../db.ts';
-import { assertPublishable, isWalkable } from '../../../domain/tours/tour.ts';
+import { postgresTourRepository } from '@/infrastructure/postgres/repositories/postgres-tour.repository.ts';
+import { sql, withScope } from '@/infrastructure/postgres/db.ts';
+import { assertPublishable, isWalkable } from '@/domain/tours/tour.ts';
 
 const live = Boolean(process.env.DATABASE_URL);
 const suite = live ? describe : describe.skip;

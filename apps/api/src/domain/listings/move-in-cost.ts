@@ -1,5 +1,5 @@
-import type { Centavos } from '../shared/money.ts';
-import { centavos } from '../shared/money.ts';
+import type { Centavos } from '@/domain/shared/money.ts';
+import { centavos } from '@/domain/shared/money.ts';
 import type { Listing } from './listing.ts';
 
 /**

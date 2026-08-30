@@ -1,251 +1,274 @@
-import { AlertCircle, Banknote, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
+"use client";
+
+import { useEffect } from "react";
+import {
+  CheckCircle2,
+  Download,
+} from "lucide-react";
+import {
+  Button,
+  Card,
+  Chip,
+} from "@heroui/react";
+
 import {
   Page,
-  Panel,
   SectionHeading,
   TableScroll,
   TopBar,
 } from "@/components/owner/shell";
-import { OriginPill, Pill } from "@/components/owner/status";
-import {
-  arrears,
-  claimedThisMonth,
-  collectedThisMonth,
-  offlineShare,
-  outstandingThisMonth,
-  recentPayments,
-  totalArrears,
-} from "@/lib/fixtures";
-import { formatDate, formatDateTime, peso } from "@/lib/money";
+import { OriginPill } from "@/components/owner/status";
+import { formatDateTime, formatMonthYear, peso } from "@/lib/money";
+import { useSessionStore } from "@/stores/use-session-store";
+import { useDashboardStore } from "@/stores/use-dashboard-store";
+import type { Collection } from "@/domain/payments/collection";
 
-/**
- * Payments.
- *
- * This screen answers the sentence the pilot is judged by — *"who owes me money
- * this month?"* — and it can only answer it because an invoice is a claim and a
- * payment is money, and the two are never the same record.
- *
- * The second column of the payments table is the one that matters: **money
- * moved** against **recorded**. For an online payment they are the same
- * instant. For cash they are not, and the gap is a staff performance signal the
- * owner otherwise has no way to see.
- */
 export default function PaymentsPage() {
+  const activeOrganizationId = useSessionStore((state) => state.activeOrganizationId);
+  const { collection, loading, error, loadCollection } = useDashboardStore();
+
+  useEffect(() => {
+    if (activeOrganizationId) {
+      void loadCollection(activeOrganizationId);
+    }
+  }, [activeOrganizationId, loadCollection]);
+
+  if (loading || !collection) {
+    return (
+      <>
+        <TopBar title="Financial Collections" />
+        <Page>
+          <div className="p-8 text-center">
+            {error ? (
+              <p className="text-red-500 text-[14px] font-medium">{error}</p>
+            ) : (
+              <>
+                <div className="inline-block size-6 animate-spin rounded-full border-2 border-accent border-t-transparent mb-3" />
+                <p className="text-muted-foreground text-[14px] font-medium">
+                  Loading financial transactions…
+                </p>
+              </>
+            )}
+          </div>
+        </Page>
+      </>
+    );
+  }
+
+  return <Payments collection={collection} />;
+}
+
+function Payments({ collection }: { collection: Collection }) {
+  const totalArrears = collection.arrears.reduce(
+    (n, a) => n + a.owedCentavos,
+    0,
+  );
+
+  const collectionRate =
+    collection.claimedCentavos > 0
+      ? Math.round(
+          (collection.receivedCentavos / collection.claimedCentavos) * 100,
+        )
+      : 0;
+
   return (
     <>
       <TopBar
-        title="Payments"
-        caption="August 2026"
-        action={
-          <>
-            <Button variant="outline" className="rounded-[11px]">
-              <Download className="size-4" /> Export
-            </Button>
-            <Button className="rounded-[11px]">
-              <Banknote className="size-4" /> Record cash payment
-            </Button>
-          </>
-        }
-      />
+        title="Financial Collections"
+        caption={`Collections ledger for ${formatMonthYear(collection.month)} · Real-time gateway & cash reconciliation`}
+      >
+        <Button
+          size="sm"
+          className="rounded-xl font-bold h-9 shadow-xs flex items-center gap-2 text-[12.5px] border border-border"
+        >
+          <Download className="size-4" />
+          <span>Export CSV Report</span>
+        </Button>
+      </TopBar>
 
       <Page>
+        {/* Metrics Grid */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Panel className="p-5">
-            <p className="label-caps text-muted-foreground">Claimed</p>
-            <p className="text-amount mt-2 text-[28px] leading-none">
-              {peso(claimedThisMonth)}
+          <Card className="p-5.5 rounded-2xl border border-border/80 bg-surface shadow-xs">
+            <span className="label-caps text-muted-foreground font-bold">
+              Total Invoiced ({formatMonthYear(collection.month)})
+            </span>
+            <p className="text-amount mt-3 text-[26px] font-extrabold tracking-tight text-foreground">
+              {peso(collection.claimedCentavos)}
             </p>
-          </Panel>
-          <Panel className="p-5">
-            <p className="label-caps text-muted-foreground">Received</p>
-            <p className="text-amount mt-2 text-[28px] leading-none">
-              {peso(collectedThisMonth)}
+            <p className="text-muted-foreground text-[12px] font-medium mt-1">
+              Active rent & utility billings
             </p>
-          </Panel>
-          <Panel tone="money" className="p-5">
-            <p className="label-caps text-money">Still owed</p>
-            <p className="text-amount text-money mt-2 text-[28px] leading-none">
-              {peso(outstandingThisMonth)}
+          </Card>
+
+          <Card className="p-5.5 rounded-2xl border border-border/80 bg-surface shadow-xs">
+            <div className="flex items-center justify-between">
+              <span className="label-caps text-muted-foreground font-bold">
+                Realized Collection
+              </span>
+              <Chip size="sm" color="success" variant="soft" className="font-bold text-[11px]">
+                {collectionRate}% Collected
+              </Chip>
+            </div>
+            <p className="text-amount mt-3 text-[26px] font-extrabold tracking-tight text-emerald-600">
+              {peso(collection.receivedCentavos)}
             </p>
-          </Panel>
-          <Panel className="p-5">
-            <p className="label-caps text-muted-foreground">Paid in cash</p>
-            <p className="text-amount mt-2 text-[28px] leading-none">
-              {offlineShare}%
+            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-secondary">
+              <div
+                className="h-full bg-emerald-500 rounded-full"
+                style={{ width: `${Math.min(collectionRate, 100)}%` }}
+              />
+            </div>
+          </Card>
+
+          <Card className="p-5.5 rounded-2xl border border-border/80 bg-surface shadow-xs">
+            <div className="flex items-center justify-between">
+              <span className="label-caps text-muted-foreground font-bold">
+                Overdue This Month
+              </span>
+              <Chip size="sm" color={totalArrears > 0 ? "danger" : "success"} variant="soft" className="font-bold text-[11px]">
+                {collection.arrears.length} tenancies
+              </Chip>
+            </div>
+            <p className="text-amount mt-3 text-[26px] font-extrabold tracking-tight text-rose-600">
+              {peso(totalArrears)}
             </p>
-          </Panel>
+            <p className="text-muted-foreground text-[12px] font-medium mt-1">
+              Requires payment follow-up
+            </p>
+          </Card>
+
+          <Card className="p-5.5 rounded-2xl border border-border/80 bg-surface shadow-xs">
+            <span className="label-caps text-muted-foreground font-bold">
+              Offline Cash Ratio
+            </span>
+            <p className="text-amount mt-3 text-[26px] font-extrabold tracking-tight text-foreground">
+              {collection.offlineSharePercent}%
+            </p>
+            <p className="text-muted-foreground text-[12px] font-medium mt-1">
+              Collected via staff in-person
+            </p>
+          </Card>
         </div>
 
-        <div className="mt-8">
+        {/* Arrears Section */}
+        <div>
           <SectionHeading
-            title="Who owes you"
-            caption={`${arrears.length} tenants · ${peso(totalArrears)} past due`}
+            title="Overdue Arrears Aging"
+            caption="Unsettled balances past the scheduled grace period"
           />
-          <Panel className="overflow-hidden">
-            <TableScroll>
-              <table className="w-full min-w-[560px] border-collapse text-left">
-                <thead>
-                  <tr className="border-border text-muted-foreground border-b">
-                    <th className="label-caps px-5 py-2.5 font-semibold">
-                      Tenant
-                    </th>
-                    <th className="label-caps hidden px-5 py-2.5 font-semibold md:table-cell">
-                      Resource
-                    </th>
-                    <th className="label-caps px-5 py-2.5 text-right font-semibold">
-                      Owed
-                    </th>
-                    <th className="label-caps px-5 py-2.5 font-semibold">
-                      Age
-                    </th>
-                    <th className="label-caps hidden px-5 py-2.5 font-semibold lg:table-cell">
-                      Last contact
-                    </th>
-                    <th className="px-5 py-2.5" />
-                  </tr>
-                </thead>
-                <tbody className="divide-border divide-y">
-                  {arrears.map((a) => (
-                    <tr
-                      key={a.id}
-                      className="hover:bg-secondary/40 transition-colors"
-                    >
-                      <td className="px-5 py-3.5 text-[13.5px] font-medium">
-                        {a.tenant}
-                      </td>
-                      <td className="text-muted-foreground hidden px-5 py-3.5 text-[13px] md:table-cell">
-                        {a.resourceLabel} · {a.propertyName}
-                      </td>
-                      <td className="text-amount text-money px-5 py-3.5 text-right text-[14.5px]">
-                        {peso(a.owedCentavos)}
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <Pill variant={a.daysOverdue >= 15 ? "bad" : "pending"}>
-                          {a.daysOverdue} days
-                        </Pill>
-                      </td>
-                      <td className="text-muted-foreground hidden px-5 py-3.5 text-[12.5px] lg:table-cell">
-                        {a.lastContact ? (
-                          formatDate(a.lastContact)
-                        ) : (
-                          <span className="text-bad">never</span>
-                        )}
-                      </td>
-                      <td className="px-5 py-3.5 text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="rounded-full"
-                        >
-                          Send reminder
-                        </Button>
-                      </td>
+          {collection.arrears.length === 0 ? (
+            <Card className="p-8 text-center rounded-2xl border border-border/80 bg-surface">
+              <CheckCircle2 className="size-8 text-emerald-500 mx-auto mb-2" />
+              <p className="text-[15px] font-bold text-foreground">Zero outstanding arrears</p>
+              <p className="text-muted-foreground text-[13px] mt-0.5">
+                All tenant accounts are current and up to date for this billing cycle.
+              </p>
+            </Card>
+          ) : (
+            <Card className="rounded-2xl border border-border/80 bg-surface shadow-xs overflow-hidden">
+              <TableScroll>
+                <table className="w-full min-w-[600px] border-collapse text-left">
+                  <thead>
+                    <tr className="border-border/80 border-b bg-surface-secondary/40 text-muted-foreground">
+                      <th className="label-caps px-5 py-3.5 font-bold">Tenant Name</th>
+                      <th className="label-caps px-5 py-3.5 font-bold">Unit / Resource</th>
+                      <th className="label-caps px-5 py-3.5 text-right font-bold">Overdue Amount</th>
+                      <th className="label-caps px-5 py-3.5 font-bold">Invoices</th>
+                      <th className="label-caps px-5 py-3.5 font-bold">Oldest Due Date</th>
+                      <th className="label-caps px-5 py-3.5 text-right font-bold">Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </TableScroll>
-          </Panel>
-        </div>
-
-        <div className="mt-8">
-          <SectionHeading
-            title="Money in"
-            caption="Two kinds of evidence, kept apart on purpose"
-          />
-          <Panel className="overflow-hidden">
-            <TableScroll>
-              <table className="w-full min-w-[560px] border-collapse text-left">
-                <thead>
-                  <tr className="border-border text-muted-foreground border-b">
-                    <th className="label-caps px-5 py-2.5 font-semibold">
-                      Tenant
-                    </th>
-                    <th className="label-caps px-5 py-2.5 text-right font-semibold">
-                      Amount
-                    </th>
-                    <th className="label-caps px-5 py-2.5 font-semibold">
-                      How
-                    </th>
-                    <th className="label-caps hidden px-5 py-2.5 font-semibold lg:table-cell">
-                      Money moved
-                    </th>
-                    <th className="label-caps hidden px-5 py-2.5 font-semibold lg:table-cell">
-                      Recorded
-                    </th>
-                    <th className="label-caps px-5 py-2.5 font-semibold">
-                      Lag
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-border divide-y">
-                  {recentPayments.map((p) => {
-                    const lagH = Math.round(
-                      (new Date(p.recordedAt).getTime() -
-                        new Date(p.receivedAt).getTime()) /
-                        3_600_000,
-                    );
-                    return (
-                      <tr
-                        key={p.id}
-                        className="hover:bg-secondary/40 transition-colors"
-                      >
-                        <td className="px-5 py-3.5">
-                          <p className="text-[13.5px] font-medium">
-                            {p.tenant}
-                          </p>
-                          <p className="text-muted-foreground font-mono text-[11px]">
-                            {p.reference}
-                          </p>
+                  </thead>
+                  <tbody className="divide-border/60 divide-y">
+                    {collection.arrears.map((a) => (
+                      <tr key={a.occupancyId} className="hover:bg-surface-secondary/30 transition-colors">
+                        <td className="px-5 py-4 font-bold text-foreground text-[14px]">
+                          {a.tenantName}
                         </td>
-                        <td className="text-amount px-5 py-3.5 text-right text-[14px]">
-                          {peso(p.amountCentavos)}
+                        <td className="px-5 py-4 text-[13px] text-muted-foreground font-medium">
+                          {a.resourceLabel}
                         </td>
-                        <td className="px-5 py-3.5">
-                          <OriginPill
-                            origin={p.origin}
-                            method={p.method}
-                            recordedBy={p.recordedBy}
-                          />
+                        <td className="text-amount px-5 py-4 text-right text-[15px] font-bold text-rose-600">
+                          {peso(a.owedCentavos)}
                         </td>
-                        <td className="text-muted-foreground hidden px-5 py-3.5 text-[12.5px] lg:table-cell">
-                          {formatDateTime(p.receivedAt)}
+                        <td className="px-5 py-4">
+                          <Chip size="sm" variant="soft" className="font-bold text-[11px]">
+                            {a.invoiceCount} unpaid
+                          </Chip>
                         </td>
-                        <td className="text-muted-foreground hidden px-5 py-3.5 text-[12.5px] lg:table-cell">
-                          {formatDateTime(p.recordedAt)}
+                        <td className="px-5 py-4 text-[13px] text-muted-foreground font-medium">
+                          {a.oldestDueOn} ({a.daysOverdue}d ago)
                         </td>
-                        <td className="px-5 py-3.5">
-                          {lagH === 0 ? (
-                            <span className="text-muted-foreground text-[12.5px]">
-                              —
-                            </span>
-                          ) : (
-                            <Pill variant={lagH > 24 ? "money" : "neutral"}>
-                              {lagH}h
-                            </Pill>
-                          )}
+                        <td className="px-5 py-4 text-right">
+                          <Button size="sm" variant="outline" className="rounded-xl font-bold h-8 text-[12px]">
+                            Send SMS Notice
+                          </Button>
                         </td>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </TableScroll>
-          </Panel>
+                    ))}
+                  </tbody>
+                </table>
+              </TableScroll>
+            </Card>
+          )}
         </div>
 
-        <Panel className="mt-5 flex gap-3 p-5">
-          <AlertCircle className="text-muted-foreground mt-0.5 size-4 shrink-0" />
-          <p className="text-muted-foreground max-w-3xl text-[12.5px] leading-relaxed">
-            Cash recorded by staff is not a payment the platform processed — it
-            is a staff member&rsquo;s attestation that money changed hands. It
-            settles the invoice and issues a receipt exactly like an online
-            payment, and it can never be presented as one. Reconciliation
-            against provider settlements covers online payments only; including
-            cash would produce a reconciliation that never balances.
-          </p>
-        </Panel>
+        {/* Verified Payments */}
+        <div>
+          <SectionHeading
+            title="Reconciled Payments Ledger"
+            caption="Direct gateway settlements and staff-verified physical receipts"
+          />
+          {collection.recentPayments.length === 0 ? (
+            <Card className="p-8 text-center rounded-2xl border border-border/80 bg-surface">
+              <p className="text-muted-foreground text-[13.5px]">No payments on record for this period.</p>
+            </Card>
+          ) : (
+            <Card className="rounded-2xl border border-border/80 bg-surface shadow-xs overflow-hidden">
+              <TableScroll>
+                <table className="w-full min-w-[700px] border-collapse text-left">
+                  <thead>
+                    <tr className="border-border/80 border-b bg-surface-secondary/40 text-muted-foreground">
+                      <th className="label-caps px-5 py-3.5 font-bold">Tenant</th>
+                      <th className="label-caps px-5 py-3.5 font-bold">Unit</th>
+                      <th className="label-caps px-5 py-3.5 text-right font-bold">Amount Paid</th>
+                      <th className="label-caps px-5 py-3.5 font-bold">Method / Origin</th>
+                      <th className="label-caps px-5 py-3.5 font-bold">Recorded At</th>
+                      <th className="label-caps px-5 py-3.5 font-bold">Reference / ID</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-border/60 divide-y">
+                    {collection.recentPayments.map((p) => (
+                      <tr key={p.id} className="hover:bg-surface-secondary/30 transition-colors">
+                        <td className="px-5 py-4 text-[14px] font-bold text-foreground">
+                          {p.tenantName}
+                        </td>
+                        <td className="px-5 py-4 text-[13px] text-muted-foreground font-medium">
+                          {p.resourceLabel}
+                        </td>
+                        <td className="text-amount px-5 py-4 text-right text-[15px] font-bold text-foreground">
+                          {peso(p.amountCentavos)}
+                        </td>
+                        <td className="px-5 py-4">
+                          <OriginPill
+                            origin={p.origin}
+                            recordedBy={p.recordedBy ?? undefined}
+                          />
+                        </td>
+                        <td className="px-5 py-4 text-[13px] text-muted-foreground font-medium">
+                          {formatDateTime(p.recordedAt)}
+                        </td>
+                        <td className="px-5 py-4 font-mono text-[12px] text-muted-foreground">
+                          {p.reference ?? p.id.slice(0, 12)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </TableScroll>
+            </Card>
+          )}
+        </div>
       </Page>
     </>
   );

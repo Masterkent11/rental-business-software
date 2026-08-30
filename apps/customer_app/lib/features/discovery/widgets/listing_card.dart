@@ -46,7 +46,7 @@ class ListingCard extends ConsumerWidget {
                   Hero(
                     tag: 'photo-${listing.id}',
                     child: AppImage(
-                      url: listing.photos.first,
+                      url: listing.photos.isEmpty ? '' : listing.photos.first,
                       fallbackIcon: _iconFor(listing.resourceType),
                       seed: listing.id.length,
                     ),
@@ -55,9 +55,13 @@ class ListingCard extends ConsumerWidget {
                     top: Tokens.s12,
                     right: Tokens.s12,
                     child: Glass.circle(
-                      size: 36,
-                      onTap: () =>
-                          ref.read(savedIdsProvider.notifier).toggle(listing.id),
+                      // toggle() already rolls the heart back on failure; this
+                      // just stops that failure surfacing as an unhandled
+                      // future rejection once it has done its job.
+                      onTap: () => ref
+                          .read(savedIdsProvider.notifier)
+                          .toggle(listing.id)
+                          .catchError((_) {}),
                       child: Icon(
                         saved ? Icons.favorite : Icons.favorite_border,
                         size: 18,

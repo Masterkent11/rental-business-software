@@ -55,8 +55,14 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
     try {
       await ref.read(applicationRepositoryProvider).submit(
             resourceId: card.resourceId,
-            desiredMoveIn: DateTime.now().add(const Duration(days: 30)),
+            desiredMoveIn: _moveIn,
             desiredTermMonths: 12,
+            // The contract has no headcount field; the occupant count the
+            // customer picked is real information, so it travels in the one
+            // free-text channel the owner actually sees rather than being
+            // silently dropped.
+            message: '$_occupants ${_occupants == 1 ? "person" : "people"} '
+                'expected to live here.',
           );
       ref.invalidate(applicationsProvider);
 

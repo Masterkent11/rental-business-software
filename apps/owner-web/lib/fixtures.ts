@@ -18,12 +18,14 @@
 export type Money = number; // integer centavos
 
 export type Organization = {
+  id: string;
   name: string;
   verified: boolean;
   publishDelegation: boolean;
 };
 
 export const organization: Organization = {
+  id: "org-santos-holdings",
   name: "Santos Property Holdings",
   verified: true,
   publishDelegation: false,
@@ -60,6 +62,7 @@ export type PropertySummary = {
   id: string;
   name: string;
   areaLabel: string;
+  cityLabel?: string;
   photo: string;
   resourceCount: number;
   occupied: number;
@@ -69,6 +72,8 @@ export type PropertySummary = {
   monthlyContracted: Money;
 };
 
+export type Property = PropertySummary;
+
 const photo = (id: string) =>
   `https://images.unsplash.com/${id}?q=80&w=900&auto=format&fit=crop`;
 
@@ -76,7 +81,8 @@ export const properties: PropertySummary[] = [
   {
     id: "prp-abc",
     name: "ABC Apartment",
-    areaLabel: "Brgy. Kamputhaw, Cebu City",
+    areaLabel: "Brgy. Kamputhaw",
+    cityLabel: "Cebu City",
     photo: photo("photo-1560448204-e02f11c3d0e2"),
     resourceCount: 18,
     occupied: 15,
@@ -88,7 +94,8 @@ export const properties: PropertySummary[] = [
   {
     id: "prp-villa",
     name: "Villa Boarding House",
-    areaLabel: "Brgy. Sambag II, Cebu City",
+    areaLabel: "Brgy. Sambag II",
+    cityLabel: "Cebu City",
     photo: photo("photo-1594295800284-990f74bb6928"),
     resourceCount: 24,
     occupied: 21,
@@ -100,7 +107,8 @@ export const properties: PropertySummary[] = [
   {
     id: "prp-skyline",
     name: "Skyline Residences",
-    areaLabel: "Brgy. Apas, Cebu City",
+    areaLabel: "Brgy. Apas",
+    cityLabel: "Cebu City",
     photo: photo("photo-1512918728675-ed5a9ecdebfd"),
     resourceCount: 8,
     occupied: 5,

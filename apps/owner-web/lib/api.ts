@@ -122,6 +122,68 @@ export type Collection = {
   }[];
 };
 
+export type OwnerListing = {
+  id: string;
+  resourceId: string;
+  title: string;
+  description: string;
+  propertyName: string;
+  areaLabel: string;
+  cityLabel: string;
+  kind: "LONG_TERM" | "SHORT_TERM";
+  resourceType: "UNIT" | "ROOM" | "BED_SPACE" | "PARKING" | "STORAGE";
+  priceCentavos: number;
+  currency: string;
+  hasTour: boolean;
+  sceneCount: number;
+  photos: string[];
+  state:
+    | "DRAFT"
+    | "PENDING_APPROVAL"
+    | "APPROVED"
+    | "PUBLISHED"
+    | "UNPUBLISHED"
+    | "REJECTED"
+    | "ARCHIVED";
+  availabilityLabel: string;
+  isAvailable: boolean;
+  amenities: string[];
+  houseRules: string[];
+  terms: string[];
+  minStayNights: number | null;
+  advanceMonths: number;
+  depositMonths: number;
+  sharedFacilities: string[];
+  ownerName: string;
+  ownerVerified: boolean;
+};
+
+export type OrganizationResource = {
+  id: string;
+  propertyId: string;
+  propertyName: string;
+  areaLabel: string;
+  cityLabel: string;
+  label: string;
+  resourceType: "UNIT" | "ROOM" | "BED_SPACE" | "PARKING" | "STORAGE";
+  rentalMode: string;
+};
+
+export type CreateListingPayload = {
+  resourceId: string;
+  kind: "LONG_TERM" | "SHORT_TERM";
+  title: string;
+  description: string;
+  priceCentavos: number;
+  amenities?: string[];
+  houseRules?: string[];
+  terms?: string[];
+  minStayNights?: number | null;
+  advanceMonths?: number;
+  depositMonths?: number;
+  photos?: string[];
+};
+
 export type Me = {
   id: string;
   displayName: string;
@@ -154,6 +216,54 @@ export const api = {
         method: "POST",
         organizationId,
         body: { decision, ...(reason ? { reason } : {}) },
+      },
+    ),
+
+  ownerListings: (organizationId: string) =>
+    call<{ items: OwnerListing[]; total: number }>(
+      `/organizations/${organizationId}/listings`,
+      { organizationId },
+    ),
+
+  resources: (organizationId: string) =>
+    call<{ resources: OrganizationResource[] }>(
+      `/organizations/${organizationId}/resources`,
+      { organizationId },
+    ),
+
+  createListing: (organizationId: string, body: CreateListingPayload) =>
+    call<OwnerListing>(`/organizations/${organizationId}/listings`, {
+      method: "POST",
+      organizationId,
+      body,
+    }),
+
+  uploadListingPhoto: (
+    organizationId: string,
+    listingId: string,
+    photoBase64: string,
+    contentType = "image/jpeg",
+  ) =>
+    call<{ listingId: string; photos: string[]; uploadedUrl: string }>(
+      `/organizations/${organizationId}/listings/${listingId}/photos`,
+      {
+        method: "POST",
+        organizationId,
+        body: { photoBase64, contentType },
+      },
+    ),
+
+  publishListing: (
+    organizationId: string,
+    listingId: string,
+    publish = true,
+  ) =>
+    call<OwnerListing>(
+      `/organizations/${organizationId}/listings/${listingId}/publish`,
+      {
+        method: "POST",
+        organizationId,
+        body: { publish },
       },
     ),
 };
