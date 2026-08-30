@@ -111,3 +111,5 @@ export const tourSummaries = [
   { id: "tour-condo-101", resourceLabel: "Condo 101", propertyName: "Skyline Residences", scenes: 7, state: "PUBLISHED" as const, updatedAt: "2026-08-11" },
   { id: "tour-room-101", resourceLabel: "Room 101", propertyName: "Villa Boarding House", scenes: 3, state: "DRAFT" as const, updatedAt: "2026-08-20" },
 ];
+
+export type TourSummary = (typeof tourSummaries)[number];

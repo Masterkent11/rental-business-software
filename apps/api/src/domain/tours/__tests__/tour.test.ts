@@ -9,7 +9,7 @@ import {
   type Hotspot,
   type Scene,
   type Tour,
-} from '../tour.ts';
+} from '@/domain/tours/tour.ts';
 
 const scene = (over: Partial<Scene> = {}): Scene => ({
   id: 's-1',

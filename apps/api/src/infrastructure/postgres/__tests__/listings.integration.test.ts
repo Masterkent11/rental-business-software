@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
-import { postgresListingRepository } from '../listing-repository.pg.ts';
-import { sql, withScope } from '../db.ts';
-import { PUBLIC } from '../../../domain/shared/organization-scope.ts';
+import { postgresListingRepository } from '@/infrastructure/postgres/repositories/postgres-listing.repository.ts';
+import { sql, withScope } from '@/infrastructure/postgres/db.ts';
+import { PUBLIC } from '@/domain/shared/organization-scope.ts';
 
 /**
  * Integration tests against real PostgreSQL.

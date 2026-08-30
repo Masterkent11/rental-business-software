@@ -28,6 +28,29 @@ class SavedScreen extends ConsumerWidget {
     final comparable =
         saved.where((l) => l.moveInCost != null).toList();
 
+    // "Nothing saved yet" and "could not load your saved listings" are
+    // different facts — showing the empty state while loading or failed would
+    // tell the customer their shortlist is gone when it might just be slow.
+    final body = savedAsync.hasError
+        ? SliverFillRemaining(
+            hasScrollBody: false,
+            child: _SavedError(
+              message: '${savedAsync.error}',
+              onRetry: () => ref.invalidate(savedListingsProvider),
+            ),
+          )
+        : savedAsync.isLoading
+            ? const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(child: CircularProgressIndicator()),
+              )
+            : saved.isEmpty
+                ? const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _EmptySaved(),
+                  )
+                : null;
+
     return Scaffold(
       body: CustomScrollView(
         physics: Tokens.scroll,
@@ -57,11 +80,8 @@ class SavedScreen extends ConsumerWidget {
             ),
           ),
 
-          if (saved.isEmpty)
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: _EmptySaved(),
-            )
+          if (body != null)
+            body
           else ...[
             if (comparable.length > 1)
               SliverToBoxAdapter(
@@ -179,6 +199,42 @@ class _CompareCard extends StatelessWidget {
             style: theme.textTheme.bodySmall,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SavedError extends StatelessWidget {
+  const _SavedError({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(Tokens.s32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Could not load your saved listings',
+                style: theme.textTheme.headlineSmall,
+                textAlign: TextAlign.center),
+            const SizedBox(height: Tokens.s8),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: Tokens.s16),
+            FilledButton(onPressed: onRetry, child: const Text('Try again')),
+          ],
+        ),
       ),
     );
   }

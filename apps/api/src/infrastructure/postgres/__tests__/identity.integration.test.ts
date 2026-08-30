@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import postgres from 'postgres';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { postgresUserRepository } from '../user-repository.pg.ts';
-import { sql, withUser } from '../db.ts';
+import { postgresUserRepository } from '@/infrastructure/postgres/repositories/postgres-user.repository.ts';
+import { sql, withUser } from '@/infrastructure/postgres/db.ts';
 
 /**
  * Identity against real PostgreSQL.

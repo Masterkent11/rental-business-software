@@ -1,11 +1,18 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { postgresPaymentRepository } from '../payment-repository.pg.ts';
-import { postgresOccupancyRepository } from '../occupancy-repository.pg.ts';
-import { sql, withScope } from '../db.ts';
-import { placeHold } from '../../../features/book-resource/place-hold.ts';
-import { AmountMismatchError } from '../../../application/ports/payment-repository.ts';
-import { postgresUserRepository } from '../user-repository.pg.ts';
+import { postgresPaymentRepository } from '@/infrastructure/postgres/repositories/postgres-payment.repository.ts';
+import { postgresOccupancyRepository } from '@/infrastructure/postgres/repositories/postgres-occupancy.repository.ts';
+import { sql, withScope } from '@/infrastructure/postgres/db.ts';
+import { placeHold } from '@/application/bookings/place-hold/place-hold.use-case.ts';
+import { AmountMismatchError, BookingNotHeldError } from '@/application/ports/repositories/payment-repository.port.ts';
+import { postgresUserRepository } from '@/infrastructure/postgres/repositories/postgres-user.repository.ts';
+import { sandboxPaymentGateway } from '@/infrastructure/payments/sandbox-payment-gateway.adapter.ts';
+import { confirmBookingPayment } from '@/application/payments/confirm-booking-payment/confirm-booking-payment.use-case.ts';
+import {
+  simulateBookingPayment,
+  PaymentNotOwnedError,
+  SimulationUnavailableError,
+} from '@/application/payments/simulate-booking-payment/simulate-booking-payment.use-case.ts';
 
 const live = Boolean(process.env.DATABASE_URL);
 const suite = live ? describe : describe.skip;
@@ -193,6 +200,147 @@ suite('payments against real PostgreSQL', { timeout: 30_000 }, () => {
         select state from occupancies where id = ${booking.id}
       `);
       expect(occupancy!.state).toBe('HELD');
+    });
+
+    it('still honours a payment that was started before the hold expired', async () => {
+      // Nothing proactively flips a HELD row when its clock runs out — expiry
+      // is a comparison at query time (findPayableBooking checks it), not a
+      // state transition. A payment intent issued while the hold was live can
+      // legitimately have its confirmation arrive a little late. Refusing it
+      // here would be the platform taking a customer's money and then
+      // deciding not to honour what it was for — worse than the mild
+      // untidiness of an occupancy row that outlived its own deadline.
+      const { booking, providerRef, amount } = await started('2027-09-01', '2027-09-03');
+      await withScope(VILLA_ORG, (tx) => tx`
+        update occupancies set expires_at = now() - interval '1 minute'
+         where id = ${booking.id}
+      `);
+
+      const result = await confirm(providerRef, `evt_${randomUUID()}`, amount);
+
+      expect(result.applied).toBe(true);
+      expect(result.stayId).not.toBe('');
+    });
+
+    it('refuses a second payment attempt once the booking is already committed', async () => {
+      const { booking, providerRef, amount } = await started('2027-09-10', '2027-09-12');
+      await confirm(providerRef, `evt_${randomUUID()}`, amount);
+
+      // startPayment's own WHERE state = 'HELD' is what refuses this — a
+      // committed occupancy is no longer a payable hold.
+      await expect(
+        payments.startPayment({
+          occupancyId: booking.id,
+          amountCentavos: amount,
+          providerRef: `sbx_${randomUUID()}`,
+        }),
+      ).rejects.toBeInstanceOf(BookingNotHeldError);
+    });
+
+    it('does not double-charge a second confirmation with a different event id', async () => {
+      // A replay with the *same* event id is already covered above via the
+      // provider_events unique constraint. This is one level further: two
+      // callbacks for one payment carrying two *different* event ids — the
+      // shape both a provider retrying with a fresh id and two overlapping
+      // client taps would take. Before the conditional UPDATE in
+      // confirmPayment existed, nothing stopped this from writing a second
+      // ledger entry; this proves the UPDATE is what holds the line now, not
+      // the uniqueness constraint (which a fresh event id always satisfies).
+      const { booking, providerRef, amount } = await started('2027-10-20', '2027-10-22');
+
+      const first = await confirm(providerRef, `evt_${randomUUID()}`, amount);
+      const second = await confirm(providerRef, `evt_${randomUUID()}`, amount);
+
+      expect(first.applied).toBe(true);
+      expect(second.applied).toBe(false);
+      expect(second.stayId).toBe(first.stayId);
+
+      const entries = await withScope(VILLA_ORG, (tx) => tx<{ n: string }[]>`
+        select count(*)::text as n from ledger_entries
+         where cause_id = ${first.payment.id}
+      `);
+      expect(Number(entries[0]!.n)).toBe(1);
+
+      const stays = await withScope(VILLA_ORG, (tx) => tx<{ n: string }[]>`
+        select count(*)::text as n from stays where occupancy_id = ${booking.id}
+      `);
+      expect(Number(stays[0]!.n)).toBe(1);
+    });
+  });
+
+  describe('simulating a sandbox payment', () => {
+    const gateway = sandboxPaymentGateway();
+    const confirmViaGateway = confirmBookingPayment(payments, gateway);
+    const simulate = simulateBookingPayment(payments, gateway, confirmViaGateway);
+
+    const heldWithPayment = async (startsOn: string, endsOn: string) => {
+      const booking = await heldBooking(startsOn, endsOn);
+      const payable = await payments.findPayableBooking(booking.id);
+      const intent = await gateway.startPayment({
+        amountCentavos: payable!.amountCentavos,
+        reference: booking.id,
+      });
+      const payment = await payments.startPayment({
+        occupancyId: booking.id,
+        amountCentavos: payable!.amountCentavos,
+        providerRef: intent.providerRef,
+      });
+      return { booking, payment };
+    };
+
+    it('confirms through the same pipeline the webhook uses', async () => {
+      const { booking, payment } = await heldWithPayment('2027-09-20', '2027-09-22');
+
+      const result = await simulate({
+        occupancyId: booking.id,
+        paymentId: payment.id,
+        userId: GUEST,
+      });
+
+      expect(result!.applied).toBe(true);
+      expect(result!.stayId).not.toBe('');
+    });
+
+    it('refuses a payment that belongs to someone else', async () => {
+      const { booking, payment } = await heldWithPayment('2027-09-25', '2027-09-27');
+
+      await expect(
+        simulate({ occupancyId: booking.id, paymentId: payment.id, userId: randomUUID() }),
+      ).rejects.toBeInstanceOf(PaymentNotOwnedError);
+    });
+
+    it('refuses a payment that is no longer pending', async () => {
+      const { booking, payment } = await heldWithPayment('2027-10-01', '2027-10-03');
+      await simulate({ occupancyId: booking.id, paymentId: payment.id, userId: GUEST });
+
+      await expect(
+        simulate({ occupancyId: booking.id, paymentId: payment.id, userId: GUEST }),
+      ).rejects.toBeInstanceOf(BookingNotHeldError);
+    });
+
+    it('refuses a payment id that does not exist for that booking', async () => {
+      const { booking } = await heldWithPayment('2027-10-05', '2027-10-07');
+
+      await expect(
+        simulate({ occupancyId: booking.id, paymentId: randomUUID(), userId: GUEST }),
+      ).rejects.toBeInstanceOf(BookingNotHeldError);
+    });
+
+    it('refuses when the gateway has no simulation to offer', async () => {
+      const { booking, payment } = await heldWithPayment('2027-10-10', '2027-10-12');
+      // Omitted, not set to undefined: exactOptionalPropertyTypes treats the
+      // two differently, and a real gateway simply would not have the method.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { simulateSuccess: _unused, ...noSimulationGateway } = gateway;
+      const simulateWithout = simulateBookingPayment(
+        payments,
+        noSimulationGateway,
+        confirmViaGateway,
+      );
+
+      await expect(
+        simulateWithout({ occupancyId: booking.id, paymentId: payment.id, userId: GUEST }),
+      ).rejects.toBeInstanceOf(SimulationUnavailableError);
     });
   });
 

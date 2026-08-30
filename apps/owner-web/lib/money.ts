@@ -45,6 +45,20 @@ const dateTimeFmt = new Intl.DateTimeFormat("en-PH", {
 export const formatDate = (iso: string) => dateFmt.format(new Date(iso));
 export const formatDateTime = (iso: string) => dateTimeFmt.format(new Date(iso));
 
+const monthFmt = new Intl.DateTimeFormat("en-PH", { month: "short" });
+const monthYearFmt = new Intl.DateTimeFormat("en-PH", {
+  month: "long",
+  year: "numeric",
+});
+
+/** `"2026-08"` → `"Aug"`, for the collection chart's x-axis. */
+export const formatMonth = (yyyyMm: string) =>
+  monthFmt.format(new Date(`${yyyyMm}-01T00:00:00Z`));
+
+/** `"2026-08"` → `"August 2026"`. */
+export const formatMonthYear = (yyyyMm: string) =>
+  monthYearFmt.format(new Date(`${yyyyMm}-01T00:00:00Z`));
+
 /** Whole days from today; negative means in the past. */
 export function daysFromToday(iso: string, today = new Date()): number {
   const a = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());

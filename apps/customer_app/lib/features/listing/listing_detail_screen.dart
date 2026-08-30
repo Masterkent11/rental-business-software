@@ -282,7 +282,6 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                 child: Row(
                   children: [
                     Glass.circle(
-                      size: 38,
                       onTap: () => Navigator.of(context).maybePop(),
                       child: const Icon(
                         Icons.arrow_back_ios_new,
@@ -292,9 +291,13 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     ),
                     const Spacer(),
                     Glass.circle(
-                      size: 38,
-                      onTap: () =>
-                          ref.read(savedIdsProvider.notifier).toggle(card.id),
+                      // toggle() already rolls the heart back on failure; this
+                      // just stops that failure surfacing as an unhandled
+                      // future rejection once it has done its job.
+                      onTap: () => ref
+                          .read(savedIdsProvider.notifier)
+                          .toggle(card.id)
+                          .catchError((_) {}),
                       child: Icon(
                         saved ? Icons.favorite : Icons.favorite_border,
                         size: 18,

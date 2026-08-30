@@ -99,18 +99,17 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
                           ),
                         ),
                         const SizedBox(width: Tokens.s12),
-                        // Both carry unread counts. A bell with no badge is
-                        // decoration; the count is the only reason to look.
+                        // Messaging and notifications carry no real unread
+                        // count yet (no backing API) — the badge stays hidden
+                        // rather than showing an invented number.
                         _HeaderAction(
                           icon: Icons.chat_bubble_outline,
-                          unread: 2,
                           tooltip: 'Messages',
                           onTap: () => context.push(Routes.messages),
                         ),
                         const SizedBox(width: Tokens.s8),
                         _HeaderAction(
                           icon: Icons.notifications_none,
-                          unread: 3,
                           tooltip: 'Notifications',
                           onTap: () => context.push(Routes.notifications),
                         ),
@@ -392,9 +391,9 @@ class _EmptyResults extends ConsumerWidget {
 class _HeaderAction extends StatelessWidget {
   const _HeaderAction({
     required this.icon,
-    required this.unread,
     required this.tooltip,
     required this.onTap,
+    this.unread = 0,
   });
 
   final IconData icon;

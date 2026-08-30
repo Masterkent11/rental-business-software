@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/account_repository.dart';
 import '../../design/app_image.dart';
 import '../../design/glass.dart';
 import '../../design/money.dart';
 import '../../design/tokens.dart';
-import '../../fixtures/sample_data.dart';
 import '../../fixtures/view_models.dart';
+import 'bookings_screen.dart' show toBookingView;
 
 /// A booking, in detail.
 ///
@@ -18,22 +20,64 @@ import '../../fixtures/view_models.dart';
 /// Nothing here mentions a lease, a tenancy, or a deposit. A stay creates none
 /// of them, and a screen that hinted otherwise would be lying about what the
 /// guest bought.
-class BookingDetailScreen extends StatelessWidget {
+///
+/// Reads the same [staysProvider] the bookings list already fetches — there is
+/// exactly one source for a customer's stays, not a list backed by the API and
+/// a detail screen backed by a fixture.
+class BookingDetailScreen extends ConsumerWidget {
   const BookingDetailScreen({required this.bookingId, super.key});
 
   final String bookingId;
 
   @override
-  Widget build(BuildContext context) {
-    final booking = SampleData.bookingById(bookingId);
-    if (booking == null) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final staysAsync = ref.watch(staysProvider);
+    final theme = Theme.of(context);
+
+    // "Could not reach the server" and "no such booking" are different facts,
+    // exactly as bookings_screen.dart already distinguishes them for the list.
+    if (staysAsync.hasError) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(Tokens.gutter),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Could not load this booking', style: theme.textTheme.titleMedium),
+                const SizedBox(height: Tokens.s8),
+                Text(
+                  '${staysAsync.error}',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall,
+                ),
+                const SizedBox(height: Tokens.s16),
+                FilledButton(
+                  onPressed: () => ref.invalidate(staysProvider),
+                  child: const Text('Try again'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (staysAsync.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final stays = staysAsync.valueOrNull ?? const <StayReceiptView>[];
+    final matches = stays.where((stay) => stay.id == bookingId);
+    if (matches.isEmpty) {
       return Scaffold(
         appBar: AppBar(),
         body: const Center(child: Text('Booking not found')),
       );
     }
 
-    final theme = Theme.of(context);
+    final booking = toBookingView(matches.first);
     final long = DateFormat('EEE, d MMM');
     final active = booking.status == BookingStatus.active;
     final nightly = booking.totalCentavos ~/ booking.nights;
@@ -232,7 +276,6 @@ class BookingDetailScreen extends StatelessWidget {
                 child: Row(
                   children: [
                     Glass.circle(
-                      size: 38,
                       onTap: () => Navigator.of(context).maybePop(),
                       child: const Icon(
                         Icons.arrow_back_ios_new,

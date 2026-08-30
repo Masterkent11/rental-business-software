@@ -1,7 +1,7 @@
 import sharp from 'sharp';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { sharpPanoramaProcessor } from '../sharp-panorama-processor.ts';
-import { NotAPanoramaError } from '../../../application/ports/panorama-processor.ts';
+import { sharpPanoramaProcessor } from '@/infrastructure/media/sharp-panorama-processor.adapter.ts';
+import { NotAPanoramaError } from '@/application/ports/providers/panorama-processor.port.ts';
 
 /**
  * A synthetic equirectangular panorama.

@@ -1,4 +1,5 @@
 import { Controller, Get, Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
 import { ListingsModule } from './modules/listings/listings.module.ts';
 import { MeModule } from './modules/me/me.module.ts';
 import { BookingsModule } from './modules/bookings/bookings.module.ts';
@@ -6,6 +7,7 @@ import { PaymentsModule } from './modules/payments/payments.module.ts';
 import { ApplicationsModule } from './modules/applications/applications.module.ts';
 import { ToursModule } from './modules/tours/tours.module.ts';
 import { CollectionModule } from './modules/collection/collection.module.ts';
+import { PresentationExceptionFilter } from './modules/shared/http-exception.filter.ts';
 
 @Controller()
 class HealthController {
@@ -17,12 +19,9 @@ class HealthController {
 
 /**
  * The modular monolith root.
- *
- * One deployable. Modules arrive as their sprints do — identity in Sprint 2,
- * availability and bookings in Sprint 3 — rather than as empty folders waiting
- * for them.
  */
-@Module({ imports: [
+@Module({
+  imports: [
     ListingsModule,
     MeModule,
     BookingsModule,
@@ -30,5 +29,13 @@ class HealthController {
     ApplicationsModule,
     ToursModule,
     CollectionModule,
-  ], controllers: [HealthController] })
+  ],
+  controllers: [HealthController],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: PresentationExceptionFilter,
+    },
+  ],
+})
 export class AppModule {}

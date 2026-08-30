@@ -26,7 +26,8 @@ class MoveInCostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final months = (cost.totalCentavos / monthlyCentavos).round();
+    final months =
+        monthlyCentavos > 0 ? (cost.totalCentavos / monthlyCentavos).round() : null;
 
     return Container(
       padding: const EdgeInsets.all(Tokens.s20),
@@ -61,13 +62,14 @@ class MoveInCostCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: Tokens.s4),
-                child: Text(
-                  '≈ $months months up front',
-                  style: theme.textTheme.bodySmall,
+              if (months != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: Tokens.s4),
+                  child: Text(
+                    '≈ $months months up front',
+                    style: theme.textTheme.bodySmall,
+                  ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: Tokens.s16),

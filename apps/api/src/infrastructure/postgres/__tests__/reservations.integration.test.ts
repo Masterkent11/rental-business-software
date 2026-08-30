@@ -1,13 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { postgresApplicationRepository } from '../application-repository.pg.ts';
-import { postgresPaymentRepository } from '../payment-repository.pg.ts';
-import { postgresUserRepository } from '../user-repository.pg.ts';
-import { sql, withScope } from '../db.ts';
+import { postgresApplicationRepository } from '@/infrastructure/postgres/repositories/postgres-application.repository.ts';
+import { postgresPaymentRepository } from '@/infrastructure/postgres/repositories/postgres-payment.repository.ts';
+import { postgresUserRepository } from '@/infrastructure/postgres/repositories/postgres-user.repository.ts';
+import { sql, withScope } from '@/infrastructure/postgres/db.ts';
 import {
   AlreadyReservedError,
   ReservationNotOfferedError,
-} from '../../../application/ports/application-repository.ts';
+} from '@/application/ports/repositories/application-repository.port.ts';
 
 const live = Boolean(process.env.DATABASE_URL);
 const suite = live ? describe : describe.skip;

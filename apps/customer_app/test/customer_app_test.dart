@@ -575,7 +575,11 @@ void main() {
 
     expect(find.text('CHECK-IN'), findsOneWidget);
     expect(find.text('CHECK-OUT'), findsOneWidget);
-    expect(find.text('3 nights · 2 guests'), findsOneWidget);
+    // Guest count is not part of the stay contract yet (it arrives with the
+    // booking form, not the receipt) — the detail screen now reads the real
+    // stay via staysProvider instead of a fixture, so it honestly shows the
+    // minimum of 1 rather than a number the API never sent.
+    expect(find.text('3 nights · 1 guest'), findsOneWidget);
 
     // Prepaid in full, and no deposit — a stay settles nothing at checkout.
     final prepaid = find.textContaining('no deposit');

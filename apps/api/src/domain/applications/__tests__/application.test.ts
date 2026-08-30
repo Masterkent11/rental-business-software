@@ -7,7 +7,7 @@ import {
   isOpen,
   ledgerTypeFor,
   outcomeFor,
-} from '../application.ts';
+} from '@/domain/applications/application.ts';
 
 describe('application transitions', () => {
   it('lets an owner decide an open application', () => {

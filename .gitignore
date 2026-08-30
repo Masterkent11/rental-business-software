@@ -35,7 +35,16 @@
 node_modules/
 .next/
 out/
-*.tsbuildinfo
+# Environment files - strictly ignore secrets, allow examples
+.env
+.env.*
 .env*.local
+!.env.example
+!.env.*.example
+*.env
+
+*.tsbuildinfo
 .vercel
 npm-debug.log*
+
+
