@@ -1,8 +1,9 @@
 import 'dart:convert';
 
-import 'package:customer_app/data/api_client.dart';
-import 'package:customer_app/data/application_repository.dart';
-import 'package:customer_app/fixtures/view_models.dart';
+import 'package:customer_app/core/networking/api.client.dart';
+import 'package:customer_app/features/applications/domain/value_objects/application_status.value_object.dart';
+import 'package:customer_app/features/applications/infrastructure/repositories/application_repository.adapter.dart';
+import 'package:customer_app/features/applications/ports/repositories/application_repository.port.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -20,7 +21,7 @@ ApplicationRepository repositoryReturning(
       headers: {'content-type': 'application/json; charset=utf-8'},
     );
   });
-  return ApplicationRepository(
+  return ApplicationRepositoryAdapter(
     ApiClient(client: client, baseUrl: 'http://test'),
   );
 }
@@ -55,9 +56,6 @@ Map<String, dynamic> application({
 
 void main() {
   test('maps every state the server can send', () async {
-    // Each of these is a different thing to tell a customer. Collapsing two of
-    // them is how a rejected application ends up reading as one they withdrew
-    // themselves — which happened once and is why this test exists.
     const pairs = {
       'SUBMITTED': ApplicationStatus.submitted,
       'UNDER_REVIEW': ApplicationStatus.underReview,
@@ -92,7 +90,6 @@ void main() {
   });
 
   test('shows the move-in cost only once approved', () async {
-    // Before approval it is a number for a lease that may never exist.
     final pending = repositoryReturning({
       'applications': [application(state: 'UNDER_REVIEW')],
     });
@@ -123,7 +120,6 @@ void main() {
   });
 
   test('has no deadline when nothing was reserved', () async {
-    // Applying reserves nothing, so there is no countdown to show.
     final repo = repositoryReturning({'applications': [application()]});
     expect((await repo.mine()).single.holdExpiresAt, isNull);
   });
@@ -141,8 +137,6 @@ void main() {
       desiredTermMonths: 12,
     );
 
-    // '2029-1-5' is not a date the API accepts, and the failure would look
-    // like a validation error the customer cannot act on.
     expect(jsonDecode(body!)['desiredMoveIn'], '2029-01-05');
   });
 

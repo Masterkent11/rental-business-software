@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:customer_app/data/account_repository.dart';
-import 'package:customer_app/data/api_client.dart';
-import 'package:customer_app/data/auth_repository.dart';
-import 'package:customer_app/data/listing_repository.dart';
-import 'package:customer_app/features/saved/saved_controller.dart';
-import 'package:customer_app/fixtures/view_models.dart' show BookingStatus;
+import 'package:customer_app/app/composition_root.dart';
+import 'package:customer_app/core/networking/api.client.dart';
+import 'package:customer_app/core/networking/api.exception.dart';
+import 'package:customer_app/features/account/ports/repositories/auth_repository.port.dart';
+import 'package:customer_app/features/bookings/domain/value_objects/booking_status.value_object.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;

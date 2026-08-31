@@ -1,7 +1,9 @@
 import 'dart:convert';
 
-import 'package:customer_app/data/api_client.dart';
-import 'package:customer_app/data/availability_repository.dart';
+import 'package:customer_app/core/networking/api.client.dart';
+import 'package:customer_app/features/bookings/domain/value_objects/night_status.value_object.dart';
+import 'package:customer_app/features/bookings/infrastructure/repositories/availability_repository.adapter.dart';
+import 'package:customer_app/features/bookings/ports/repositories/availability_repository.port.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -18,7 +20,7 @@ AvailabilityRepository repositoryReturning(
       headers: {'content-type': 'application/json; charset=utf-8'},
     );
   });
-  return AvailabilityRepository(
+  return AvailabilityRepositoryAdapter(
     ApiClient(client: client, baseUrl: 'http://test'),
   );
 }

@@ -1,7 +1,9 @@
 import 'dart:convert';
 
-import 'package:customer_app/data/api_client.dart';
-import 'package:customer_app/data/booking_repository.dart';
+import 'package:customer_app/core/networking/api.client.dart';
+import 'package:customer_app/core/networking/api.exception.dart';
+import 'package:customer_app/features/bookings/infrastructure/repositories/booking_repository.adapter.dart';
+import 'package:customer_app/features/bookings/ports/repositories/booking_repository.port.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -19,7 +21,7 @@ BookingRepository repositoryReturning(
       headers: {'content-type': 'application/json; charset=utf-8'},
     );
   });
-  return BookingRepository(
+  return BookingRepositoryAdapter(
     ApiClient(client: client, baseUrl: 'http://test'),
   );
 }

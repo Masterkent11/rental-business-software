@@ -1,152 +1,86 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../features/account/account_screen.dart';
-import '../features/application/applications_screen.dart';
-import '../features/application/apply_screen.dart';
-import '../features/booking/booking_checkout_screen.dart';
-import '../features/booking/booking_dates_screen.dart';
-import '../features/bookings/booking_detail_screen.dart';
-import '../features/bookings/bookings_screen.dart';
-import '../features/inbox/messages_screen.dart';
-import '../features/inbox/notifications_screen.dart';
-import '../features/discovery/discovery_screen.dart';
-import '../features/listing/listing_detail_screen.dart';
-import '../features/saved/saved_screen.dart';
-import '../features/shell/home_shell.dart';
-import '../features/tour/tour_screen.dart';
+import '../features/account/presentation/screens/account.screen.dart';
+import '../features/applications/presentation/screens/applications.screen.dart';
+import '../features/applications/presentation/screens/apply.screen.dart';
+import '../features/bookings/domain/entities/stay_receipt.entity.dart';
+import '../features/bookings/presentation/screens/booking_checkout.screen.dart';
+import '../features/bookings/presentation/screens/booking_dates.screen.dart';
+import '../features/bookings/presentation/screens/booking_detail.screen.dart';
+import '../features/bookings/presentation/screens/bookings.screen.dart';
+import '../features/discovery/presentation/screens/discovery.screen.dart';
+import '../features/inbox/presentation/screens/messages.screen.dart';
+import '../features/inbox/presentation/screens/notifications.screen.dart';
+import '../features/listings/domain/entities/listing.entity.dart';
+import '../features/listings/domain/entities/listing_detail.entity.dart';
+import '../features/listings/presentation/screens/listing_detail.screen.dart';
+import '../features/saved/presentation/screens/saved.screen.dart';
+import '../features/tours/presentation/screens/tour.screen.dart';
+import '../shared/launch/splash.screen.dart';
+import '../shared/shell/home_shell.dart';
 
-/// Route paths, in one place. Screens never write a path literal.
-abstract final class Routes {
-  static const discover = '/discover';
-  static const saved = '/saved';
-  static const bookings = '/bookings';
-  static const account = '/account';
-  static const notifications = '/notifications';
-  static const applications = '/applications';
-  static const messages = '/messages';
+GoRouter createRouter({String initialLocation = '/'}) {
+  final rootNavigatorKey = GlobalKey<NavigatorState>();
+  final exploreNavigatorKey = GlobalKey<NavigatorState>();
+  final savedNavigatorKey = GlobalKey<NavigatorState>();
+  final staysNavigatorKey = GlobalKey<NavigatorState>();
+  final appsNavigatorKey = GlobalKey<NavigatorState>();
+  final accountNavigatorKey = GlobalKey<NavigatorState>();
 
-  static String listing(String id) => '$discover/listing/$id';
-  static String tour(String id) => '${listing(id)}/tour';
-  static String book(String id) => '${listing(id)}/book';
-  static String apply(String id) => '${listing(id)}/apply';
-  static String booking(String id) => '$bookings/$id';
-
-  static String checkout({
-    required String listingId,
-    required String resourceId,
-    required DateTime checkIn,
-    required DateTime checkOut,
-  }) =>
-      '${book(listingId)}/checkout'
-      '?resourceId=$resourceId&checkIn=${_isoDay(checkIn)}&checkOut=${_isoDay(checkOut)}';
-
-  static String _isoDay(DateTime d) =>
-      '${d.year.toString().padLeft(4, '0')}-'
-      '${d.month.toString().padLeft(2, '0')}-'
-      '${d.day.toString().padLeft(2, '0')}';
-}
-
-/// The customer app's navigation.
-///
-/// A stateful shell with three branches, so scroll position and search state
-/// survive tab switches — on a phone over mobile data, losing a search result
-/// list because the user checked their saved listings is a real cost.
-///
-/// Listing detail and the tour are pushed **above** the shell deliberately: the
-/// tour is immersive and must not share the screen with a navigation bar.
-GoRouter buildRouter() {
   return GoRouter(
-    navigatorKey: _rootNavigatorKey,
-    initialLocation: Routes.discover,
+    navigatorKey: rootNavigatorKey,
+    initialLocation: initialLocation,
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             HomeShell(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(
+            navigatorKey: exploreNavigatorKey,
             routes: [
               GoRoute(
-                path: Routes.discover,
+                path: '/',
                 builder: (context, state) => const DiscoveryScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'listing/:id',
-                    parentNavigatorKey: _rootNavigatorKey,
-                    builder: (context, state) => ListingDetailScreen(
-                      listingId: state.pathParameters['id']!,
-                    ),
-                    routes: [
-                      GoRoute(
-                        path: 'tour',
-                        parentNavigatorKey: _rootNavigatorKey,
-                        builder: (context, state) => TourScreen(
-                          listingId: state.pathParameters['id']!,
-                        ),
-                      ),
-                      GoRoute(
-                        path: 'book',
-                        parentNavigatorKey: _rootNavigatorKey,
-                        builder: (context, state) => BookingDatesScreen(
-                          listingId: state.pathParameters['id']!,
-                        ),
-                        routes: [
-                          GoRoute(
-                            path: 'checkout',
-                            parentNavigatorKey: _rootNavigatorKey,
-                            builder: (context, state) {
-                              final q = state.uri.queryParameters;
-                              return BookingCheckoutScreen(
-                                resourceId: q['resourceId']!,
-                                checkIn: DateTime.parse(q['checkIn']!),
-                                checkOut: DateTime.parse(q['checkOut']!),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                      GoRoute(
-                        path: 'apply',
-                        parentNavigatorKey: _rootNavigatorKey,
-                        builder: (context, state) => ApplyScreen(
-                          listingId: state.pathParameters['id']!,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
               ),
             ],
           ),
           StatefulShellBranch(
+            navigatorKey: savedNavigatorKey,
             routes: [
               GoRoute(
-                path: Routes.saved,
+                path: '/saved',
                 builder: (context, state) => const SavedScreen(),
               ),
             ],
           ),
           StatefulShellBranch(
+            navigatorKey: staysNavigatorKey,
             routes: [
               GoRoute(
-                path: Routes.bookings,
+                path: '/bookings',
                 builder: (context, state) => const BookingsScreen(),
-                routes: [
-                  GoRoute(
-                    path: ':id',
-                    parentNavigatorKey: _rootNavigatorKey,
-                    builder: (context, state) => BookingDetailScreen(
-                      bookingId: state.pathParameters['id']!,
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
           StatefulShellBranch(
+            navigatorKey: appsNavigatorKey,
             routes: [
               GoRoute(
-                path: Routes.account,
+                path: '/applications',
+                builder: (context, state) => const ApplicationsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: accountNavigatorKey,
+            routes: [
+              GoRoute(
+                path: '/account',
                 builder: (context, state) => const AccountScreen(),
               ),
             ],
@@ -154,26 +88,73 @@ GoRouter buildRouter() {
         ],
       ),
       GoRoute(
-        path: Routes.notifications,
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const NotificationsScreen(),
+        path: '/listing/:id',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          final card = state.extra is Listing ? state.extra as Listing : null;
+          return ListingDetailScreen(listingId: id, initialCard: card);
+        },
       ),
       GoRoute(
-        path: Routes.applications,
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const ApplicationsScreen(),
+        path: '/apply',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final listing = state.extra as Listing;
+          return ApplyScreen(listing: listing);
+        },
       ),
       GoRoute(
-        path: Routes.messages,
-        parentNavigatorKey: _rootNavigatorKey,
+        path: '/booking/dates',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final listing = state.extra as Listing;
+          return BookingDatesScreen(listing: listing);
+        },
+      ),
+      GoRoute(
+        path: '/booking/checkout',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final args = state.extra as CheckoutArgs;
+          return BookingCheckoutScreen(args: args);
+        },
+      ),
+      GoRoute(
+        path: '/bookings/:id',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final stay = state.extra as StayReceipt;
+          return BookingDetailScreen(stay: stay);
+        },
+      ),
+      GoRoute(
+        path: '/tour/:id',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          Listing? listing;
+          ListingDetail? detail;
+          if (state.extra is ({Listing listing, ListingDetail? detail})) {
+            final tuple = state.extra as ({Listing listing, ListingDetail? detail});
+            listing = tuple.listing;
+            detail = tuple.detail;
+          }
+          return TourScreen(listingId: id, listing: listing, detail: detail);
+        },
+      ),
+      GoRoute(
+        path: '/messages',
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const MessagesScreen(),
       ),
+      GoRoute(
+        path: '/notifications',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const NotificationsScreen(),
+      ),
     ],
-    errorBuilder: (context, state) => Scaffold(
-      appBar: AppBar(title: const Text('Not found')),
-      body: Center(child: Text('No screen for ${state.uri}')),
-    ),
   );
 }
 
-final _rootNavigatorKey = GlobalKey<NavigatorState>();
+final appRouter = createRouter(initialLocation: '/');

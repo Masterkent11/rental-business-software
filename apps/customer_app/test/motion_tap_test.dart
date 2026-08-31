@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:customer_app/design/motion.dart';
+import 'package:customer_app/core/design/motion.dart';
 
 void main() {
   testWidgets('Squeeze still delivers the tap it wraps', (tester) async {
@@ -49,8 +49,6 @@ void main() {
       ),
     );
 
-    // Mid-stagger: the child is still transparent and offset. A customer who
-    // taps before the animation lands must still open the place.
     await tester.pump(const Duration(milliseconds: 40));
     await tester.tap(find.byType(Squeeze), warnIfMissed: false);
     await tester.pumpAndSettle();
