@@ -47,11 +47,14 @@ abstract final class Tokens {
   static const double tap = 44;
 
   // ---------------------------------------------------------------- palette
-  static const Color ink = Color(0xFF0E0F12);
-  static const Color inkSoft = Color(0xFF3A3D44);
-  static const Color muted = Color(0xFF787C85);
-  static const Color hairline = Color(0xFFE6E4E0);
-  static const Color canvas = Color(0xFFFBFAF8);
+  static const Color primaryNavy = Color(0xFF17243D);
+  static const Color primaryBlue = Color(0xFF2563EB);
+  static const Color softBlue = Color(0xFFEEF4FF);
+  static const Color ink = Color(0xFF111318);
+  static const Color inkSoft = Color(0xFF17243D);
+  static const Color muted = Color(0xFF7B8190);
+  static const Color hairline = Color(0xFFE7E8EC);
+  static const Color canvas = Color(0xFFFAFAF8);
   static const Color card = Color(0xFFFFFFFF);
 
   static const Color inkDark = Color(0xFFF4F3F1);
@@ -60,9 +63,9 @@ abstract final class Tokens {
   static const Color canvasDark = Color(0xFF0A0B0D);
   static const Color cardDark = Color(0xFF15171B);
 
-  /// Warm accent. Used for the move-in cost figure and little else — scarcity
-  /// is what makes it read as considered rather than decorative.
-  static const Color accent = Color(0xFFB4622A);
+  static const Color accent = Color(0xFF2563EB);
+  static const Color verified = Color(0xFF388E3C);
+  static const Color flame = Color(0xFFFA541C);
 
   static const Color available = Color(0xFF1B7A55);
   static const Color taken = Color(0xFFA33A2E);

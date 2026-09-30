@@ -105,7 +105,8 @@ class TourView {
   }
 
   /// The room to open on, falling back only if the entry is somehow absent.
-  TourSceneApiView? get entryScene => sceneById(entrySceneId) ?? scenes.firstOrNull;
+  TourSceneApiView? get entryScene =>
+      sceneById(entrySceneId) ?? scenes.firstOrNull;
 }
 
 class TourRepository {
@@ -145,25 +146,24 @@ class TourRepository {
     final template = json['tileUrlTemplate'] as String?;
 
     return TourSceneApiView(
-        id: json['id'] as String,
-        label: json['label'] as String? ?? '',
-        position: (json['position'] as num?)?.toInt() ?? 0,
-        previewUrl: json['previewUrl'] as String?,
-        thumbnailUrl: json['thumbnailUrl'] as String?,
-        tileUrlTemplate:
-            template == null ? null : '$baseUrl$template',
-        tileLevels: (json['tileLevels'] as num?)?.toInt() ?? 0,
-        hotspots: (json['hotspots'] as List<dynamic>? ?? const [])
-            .whereType<Map<String, dynamic>>()
-            .map((h) => TourHotspotView(
-                  id: h['id'] as String,
-                  kind: h['kind'] as String? ?? 'INFO',
-                  yaw: (h['yaw'] as num?)?.toDouble() ?? 0,
-                  pitch: (h['pitch'] as num?)?.toDouble() ?? 0,
-                  label: h['label'] as String? ?? '',
-                  targetSceneId: h['targetSceneId'] as String?,
-                ))
-            .toList(growable: false),
+      id: json['id'] as String,
+      label: json['label'] as String? ?? '',
+      position: (json['position'] as num?)?.toInt() ?? 0,
+      previewUrl: json['previewUrl'] as String?,
+      thumbnailUrl: json['thumbnailUrl'] as String?,
+      tileUrlTemplate: template == null ? null : '$baseUrl$template',
+      tileLevels: (json['tileLevels'] as num?)?.toInt() ?? 0,
+      hotspots: (json['hotspots'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map((h) => TourHotspotView(
+                id: h['id'] as String,
+                kind: h['kind'] as String? ?? 'INFO',
+                yaw: (h['yaw'] as num?)?.toDouble() ?? 0,
+                pitch: (h['pitch'] as num?)?.toDouble() ?? 0,
+                label: h['label'] as String? ?? '',
+                targetSceneId: h['targetSceneId'] as String?,
+              ))
+          .toList(growable: false),
     );
   }
 }
@@ -173,7 +173,8 @@ class TourRepository {
 /// Injected rather than reached for directly: widget tests must not open real
 /// sockets, and a viewer that hard-codes `NetworkImage` cannot be tested at
 /// all. Production uses the default network loader.
-final panoramaImageLoaderProvider = Provider<PanoramaImageLoader?>((ref) => null);
+final panoramaImageLoaderProvider =
+    Provider<PanoramaImageLoader?>((ref) => null);
 
 /// Signature shared with `PanoramaSource`, declared here so screens can depend
 /// on the provider without importing the viewer internals.
@@ -185,5 +186,6 @@ final tourRepositoryProvider = Provider<TourRepository>(
 
 /// The tour for one resource. Null means this place has none.
 final tourProvider = FutureProvider.family<TourView?, String>(
-  (ref, resourceId) => ref.watch(tourRepositoryProvider).forResource(resourceId),
+  (ref, resourceId) =>
+      ref.watch(tourRepositoryProvider).forResource(resourceId),
 );

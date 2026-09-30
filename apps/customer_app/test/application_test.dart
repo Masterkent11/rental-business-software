@@ -124,7 +124,9 @@ void main() {
 
   test('has no deadline when nothing was reserved', () async {
     // Applying reserves nothing, so there is no countdown to show.
-    final repo = repositoryReturning({'applications': [application()]});
+    final repo = repositoryReturning({
+      'applications': [application()]
+    });
     expect((await repo.mine()).single.holdExpiresAt, isNull);
   });
 
@@ -147,7 +149,8 @@ void main() {
   });
 
   test('a missing application is absence, not an error', () async {
-    final repo = repositoryReturning({'title': 'No such application'}, status: 404);
+    final repo =
+        repositoryReturning({'title': 'No such application'}, status: 404);
     expect(await repo.byId('a-1'), isNull);
   });
 }

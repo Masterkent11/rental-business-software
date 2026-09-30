@@ -84,7 +84,8 @@ void main() {
           startsOn: DateTime(2029, 1, 5),
           endsOn: DateTime(2029, 1, 8),
         ),
-        throwsA(isA<ApiException>().having((e) => e.statusCode, 'statusCode', 409)),
+        throwsA(
+            isA<ApiException>().having((e) => e.statusCode, 'statusCode', 409)),
       );
     });
 
@@ -97,7 +98,8 @@ void main() {
           startsOn: DateTime(2029, 1, 5),
           endsOn: DateTime(2029, 1, 8),
         ),
-        throwsA(isA<ApiException>().having((e) => e.statusCode, 'statusCode', 503)),
+        throwsA(
+            isA<ApiException>().having((e) => e.statusCode, 'statusCode', 503)),
       );
     });
   });
@@ -123,7 +125,8 @@ void main() {
 
       await expectLater(
         repo.startPaymentIntent('occ-1'),
-        throwsA(isA<ApiException>().having((e) => e.isNotFound, 'isNotFound', isTrue)),
+        throwsA(isA<ApiException>()
+            .having((e) => e.isNotFound, 'isNotFound', isTrue)),
       );
     });
   });
@@ -148,17 +151,20 @@ void main() {
         onRequest: (request) => body = request.body,
       );
 
-      await repo.confirmSandboxPayment(occupancyId: 'occ-1', paymentId: 'pay-1');
+      await repo.confirmSandboxPayment(
+          occupancyId: 'occ-1', paymentId: 'pay-1');
 
       expect(jsonDecode(body!)['paymentId'], 'pay-1');
     });
 
-    test('a payment that is not this caller\'s, or is gone, is a 404', () async {
+    test('a payment that is not this caller\'s, or is gone, is a 404',
+        () async {
       final repo = repositoryReturning({'title': 'Not found'}, status: 404);
 
       await expectLater(
         repo.confirmSandboxPayment(occupancyId: 'occ-1', paymentId: 'pay-1'),
-        throwsA(isA<ApiException>().having((e) => e.isNotFound, 'isNotFound', isTrue)),
+        throwsA(isA<ApiException>()
+            .having((e) => e.isNotFound, 'isNotFound', isTrue)),
       );
     });
   });

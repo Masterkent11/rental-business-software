@@ -98,10 +98,11 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
 
     setState(() => _paying = true);
     try {
-      final result = await ref.read(bookingRepositoryProvider).confirmSandboxPayment(
-            occupancyId: hold.id,
-            paymentId: intent.paymentId,
-          );
+      final result =
+          await ref.read(bookingRepositoryProvider).confirmSandboxPayment(
+                occupancyId: hold.id,
+                paymentId: intent.paymentId,
+              );
       if (!mounted) return;
 
       final stayId = result.stayId;
@@ -121,7 +122,8 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
         // back to the calendar to try for new nights.
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('That hold is no longer available. Pick dates again.'),
+            content:
+                Text('That hold is no longer available. Pick dates again.'),
           ),
         );
         Navigator.of(context).maybePop();
@@ -174,7 +176,8 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final nightly = intent.nights > 0 ? intent.amountCentavos ~/ intent.nights : 0;
+    final nightly =
+        intent.nights > 0 ? intent.amountCentavos ~/ intent.nights : 0;
     final remaining = hold.expiresAt?.difference(DateTime.now());
     final expired = remaining != null && remaining.isNegative;
 
@@ -203,7 +206,8 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
                   style: theme.textTheme.bodyMedium,
                 ),
               ),
-              Text(Money.peso(intent.amountCentavos), style: theme.textTheme.bodyMedium),
+              Text(Money.peso(intent.amountCentavos),
+                  style: theme.textTheme.bodyMedium),
             ],
           ),
           const Padding(
@@ -214,7 +218,8 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
             children: [
               Text('Total', style: theme.textTheme.titleMedium),
               const Spacer(),
-              Text(Money.peso(intent.amountCentavos), style: theme.textTheme.headlineSmall),
+              Text(Money.peso(intent.amountCentavos),
+                  style: theme.textTheme.headlineSmall),
             ],
           ),
           const SizedBox(height: Tokens.s16),

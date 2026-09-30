@@ -220,8 +220,7 @@ class _TourScreenState extends ConsumerState<TourScreen> {
                             Flexible(
                               child: _RoomLabel(
                                 label: scene.label,
-                                position:
-                                    '${index + 1}/${tour.scenes.length}',
+                                position: '${index + 1}/${tour.scenes.length}',
                                 onTap: () =>
                                     _showScenePicker(context, tour, scene),
                               ),
@@ -370,8 +369,7 @@ class _PanoramaLayer extends StatelessWidget {
             // over an unknown photograph needs help.
             const IgnorePointer(child: PhotoScrim(top: 0.42, bottom: 0.5)),
 
-            for (final hotspot in scene.hotspots)
-              _positioned(hotspot, size),
+            for (final hotspot in scene.hotspots) _positioned(hotspot, size),
           ],
         );
       },
@@ -690,7 +688,8 @@ class _SceneThumb extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(Tokens.rSm),
                 border: Border.all(
-                  color: selected ? theme.colorScheme.primary : Colors.transparent,
+                  color:
+                      selected ? theme.colorScheme.primary : Colors.transparent,
                   width: 2,
                 ),
               ),
@@ -802,7 +801,8 @@ class _TourLoading extends StatelessWidget {
             const SizedBox(
               height: 28,
               width: 28,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white70),
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: Colors.white70),
             ),
             if (label != null) ...[
               const SizedBox(height: Tokens.s16),

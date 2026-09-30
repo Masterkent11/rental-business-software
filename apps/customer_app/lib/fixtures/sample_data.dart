@@ -218,7 +218,6 @@ abstract final class SampleData {
         ),
       ];
 
-
   // ------------------------------------------------------------- bookings
 
   /// Sample bookings.
@@ -273,7 +272,6 @@ abstract final class SampleData {
           stateLabel: 'Completed',
         ),
       ];
-
 
   // --------------------------------------------------------- applications
 
@@ -411,7 +409,11 @@ abstract final class SampleData {
             ],
       houseRules: isLongTerm
           ? const ['No pets', 'No smoking indoors', 'Visitors until 10 PM']
-          : const ['No parties', 'No smoking indoors', 'Quiet hours after 10 PM'],
+          : const [
+              'No parties',
+              'No smoking indoors',
+              'Quiet hours after 10 PM'
+            ],
       ownerName: _owners[card.propertyName] ?? 'Verified owner',
       ownerVerified: true,
       minimumStayNights: isLongTerm ? null : 2,
@@ -435,29 +437,29 @@ abstract final class SampleData {
   static const Map<String, String> _descriptions = {
     'default':
         'Clean, well-maintained, and close to everything. Ask the owner through '
-        'the app about anything this page does not cover.',
+            'the app about anything this page does not cover.',
     'lst-unit-203':
         'Second-floor corner unit with windows on two sides, so it stays cool '
-        'without running the aircon all day. Inverter aircon in the bedroom. '
-        'Jeepney routes at the corner, a 24-hour convenience store downstairs, '
-        'and Fuente Osmeña is a ten-minute walk.',
+            'without running the aircon all day. Inverter aircon in the bedroom. '
+            'Jeepney routes at the corner, a 24-hour convenience store downstairs, '
+            'and Fuente Osmeña is a ten-minute walk.',
     'lst-condo-101-lt':
         'Fully furnished 32 sqm unit facing east, so you get morning light and '
-        'the afternoon stays manageable. Building has a generator, gym, and '
-        '24/7 security. Fibre-ready.',
+            'the afternoon stays manageable. Building has a generator, gym, and '
+            '24/7 security. Fibre-ready.',
     'lst-condo-101-st':
         'The same condo, available nightly between long-term tenancies. Fresh '
-        'linens, fast Wi-Fi, and a proper desk by the window.',
+            'linens, fast Wi-Fi, and a proper desk by the window.',
     'lst-bed-a':
         'Lower bunk in a four-person room, with a personal locker and a study '
-        'lamp of your own. Rent is all-in: water, electricity, and Wi-Fi. Five '
-        'minutes on foot to USC Main.',
+            'lamp of your own. Rent is all-in: water, electricity, and Wi-Fi. Five '
+            'minutes on foot to USC Main.',
     'lst-parking-12':
         'Covered slot on the ground floor, wide enough for a mid-size SUV. '
-        'Gate is manned 24/7 and the area is on CCTV.',
+            'Gate is manned 24/7 and the area is on CCTV.',
     'lst-studio-7':
         'Compact studio, freshly repainted, with a small balcony for drying. '
-        'Walking distance to Ayala Center and the Mabolo church area.',
+            'Walking distance to Ayala Center and the Mabolo church area.',
   };
 
   static const Map<ResourceType, List<String>> _amenities = {

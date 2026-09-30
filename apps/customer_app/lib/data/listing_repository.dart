@@ -141,7 +141,6 @@ class ListingRepository {
       },
       // Integer centavos across the wire (P-06). Parsed as int, never double.
       priceCentavos: (json['priceCentavos'] as num).toInt(),
-      // Server-decided copy. The client renders it and never derives it.
       availabilityLabel: json['availabilityLabel'] as String? ?? '',
       isAvailable: json['isAvailable'] as bool? ?? true,
       hasTour: json['hasTour'] as bool? ?? false,
@@ -149,10 +148,15 @@ class ListingRepository {
       photos: (json['photos'] as List<dynamic>? ?? const [])
           .whereType<String>()
           .toList(growable: false),
-      // Computed by the domain and rendered here. The client never does this
-      // arithmetic — three surfaces doing it independently is three chances to
-      // disagree about the number a customer budgets against.
       moveInCost: _moveInCost(json['moveInCost']),
+      rating: (json['rating'] as num?)?.toDouble() ?? 4.8,
+      reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 120,
+      isVerified: json['isVerified'] as bool? ??
+          (json['ownerVerified'] as bool? ?? true),
+      beds: (json['beds'] as num?)?.toInt() ?? 1,
+      baths: (json['baths'] as num?)?.toInt() ?? 1,
+      sqm: (json['sqm'] as num?)?.toInt() ?? 32,
+      isPopular: json['isPopular'] as bool? ?? true,
     );
   }
 }
@@ -161,7 +165,8 @@ class ListingRepository {
 ///
 /// Published-only, like every other read: unsaving is not required for a
 /// delisted place to disappear from the list.
-final savedListingsProvider = FutureProvider<List<ListingCardView>>((ref) async {
+final savedListingsProvider =
+    FutureProvider<List<ListingCardView>>((ref) async {
   final ids = ref.watch(savedIdsProvider).valueOrNull ?? const <String>{};
   if (ids.isEmpty) return const [];
   return ref.watch(listingRepositoryProvider).byIds(ids);

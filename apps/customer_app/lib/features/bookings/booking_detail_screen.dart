@@ -45,7 +45,8 @@ class BookingDetailScreen extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Could not load this booking', style: theme.textTheme.titleMedium),
+                Text('Could not load this booking',
+                    style: theme.textTheme.titleMedium),
                 const SizedBox(height: Tokens.s8),
                 Text(
                   '${staysAsync.error}',
@@ -114,7 +115,8 @@ class BookingDetailScreen extends ConsumerWidget {
                 sliver: SliverList.list(
                   children: [
                     if (booking.stateLabel != null)
-                      _Badge(label: booking.stateLabel!, status: booking.status),
+                      _Badge(
+                          label: booking.stateLabel!, status: booking.status),
                     const SizedBox(height: Tokens.s12),
                     Text(
                       booking.listingTitle,
@@ -264,7 +266,6 @@ class BookingDetailScreen extends ConsumerWidget {
               ),
             ],
           ),
-
           Positioned(
             top: 0,
             left: 0,
@@ -325,10 +326,8 @@ class _Badge extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: Theme.of(context)
-              .textTheme
-              .labelMedium
-              ?.copyWith(color: color),
+          style:
+              Theme.of(context).textTheme.labelMedium?.copyWith(color: color),
         ),
       ),
     );
@@ -352,7 +351,8 @@ class _Card extends StatelessWidget {
         borderRadius: BorderRadius.circular(Tokens.rMd),
         border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start, children: children),
     );
   }
 }
@@ -433,7 +433,8 @@ class _Line extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final style = strong ? theme.textTheme.titleMedium : theme.textTheme.bodyMedium;
+    final style =
+        strong ? theme.textTheme.titleMedium : theme.textTheme.bodyMedium;
 
     return Row(
       children: [

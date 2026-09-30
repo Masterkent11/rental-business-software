@@ -111,44 +111,38 @@ class ListingCardView {
     required this.photos,
     this.moveInCost,
     this.isFeatured = false,
+    this.rating,
+    this.reviewCount,
+    this.isVerified = false,
+    this.beds = 1,
+    this.baths = 1,
+    this.sqm = 32,
+    this.isPopular = false,
   });
 
   final String id;
-
-  /// The resource this listing sells time on.
-  ///
-  /// Not the same as [id]: a hybrid unit has a monthly listing and a nightly
-  /// one over **one** timeline, so availability is asked for by resource. Empty
-  /// for fixture data that predates the availability endpoint.
   final String resourceId;
-
   final String title;
   final String propertyName;
-
-  /// Barangay — the unit of location that actually means something locally.
   final String areaLabel;
   final String cityLabel;
-
   final ListingKind kind;
   final ResourceType resourceType;
-
-  /// Integer centavos. Monthly for [ListingKind.longTerm], nightly otherwise.
   final int priceCentavos;
-
-  /// Server-decided availability copy. The client renders it and never computes
-  /// it.
   final String availabilityLabel;
   final bool isAvailable;
-
   final bool hasTour;
   final int sceneCount;
   final List<String> photos;
-
-  /// Long-term only. Nightly stays are prepaid in full and have no deposit in
-  /// V1.
   final MoveInCostView? moveInCost;
-
   final bool isFeatured;
+  final double? rating;
+  final int? reviewCount;
+  final bool isVerified;
+  final int beds;
+  final int baths;
+  final int sqm;
+  final bool isPopular;
 
   String get location => '$areaLabel, $cityLabel';
 }

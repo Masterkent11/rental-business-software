@@ -266,4 +266,3 @@ class _DayCell extends StatelessWidget {
     );
   }
 }
-

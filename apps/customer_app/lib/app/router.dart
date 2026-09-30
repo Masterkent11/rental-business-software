@@ -41,8 +41,7 @@ abstract final class Routes {
       '${book(listingId)}/checkout'
       '?resourceId=$resourceId&checkIn=${_isoDay(checkIn)}&checkOut=${_isoDay(checkOut)}';
 
-  static String _isoDay(DateTime d) =>
-      '${d.year.toString().padLeft(4, '0')}-'
+  static String _isoDay(DateTime d) => '${d.year.toString().padLeft(4, '0')}-'
       '${d.month.toString().padLeft(2, '0')}-'
       '${d.day.toString().padLeft(2, '0')}';
 }

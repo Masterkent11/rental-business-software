@@ -116,9 +116,8 @@ class ApiClient {
 
     late final http.Response response;
     try {
-      response = await _client
-          .get(uri, headers: _headers())
-          .timeout(kRequestTimeout);
+      response =
+          await _client.get(uri, headers: _headers()).timeout(kRequestTimeout);
     } catch (error) {
       // A phone on Philippine mobile data loses the connection routinely. That
       // is an ordinary state, not a crash, so it is typed rather than thrown
@@ -159,8 +158,7 @@ class ApiClient {
 
     late final http.Response response;
     try {
-      final streamed =
-          await _client.send(request).timeout(kRequestTimeout);
+      final streamed = await _client.send(request).timeout(kRequestTimeout);
       response = await http.Response.fromStream(streamed);
     } catch (error) {
       throw ApiException(

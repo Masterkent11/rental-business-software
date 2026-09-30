@@ -63,7 +63,6 @@ class _FiltersSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: Tokens.s20),
-
             const _Label('How you want to rent'),
             const SizedBox(height: Tokens.s12),
             Wrap(
@@ -83,7 +82,6 @@ class _FiltersSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: Tokens.s24),
-
             const _Label('What kind of place'),
             const SizedBox(height: Tokens.s12),
             Wrap(
@@ -104,7 +102,6 @@ class _FiltersSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: Tokens.s24),
-
             const _Label('Budget'),
             const SizedBox(height: Tokens.s12),
             Wrap(
@@ -120,7 +117,6 @@ class _FiltersSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: Tokens.s20),
-
             _Toggle(
               label: 'Has a virtual tour',
               caption: 'See it properly before you travel',
@@ -134,7 +130,6 @@ class _FiltersSheet extends ConsumerWidget {
               onChanged: controller.setAvailableOnly,
             ),
             const SizedBox(height: Tokens.s24),
-
             FilledButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(

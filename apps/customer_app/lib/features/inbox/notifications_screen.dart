@@ -65,9 +65,8 @@ class NotificationsScreen extends StatelessWidget {
         itemBuilder: (context, i) {
           final (icon, title, detail, ago, unread) = _items[i];
           return Container(
-            color: unread
-                ? Tokens.accent.withOpacity(0.04)
-                : Colors.transparent,
+            color:
+                unread ? Tokens.accent.withOpacity(0.04) : Colors.transparent,
             padding: const EdgeInsets.symmetric(
               horizontal: Tokens.gutter,
               vertical: Tokens.s16,

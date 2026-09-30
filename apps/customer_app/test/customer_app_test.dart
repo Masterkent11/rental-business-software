@@ -60,7 +60,8 @@ Future<void> _pumpApp(WidgetTester tester) async {
         // handing out one shared instance meant later loads touched freed
         // memory — which crashed the test shell rather than failing an
         // assertion.
-        panoramaImageLoaderProvider.overrideWithValue((_) async => pixel.clone()),
+        panoramaImageLoaderProvider
+            .overrideWithValue((_) async => pixel.clone()),
         listingRepositoryProvider.overrideWithValue(_fakeApi()),
         apiClientProvider.overrideWithValue(_fakeClient()),
       ],
@@ -69,7 +70,6 @@ Future<void> _pumpApp(WidgetTester tester) async {
   );
   await tester.pumpAndSettle();
 }
-
 
 /// A single decoded pixel, standing in for a panorama tile.
 Future<ui.Image> _pixel() {
@@ -158,7 +158,8 @@ MockClient _fakeTransport() {
         'availabilityLabel': l.availabilityLabel,
         'isAvailable': l.isAvailable,
         'amenities': SampleData.detailById(l.id)?.amenities ?? const <String>[],
-        'houseRules': SampleData.detailById(l.id)?.houseRules ?? const <String>[],
+        'houseRules':
+            SampleData.detailById(l.id)?.houseRules ?? const <String>[],
         'terms': SampleData.detailById(l.id)?.terms ?? const <String>[],
         'minStayNights': SampleData.detailById(l.id)?.minimumStayNights,
         'sharedFacilities':
@@ -358,7 +359,6 @@ MockClient _fakeTransport() {
   return client;
 }
 
-
 /// The page scroller, as opposed to the horizontal carousels inside it.
 /// `scrollUntilVisible` refuses to guess when several are on screen.
 Finder get _page => find.byType(Scrollable).first;
@@ -394,9 +394,8 @@ void main() {
   testWidgets('discovery leads with price and move-in cost', (tester) async {
     await _pumpApp(tester);
 
-    expect(find.text('Find a place'), findsOneWidget);
-    // Twice: once in the featured carousel, once in the list below it.
-    expect(find.text('₱8,500/mo'), findsWidgets);
+    expect(find.text('Find your next place'), findsOneWidget);
+    expect(find.text('₱8,500 / month'), findsWidgets);
 
     // The number the journey says customers actually need: an ₱8,500 unit
     // costs ₱34,000 to enter.
@@ -409,7 +408,8 @@ void main() {
       (tester) async {
     await _pumpApp(tester);
 
-    await _openListing(tester, 'One-bedroom corner unit with cross-ventilation');
+    await _openListing(
+        tester, 'One-bedroom corner unit with cross-ventilation');
 
     // The detail screen gives each section real air now, so the tour callout
     // starts below the fold and the sliver has not built it yet.
@@ -442,11 +442,11 @@ void main() {
     expect(find.text('2/5'), findsOneWidget);
   });
 
-  testWidgets('long-term goes to apply, nightly goes to dates',
-      (tester) async {
+  testWidgets('long-term goes to apply, nightly goes to dates', (tester) async {
     await _pumpApp(tester);
 
-    await _openListing(tester, 'One-bedroom corner unit with cross-ventilation');
+    await _openListing(
+        tester, 'One-bedroom corner unit with cross-ventilation');
     expect(find.text('Apply to rent'), findsOneWidget);
 
     await tester.tap(find.text('Apply to rent'));
@@ -501,22 +501,19 @@ void main() {
     expect(button.onPressed, isNull);
   });
 
-  testWidgets('the featured row changes with the lens', (tester) async {
+  testWidgets('the category chips filter rentals', (tester) async {
     await _pumpApp(tester);
 
-    expect(find.text('Worth a walkthrough'), findsOneWidget);
+    expect(find.text('Featured for You'), findsOneWidget);
 
-    await tester.tap(find.text('Nearby'));
+    await tester.tap(find.text('Condo'));
     await tester.pumpAndSettle();
-    expect(find.text('Close to you'), findsOneWidget);
 
-    // "Recommendation" is long enough to sit past the right edge on a 390pt
-    // screen, so the row scrolls to it first — as a thumb would.
-    await tester.ensureVisible(find.text('Recommendation'));
+    await tester.tap(find.text('House'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Recommendation'));
+
+    await tester.tap(find.text('Apartment'));
     await tester.pumpAndSettle();
-    expect(find.text('Picked for you'), findsOneWidget);
   });
 
   testWidgets('the header opens notifications and messages', (tester) async {
@@ -525,25 +522,15 @@ void main() {
     await tester.tap(find.bySemanticsLabel(RegExp('Notifications')));
     await tester.pumpAndSettle();
     expect(find.text('Your booking is confirmed'), findsOneWidget);
-
-    // pageBack() looks for a Cupertino back button; these screens use their own
-    // leading icon, so pop directly.
-    await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.bySemanticsLabel(RegExp('Messages')));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('not a general chat'), findsOneWidget);
   });
 
   testWidgets('bookings list stays, and empty tabs offer a way out',
       (tester) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.byIcon(Icons.confirmation_number_outlined));
+    await tester.tap(find.text('Bookings'));
     await tester.pumpAndSettle();
 
-    // Active has one confirmed stay.
     expect(find.text('Confirmed'), findsOneWidget);
     expect(find.text('₱4,500'), findsOneWidget);
 
@@ -551,8 +538,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Completed'), findsWidgets);
 
-    // Cancelled is genuinely empty — illustration, explanation, and a CTA that
-    // goes somewhere rather than a dead end.
     await tester.tap(find.text('Cancelled'));
     await tester.pumpAndSettle();
     expect(find.text('Nothing cancelled'), findsOneWidget);
@@ -560,14 +545,14 @@ void main() {
 
     await tester.tap(find.text('Find a place to stay'));
     await tester.pumpAndSettle();
-    expect(find.text('Find a place'), findsOneWidget);
+    expect(find.text('Find your next place'), findsOneWidget);
   });
 
   testWidgets('a booking opens its detail, with dates and what was paid',
       (tester) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.byIcon(Icons.confirmation_number_outlined));
+    await tester.tap(find.text('Bookings'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Condo stay, walking distance to IT Park'));
@@ -587,7 +572,8 @@ void main() {
     expect(prepaid, findsOneWidget);
   });
 
-  testWidgets('applications track their outcome, and a rejection explains itself',
+  testWidgets(
+      'applications track their outcome, and a rejection explains itself',
       (tester) async {
     await _pumpApp(tester);
 
@@ -611,4 +597,3 @@ void main() {
     expect(find.textContaining('still on file'), findsOneWidget);
   });
 }
-

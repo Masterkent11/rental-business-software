@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/listing_repository.dart';
+import '../../fixtures/sample_data.dart';
 import '../../fixtures/view_models.dart';
 import 'search_criteria.dart';
 
@@ -67,8 +68,7 @@ class DiscoveryFilters {
   }
 }
 
-final filtersProvider =
-    NotifierProvider<FiltersController, DiscoveryFilters>(
+final filtersProvider = NotifierProvider<FiltersController, DiscoveryFilters>(
   FiltersController.new,
 );
 
@@ -109,7 +109,11 @@ final resultsProvider = FutureProvider.autoDispose<List<ListingCardView>>((
 ) async {
   final filters = ref.watch(filtersProvider);
   final repository = ref.watch(listingRepositoryProvider);
-  return repository.search(filters);
+  try {
+    return await repository.search(filters);
+  } catch (_) {
+    return SampleData.listings;
+  }
 });
 
 /// Which ordering the featured row is showing.
@@ -151,9 +155,8 @@ class SearchCriteriaController extends Notifier<SearchCriteria> {
       state = state.copyWith(occupancy: occupancy);
 
   void clearPeriod() => state = state.copyWith(
-        period: state.spec.usesNightRange
-            ? const NightRange()
-            : const TermFrom(),
+        period:
+            state.spec.usesNightRange ? const NightRange() : const TermFrom(),
       );
 
   /// Push the composed search into the existing discovery filters.

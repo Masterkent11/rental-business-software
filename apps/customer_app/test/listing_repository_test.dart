@@ -57,7 +57,11 @@ const _item = {
 
 void main() {
   test('maps the documented response into a card', () async {
-    final repo = repositoryReturning({'items': [_item], 'limit': 20, 'offset': 0});
+    final repo = repositoryReturning({
+      'items': [_item],
+      'limit': 20,
+      'offset': 0
+    });
     final results = await repo.search(const DiscoveryFilters());
 
     expect(results, hasLength(1));
@@ -72,7 +76,8 @@ void main() {
     expect(card.isAvailable, isTrue);
   });
 
-  test('sends filters as query parameters instead of filtering locally', () async {
+  test('sends filters as query parameters instead of filtering locally',
+      () async {
     Uri? seen;
     final repo = repositoryReturning(
       {'items': <dynamic>[], 'limit': 20, 'offset': 0},
@@ -141,7 +146,8 @@ void main() {
   test('a 404 is absence, not an error to show the customer', () async {
     // The API does not distinguish "gone" from "never published" (D-12), and
     // neither does the app — it shows the listing as gone.
-    final repo = repositoryReturning({'title': 'Listing not found'}, status: 404);
+    final repo =
+        repositoryReturning({'title': 'Listing not found'}, status: 404);
     expect(await repo.detail('c1111111-0000-0000-0000-000000000001'), isNull);
   });
 
@@ -153,7 +159,8 @@ void main() {
     );
   });
 
-  test('an unreachable server is a network failure the UI can explain', () async {
+  test('an unreachable server is a network failure the UI can explain',
+      () async {
     final client = MockClient((_) async => throw const SocketExceptionStub());
     final repo = ListingRepository(
       ApiClient(client: client, baseUrl: 'http://test'),

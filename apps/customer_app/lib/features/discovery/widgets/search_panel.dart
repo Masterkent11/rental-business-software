@@ -7,100 +7,312 @@ import '../../../design/quantity_stepper.dart';
 import '../../../design/tokens.dart';
 import '../../booking/widgets/date_range_calendar.dart';
 import '../discovery_controller.dart';
+import '../filters_sheet.dart';
 import '../search_criteria.dart';
 
-class SearchPanel extends ConsumerWidget {
+class SearchPanel extends ConsumerStatefulWidget {
   const SearchPanel({
     super.key,
     required this.onSearch,
+    this.onFilter,
   });
 
   final VoidCallback onSearch;
+  final VoidCallback? onFilter;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+  ConsumerState<SearchPanel> createState() => _SearchPanelState();
+}
+
+class _SearchPanelState extends ConsumerState<SearchPanel> {
+  late final TextEditingController _whereController;
+
+  @override
+  void initState() {
+    super.initState();
+    _whereController = TextEditingController(
+      text: ref.read(searchCriteriaProvider).destination,
+    );
+  }
+
+  @override
+  void dispose() {
+    _whereController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final criteria = ref.watch(searchCriteriaProvider);
     final controller = ref.read(searchCriteriaProvider.notifier);
-    final spec = criteria.spec;
+    final filters = ref.watch(filtersProvider);
 
-    final whereController = TextEditingController(
-      text: criteria.destination,
-    );
+    if (_whereController.text != criteria.destination) {
+      _whereController.value = TextEditingValue(
+        text: criteria.destination,
+        selection: TextSelection.collapsed(offset: criteria.destination.length),
+      );
+    }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(Tokens.rLg),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-        boxShadow: Tokens.liftHigh,
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _ModeTabs(
-            selected: criteria.mode,
-            onSelected: controller.setMode,
-          ),
-          // ------------------------------------- where
-          _Row(
-            label: 'Where?',
-            child: TextField(
-              controller: whereController,
-              onChanged: controller.setDestination,
-              textInputAction: TextInputAction.next,
-              style: theme.textTheme.bodyLarge,
-              decoration: InputDecoration(
-                isDense: true,
-                filled: false,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-                hintText: 'Barangay, city, or property',
-                hintStyle: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+    final isShortStay = criteria.mode == SearchMode.stay;
+
+    final fmt = DateFormat('MMM d, yyyy');
+    final (checkInText, checkOutText) = switch (criteria.period) {
+      NightRange(:final checkIn, :final checkOut) => (
+          checkIn == null ? 'Apr 12, 2025' : fmt.format(checkIn),
+          checkOut == null ? 'Apr 16, 2025' : fmt.format(checkOut),
+        ),
+      TermFrom(:final startDate, :final months) => (
+          startDate == null ? 'Add date' : fmt.format(startDate),
+          months == null ? 'Any' : '$months mos',
+        ),
+    };
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 46,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Tokens.hairline),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x05000000),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.search_rounded,
+                      size: 20,
+                      color: Tokens.muted,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: _whereController,
+                        onChanged: (val) {
+                          controller.setDestination(val);
+                          controller.apply();
+                        },
+                        onSubmitted: (_) {
+                          controller.apply();
+                          widget.onSearch();
+                        },
+                        textInputAction: TextInputAction.search,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Tokens.ink,
+                        ),
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          filled: false,
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                          hintText: 'Search location, property, or keyword',
+                          hintStyle: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: Tokens.muted,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
-
-          // ------------------------------------- dates
-          _Row(
-            label: spec.periodLabel,
-            onTap: () => _showDatesSheet(context, ref),
-            child: _PeriodSlots(criteria: criteria),
-          ),
-
-          // ------------------------------------ guests
-          _Row(
-            label: spec.occupancyLabel,
-            isLast: true,
-            onTap: () => _showGuestsSheet(context, ref),
-            child: Text(
-              criteria.describeOccupancy(),
-              style: theme.textTheme.bodyLarge,
-            ),
-          ),
-
-          // ------------------------------------------ action
-          Padding(
-            padding: const EdgeInsets.all(Tokens.s12),
-            child: SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () {
-                  HapticFeedback.mediumImpact();
-                  controller.apply();
-                  onSearch();
-                },
-                child: const Text('Search rentals'),
+            const SizedBox(width: 10),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: widget.onFilter ?? () => showFiltersSheet(context),
+              child: Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Tokens.hairline),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x05000000),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    const Icon(
+                      Icons.tune_rounded,
+                      size: 19,
+                      color: Tokens.primaryNavy,
+                    ),
+                    if (filters.activeCount > 0)
+                      Positioned(
+                        top: 9,
+                        right: 9,
+                        child: Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Tokens.primaryBlue,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          height: 38,
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F2F4),
+            borderRadius: BorderRadius.circular(10),
           ),
-        ],
-      ),
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    controller.setMode(SearchMode.stay);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    curve: Curves.easeOut,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color:
+                          isShortStay ? Tokens.primaryNavy : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Short stay',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight:
+                            isShortStay ? FontWeight.w600 : FontWeight.w500,
+                        color: isShortStay ? Colors.white : Tokens.muted,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    controller.setMode(SearchMode.monthly);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    curve: Curves.easeOut,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: !isShortStay
+                          ? Tokens.primaryNavy
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Monthly rental',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight:
+                            !isShortStay ? FontWeight.w600 : FontWeight.w500,
+                        color: !isShortStay ? Colors.white : Tokens.muted,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 52,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Tokens.hairline),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x05000000),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: _ControlSlot(
+                  icon: Icons.calendar_today_outlined,
+                  label: isShortStay ? 'Check in' : 'Move in',
+                  value: checkInText,
+                  onTap: () => _showDatesSheet(context, ref),
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 24,
+                color: Tokens.hairline,
+              ),
+              Expanded(
+                child: _ControlSlot(
+                  icon: isShortStay
+                      ? Icons.calendar_today_outlined
+                      : Icons.access_time_rounded,
+                  label: isShortStay ? 'Check out' : 'Duration',
+                  value: checkOutText,
+                  onTap: () => _showDatesSheet(context, ref),
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 24,
+                color: Tokens.hairline,
+              ),
+              Expanded(
+                child: _ControlSlot(
+                  icon: isShortStay
+                      ? Icons.people_outline_rounded
+                      : Icons.account_balance_wallet_outlined,
+                  label: isShortStay ? 'Guests' : 'Budget',
+                  value: isShortStay ? '${criteria.occupancy.people}' : 'Any',
+                  hasChevron: true,
+                  onTap: isShortStay
+                      ? () => _showGuestsSheet(context, ref)
+                      : () => showFiltersSheet(context),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -119,6 +331,77 @@ class SearchPanel extends ConsumerWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => const _GuestsSheet(),
+    );
+  }
+}
+
+class _ControlSlot extends StatelessWidget {
+  const _ControlSlot({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.onTap,
+    this.hasChevron = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final VoidCallback onTap;
+  final bool hasChevron;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Row(
+          children: [
+            Icon(icon, size: 15, color: Tokens.primaryNavy),
+            const SizedBox(width: 5),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                      color: Tokens.muted,
+                    ),
+                  ),
+                  Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: Tokens.primaryNavy,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (hasChevron)
+              const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 14,
+                color: Tokens.muted,
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -149,7 +432,8 @@ class _DatesSheet extends ConsumerWidget {
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(Tokens.rLg)),
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(Tokens.rLg)),
       ),
       child: SafeArea(
         top: false,
@@ -204,7 +488,8 @@ class _DatesSheet extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surface,
                           borderRadius: BorderRadius.circular(Tokens.rMd),
-                          border: Border.all(color: theme.colorScheme.outlineVariant),
+                          border: Border.all(
+                              color: theme.colorScheme.outlineVariant),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,7 +519,8 @@ class _DatesSheet extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surface,
                           borderRadius: BorderRadius.circular(Tokens.rMd),
-                          border: Border.all(color: theme.colorScheme.outlineVariant),
+                          border: Border.all(
+                              color: theme.colorScheme.outlineVariant),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,11 +566,6 @@ class _DatesSheet extends ConsumerWidget {
                     },
                     onTap: (day) => _onDay(controller, criteria, day),
                   ),
-                  if (!spec.usesNightRange) ...[
-                    const SizedBox(height: Tokens.s16),
-                    _TermChips(criteria: criteria, controller: controller),
-                    const SizedBox(height: Tokens.s32),
-                  ],
                 ],
               ),
             ),
@@ -339,7 +620,8 @@ class _GuestsSheet extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(Tokens.rLg)),
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(Tokens.rLg)),
       ),
       child: SafeArea(
         top: false,
@@ -384,8 +666,8 @@ class _GuestsSheet extends ConsumerWidget {
               child: Column(
                 children: [
                   QuantityStepper(
-                    label: '${spec.personNoun[0].toUpperCase()}'
-                        '${spec.personNoun.substring(1)}s',
+                    label:
+                        '${spec.personNoun[0].toUpperCase()}${spec.personNoun.substring(1)}s',
                     value: criteria.occupancy.adults,
                     min: 1,
                     max: 16,
@@ -408,8 +690,8 @@ class _GuestsSheet extends ConsumerWidget {
                   ],
                   const SizedBox(height: Tokens.s16),
                   QuantityStepper(
-                    label: '${spec.unitNoun[0].toUpperCase()}'
-                        '${spec.unitNoun.substring(1)}s',
+                    label:
+                        '${spec.unitNoun[0].toUpperCase()}${spec.unitNoun.substring(1)}s',
                     value: criteria.occupancy.units,
                     min: 1,
                     max: 8,
@@ -434,262 +716,6 @@ class _GuestsSheet extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ModeTabs extends StatelessWidget {
-  const _ModeTabs({required this.selected, required this.onSelected});
-
-  final SearchMode selected;
-  final ValueChanged<SearchMode> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: theme.colorScheme.outlineVariant),
-        ),
-      ),
-      child: Row(
-        children: [
-          for (final spec in SearchModeSpec.offered)
-            Expanded(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  onSelected(spec.mode);
-                },
-                child: Container(
-                  height: 46,
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: spec.mode == selected
-                            ? theme.colorScheme.primary
-                            : Colors.transparent,
-                        width: 2,
-                      ),
-                    ),
-                  ),
-                  child: Text(
-                    spec.tabLabel,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: spec.mode == selected
-                          ? theme.colorScheme.onSurface
-                          : theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Row extends StatelessWidget {
-  const _Row({
-    required this.label,
-    required this.child,
-    this.onTap,
-    this.isLast = false,
-  });
-
-  final String label;
-  final Widget child;
-  final VoidCallback? onTap;
-  final bool isLast;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap == null
-          ? null
-          : () {
-              HapticFeedback.selectionClick();
-              onTap!();
-            },
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.fromLTRB(
-          Tokens.s16,
-          Tokens.s12,
-          Tokens.s16,
-          isLast ? Tokens.s8 : Tokens.s12,
-        ),
-        decoration: BoxDecoration(
-          border: isLast
-              ? null
-              : Border(
-                  bottom: BorderSide(color: theme.colorScheme.outlineVariant),
-                ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(label, style: theme.textTheme.labelSmall),
-              ],
-            ),
-            const SizedBox(height: Tokens.s4),
-            child,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PeriodSlots extends StatelessWidget {
-  const _PeriodSlots({required this.criteria});
-
-  final SearchCriteria criteria;
-
-  @override
-  Widget build(BuildContext context) {
-    final spec = criteria.spec;
-    final fmt = DateFormat('MMM d');
-
-    final start = switch (criteria.period) {
-      NightRange(:final checkIn) => checkIn,
-      TermFrom(:final startDate) => startDate,
-    };
-    final endText = spec.usesNightRange
-        ? switch (criteria.period) {
-            NightRange(:final checkOut) =>
-              checkOut == null ? 'Add' : fmt.format(checkOut),
-            _ => 'Add',
-          }
-        : switch (criteria.period) {
-            TermFrom(:final months) =>
-              months == null ? 'Any' : '$months months',
-            _ => 'Any',
-          };
-
-    return Row(
-      children: [
-        Expanded(
-          child: _Slot(
-            caption: spec.startLabel,
-            value: start == null ? 'Add' : fmt.format(start),
-            muted: start == null,
-          ),
-        ),
-        Expanded(
-          child: _Slot(
-            caption: spec.endLabel,
-            value: endText,
-            muted: endText == 'Add' || endText == 'Any',
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _Slot extends StatelessWidget {
-  const _Slot({
-    required this.caption,
-    required this.value,
-    required this.muted,
-  });
-
-  final String caption;
-  final String value;
-  final bool muted;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(caption, style: theme.textTheme.bodySmall),
-        Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: muted ? theme.colorScheme.onSurfaceVariant : null,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _TermChips extends StatelessWidget {
-  const _TermChips({required this.criteria, required this.controller});
-
-  final SearchCriteria criteria;
-  final SearchCriteriaController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Wrap(
-      spacing: Tokens.s8,
-      runSpacing: Tokens.s8,
-      children: [
-        for (final term in const [3, 6, 12, 24])
-          GestureDetector(
-            onTap: () {
-              HapticFeedback.selectionClick();
-              controller.setPeriod(
-                TermFrom(
-                  startDate: switch (criteria.period) {
-                    TermFrom(:final startDate) => startDate,
-                    _ => null,
-                  },
-                  months: term,
-                ),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 9,
-              ),
-              decoration: BoxDecoration(
-                color: switch (criteria.period) {
-                      TermFrom(:final months) => months == term,
-                      _ => false,
-                    }
-                    ? theme.colorScheme.primary
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: theme.colorScheme.outlineVariant),
-              ),
-              child: Text(
-                '$term months',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: switch (criteria.period) {
-                        TermFrom(:final months) => months == term,
-                        _ => false,
-                      }
-                      ? theme.colorScheme.onPrimary
-                      : null,
-                ),
-              ),
-            ),
-          ),
-      ],
     );
   }
 }

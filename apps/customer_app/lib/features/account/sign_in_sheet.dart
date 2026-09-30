@@ -5,7 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../design/tokens.dart';
 import '../../data/auth_repository.dart';
 
-Future<void> showSignInSheet(BuildContext context) => showModalBottomSheet<void>(
+Future<void> showSignInSheet(BuildContext context) =>
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,

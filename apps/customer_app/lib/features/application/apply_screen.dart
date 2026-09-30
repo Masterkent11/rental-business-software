@@ -148,7 +148,6 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
             ),
           ),
           const SizedBox(height: Tokens.s24),
-
           const _FieldLabel('When do you want to move in?'),
           const SizedBox(height: Tokens.s8),
           _DateField(
@@ -164,7 +163,6 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
             },
           ),
           const SizedBox(height: Tokens.s24),
-
           const _FieldLabel('How many people will live here?'),
           const SizedBox(height: Tokens.s8),
           _Stepper(
@@ -172,7 +170,6 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
             onChanged: (v) => setState(() => _occupants = v),
           ),
           const SizedBox(height: Tokens.s24),
-
           const _FieldLabel('Documents the owner asks for'),
           const SizedBox(height: Tokens.s4),
           Text(
@@ -189,7 +186,6 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
                 () => _documents[entry.key] = !entry.value,
               ),
             ),
-
           const SizedBox(height: Tokens.s24),
           Container(
             padding: const EdgeInsets.all(Tokens.s16),
@@ -217,7 +213,6 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
               ],
             ),
           ),
-
           if (card.moveInCost != null) ...[
             const SizedBox(height: Tokens.s24),
             Row(

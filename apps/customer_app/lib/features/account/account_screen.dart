@@ -260,7 +260,8 @@ class _Row extends StatelessWidget {
           return;
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$label needs the API contracts from Step 5.')),
+          SnackBar(
+              content: Text('$label needs the API contracts from Step 5.')),
         );
       },
       child: Container(

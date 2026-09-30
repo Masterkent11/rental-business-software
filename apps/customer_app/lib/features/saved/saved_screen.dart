@@ -25,8 +25,7 @@ class SavedScreen extends ConsumerWidget {
     final savedAsync = ref.watch(savedListingsProvider);
     final saved = savedAsync.valueOrNull ?? const <ListingCardView>[];
 
-    final comparable =
-        saved.where((l) => l.moveInCost != null).toList();
+    final comparable = saved.where((l) => l.moveInCost != null).toList();
 
     // "Nothing saved yet" and "could not load your saved listings" are
     // different facts — showing the empty state while loading or failed would
@@ -79,7 +78,6 @@ class SavedScreen extends ConsumerWidget {
               ),
             ),
           ),
-
           if (body != null)
             body
           else ...[
@@ -174,10 +172,9 @@ class _CompareCard extends StatelessWidget {
                     Text(
                       Money.peso(listing.moveInCost!.totalCentavos),
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color:
-                            listing.moveInCost!.totalCentavos == cheapest
-                                ? Tokens.accent
-                                : null,
+                        color: listing.moveInCost!.totalCentavos == cheapest
+                            ? Tokens.accent
+                            : null,
                       ),
                     ),
                     if (listing.moveInCost!.totalCentavos == cheapest)

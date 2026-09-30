@@ -63,6 +63,5 @@ class SavedIds extends AsyncNotifier<Set<String>> {
 /// Whether one listing is saved, for a heart icon that must not care about
 /// loading states.
 final isSavedProvider = Provider.family<bool, String>(
-  (ref, id) =>
-      ref.watch(savedIdsProvider).valueOrNull?.contains(id) ?? false,
+  (ref, id) => ref.watch(savedIdsProvider).valueOrNull?.contains(id) ?? false,
 );

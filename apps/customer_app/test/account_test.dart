@@ -157,7 +157,9 @@ void main() {
     test('are empty when signed out, and never guessed locally', () async {
       final container = containerWith(
         auth: _FakeAuth(),
-        client: MockClient((_) async => _json({'listingIds': ['x']})),
+        client: MockClient((_) async => _json({
+              'listingIds': ['x']
+            })),
       );
 
       expect(await container.read(savedIdsProvider.future), isEmpty);
@@ -179,13 +181,16 @@ void main() {
       );
     });
 
-    test('show the change immediately, then take the server\'s answer', () async {
+    test('show the change immediately, then take the server\'s answer',
+        () async {
       const id = 'c1111111-0000-0000-0000-000000000001';
       final container = containerWith(
         auth: _FakeAuth(token: 't'),
         client: MockClient((request) async {
           if (request.method == 'GET') return _json({'listingIds': <String>[]});
-          return _json({'listingIds': [id]});
+          return _json({
+            'listingIds': [id]
+          });
         }),
       );
 
@@ -221,7 +226,9 @@ void main() {
       final auth = _FakeAuth();
       final container = containerWith(
         auth: auth,
-        client: MockClient((_) async => _json({'listingIds': [id]})),
+        client: MockClient((_) async => _json({
+              'listingIds': [id]
+            })),
       );
 
       expect(await container.read(savedIdsProvider.future), isEmpty);

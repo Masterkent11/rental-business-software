@@ -172,7 +172,6 @@ class _ApplicationCard extends StatelessWidget {
               ],
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.fromLTRB(
               Tokens.s16,
@@ -182,7 +181,6 @@ class _ApplicationCard extends StatelessWidget {
             ),
             child: _Progress(status: app.status),
           ),
-
           _Outcome(app: app),
         ],
       ),

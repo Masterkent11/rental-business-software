@@ -45,8 +45,10 @@ void main() {
     test('wraps yaw so you can turn all the way round', () {
       const camera = PanoramaCamera();
       // Just past half a turn comes out the other side, not clamped.
-      expect(camera.copyWith(yaw: math.pi * 1.5).yaw, closeTo(-math.pi / 2, 1e-9));
-      expect(camera.copyWith(yaw: -math.pi * 1.5).yaw, closeTo(math.pi / 2, 1e-9));
+      expect(
+          camera.copyWith(yaw: math.pi * 1.5).yaw, closeTo(-math.pi / 2, 1e-9));
+      expect(
+          camera.copyWith(yaw: -math.pi * 1.5).yaw, closeTo(math.pi / 2, 1e-9));
     });
 
     test('clamps pitch instead of flipping you over', () {
