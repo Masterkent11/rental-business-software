@@ -7,12 +7,6 @@ import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
 import 'discovery_controller.dart';
 
-/// The filter sheet.
-///
-/// Scoped to what V1 actually supports (journey, Stage 2). Map view and
-/// amenity filters are in scope for V1 but need real data behind them, so they
-/// are absent rather than faked — a filter that does nothing is worse than one
-/// that is not there yet.
 Future<void> showFiltersSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
@@ -31,8 +25,6 @@ class _FiltersSheet extends ConsumerWidget {
     final theme = Theme.of(context);
     final f = ref.watch(filtersProvider);
     final controller = ref.read(filtersProvider.notifier);
-    // Counts only what has actually arrived; a pending request shows 0
-    // rather than a stale number.
     final matches = ref.watch(resultsProvider).valueOrNull?.length ?? 0;
 
     return SafeArea(

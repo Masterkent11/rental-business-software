@@ -5,12 +5,6 @@ import 'package:flutter/services.dart';
 
 import 'tokens.dart';
 
-/// Frosted chrome that floats over photography.
-///
-/// The reference mockup sets the rule this follows: a neutral dark scrim with a
-/// real backdrop blur, never a tinted panel and never a flat semi-transparent
-/// black. The blur is what makes overlay controls read as being *in front of*
-/// an image rather than stamped onto it.
 class Glass extends StatelessWidget {
   const Glass({
     required this.child,
@@ -25,7 +19,6 @@ class Glass extends StatelessWidget {
     super.key,
   }) : _size = null;
 
-  /// A circular control — back buttons, hotspots, the save toggle.
   const Glass.circle({
     required this.child,
     this.color = Tokens.glass,
@@ -33,9 +26,9 @@ class Glass extends StatelessWidget {
     this.border = true,
     double size = Tokens.tap,
     super.key,
-  })  : padding = EdgeInsets.zero,
-        radius = size / 2,
-        _size = size;
+  }) : padding = EdgeInsets.zero,
+       radius = size / 2,
+       _size = size;
 
   final Widget child;
   final EdgeInsets padding;
@@ -85,8 +78,6 @@ class Glass extends StatelessWidget {
   }
 }
 
-/// A scrim that keeps white text legible over an unpredictable photograph.
-/// Two stops, top and bottom, so the middle of the image stays untouched.
 class PhotoScrim extends StatelessWidget {
   const PhotoScrim({this.top = 0.55, this.bottom = 0.75, super.key});
 

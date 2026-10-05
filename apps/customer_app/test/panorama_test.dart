@@ -11,7 +11,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _size = Size(400, 800);
 
-/// A 1×1 image, enough to stand in for a decoded tile.
 Future<ui.Image> pixel() {
   final completer = Completer<ui.Image>();
   ui.decodeImageFromPixels(
@@ -28,32 +27,33 @@ TourSceneApiView scene({
   String? previewUrl = 'https://example.test/preview.webp',
   int tileLevels = 3,
   String? template = '/tiles/s-1/{level}/{x}/{y}',
-}) =>
-    TourSceneApiView(
-      id: 's-1',
-      label: 'Living room',
-      position: 0,
-      previewUrl: previewUrl,
-      thumbnailUrl: null,
-      tileUrlTemplate: template,
-      tileLevels: tileLevels,
-      hotspots: const [],
-    );
+}) => TourSceneApiView(
+  id: 's-1',
+  label: 'Living room',
+  position: 0,
+  previewUrl: previewUrl,
+  thumbnailUrl: null,
+  tileUrlTemplate: template,
+  tileLevels: tileLevels,
+  hotspots: const [],
+);
 
 void main() {
   group('the camera', () {
     test('wraps yaw so you can turn all the way round', () {
       const camera = PanoramaCamera();
-      // Just past half a turn comes out the other side, not clamped.
       expect(
-          camera.copyWith(yaw: math.pi * 1.5).yaw, closeTo(-math.pi / 2, 1e-9));
+        camera.copyWith(yaw: math.pi * 1.5).yaw,
+        closeTo(-math.pi / 2, 1e-9),
+      );
       expect(
-          camera.copyWith(yaw: -math.pi * 1.5).yaw, closeTo(math.pi / 2, 1e-9));
+        camera.copyWith(yaw: -math.pi * 1.5).yaw,
+        closeTo(math.pi / 2, 1e-9),
+      );
     });
 
     test('clamps pitch instead of flipping you over', () {
       const camera = PanoramaCamera();
-      // Looking past straight up should stop, not put you upside down.
       expect(camera.copyWith(pitch: math.pi).pitch, lessThan(math.pi / 2));
       expect(camera.copyWith(pitch: -math.pi).pitch, greaterThan(-math.pi / 2));
     });
@@ -85,7 +85,6 @@ void main() {
     });
 
     test('hides one behind the customer', () {
-      // A door behind you is not drawn over the wall in front of you.
       final at = projectHotspot(
         yawDegrees: 180,
         pitchDegrees: 0,
@@ -104,7 +103,6 @@ void main() {
         camera: const PanoramaCamera(),
         size: _size,
       );
-      // Turn to face it: it should move toward the centre.
       final facing = projectHotspot(
         yawDegrees: right,
         pitchDegrees: 0,
@@ -135,7 +133,6 @@ void main() {
         scene: scene(),
         loader: (url) async {
           requested.add(url);
-          // Tiles never resolve, so only the preview can have painted.
           if (url.startsWith('/tiles/')) return Completer<ui.Image>().future;
           return pixel();
         },
@@ -151,8 +148,6 @@ void main() {
     });
 
     test('never fetches the full-size source panorama', () async {
-      // The 4.4 MB original exists so tiles can be regenerated later.
-      // Downloading it to look at a room would defeat the whole pipeline.
       final requested = <String>[];
       final source = PanoramaSource(
         scene: scene(),
@@ -178,7 +173,6 @@ void main() {
       await source.start();
 
       expect(source.quality, PanoramaQuality.tiles);
-      // Level 0 only: sharper levels wait for the customer to zoom.
       expect(source.level, 0);
     });
 
@@ -196,9 +190,7 @@ void main() {
       await source.start();
 
       final tiles = requested.where((u) => u.startsWith('/tiles/')).toList();
-      // 1024×512 at 512px tiles is two across, one down.
       expect(tiles, hasLength(2));
-      // Level 0 only — the template is /tiles/{sceneId}/{level}/{x}/{y}.
       expect(tiles.every((u) => u.startsWith('/tiles/s-1/0/')), isTrue);
     });
 
@@ -213,13 +205,11 @@ void main() {
       await source.ensureLevel(2);
       expect(source.level, 2);
 
-      // A slow level 1 finishing late must not blur the view again.
       await source.ensureLevel(1);
       expect(source.level, 2);
     });
 
     test('still shows the room when the preview is missing', () async {
-      // A missing thumbnail must not cost the customer the whole room.
       final source = PanoramaSource(
         scene: scene(previewUrl: null),
         loader: (_) async => pixel(),
@@ -249,7 +239,6 @@ void main() {
 
       await source.ensureLevel(1);
 
-      // Level 0 survives; a failed refinement is not a failed room.
       expect(source.hasPixels, isTrue);
       expect(source.level, before);
       expect(calls, greaterThan(0));
@@ -271,14 +260,14 @@ void main() {
 
   group('the scene contract', () {
     test('builds tile URLs from the template', () {
-      // The repository makes the template absolute before it gets here; the
-      // scene only substitutes coordinates.
       expect(scene().tileUrl(level: 2, x: 3, y: 1), '/tiles/s-1/2/3/1');
     });
 
     test('is not walkable with neither preview nor tiles', () {
-      expect(scene(previewUrl: null, template: null, tileLevels: 0).isWalkable,
-          isFalse);
+      expect(
+        scene(previewUrl: null, template: null, tileLevels: 0).isWalkable,
+        isFalse,
+      );
     });
   });
 }

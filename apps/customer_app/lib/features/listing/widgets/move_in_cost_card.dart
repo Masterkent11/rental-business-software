@@ -4,15 +4,6 @@ import '../../../design/money.dart';
 import '../../../design/tokens.dart';
 import '../../../fixtures/view_models.dart';
 
-/// **The number the customer actually needs.**
-///
-/// From the journey: comparing bare monthly rent is misleading in the
-/// Philippine market, where advance + deposit is typically three months up
-/// front. An ₱8,500 unit costs ₱25,500 to enter, and the listing must make that
-/// plain *before* the customer invests time in a viewing or an application.
-///
-/// The breakdown is shown, not just the total, because the deposit is the part
-/// they get back — and a total with no explanation reads as a hidden fee.
 class MoveInCostCard extends StatelessWidget {
   const MoveInCostCard({
     required this.cost,

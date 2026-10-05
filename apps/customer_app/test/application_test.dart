@@ -30,34 +30,30 @@ Map<String, dynamic> application({
   String? decisionReason,
   Map<String, dynamic>? reservation,
   int? moveInCostCentavos = 3400000,
-}) =>
-    {
-      'id': 'a-1',
-      'reference': 'AB12CD34',
-      'state': state,
-      'listingTitle': 'One-bedroom corner unit',
-      'propertyName': 'ABC Apartment',
-      'areaLabel': 'Brgy. Kamputhaw',
-      'cityLabel': 'Cebu City',
-      'photo': 'https://example.test/a.jpg',
-      'monthlyRentCentavos': 850000,
-      'moveInCostCentavos': moveInCostCentavos,
-      'desiredMoveIn': '2029-06-01',
-      'desiredTermMonths': 12,
-      'message': '',
-      'decisionReason': decisionReason,
-      'decidedAt': decisionReason == null ? null : '2029-05-01T00:00:00.000Z',
-      'createdAt': '2029-04-01T00:00:00.000Z',
-      'documentCount': 1,
-      'documentNames': ['id.jpg'],
-      'reservation': reservation,
-    };
+}) => {
+  'id': 'a-1',
+  'reference': 'AB12CD34',
+  'state': state,
+  'listingTitle': 'One-bedroom corner unit',
+  'propertyName': 'ABC Apartment',
+  'areaLabel': 'Brgy. Kamputhaw',
+  'cityLabel': 'Cebu City',
+  'photo': 'https://example.test/a.jpg',
+  'monthlyRentCentavos': 850000,
+  'moveInCostCentavos': moveInCostCentavos,
+  'desiredMoveIn': '2029-06-01',
+  'desiredTermMonths': 12,
+  'message': '',
+  'decisionReason': decisionReason,
+  'decidedAt': decisionReason == null ? null : '2029-05-01T00:00:00.000Z',
+  'createdAt': '2029-04-01T00:00:00.000Z',
+  'documentCount': 1,
+  'documentNames': ['id.jpg'],
+  'reservation': reservation,
+};
 
 void main() {
   test('maps every state the server can send', () async {
-    // Each of these is a different thing to tell a customer. Collapsing two of
-    // them is how a rejected application ends up reading as one they withdrew
-    // themselves — which happened once and is why this test exists.
     const pairs = {
       'SUBMITTED': ApplicationStatus.submitted,
       'UNDER_REVIEW': ApplicationStatus.underReview,
@@ -92,7 +88,6 @@ void main() {
   });
 
   test('shows the move-in cost only once approved', () async {
-    // Before approval it is a number for a lease that may never exist.
     final pending = repositoryReturning({
       'applications': [application(state: 'UNDER_REVIEW')],
     });
@@ -123,19 +118,17 @@ void main() {
   });
 
   test('has no deadline when nothing was reserved', () async {
-    // Applying reserves nothing, so there is no countdown to show.
     final repo = repositoryReturning({
-      'applications': [application()]
+      'applications': [application()],
     });
     expect((await repo.mine()).single.holdExpiresAt, isNull);
   });
 
   test('sends the move-in date as a padded ISO day', () async {
     String? body;
-    final repo = repositoryReturning(
-      {'id': 'a-1'},
-      onRequest: (request) => body = request.body,
-    );
+    final repo = repositoryReturning({
+      'id': 'a-1',
+    }, onRequest: (request) => body = request.body);
 
     await repo.submit(
       resourceId: 'r-1',
@@ -143,14 +136,13 @@ void main() {
       desiredTermMonths: 12,
     );
 
-    // '2029-1-5' is not a date the API accepts, and the failure would look
-    // like a validation error the customer cannot act on.
     expect(jsonDecode(body!)['desiredMoveIn'], '2029-01-05');
   });
 
   test('a missing application is absence, not an error', () async {
-    final repo =
-        repositoryReturning({'title': 'No such application'}, status: 404);
+    final repo = repositoryReturning({
+      'title': 'No such application',
+    }, status: 404);
     expect(await repo.byId('a-1'), isNull);
   });
 }

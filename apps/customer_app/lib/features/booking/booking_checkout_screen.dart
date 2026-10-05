@@ -11,15 +11,6 @@ import '../../data/booking_repository.dart';
 import '../../design/money.dart';
 import '../../design/tokens.dart';
 
-/// Hold, then pay. The screen that turns a browsed listing into a paid stay.
-///
-/// The amount shown here is never the calendar screen's own arithmetic: it is
-/// re-read from `payment-intent`, priced server-side off the listing — "the
-/// amount is never the client's."
-///
-/// Paying calls the sandbox confirmation directly rather than opening
-/// `redirectUrl`: there is no real hosted checkout page yet (ADR-0008), and
-/// that field is a deliberately non-resolvable placeholder.
 class BookingCheckoutScreen extends ConsumerStatefulWidget {
   const BookingCheckoutScreen({
     required this.resourceId,
@@ -78,9 +69,6 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
         _intent = intent;
       });
 
-      // Redraws the expiry countdown once a second. Only the display changes;
-      // the server's own clock is what the payment attempt is actually
-      // checked against.
       _ticker?.cancel();
       _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) setState(() {});
@@ -98,11 +86,12 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
 
     setState(() => _paying = true);
     try {
-      final result =
-          await ref.read(bookingRepositoryProvider).confirmSandboxPayment(
-                occupancyId: hold.id,
-                paymentId: intent.paymentId,
-              );
+      final result = await ref
+          .read(bookingRepositoryProvider)
+          .confirmSandboxPayment(
+            occupancyId: hold.id,
+            paymentId: intent.paymentId,
+          );
       if (!mounted) return;
 
       final stayId = result.stayId;
@@ -111,27 +100,22 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
       }
 
       HapticFeedback.mediumImpact();
-      // Clears the whole booking flow (dates + checkout) off the stack —
-      // going back from the confirmation should not land on a dead checkout.
       context.go(Routes.booking(stayId));
     } on ApiException catch (error) {
       if (!mounted) return;
       if (error.isNotFound) {
-        // The hold expired mid-checkout, or this payment was already
-        // resolved. Retrying here cannot succeed — the only honest move is
-        // back to the calendar to try for new nights.
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content:
-                Text('That hold is no longer available. Pick dates again.'),
+            content: Text(
+              'That hold is no longer available. Pick dates again.',
+            ),
           ),
         );
         Navigator.of(context).maybePop();
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.message)));
     } finally {
       if (mounted) setState(() => _paying = false);
     }
@@ -176,8 +160,9 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final nightly =
-        intent.nights > 0 ? intent.amountCentavos ~/ intent.nights : 0;
+    final nightly = intent.nights > 0
+        ? intent.amountCentavos ~/ intent.nights
+        : 0;
     final remaining = hold.expiresAt?.difference(DateTime.now());
     final expired = remaining != null && remaining.isNegative;
 
@@ -206,8 +191,10 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
                   style: theme.textTheme.bodyMedium,
                 ),
               ),
-              Text(Money.peso(intent.amountCentavos),
-                  style: theme.textTheme.bodyMedium),
+              Text(
+                Money.peso(intent.amountCentavos),
+                style: theme.textTheme.bodyMedium,
+              ),
             ],
           ),
           const Padding(
@@ -218,8 +205,10 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
             children: [
               Text('Total', style: theme.textTheme.titleMedium),
               const Spacer(),
-              Text(Money.peso(intent.amountCentavos),
-                  style: theme.textTheme.headlineSmall),
+              Text(
+                Money.peso(intent.amountCentavos),
+                style: theme.textTheme.headlineSmall,
+              ),
             ],
           ),
           const SizedBox(height: Tokens.s16),

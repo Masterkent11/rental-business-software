@@ -6,11 +6,6 @@ import '../../fixtures/sample_data.dart';
 import '../../fixtures/view_models.dart';
 import 'search_criteria.dart';
 
-/// Discovery filter state.
-///
-/// Everything here is a **presentation** filter over fixture data. None of it
-/// is an availability query, and none of it may become one: occupancy has
-/// exactly one source of truth and it is not in this app.
 @immutable
 class DiscoveryFilters {
   const DiscoveryFilters({
@@ -36,15 +31,13 @@ class DiscoveryFilters {
       tourOnly ||
       availableOnly;
 
-  /// Count shown on the filter button, so the customer can see they have
-  /// narrowed things without opening the sheet.
   int get activeCount => [
-        kind != null,
-        type != null,
-        maxCentavos != null,
-        tourOnly,
-        availableOnly,
-      ].where((on) => on).length;
+    kind != null,
+    type != null,
+    maxCentavos != null,
+    tourOnly,
+    availableOnly,
+  ].where((on) => on).length;
 
   DiscoveryFilters copyWith({
     String? query,
@@ -95,15 +88,6 @@ class FiltersController extends Notifier<DiscoveryFilters> {
   void clear() => state = DiscoveryFilters(query: state.query);
 }
 
-/// The result list, from the API.
-///
-/// Async because it crosses the network. The filters are the request, not a
-/// predicate applied afterwards — **the server decides what matches**, and a
-/// client that re-filtered would be a second source of truth for rules the
-/// domain owns.
-///
-/// `.future` is not used anywhere; screens watch the [AsyncValue] so loading
-/// and failure are states they render rather than exceptions they hit.
 final resultsProvider = FutureProvider.autoDispose<List<ListingCardView>>((
   ref,
 ) async {
@@ -116,29 +100,15 @@ final resultsProvider = FutureProvider.autoDispose<List<ListingCardView>>((
   }
 });
 
-/// Which ordering the featured row is showing.
-///
-/// Presentation only. The labels promise things a client cannot honestly
-/// compute — "popular" is view counts and tour completions, "nearby" is the
-/// customer's location — so the real lens is applied server-side and this holds
-/// the selection.
 final featuredLensProvider = StateProvider<FeaturedLens>(
   (ref) => FeaturedLens.popular,
 );
 
-/// Homepage search state.
-///
-/// Deliberately **separate from [filtersProvider]**. Criteria are what the
-/// customer is composing; filters are what the results list is currently
-/// showing. Keeping them apart means editing the search does not re-filter the
-/// page mid-edit, and it keeps this state clear of anything to do with
-/// submitting a booking or an application.
 final searchCriteriaProvider =
     NotifierProvider<SearchCriteriaController, SearchCriteria>(
-  SearchCriteriaController.new,
-);
+      SearchCriteriaController.new,
+    );
 
-/// Named to avoid colliding with Flutter's own `SearchController`.
 class SearchCriteriaController extends Notifier<SearchCriteria> {
   @override
   SearchCriteria build() => const SearchCriteria();
@@ -146,7 +116,6 @@ class SearchCriteriaController extends Notifier<SearchCriteria> {
   void setDestination(String value) =>
       state = state.copyWith(destination: value);
 
-  /// Switching rental type reshapes the period — see [SearchCriteria.withMode].
   void setMode(SearchMode mode) => state = state.withMode(mode);
 
   void setPeriod(SearchPeriod period) => state = state.copyWith(period: period);
@@ -155,17 +124,9 @@ class SearchCriteriaController extends Notifier<SearchCriteria> {
       state = state.copyWith(occupancy: occupancy);
 
   void clearPeriod() => state = state.copyWith(
-        period:
-            state.spec.usesNightRange ? const NightRange() : const TermFrom(),
-      );
+    period: state.spec.usesNightRange ? const NightRange() : const TermFrom(),
+  );
 
-  /// Push the composed search into the existing discovery filters.
-  ///
-  /// Only destination, rental kind, and resource type cross over, because those
-  /// are the only parts this app can honestly narrow on. **Dates and occupancy
-  /// are carried, not applied**: whether a resource is free on given dates is a
-  /// question about one occupancy timeline, and that timeline is server-side
-  /// (U-01). A client that filtered on them would be inventing availability.
   void apply() {
     final spec = state.spec;
     ref.read(filtersProvider.notifier)

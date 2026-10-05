@@ -19,9 +19,7 @@ BookingRepository repositoryReturning(
       headers: {'content-type': 'application/json; charset=utf-8'},
     );
   });
-  return BookingRepository(
-    ApiClient(client: client, baseUrl: 'http://test'),
-  );
+  return BookingRepository(ApiClient(client: client, baseUrl: 'http://test'));
 }
 
 void main() {
@@ -51,18 +49,15 @@ void main() {
 
     test('sends the dates as padded ISO days', () async {
       String? body;
-      final repo = repositoryReturning(
-        {
-          'id': 'occ-1',
-          'resourceId': 'res-1',
-          'state': 'HELD',
-          'startsOn': '2029-01-05',
-          'endsOn': '2029-01-08',
-          'nights': 3,
-          'expiresAt': null,
-        },
-        onRequest: (request) => body = request.body,
-      );
+      final repo = repositoryReturning({
+        'id': 'occ-1',
+        'resourceId': 'res-1',
+        'state': 'HELD',
+        'startsOn': '2029-01-05',
+        'endsOn': '2029-01-08',
+        'nights': 3,
+        'expiresAt': null,
+      }, onRequest: (request) => body = request.body);
 
       await repo.placeHold(
         resourceId: 'res-1',
@@ -85,7 +80,8 @@ void main() {
           endsOn: DateTime(2029, 1, 8),
         ),
         throwsA(
-            isA<ApiException>().having((e) => e.statusCode, 'statusCode', 409)),
+          isA<ApiException>().having((e) => e.statusCode, 'statusCode', 409),
+        ),
       );
     });
 
@@ -99,7 +95,8 @@ void main() {
           endsOn: DateTime(2029, 1, 8),
         ),
         throwsA(
-            isA<ApiException>().having((e) => e.statusCode, 'statusCode', 503)),
+          isA<ApiException>().having((e) => e.statusCode, 'statusCode', 503),
+        ),
       );
     });
   });
@@ -125,8 +122,9 @@ void main() {
 
       await expectLater(
         repo.startPaymentIntent('occ-1'),
-        throwsA(isA<ApiException>()
-            .having((e) => e.isNotFound, 'isNotFound', isTrue)),
+        throwsA(
+          isA<ApiException>().having((e) => e.isNotFound, 'isNotFound', isTrue),
+        ),
       );
     });
   });
@@ -146,26 +144,35 @@ void main() {
 
     test('sends the payment id in the body', () async {
       String? body;
-      final repo = repositoryReturning(
-        {'applied': true, 'stayId': 's-1'},
-        onRequest: (request) => body = request.body,
-      );
+      final repo = repositoryReturning({
+        'applied': true,
+        'stayId': 's-1',
+      }, onRequest: (request) => body = request.body);
 
       await repo.confirmSandboxPayment(
-          occupancyId: 'occ-1', paymentId: 'pay-1');
+        occupancyId: 'occ-1',
+        paymentId: 'pay-1',
+      );
 
       expect(jsonDecode(body!)['paymentId'], 'pay-1');
     });
 
-    test('a payment that is not this caller\'s, or is gone, is a 404',
-        () async {
-      final repo = repositoryReturning({'title': 'Not found'}, status: 404);
+    test(
+      'a payment that is not this caller\'s, or is gone, is a 404',
+      () async {
+        final repo = repositoryReturning({'title': 'Not found'}, status: 404);
 
-      await expectLater(
-        repo.confirmSandboxPayment(occupancyId: 'occ-1', paymentId: 'pay-1'),
-        throwsA(isA<ApiException>()
-            .having((e) => e.isNotFound, 'isNotFound', isTrue)),
-      );
-    });
+        await expectLater(
+          repo.confirmSandboxPayment(occupancyId: 'occ-1', paymentId: 'pay-1'),
+          throwsA(
+            isA<ApiException>().having(
+              (e) => e.isNotFound,
+              'isNotFound',
+              isTrue,
+            ),
+          ),
+        );
+      },
+    );
   });
 }

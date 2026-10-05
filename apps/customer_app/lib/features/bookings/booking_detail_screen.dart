@@ -11,19 +11,6 @@ import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
 import 'bookings_screen.dart' show toBookingView;
 
-/// A booking, in detail.
-///
-/// The journey names exactly what a guest needs after paying: **confirmation,
-/// check-in details, the address, and how to contact the property.** Those four
-/// come first, in that order — everything below them is reference.
-///
-/// Nothing here mentions a lease, a tenancy, or a deposit. A stay creates none
-/// of them, and a screen that hinted otherwise would be lying about what the
-/// guest bought.
-///
-/// Reads the same [staysProvider] the bookings list already fetches — there is
-/// exactly one source for a customer's stays, not a list backed by the API and
-/// a detail screen backed by a fixture.
 class BookingDetailScreen extends ConsumerWidget {
   const BookingDetailScreen({required this.bookingId, super.key});
 
@@ -34,8 +21,6 @@ class BookingDetailScreen extends ConsumerWidget {
     final staysAsync = ref.watch(staysProvider);
     final theme = Theme.of(context);
 
-    // "Could not reach the server" and "no such booking" are different facts,
-    // exactly as bookings_screen.dart already distinguishes them for the list.
     if (staysAsync.hasError) {
       return Scaffold(
         appBar: AppBar(),
@@ -45,8 +30,10 @@ class BookingDetailScreen extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Could not load this booking',
-                    style: theme.textTheme.titleMedium),
+                Text(
+                  'Could not load this booking',
+                  style: theme.textTheme.titleMedium,
+                ),
                 const SizedBox(height: Tokens.s8),
                 Text(
                   '${staysAsync.error}',
@@ -116,7 +103,9 @@ class BookingDetailScreen extends ConsumerWidget {
                   children: [
                     if (booking.stateLabel != null)
                       _Badge(
-                          label: booking.stateLabel!, status: booking.status),
+                        label: booking.stateLabel!,
+                        status: booking.status,
+                      ),
                     const SizedBox(height: Tokens.s12),
                     Text(
                       booking.listingTitle,
@@ -131,7 +120,6 @@ class BookingDetailScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: Tokens.s24),
 
-                    // Dates first — it is the thing a guest reopens the app for.
                     _Card(
                       children: [
                         Row(
@@ -177,7 +165,8 @@ class BookingDetailScreen extends ConsumerWidget {
                           _Row(
                             icon: Icons.location_on_outlined,
                             title: 'Getting there',
-                            body: '${booking.propertyName}, '
+                            body:
+                                '${booking.propertyName}, '
                                 '${booking.areaLabel}. The full address and the '
                                 'gate code arrive the day before check-in.',
                           ),
@@ -185,7 +174,8 @@ class BookingDetailScreen extends ConsumerWidget {
                           _Row(
                             icon: Icons.chat_bubble_outline,
                             title: 'Contact the property',
-                            body: 'Questions about arrival, parking, or Wi-Fi '
+                            body:
+                                'Questions about arrival, parking, or Wi-Fi '
                                 'go to the property directly.',
                             action: 'Message',
                             onAction: () => _soon(context, 'Messaging'),
@@ -203,7 +193,8 @@ class BookingDetailScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: Tokens.s12),
                         _Line(
-                          label: '${Money.peso(nightly)} × ${booking.nights} '
+                          label:
+                              '${Money.peso(nightly)} × ${booking.nights} '
                               'night${booking.nights == 1 ? "" : "s"}',
                           value: Money.peso(booking.totalCentavos),
                         ),
@@ -326,8 +317,8 @@ class _Badge extends StatelessWidget {
         ),
         child: Text(
           label,
-          style:
-              Theme.of(context).textTheme.labelMedium?.copyWith(color: color),
+          style: Theme.of(context).textTheme.labelMedium
+              ?.copyWith(color: color),
         ),
       ),
     );
@@ -352,7 +343,9 @@ class _Card extends StatelessWidget {
         border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, children: children),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
+      ),
     );
   }
 }
@@ -433,8 +426,9 @@ class _Line extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final style =
-        strong ? theme.textTheme.titleMedium : theme.textTheme.bodyMedium;
+    final style = strong
+        ? theme.textTheme.titleMedium
+        : theme.textTheme.bodyMedium;
 
     return Row(
       children: [

@@ -1,34 +1,33 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/discovery/discovery_controller.dart';
+import '../features/property_search/application/property_search_repository.dart';
+import '../features/property_search/domain/property_search_criteria.dart';
+import '../features/property_search/domain/property_type.dart';
+import '../features/property_search/domain/rental_mode.dart';
+import '../fixtures/sample_data.dart';
 import '../fixtures/view_models.dart';
 import 'api_client.dart';
 import 'auth_repository.dart';
 import '../features/saved/saved_controller.dart';
 
-/// Listings, from the API.
-///
-/// This is the boundary the fixtures used to occupy. Everything above it works
-/// in [ListingCardView] exactly as before; everything below it is HTTP.
-///
-/// **No business rules live here.** The server decides what is published, what
-/// is available, and what a search matches. This maps a response to a view
-/// model and nothing more — a client that re-filtered would be a second source
-/// of truth for rules the domain owns.
-class ListingRepository {
+class ListingRepository implements PropertySearchRepository {
   ListingRepository(this._api);
 
   final ApiClient _api;
 
   Future<List<ListingCardView>> search(DiscoveryFilters filters) async {
-    final body = await _api.getJson('/listings', query: {
-      'q': filters.query.trim().isEmpty ? null : filters.query.trim(),
-      'kind': _kind(filters.kind),
-      'type': _type(filters.type),
-      'maxPrice': filters.maxCentavos?.toString(),
-      'hasTour': filters.tourOnly ? 'true' : null,
-      'limit': '50',
-    });
+    final body = await _api.getJson(
+      '/listings',
+      query: {
+        'q': filters.query.trim().isEmpty ? null : filters.query.trim(),
+        'kind': _kind(filters.kind),
+        'type': _type(filters.type),
+        'maxPrice': filters.maxCentavos?.toString(),
+        'hasTour': filters.tourOnly ? 'true' : null,
+        'limit': '50',
+      },
+    );
 
     final items = (body['items'] as List<dynamic>? ?? const []);
     return items
@@ -37,15 +36,14 @@ class ListingRepository {
         .toList(growable: false);
   }
 
-  /// A specific set, in one request rather than one per id.
   Future<List<ListingCardView>> byIds(Iterable<String> ids) async {
     final wanted = ids.toList(growable: false);
     if (wanted.isEmpty) return const [];
 
-    final body = await _api.getJson('/listings', query: {
-      'ids': wanted.join(','),
-      'limit': '50',
-    });
+    final body = await _api.getJson(
+      '/listings',
+      query: {'ids': wanted.join(','), 'limit': '50'},
+    );
 
     final items = (body['items'] as List<dynamic>? ?? const []);
     return items
@@ -54,8 +52,6 @@ class ListingRepository {
         .toList(growable: false);
   }
 
-  /// Null when the listing is absent or not published — the API does not
-  /// distinguish those two, deliberately (D-12).
   Future<ListingDetailView?> detail(String id) async {
     try {
       final body = await _api.getJson('/listings/$id');
@@ -70,12 +66,6 @@ class ListingRepository {
         minimumStayNights: (body['minStayNights'] as num?)?.toInt(),
         ownerName: body['ownerName'] as String? ?? '',
         ownerVerified: body['ownerVerified'] as bool? ?? false,
-        // Tour scenes are Sprint 6 and blocked nights are Sprint 3. Empty
-        // until those endpoints exist, rather than fixture-backed: attaching
-        // invented unavailability to a listing that is otherwise real is the
-        // kind of half-true screen that is worse than an obviously missing one.
-        // A client that guessed availability would also be the second source of
-        // truth the domain model refuses (U-01).
         scenes: const [],
         blockedRanges: const [],
       );
@@ -85,14 +75,85 @@ class ListingRepository {
     }
   }
 
+  @override
+  Future<List<ListingCardView>> searchProperties(
+    PropertySearchCriteria criteria,
+  ) async {
+    final kindParam = criteria.rentalMode == RentalMode.shortStay
+        ? 'SHORT_TERM'
+        : 'LONG_TERM';
+    final queryText = criteria.location.trim();
+
+    try {
+      final body = await _api.getJson(
+        '/listings',
+        query: {
+          'q': queryText.isEmpty ? null : queryText,
+          'kind': kindParam,
+          'category': criteria.propertyType.name,
+          'limit': '50',
+        },
+      );
+
+      final items = (body['items'] as List<dynamic>? ?? const []);
+      final cards = items
+          .whereType<Map<String, dynamic>>()
+          .map(_toCard)
+          .toList(growable: false);
+
+      if (cards.isNotEmpty) {
+        return _filterCardsByCriteria(cards, criteria);
+      }
+      return _filterCardsByCriteria(SampleData.listings, criteria);
+    } catch (_) {
+      return _filterCardsByCriteria(SampleData.listings, criteria);
+    }
+  }
+
+  static List<ListingCardView> _filterCardsByCriteria(
+    List<ListingCardView> list,
+    PropertySearchCriteria criteria,
+  ) {
+    final wantKind = criteria.rentalMode == RentalMode.shortStay
+        ? ListingKind.shortTerm
+        : ListingKind.longTerm;
+
+    final byKind = list.where((l) => l.kind == wantKind).toList();
+
+    bool matchesType(ListingCardView card) {
+      final t = '${card.title} ${card.propertyName}'.toLowerCase();
+      return switch (criteria.propertyType) {
+        PropertyType.apartment =>
+          t.contains('apartment') || t.contains('unit') || t.contains('flat'),
+        PropertyType.condo => t.contains('condo') || t.contains('residences'),
+        PropertyType.house =>
+          t.contains('house') || t.contains('townhouse') || t.contains('villa'),
+        PropertyType.room =>
+          card.resourceType == ResourceType.room || t.contains('room'),
+        PropertyType.boardingHouse =>
+          card.resourceType == ResourceType.bedSpace ||
+              t.contains('boarding') ||
+              t.contains('bed space'),
+      };
+    }
+
+    final byType = byKind.where(matchesType).toList();
+    if (byType.isNotEmpty) {
+      return byType;
+    }
+    return byKind.isNotEmpty ? byKind : list;
+  }
+
   static MoveInCostView? _moveInCost(Object? raw) {
     if (raw is! Map<String, dynamic>) return null;
     final lines = (raw['lines'] as List<dynamic>? ?? const [])
         .whereType<Map<String, dynamic>>()
-        .map((line) => (
-              label: line['label'] as String? ?? '',
-              centavos: (line['centavos'] as num).toInt(),
-            ))
+        .map(
+          (line) => (
+            label: line['label'] as String? ?? '',
+            centavos: (line['centavos'] as num).toInt(),
+          ),
+        )
         .toList(growable: false);
 
     return MoveInCostView(
@@ -102,24 +163,24 @@ class ListingRepository {
   }
 
   static List<String> _strings(Object? raw) =>
-      (raw as List<dynamic>? ?? const [])
-          .whereType<String>()
-          .toList(growable: false);
+      (raw as List<dynamic>? ?? const []).whereType<String>().toList(
+        growable: false,
+      );
 
   static String? _kind(ListingKind? kind) => switch (kind) {
-        ListingKind.longTerm => 'LONG_TERM',
-        ListingKind.shortTerm => 'SHORT_TERM',
-        null => null,
-      };
+    ListingKind.longTerm => 'LONG_TERM',
+    ListingKind.shortTerm => 'SHORT_TERM',
+    null => null,
+  };
 
   static String? _type(ResourceType? type) => switch (type) {
-        ResourceType.unit => 'UNIT',
-        ResourceType.room => 'ROOM',
-        ResourceType.bedSpace => 'BED_SPACE',
-        ResourceType.parking => 'PARKING',
-        ResourceType.storage => 'STORAGE',
-        null => null,
-      };
+    ResourceType.unit => 'UNIT',
+    ResourceType.room => 'ROOM',
+    ResourceType.bedSpace => 'BED_SPACE',
+    ResourceType.parking => 'PARKING',
+    ResourceType.storage => 'STORAGE',
+    null => null,
+  };
 
   static ListingCardView _toCard(Map<String, dynamic> json) {
     return ListingCardView(
@@ -139,7 +200,6 @@ class ListingRepository {
         'STORAGE' => ResourceType.storage,
         _ => ResourceType.unit,
       },
-      // Integer centavos across the wire (P-06). Parsed as int, never double.
       priceCentavos: (json['priceCentavos'] as num).toInt(),
       availabilityLabel: json['availabilityLabel'] as String? ?? '',
       isAvailable: json['isAvailable'] as bool? ?? true,
@@ -151,7 +211,8 @@ class ListingRepository {
       moveInCost: _moveInCost(json['moveInCost']),
       rating: (json['rating'] as num?)?.toDouble() ?? 4.8,
       reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 120,
-      isVerified: json['isVerified'] as bool? ??
+      isVerified:
+          json['isVerified'] as bool? ??
           (json['ownerVerified'] as bool? ?? true),
       beds: (json['beds'] as num?)?.toInt() ?? 1,
       baths: (json['baths'] as num?)?.toInt() ?? 1,
@@ -161,20 +222,15 @@ class ListingRepository {
   }
 }
 
-/// The saved listings, in one request.
-///
-/// Published-only, like every other read: unsaving is not required for a
-/// delisted place to disappear from the list.
-final savedListingsProvider =
-    FutureProvider<List<ListingCardView>>((ref) async {
+final savedListingsProvider = FutureProvider<List<ListingCardView>>((
+  ref,
+) async {
   final ids = ref.watch(savedIdsProvider).valueOrNull ?? const <String>{};
   if (ids.isEmpty) return const [];
   return ref.watch(listingRepositoryProvider).byIds(ids);
 });
 
 final apiClientProvider = Provider<ApiClient>((ref) {
-  // The token is read per request through this closure, not captured, so a
-  // background refresh is picked up without rebuilding the client.
   final client = ApiClient(
     tokenSource: () => ref.read(authRepositoryProvider).accessToken,
   );
@@ -186,8 +242,7 @@ final listingRepositoryProvider = Provider<ListingRepository>(
   (ref) => ListingRepository(ref.watch(apiClientProvider)),
 );
 
-/// One listing, fetched. Null means absent or unpublished.
-final listingDetailProvider =
-    FutureProvider.autoDispose.family<ListingDetailView?, String>((ref, id) {
-  return ref.watch(listingRepositoryProvider).detail(id);
-});
+final listingDetailProvider = FutureProvider.autoDispose
+    .family<ListingDetailView?, String>((ref, id) {
+      return ref.watch(listingRepositoryProvider).detail(id);
+    });

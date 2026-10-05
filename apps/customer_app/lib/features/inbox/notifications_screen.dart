@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../design/tokens.dart';
 
-/// Notifications.
-///
-/// The bar the tenant journey sets is that **a customer should never be chased
-/// for something they were not told about** — so this is a log of things that
-/// happened, each with the time it happened, not a marketing channel.
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
 
@@ -65,8 +60,9 @@ class NotificationsScreen extends StatelessWidget {
         itemBuilder: (context, i) {
           final (icon, title, detail, ago, unread) = _items[i];
           return Container(
-            color:
-                unread ? Tokens.accent.withOpacity(0.04) : Colors.transparent,
+            color: unread
+                ? Tokens.accent.withOpacity(0.04)
+                : Colors.transparent,
             padding: const EdgeInsets.symmetric(
               horizontal: Tokens.gutter,
               vertical: Tokens.s16,

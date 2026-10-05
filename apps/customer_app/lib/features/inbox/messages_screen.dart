@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../design/tokens.dart';
 
-/// Messages.
-///
-/// **Rental-context only.** This is not a chat product — a permanent non-goal —
-/// so every thread hangs off a listing, an application, or a booking, and there
-/// is no way to start a conversation that is not about one of those.
 class MessagesScreen extends StatelessWidget {
   const MessagesScreen({super.key});
 
@@ -104,8 +99,6 @@ class MessagesScreen extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 1),
-                            // Every thread names what it is about. Without it
-                            // this becomes a chat app, which it must not be.
                             Text(
                               about,
                               maxLines: 1,
@@ -120,8 +113,9 @@ class MessagesScreen extends StatelessWidget {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: theme.textTheme.bodySmall?.copyWith(
-                                fontWeight:
-                                    unread ? FontWeight.w600 : FontWeight.w400,
+                                fontWeight: unread
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
                                 color: unread
                                     ? theme.colorScheme.onSurface
                                     : theme.colorScheme.onSurfaceVariant,

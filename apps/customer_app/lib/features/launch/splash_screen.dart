@@ -1,21 +1,13 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../design/tokens.dart';
 
-/// The first second of the app.
-///
-/// A splash earns its place only if it hides real work. This one covers the
-/// Supabase session restore and the first listings fetch — both of which happen
-/// before there is anything worth showing — so the customer sees an intentional
-/// screen instead of an empty one.
-///
-/// It is deliberately quiet: a mark, a line, and a slow fade. A rental app asks
-/// people to spend money they have thought about; an energetic launch animation
-/// sets the wrong register entirely.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({this.onDone, super.key});
 
-  /// Called once the entrance has played out.
   final VoidCallback? onDone;
 
   @override
@@ -24,17 +16,88 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
+  static const Duration _totalDuration = Duration(milliseconds: 2700);
+
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1100),
+    duration: _totalDuration,
+  );
+
+  bool _doneNotified = false;
+
+  late final Animation<double> _houseEntrance = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.055, 0.241, curve: Tokens.ease),
+  );
+
+  late final Animation<double> _orbitProgress = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.111, 0.556, curve: Curves.easeInOutCubic),
+  );
+
+  late final Animation<double> _titleEntrance = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.204, 0.370, curve: Tokens.ease),
+  );
+
+  late final Animation<double> _locationEntrance = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.278, 0.426, curve: Tokens.ease),
+  );
+
+  late final Animation<double> _loadingTextEntrance = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.333, 0.481, curve: Tokens.ease),
+  );
+
+  late final Animation<double> _bottomProgress = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.352, 0.815, curve: Curves.easeInOutCubic),
+  );
+
+  late final Animation<double> _exitFade = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.907, 1.000, curve: Tokens.ease),
+  );
+
+  late final Animation<double> _bgScale = Tween<double>(
+    begin: 1.02,
+    end: 1.0,
+  ).animate(
+    CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    ),
   );
 
   @override
   void initState() {
     super.initState();
-    _controller.forward().then((_) {
-      if (mounted) widget.onDone?.call();
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _notifyDone();
+      }
     });
+    _controller.forward();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (reduceMotion && _controller.duration != const Duration(milliseconds: 300)) {
+      _controller.duration = const Duration(milliseconds: 300);
+      if (!_controller.isCompleted) {
+        _controller.forward(from: _controller.value);
+      }
+    }
+  }
+
+  void _notifyDone() {
+    if (_doneNotified) return;
+    _doneNotified = true;
+    widget.onDone?.call();
   }
 
   @override
@@ -45,132 +108,414 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final dark = theme.brightness == Brightness.dark;
+    final media = MediaQuery.sizeOf(context);
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
 
-    // The mark fades in first, the words follow. Two beats, not one — a single
-    // simultaneous fade reads as a loading screen; a sequence reads as a title.
-    final mark = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0, 0.55, curve: Tokens.emphasised),
-    );
-    final words = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.35, 1, curve: Tokens.ease),
-    );
-
-    return Scaffold(
-      backgroundColor: dark ? Tokens.canvasDark : Tokens.canvas,
-      body: Center(
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, _) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Opacity(
-                opacity: mark.value,
-                child: Transform.scale(
-                  scale: 0.92 + 0.08 * mark.value,
-                  child: _Mark(dark: dark),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+      ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0A0F1D),
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            AnimatedBuilder(
+              animation: _bgScale,
+              builder: (context, child) {
+                final scale = reduceMotion ? 1.0 : _bgScale.value;
+                return Transform.scale(
+                  scale: scale,
+                  child: child,
+                );
+              },
+              child: Image.asset(
+                'assets/images/splash/rental_splash_background.png',
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => const SizedBox.expand(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0xFF0B111E),
+                          Color(0xFF1E293B),
+                          Color(0xFF33202A),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: Tokens.s24),
-              Opacity(
-                opacity: words.value,
-                child: Transform.translate(
-                  offset: Offset(0, 8 * (1 - words.value)),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Find a place',
-                        style: theme.textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: Tokens.s4),
-                      Text(
-                        'Cebu City',
-                        style: theme.textTheme.bodySmall,
-                      ),
+            ),
+            const Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0.0, 0.28, 0.60, 1.0],
+                    colors: [
+                      Color(0xED0A101D),
+                      Color(0x8A0C1424),
+                      Color(0x22000000),
+                      Color(0xDB070B14),
                     ],
                   ),
                 ),
               ),
-            ],
+            ),
+            SafeArea(
+              child: AnimatedBuilder(
+                animation: _controller,
+                builder: (context, _) {
+                  final exitVal = reduceMotion ? 0.0 : _exitFade.value;
+                  final foregroundOpacity = (1.0 - exitVal).clamp(0.0, 1.0);
+                  final foregroundOffset = Offset(0, -6.0 * exitVal);
+
+                  return Opacity(
+                    opacity: foregroundOpacity,
+                    child: Transform.translate(
+                      offset: foregroundOffset,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Column(
+                            children: [
+                              const Spacer(flex: 3),
+                              _buildBrandGroup(reduceMotion),
+                              const Spacer(flex: 5),
+                              _buildLoadingGroup(media.width, reduceMotion),
+                              const Spacer(flex: 2),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBrandGroup(bool reduceMotion) {
+    final houseVal = reduceMotion ? 1.0 : _houseEntrance.value;
+    final houseOpacity = houseVal.clamp(0.0, 1.0);
+    final houseScale = 0.90 + 0.10 * houseVal;
+    final houseTranslate = 10.0 * (1.0 - houseVal);
+
+    final titleVal = reduceMotion ? 1.0 : _titleEntrance.value;
+    final titleOpacity = titleVal.clamp(0.0, 1.0);
+    final titleTranslate = 8.0 * (1.0 - titleVal);
+
+    final locVal = reduceMotion ? 1.0 : _locationEntrance.value;
+    final locOpacity = locVal.clamp(0.0, 1.0);
+    final locTranslate = 6.0 * (1.0 - locVal);
+
+    final orbitVal = reduceMotion ? 1.0 : _orbitProgress.value;
+
+    return RepaintBoundary(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Opacity(
+            opacity: houseOpacity,
+            child: Transform.translate(
+              offset: Offset(0, houseTranslate),
+              child: Transform.scale(
+                scale: houseScale,
+                child: SizedBox(
+                  width: 104,
+                  height: 104,
+                  child: CustomPaint(
+                    key: const ValueKey('splash_orbit_mark'),
+                    painter: _OrbitHousePainter(
+                      orbitProgress: orbitVal,
+                      houseColor: const Color(0xFFFAF7F2),
+                      trackColor: const Color(0x2BFAF7F2),
+                      travelColor: const Color(0xD8FAF7F2),
+                      glowColor: const Color(0xFFFFF7EB),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
+          const SizedBox(height: Tokens.s16),
+          Opacity(
+            opacity: titleOpacity,
+            child: Transform.translate(
+              offset: Offset(0, titleTranslate),
+              child: const Text(
+                'Find a place',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'SF Pro Display',
+                  fontFamilyFallback: Tokens.fontFallback,
+                  fontSize: 25.0,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: -0.2,
+                  color: Color(0xFFFAF7F2),
+                  height: 1.2,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: Tokens.s6),
+          Opacity(
+            opacity: locOpacity,
+            child: Transform.translate(
+              offset: Offset(0, locTranslate),
+              child: const Text(
+                'CEBU CITY',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'SF Pro Text',
+                  fontFamilyFallback: Tokens.fontFallback,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 4.2,
+                  color: Color(0xB8ECE8E1),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingGroup(double screenWidth, bool reduceMotion) {
+    final textVal = reduceMotion ? 1.0 : _loadingTextEntrance.value;
+    final textOpacity = textVal.clamp(0.0, 1.0);
+    final textTranslate = 4.0 * (1.0 - textVal);
+
+    final progressVal = reduceMotion ? 1.0 : _bottomProgress.value;
+    final barWidth = (screenWidth * 0.40).clamp(140.0, 180.0);
+
+    return RepaintBoundary(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            key: const ValueKey('splash_progress_container'),
+            width: barWidth,
+            height: 2.5,
+            child: Stack(
+              children: [
+                Container(
+                  width: barWidth,
+                  height: 2.5,
+                  decoration: BoxDecoration(
+                    color: const Color(0x33FFFFFF),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: FractionallySizedBox(
+                    key: ValueKey('splash_progress_fill_${(progressVal * 100).toInt()}'),
+                    widthFactor: progressVal.clamp(0.0, 1.0),
+                    child: Container(
+                      height: 2.5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFAF7F2),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: Tokens.s12),
+          Opacity(
+            opacity: textOpacity,
+            child: Transform.translate(
+              offset: Offset(0, textTranslate),
+              child: const Text(
+                'Finding your next place...',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'SF Pro Text',
+                  fontFamilyFallback: Tokens.fontFallback,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.6,
+                  color: Color(0x9EFAF7F2),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// A door, drawn rather than shipped as an asset.
-///
-/// Vector, so it is crisp at any density and adds nothing to the bundle. A
-/// doorway is the one image that means the same thing to somebody renting a
-/// bedspace and somebody renting a condo.
-class _Mark extends StatelessWidget {
-  const _Mark({required this.dark});
+class _OrbitHousePainter extends CustomPainter {
+  const _OrbitHousePainter({
+    required this.orbitProgress,
+    required this.houseColor,
+    required this.trackColor,
+    required this.travelColor,
+    required this.glowColor,
+  });
 
-  final bool dark;
+  final double orbitProgress;
+  final Color houseColor;
+  final Color trackColor;
+  final Color travelColor;
+  final Color glowColor;
 
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 76,
-      width: 76,
-      child: CustomPaint(
-        painter: _DoorPainter(
-          ink: dark ? Tokens.inkDark : Tokens.ink,
-          accent: Tokens.accent,
-        ),
-      ),
-    );
-  }
-}
-
-class _DoorPainter extends CustomPainter {
-  _DoorPainter({required this.ink, required this.accent});
-
-  final Color ink;
-  final Color accent;
+  static const double _startAngle = -2.70526;
+  static const double _sweepAngle = 2.09440;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final stroke = Paint()
-      ..color = ink
+    final center = Offset(size.width / 2, size.height / 2 + 1);
+    final radius = size.width * 0.40;
+
+    final trackPaint = Paint()
+      ..color = trackColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.4
-      ..strokeJoin = StrokeJoin.round
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = 1.2;
 
-    // The frame: an arch on a rectangle.
-    final w = size.width, h = size.height;
-    final frame = Path()
-      ..moveTo(w * 0.16, h * 0.94)
-      ..lineTo(w * 0.16, h * 0.42)
-      ..arcToPoint(
-        Offset(w * 0.84, h * 0.42),
-        radius: Radius.circular(w * 0.34),
-      )
-      ..lineTo(w * 0.84, h * 0.94);
+    canvas.drawCircle(center, radius, trackPaint);
 
-    canvas.drawPath(frame, stroke);
+    final clampedProgress = orbitProgress.clamp(0.0, 1.0);
+    if (clampedProgress > 0.001) {
+      final travelPaint = Paint()
+        ..color = travelColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8
+        ..strokeCap = StrokeCap.round;
 
-    // The threshold — the line you step over.
-    canvas.drawLine(
-      Offset(w * 0.06, h * 0.94),
-      Offset(w * 0.94, h * 0.94),
-      stroke,
+      final currentSweep = _sweepAngle * clampedProgress;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        _startAngle,
+        currentSweep,
+        false,
+        travelPaint,
+      );
+    }
+
+    final currentAngle = _startAngle + (_sweepAngle * clampedProgress);
+    final point = Offset(
+      center.dx + radius * math.cos(currentAngle),
+      center.dy + radius * math.sin(currentAngle),
     );
 
-    // A handle, in the one accent the app allows itself.
-    canvas.drawCircle(
-      Offset(w * 0.66, h * 0.68),
-      3.4,
-      Paint()..color = accent,
+    final outerGlowPaint = Paint()
+      ..color = glowColor.withValues(alpha: 0.22)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.0);
+    canvas.drawCircle(point, 6.8, outerGlowPaint);
+
+    final midGlowPaint = Paint()
+      ..color = glowColor.withValues(alpha: 0.50);
+    canvas.drawCircle(point, 3.8, midGlowPaint);
+
+    final corePaint = Paint()
+      ..color = const Color(0xFFFFFFFF);
+    canvas.drawCircle(point, 2.2, corePaint);
+
+    _paintHouse(canvas, center, houseColor);
+  }
+
+  void _paintHouse(Canvas canvas, Offset center, Color color) {
+    final strokePaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final fillPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    const halfW = 21.0;
+    const bodyHalfW = 15.0;
+    const topY = -15.0;
+    const eaveY = 0.0;
+    const baseY = 19.0;
+
+    final cX = center.dx;
+    final cY = center.dy;
+
+    final roofPath = Path()
+      ..moveTo(cX - halfW, cY + eaveY)
+      ..lineTo(cX, cY + topY)
+      ..lineTo(cX + halfW, cY + eaveY);
+    canvas.drawPath(roofPath, strokePaint);
+
+    const chimneyLeft = 8.5;
+    const chimneyRight = 12.5;
+    const chimneyTop = -14.5;
+    const chimneyRoofIntersect = -6.5;
+
+    final chimneyPath = Path()
+      ..moveTo(cX + chimneyLeft, cY + -9.5)
+      ..lineTo(cX + chimneyLeft, cY + chimneyTop)
+      ..lineTo(cX + chimneyRight, cY + chimneyTop)
+      ..lineTo(cX + chimneyRight, cY + chimneyRoofIntersect);
+    canvas.drawPath(chimneyPath, strokePaint);
+
+    final wallsPath = Path()
+      ..moveTo(cX - bodyHalfW, cY + eaveY)
+      ..lineTo(cX - bodyHalfW, cY + baseY)
+      ..lineTo(cX + bodyHalfW, cY + baseY)
+      ..lineTo(cX + bodyHalfW, cY + eaveY);
+    canvas.drawPath(wallsPath, strokePaint);
+
+    const winSize = 3.6;
+    const row1Y = 4.5;
+    const row2Y = 11.5;
+    const col1X = -8.5;
+    const col2X = 5.0;
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(cX + col1X, cY + row1Y, winSize, winSize),
+        const Radius.circular(0.8),
+      ),
+      fillPaint,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(cX + col2X, cY + row1Y, winSize, winSize),
+        const Radius.circular(0.8),
+      ),
+      fillPaint,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(cX + col1X, cY + row2Y, winSize, winSize),
+        const Radius.circular(0.8),
+      ),
+      fillPaint,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(cX + col2X, cY + row2Y, winSize, winSize),
+        const Radius.circular(0.8),
+      ),
+      fillPaint,
     );
   }
 
   @override
-  bool shouldRepaint(_DoorPainter old) =>
-      old.ink != ink || old.accent != accent;
+  bool shouldRepaint(_OrbitHousePainter oldDelegate) {
+    return oldDelegate.orbitProgress != orbitProgress ||
+        oldDelegate.houseColor != houseColor ||
+        oldDelegate.trackColor != trackColor ||
+        oldDelegate.travelColor != travelColor ||
+        oldDelegate.glowColor != glowColor;
+  }
 }

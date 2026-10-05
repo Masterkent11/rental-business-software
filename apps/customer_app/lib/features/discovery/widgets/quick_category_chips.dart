@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../design/tokens.dart';
+import '../../property_search/domain/property_type.dart';
 
 enum PropertyCategory {
   apartment('Apartment', Icons.apartment_outlined),
@@ -13,16 +14,32 @@ enum PropertyCategory {
   const PropertyCategory(this.label, this.icon);
   final String label;
   final IconData icon;
+
+  PropertyType toPropertyType() => switch (this) {
+        PropertyCategory.apartment => PropertyType.apartment,
+        PropertyCategory.condo => PropertyType.condo,
+        PropertyCategory.house => PropertyType.house,
+        PropertyCategory.room => PropertyType.room,
+        PropertyCategory.boardingHouse => PropertyType.boardingHouse,
+      };
+
+  static PropertyCategory fromPropertyType(PropertyType type) => switch (type) {
+        PropertyType.apartment => PropertyCategory.apartment,
+        PropertyType.condo => PropertyCategory.condo,
+        PropertyType.house => PropertyCategory.house,
+        PropertyType.room => PropertyCategory.room,
+        PropertyType.boardingHouse => PropertyCategory.boardingHouse,
+      };
 }
 
 class PropertyCategoryList extends StatelessWidget {
   const PropertyCategoryList({
     super.key,
-    required this.selected,
+    this.selected,
     required this.onSelected,
   });
 
-  final PropertyCategory selected;
+  final PropertyCategory? selected;
   final ValueChanged<PropertyCategory> onSelected;
 
   @override

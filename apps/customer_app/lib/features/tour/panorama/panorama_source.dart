@@ -6,30 +6,11 @@ import 'package:flutter/painting.dart';
 
 import '../../../data/tour_repository.dart';
 
-/// How sharp the panorama currently is.
-enum PanoramaQuality {
-  /// Nothing yet — the viewport is still empty.
-  none,
+enum PanoramaQuality { none, preview, tiles }
 
-  /// The kilobyte preview. Recognisable, soft, and on screen almost at once.
-  preview,
-
-  /// A tile level, composited. Higher is sharper.
-  tiles,
-}
-
-/// Loads one room's pixels, coarse first.
-///
-/// This is the client half of ADR-0009. The pipeline exists so a customer sees
-/// the room while the detail is still arriving, and the rule that makes that
-/// true is here: **never wait for a better image before showing a worse one.**
-///
-/// It also never fetches the original panorama. The source is a 4.4 MB file
-/// kept so tiles can be regenerated later; downloading it to look at a room
-/// would defeat the entire pipeline.
 class PanoramaSource extends ChangeNotifier {
   PanoramaSource({required this.scene, ImageLoader? loader})
-      : _load = loader ?? _defaultLoader;
+    : _load = loader ?? _defaultLoader;
 
   final TourSceneApiView scene;
   final ImageLoader _load;
@@ -40,22 +21,14 @@ class PanoramaSource extends ChangeNotifier {
   Object? _error;
   bool _disposed = false;
 
-  /// The texture to draw. Null until the first pixels land.
   ui.Image? get image => _image;
   PanoramaQuality get quality => _quality;
 
-  /// Which tile level is on screen, or -1 for none.
   int get level => _level;
   Object? get error => _error;
 
-  /// True once there is something to look at, however soft.
   bool get hasPixels => _image != null;
 
-  /// Fetch the preview, then the coarsest tile level.
-  ///
-  /// Level 0 is two tiles and about 22 KB; it is the first genuinely usable
-  /// view and is loaded straight away. Sharper levels wait for the customer to
-  /// zoom, because level 2 is nearly 3 MB and most people never zoom that far.
   Future<void> start() async {
     await _loadPreview();
     if (_disposed) return;
@@ -72,20 +45,16 @@ class PanoramaSource extends ChangeNotifier {
         image.dispose();
         return;
       }
-      // Only if nothing better has arrived while this was in flight.
       if (_quality == PanoramaQuality.none) {
         _replace(image, PanoramaQuality.preview, -1);
       } else {
         image.dispose();
       }
     } catch (error) {
-      // A missing preview is survivable — the tiles are the real image, and
-      // failing the whole room over its thumbnail would be worse.
       if (_quality == PanoramaQuality.none) _error = error;
     }
   }
 
-  /// Load and composite one tile level, if it is better than what is shown.
   Future<void> ensureLevel(int level) async {
     if (_disposed) return;
     if (level < 0 || level >= scene.tileLevels) return;
@@ -101,15 +70,12 @@ class PanoramaSource extends ChangeNotifier {
         composed.dispose();
         return;
       }
-      // A slower, coarser level may finish after a sharper one. Discard it
-      // rather than letting the view go backwards.
       if (_quality == PanoramaQuality.tiles && level <= _level) {
         composed.dispose();
         return;
       }
       _replace(composed, PanoramaQuality.tiles, level);
     } catch (error) {
-      // Keep whatever is on screen. A failed refinement is not a failed room.
       if (!hasPixels) _error = error;
       if (!_disposed) notifyListeners();
     } finally {
@@ -119,11 +85,6 @@ class PanoramaSource extends ChangeNotifier {
 
   final Set<int> _loading = <int>{};
 
-  /// Stitch a level's tiles into one texture the shader can sample.
-  ///
-  /// The shader needs a single equirectangular image, so the tiles are drawn
-  /// into one canvas. Level 0 is two 512px tiles; level 2 is thirty-two, which
-  /// is why it is only fetched on demand.
   Future<ui.Image?> _composeLevel(int level) async {
     final width = 1024 << level;
     final height = width ~/ 2;
@@ -166,9 +127,6 @@ class PanoramaSource extends ChangeNotifier {
   }
 
   void _replace(ui.Image next, PanoramaQuality quality, int level) {
-    // Decoded panoramas are megabytes of GPU memory. Dropping the old one
-    // immediately is what keeps a five-room walkthrough from accumulating
-    // them on a phone.
     _image?.dispose();
     _image = next;
     _quality = quality;
@@ -186,7 +144,6 @@ class PanoramaSource extends ChangeNotifier {
   }
 }
 
-/// Fetches and decodes one image. Injected so tests need no network.
 typedef ImageLoader = Future<ui.Image> Function(String url);
 
 Future<ui.Image> _defaultLoader(String url) async {

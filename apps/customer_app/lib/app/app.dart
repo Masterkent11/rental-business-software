@@ -9,8 +9,6 @@ import 'router.dart';
 class CustomerApp extends StatefulWidget {
   const CustomerApp({this.showSplash = true, super.key});
 
-  /// Off in widget tests, which should not wait out an entrance animation to
-  /// assert on a screen.
   final bool showSplash;
 
   @override
@@ -30,11 +28,6 @@ class _CustomerAppState extends State<CustomerApp> {
       darkTheme: AppTheme.dark(),
       routerConfig: _router,
 
-      /// The splash sits above the router rather than being a route.
-      ///
-      /// Routing it would mean the customer's first back gesture returns them
-      /// to a logo, and a deep link into a listing would land on the splash
-      /// instead of the listing.
       builder: (context, child) => Stack(
         children: [
           child ?? const SizedBox.shrink(),

@@ -15,13 +15,6 @@ import '../../fixtures/view_models.dart';
 import '../saved/saved_controller.dart';
 import 'widgets/move_in_cost_card.dart';
 
-/// Listing detail.
-///
-/// The order follows the customer journey exactly: photos, then the **tour**,
-/// then what it costs to actually move in, then everything else. The tour sits
-/// above the fold because it is a discovery step, not an enhancement — and the
-/// move-in cost sits directly under the price because comparing bare monthly
-/// rent is misleading in a market where entry is three months up front.
 class ListingDetailScreen extends ConsumerStatefulWidget {
   const ListingDetailScreen({required this.listingId, super.key});
 
@@ -37,17 +30,8 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
   final _photoPage = PageController();
   int _photoIndex = 0;
 
-  /// How solid the top chrome is, 0 to 1.
-  ///
-  /// The back and save buttons float over the photograph, which is the right
-  /// look while the photograph is behind them. Once it has scrolled away they
-  /// are floating over the title instead, and two glass circles sitting on top
-  /// of running text is unreadable. So the bar earns a background exactly when
-  /// it needs one, and the title passes behind it rather than through it.
   double _chrome = 0;
 
-  /// The photograph is 380 tall and the chrome is about 100 deep with the
-  /// status bar, so the collision starts a little before 280.
   static const _chromeFadeStart = 240.0;
   static const _chromeFadeLength = 80.0;
 
@@ -81,14 +65,11 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     final async = ref.watch(listingDetailProvider(widget.listingId));
 
     return switch (async) {
-      // "Listing taken while browsing" is a state the journey names as normal
-      // life, not an error — say so honestly rather than 404 silently.
       AsyncData(value: null) => const _NotFound(),
       AsyncError(:final error) => _DetailFailed(
-          error: error,
-          onRetry: () =>
-              ref.invalidate(listingDetailProvider(widget.listingId)),
-        ),
+        error: error,
+        onRetry: () => ref.invalidate(listingDetailProvider(widget.listingId)),
+      ),
       AsyncData(:final value) => _buildDetail(context, value!),
       _ => const _DetailLoading(),
     };
@@ -122,14 +103,10 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                   Tokens.gutter,
                   Tokens.s32,
                   Tokens.gutter,
-                  // Clears the commit bar with room to spare — a price pinned
-                  // to the last line of text reads as an advert.
                   160,
                 ),
                 sliver: SliverList.list(
                   children: [
-                    // The name of the place is the largest thing on the
-                    // screen. Everything after it is a qualification of it.
                     Reveal(
                       child: Text(
                         card.title,
@@ -154,8 +131,10 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                       const SizedBox(height: Tokens.sectionTight),
                       _TourCallout(
                         sceneCount: card.sceneCount,
-                        firstScenes:
-                            detail.scenes.take(3).map((s) => s.label).toList(),
+                        firstScenes: detail.scenes
+                            .take(3)
+                            .map((s) => s.label)
+                            .toList(),
                         onTap: () => context.push(Routes.tour(card.id)),
                       ),
                     ],
@@ -242,10 +221,6 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
             ],
           ),
 
-          // The background the top chrome earns on scroll. Its own layer,
-          // and deliberately ignored by the hit test: it exists to be looked
-          // through, and a transparent rectangle lying across the top of the
-          // screen must never be the thing that swallows a tap.
           Positioned(
             top: 0,
             left: 0,
@@ -267,7 +242,6 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
             ),
           ),
 
-          // Floating glass chrome, over the photograph rather than on a bar.
           Positioned(
             top: 0,
             left: 0,
@@ -291,9 +265,6 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     ),
                     const Spacer(),
                     Glass.circle(
-                      // toggle() already rolls the heart back on failure; this
-                      // just stops that failure surfacing as an unhandled
-                      // future rejection once it has done its job.
                       onTap: () => ref
                           .read(savedIdsProvider.notifier)
                           .toggle(card.id)
@@ -478,10 +449,6 @@ class _TourCallout extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    // Scene labels arrive with the tour endpoint in Sprint 6.
-                    // Until then the room count is real (it comes from the API)
-                    // and the preview is simply omitted rather than rendered as
-                    // a dangling ellipsis.
                     firstScenes.isEmpty
                         ? '$sceneCount rooms to walk through'
                         : '$sceneCount rooms · ${firstScenes.join(", ")}…',
@@ -554,8 +521,6 @@ class _OwnerCard extends StatelessWidget {
                         color: Tokens.available,
                       ),
                       const SizedBox(width: Tokens.s4),
-                      // Verification is a real gate: an unverified organization
-                      // cannot publish at all. Worth saying out loud.
                       Text(
                         'Verified by the platform',
                         style: theme.textTheme.bodySmall?.copyWith(
@@ -575,8 +540,6 @@ class _OwnerCard extends StatelessWidget {
   }
 }
 
-/// Optional, and the journey says so: some customers want a physical viewing
-/// even after the tour, and some questions the listing does not answer.
 class _EnquireRow extends StatelessWidget {
   const _EnquireRow({required this.isLongTerm});
 
@@ -661,8 +624,6 @@ class _GhostButton extends StatelessWidget {
   }
 }
 
-/// The sticky commitment bar. Price on the left so it stays visible while the
-/// customer reads, action on the right.
 class _CommitBar extends StatelessWidget {
   const _CommitBar({required this.card});
 
@@ -760,8 +721,6 @@ class _Section extends StatelessWidget {
             const SizedBox(height: Tokens.s6),
             Text(caption!, style: theme.textTheme.bodySmall),
           ],
-          // A heading needs room to be a heading. At 12 it looked like a label
-          // stuck to the paragraph below it.
           const SizedBox(height: Tokens.s16),
           child,
         ],
@@ -775,9 +734,9 @@ class _SectionGap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: Tokens.s32),
-        child: Divider(color: Theme.of(context).colorScheme.outlineVariant),
-      );
+    padding: const EdgeInsets.symmetric(vertical: Tokens.s32),
+    child: Divider(color: Theme.of(context).colorScheme.outlineVariant),
+  );
 }
 
 class _Bullet extends StatelessWidget {
@@ -853,8 +812,8 @@ class _NotFound extends StatelessWidget {
                 'It may have been let to someone else while you were looking.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -864,7 +823,6 @@ class _NotFound extends StatelessWidget {
   }
 }
 
-/// Waiting for the listing.
 class _DetailLoading extends StatelessWidget {
   const _DetailLoading();
 
@@ -877,7 +835,9 @@ class _DetailLoading extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-              height: 380, color: theme.colorScheme.surfaceContainerHighest),
+            height: 380,
+            color: theme.colorScheme.surfaceContainerHighest,
+          ),
           Padding(
             padding: const EdgeInsets.all(Tokens.gutter),
             child: Column(
@@ -909,7 +869,6 @@ class _DetailLoading extends StatelessWidget {
   }
 }
 
-/// The listing could not be loaded — distinct from it being gone.
 class _DetailFailed extends StatelessWidget {
   const _DetailFailed({required this.error, required this.onRetry});
 
@@ -937,8 +896,10 @@ class _DetailFailed extends StatelessWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
               const SizedBox(height: Tokens.s16),
-              Text('Could not load this place',
-                  style: theme.textTheme.headlineSmall),
+              Text(
+                'Could not load this place',
+                style: theme.textTheme.headlineSmall,
+              ),
               const SizedBox(height: Tokens.s8),
               Text(
                 message,

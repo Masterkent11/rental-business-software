@@ -38,24 +38,8 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
   }
 
   void _onCategorySelected(PropertyCategory category) {
-    final current = ref.read(selectedCategoryProvider);
-    final target = current == category ? PropertyCategory.apartment : category;
-
-    ref.read(selectedCategoryProvider.notifier).state = target;
-    final filtersController = ref.read(filtersProvider.notifier);
-
-    switch (target) {
-      case PropertyCategory.apartment:
-        filtersController.setQuery('apartment');
-      case PropertyCategory.condo:
-        filtersController.setQuery('condo');
-      case PropertyCategory.house:
-        filtersController.setQuery('house');
-      case PropertyCategory.room:
-        filtersController.setQuery('room');
-      case PropertyCategory.boardingHouse:
-        filtersController.setQuery('boarding');
-    }
+    ref.read(selectedCategoryProvider.notifier).state = category;
+    context.push(Routes.propertySearch(category.toPropertyType()));
   }
 
   @override
