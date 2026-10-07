@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
+import '../app/bootstrap/app_bootstrap.dart';
+
 abstract interface class AuthGateway {
   String? get accessToken;
 
@@ -110,6 +112,10 @@ class UnavailableAuthGateway implements AuthGateway {
 }
 
 final authRepositoryProvider = Provider<AuthGateway>((ref) {
+  final bootstrapState = ref.watch(appBootstrapStateProvider);
+  if (!bootstrapState.isReady) {
+    return const UnavailableAuthGateway();
+  }
   try {
     return SupabaseAuthGateway(supabase.Supabase.instance.client);
   } catch (_) {

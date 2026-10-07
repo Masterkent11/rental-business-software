@@ -84,6 +84,10 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    precacheImage(
+      const AssetImage('assets/images/splash/rental_splash_background.png'),
+      context,
+    );
     final reduceMotion =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     if (reduceMotion && _controller.duration != const Duration(milliseconds: 300)) {
@@ -133,6 +137,7 @@ class _SplashScreenState extends State<SplashScreen>
               child: Image.asset(
                 'assets/images/splash/rental_splash_background.png',
                 fit: BoxFit.cover,
+                gaplessPlayback: true,
                 errorBuilder: (context, error, stackTrace) => const SizedBox.expand(
                   child: DecoratedBox(
                     decoration: BoxDecoration(

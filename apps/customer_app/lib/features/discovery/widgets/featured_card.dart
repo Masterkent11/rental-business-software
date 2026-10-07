@@ -42,7 +42,7 @@ class _FeaturedPropertyCarouselState extends State<FeaturedPropertyCarousel> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: Tokens.gutter),
           child: SizedBox(
-            height: 288,
+            height: 312,
             child: PageView.builder(
               controller: _pageController,
               itemCount: widget.listings.length,
