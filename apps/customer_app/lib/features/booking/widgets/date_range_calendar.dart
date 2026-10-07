@@ -3,17 +3,6 @@ import 'package:intl/intl.dart';
 
 import '../../../design/tokens.dart';
 
-/// A two-ended date range picker over a run of months.
-///
-/// Extracted from the short-term booking screen so search can use the same
-/// widget. There is exactly one date-selection implementation in this app, and
-/// this is it — a second one would drift, and the half-open interval convention
-/// is precisely the kind of detail that drifts.
-///
-/// It knows nothing about availability. The booking screen passes an
-/// [isBlocked] callback built from the server's projection; search passes none,
-/// because "which nights are open" is a question about one resource and search
-/// has not chosen one yet.
 class DateRangeCalendar extends StatelessWidget {
   const DateRangeCalendar({
     required this.months,
@@ -32,8 +21,6 @@ class DateRangeCalendar extends StatelessWidget {
   final bool Function(DateTime)? isBlocked;
   final DateTime? firstSelectable;
 
-  /// Half-open, exactly like the domain: `[from, to)`. A checkout on the 29th
-  /// frees the 29th.
   static bool isWithin(
     DateTime day,
     List<({DateTime from, DateTime to})> ranges,
@@ -44,11 +31,6 @@ class DateRangeCalendar extends StatelessWidget {
     return false;
   }
 
-  /// Two-ended selection, shared by every caller.
-  ///
-  /// Tapping a day that is not after the current start restarts the range,
-  /// which is how a picker refuses an end before its beginning without ever
-  /// showing an error.
   static (DateTime?, DateTime?) select({
     required DateTime day,
     required DateTime? start,
@@ -102,17 +84,17 @@ class DateRangeLegend extends StatelessWidget {
   }
 
   Widget _dot(Color color, String label, BuildContext context) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: Tokens.s6),
-          Text(label, style: Theme.of(context).textTheme.bodySmall),
-        ],
-      );
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Container(
+        width: 10,
+        height: 10,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      ),
+      const SizedBox(width: Tokens.s6),
+      Text(label, style: Theme.of(context).textTheme.bodySmall),
+    ],
+  );
 }
 
 class _MonthGrid extends StatelessWidget {
@@ -137,7 +119,7 @@ class _MonthGrid extends StatelessWidget {
     final theme = Theme.of(context);
     final first = DateTime(month.year, month.month, 1);
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
-    final leading = first.weekday % 7; // Sunday-first, as PH calendars read.
+    final leading = first.weekday % 7;
     final today = DateUtils.dateOnly(firstSelectable ?? DateTime.now());
 
     return Padding(
@@ -177,7 +159,8 @@ class _MonthGrid extends StatelessWidget {
               final blocked = isBlocked(day);
               final isStart = checkIn != null && day == checkIn;
               final isEnd = checkOut != null && day == checkOut;
-              final inRange = checkIn != null &&
+              final inRange =
+                  checkIn != null &&
                   checkOut != null &&
                   day.isAfter(checkIn!) &&
                   day.isBefore(checkOut!);
@@ -266,4 +249,3 @@ class _DayCell extends StatelessWidget {
     );
   }
 }
-

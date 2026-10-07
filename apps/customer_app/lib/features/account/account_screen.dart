@@ -10,29 +10,8 @@ import '../../app/router.dart';
 
 import '../../design/tokens.dart';
 
-/// Account.
-///
-/// Nothing here authenticates — identity and sessions are Step 3 decisions. The
-/// screen exists because the third tab has to be real, and because one thing is
-/// worth stating from the very first build: **renting a place here does not
-/// create a second account.** Customer and tenant are capabilities on one
-/// login, held at the same time, and a customer who signs a lease keeps
-/// browsing exactly as they were.
-///
-/// Re-registration at that moment would be the single most damaging break in
-/// the product, so the app says so before it can happen.
-/// What the server says this person may do, in plain words.
-///
-/// Read from the API response, never worked out from a token: capabilities are
-/// resolved server-side per request (ADR-0007), and a client that decided for
-/// itself would drift from the only authority that counts.
 String _capabilityLine(AccountView view) {
-  final held = <String>[
-    if (view.isTenant) 'Tenant',
-    if (view.isOwner) 'Owner',
-  ];
-  // D-15: renting does not create a second account. Customer is always true,
-  // and the others are added to it rather than replacing it.
+  final held = <String>[if (view.isTenant) 'Tenant', if (view.isOwner) 'Owner'];
   return held.isEmpty ? 'Customer' : 'Customer · ${held.join(" · ")}';
 }
 
@@ -102,9 +81,6 @@ class AccountScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            // The specific failure, not a generic apology: a
-                            // customer who can read it can tell support
-                            // something useful, and so can we.
                             '${account.error}',
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
@@ -134,10 +110,6 @@ class AccountScreen extends ConsumerWidget {
                   ),
                   if (account.valueOrNull == null && !account.isLoading)
                     FilledButton(
-                      // The theme makes filled buttons full-width for page
-                      // CTAs, which cannot work inside a row. Overridden here
-                      // rather than weakening the theme everything else relies
-                      // on.
                       style: FilledButton.styleFrom(
                         minimumSize: const Size(0, 44),
                         padding: const EdgeInsets.symmetric(
@@ -165,9 +137,6 @@ class AccountScreen extends ConsumerWidget {
               (Icons.description_outlined, 'My applications'),
               (Icons.receipt_long_outlined, 'Payments and receipts'),
             ],
-            // Long-term applications live here rather than under Bookings:
-            // an application is a different lifecycle from a nightly stay, and
-            // one word covering both would blur the two.
             routeFor: {'My applications': Routes.applications},
           ),
           const _Group(
@@ -260,7 +229,9 @@ class _Row extends StatelessWidget {
           return;
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$label needs the API contracts from Step 5.')),
+          SnackBar(
+            content: Text('$label needs the API contracts from Step 5.'),
+          ),
         );
       },
       child: Container(

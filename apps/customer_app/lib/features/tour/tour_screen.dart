@@ -11,17 +11,6 @@ import '../../design/tokens.dart';
 import 'panorama/panorama_source.dart';
 import 'panorama/panorama_view.dart';
 
-/// Virtual tour viewer.
-///
-/// The interaction model is unchanged from the design this screen has always
-/// carried: drag to look, hotspots that walk you room to room, an always-
-/// visible room label that opens the scene list, info notes, a clear way back,
-/// and the path straight into booking or applying.
-///
-/// What changed is underneath. The flat photograph is gone; this now renders a
-/// real equirectangular panorama through a GPU shader, fed by the tiled
-/// pipeline from story 6.1 and the tour API from 6.2. Rooms, labels, and
-/// hotspots all come from the tour data — nothing here is hard-coded.
 class TourScreen extends ConsumerStatefulWidget {
   const TourScreen({required this.listingId, super.key});
 
@@ -37,7 +26,6 @@ class _TourScreenState extends ConsumerState<TourScreen> {
   PanoramaCamera _camera = const PanoramaCamera();
   bool _hasLooked = false;
 
-  /// True while a room the customer chose is still finding its first pixels.
   bool _walking = false;
 
   @override
@@ -46,11 +34,6 @@ class _TourScreenState extends ConsumerState<TourScreen> {
     super.dispose();
   }
 
-  /// Open a room: swap the source, reset the view, and start loading.
-  ///
-  /// The camera resets to level and forward. Arriving in a new room already
-  /// looking at the ceiling is disorienting, and the owner framed the panorama
-  /// expecting you to enter facing its centre.
   void _open(TourSceneApiView scene) {
     final previous = _source;
 
@@ -62,14 +45,11 @@ class _TourScreenState extends ConsumerState<TourScreen> {
       _walking = true;
     });
 
-    // Disposed after the swap so the outgoing texture is released only once
-    // nothing is drawing it.
     previous?.dispose();
 
     source.start();
   }
 
-  /// A loader for one room, already listening for its first pixels.
   PanoramaSource _sourceFor(TourSceneApiView scene) {
     return PanoramaSource(
       scene: scene,
@@ -77,12 +57,6 @@ class _TourScreenState extends ConsumerState<TourScreen> {
     )..addListener(_onPixels);
   }
 
-  /// Repaint when the room's pixels change quality.
-  ///
-  /// Every notification, not only while walking: the entry room never sets
-  /// `_walking`, so gating on it left the loading overlay up after the first
-  /// pixels had arrived — covering the hotspots and swallowing taps. The source
-  /// notifies a handful of times per room, so rebuilding on each is cheap.
   void _onPixels() {
     if (!mounted) return;
     setState(() {
@@ -96,8 +70,6 @@ class _TourScreenState extends ConsumerState<TourScreen> {
       _hasLooked = true;
     });
 
-    // Refine as the customer zooms in. Level 2 is nearly 3 MB, so it is only
-    // fetched by somebody who has actually leaned in to look at something.
     final source = _source;
     if (source == null) return;
 
@@ -111,9 +83,6 @@ class _TourScreenState extends ConsumerState<TourScreen> {
     final resourceId = detail.valueOrNull?.card.resourceId;
 
     if (detail.isLoading) return const _TourLoading();
-    // A failed listing fetch is a network fact, not "this owner has no tour"
-    // — conflating the two would tell the customer something false about the
-    // listing instead of about their connection.
     if (detail.hasError) return const _TourUnavailable();
     if (resourceId == null || resourceId.isEmpty) return const _NoTour();
 
@@ -125,17 +94,11 @@ class _TourScreenState extends ConsumerState<TourScreen> {
       data: (tour) {
         if (tour == null) return const _NoTour();
 
-        // The owner chose where the walkthrough opens. Picking a room here
-        // would override a deliberate decision (I-07 requires an entry scene).
         final entry = tour.entryScene;
         if (entry == null) return const _NoTour();
 
         final scene = tour.sceneById(_sceneId ?? entry.id) ?? entry;
 
-        // First build for this tour: open the entry room now, in this build,
-        // rather than after a frame. Deferring it left the viewer with nothing
-        // mounted until a later frame happened to arrive — which on a slow
-        // first paint is exactly the black screen the pipeline exists to avoid.
         if (_source == null) {
           _sceneId = entry.id;
           _source = _sourceFor(entry)..start();
@@ -162,9 +125,6 @@ class _TourScreenState extends ConsumerState<TourScreen> {
                   },
                   onNavigate: (targetId) {
                     final target = tour.sceneById(targetId);
-                    // A door to a room the API did not send is a door to
-                    // nothing. I-07 should have stopped this reaching a
-                    // customer; refusing quietly is better than a black screen.
                     if (target == null || !target.isWalkable) {
                       _sayUnavailable(context);
                       return;
@@ -175,12 +135,9 @@ class _TourScreenState extends ConsumerState<TourScreen> {
                   onInfo: (note) => _showNote(context, note),
                 ),
 
-              // Nothing to draw yet: the first pixels are still in flight.
               if (source == null || !source.hasPixels)
                 _TourLoading(label: _walking ? scene.label : null),
 
-              // Chrome. Everything below floats over the panorama on frosted
-              // glass, never on an opaque bar.
               Positioned(
                 top: 0,
                 left: 0,
@@ -215,13 +172,10 @@ class _TourScreenState extends ConsumerState<TourScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // The room label is also the way into the scene
-                            // list — the same affordance the design uses.
                             Flexible(
                               child: _RoomLabel(
                                 label: scene.label,
-                                position:
-                                    '${index + 1}/${tour.scenes.length}',
+                                position: '${index + 1}/${tour.scenes.length}',
                                 onTap: () =>
                                     _showScenePicker(context, tour, scene),
                               ),
@@ -296,8 +250,10 @@ class _TourScreenState extends ConsumerState<TourScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Jump to',
-                  style: Theme.of(sheetContext).textTheme.headlineSmall),
+              Text(
+                'Jump to',
+                style: Theme.of(sheetContext).textTheme.headlineSmall,
+              ),
               const SizedBox(height: Tokens.s16),
               SizedBox(
                 height: 112,
@@ -325,11 +281,6 @@ class _TourScreenState extends ConsumerState<TourScreen> {
   }
 }
 
-/// The panorama, with the doors pinned to it.
-///
-/// Hotspots are projected from their bearing every frame, so they stay on the
-/// door as the customer looks around — a hotspot that stayed put while the room
-/// moved would break the illusion instantly.
 class _PanoramaLayer extends StatelessWidget {
   const _PanoramaLayer({
     required this.source,
@@ -366,12 +317,9 @@ class _PanoramaLayer extends StatelessWidget {
               onInteractionStart: onInteraction,
             ),
 
-            // A gentle vignette. Chrome sits top and bottom, and white text
-            // over an unknown photograph needs help.
             const IgnorePointer(child: PhotoScrim(top: 0.42, bottom: 0.5)),
 
-            for (final hotspot in scene.hotspots)
-              _positioned(hotspot, size),
+            for (final hotspot in scene.hotspots) _positioned(hotspot, size),
           ],
         );
       },
@@ -386,7 +334,6 @@ class _PanoramaLayer extends StatelessWidget {
       size: size,
     );
 
-    // Behind the customer, or well off the edge: not drawn at all.
     if (at == null) return const SizedBox.shrink();
 
     return Positioned(
@@ -409,9 +356,6 @@ class _PanoramaLayer extends StatelessWidget {
   }
 }
 
-/// 43pt frosted circle with a white core, exactly as the reference draws it.
-/// Navigation hotspots carry their destination underneath; info hotspots are a
-/// smaller glyph, so the two are never confused mid-walkthrough.
 class _Hotspot extends StatefulWidget {
   const _Hotspot({required this.hotspot, required this.onTap});
 
@@ -424,9 +368,6 @@ class _Hotspot extends StatefulWidget {
 
 class _HotspotState extends State<_Hotspot>
     with SingleTickerProviderStateMixin {
-  // Created in initState, not as a `late final` initialised on first use: an
-  // info hotspot never reads it during build, so a lazy field would be
-  // constructed *inside* dispose() — on an element that is already deactivated.
   late final AnimationController _pulse;
 
   @override
@@ -449,9 +390,6 @@ class _HotspotState extends State<_Hotspot>
   Widget build(BuildContext context) {
     final isNav = widget.hotspot.isDoor;
 
-    // The whole thing is one target — circle *and* its label. Making only the
-    // 43pt circle tappable looks fine on a desktop review and is miserable with
-    // a thumb on a moving jeepney.
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -628,9 +566,6 @@ class _RoomLabel extends StatelessWidget {
   }
 }
 
-/// The journey asks for a path straight from the tour into booking or applying.
-/// Low emphasis on purpose — it must not compete with the room you are standing
-/// in.
 class _NextStep extends StatelessWidget {
   const _NextStep({required this.card});
 
@@ -690,7 +625,9 @@ class _SceneThumb extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(Tokens.rSm),
                 border: Border.all(
-                  color: selected ? theme.colorScheme.primary : Colors.transparent,
+                  color: selected
+                      ? theme.colorScheme.primary
+                      : Colors.transparent,
                   width: 2,
                 ),
               ),
@@ -751,9 +688,10 @@ class _DragHintState extends State<_DragHint>
       animation: _c,
       builder: (context, child) => Transform.translate(
         offset: Offset(
-          Tween<double>(begin: -6, end: 6)
-              .chain(CurveTween(curve: Curves.easeInOut))
-              .evaluate(_c),
+          Tween<double>(
+            begin: -6,
+            end: 6,
+          ).chain(CurveTween(curve: Curves.easeInOut)).evaluate(_c),
           0,
         ),
         child: child,
@@ -780,12 +718,6 @@ class _DragHintState extends State<_DragHint>
   }
 }
 
-/// The journey names this as a normal state, not an error: a listing without a
-/// tour falls back to photos rather than showing a broken viewer.
-/// Waiting for the first pixels.
-///
-/// Named when walking to a room the customer chose, so the wait is attached to
-/// something they did rather than being an anonymous spinner.
 class _TourLoading extends StatelessWidget {
   const _TourLoading({this.label});
 
@@ -802,15 +734,16 @@ class _TourLoading extends StatelessWidget {
             const SizedBox(
               height: 28,
               width: 28,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white70),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white70,
+              ),
             ),
             if (label != null) ...[
               const SizedBox(height: Tokens.s16),
               Text(
                 label!,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
+                style: Theme.of(context).textTheme.titleMedium
                     ?.copyWith(color: Colors.white),
               ),
             ],
@@ -821,11 +754,6 @@ class _TourLoading extends StatelessWidget {
   }
 }
 
-/// The tour exists but could not be fetched.
-///
-/// Distinct from [_NoTour]: "this place has no tour" and "we could not load
-/// the tour" are different facts, and showing the first when the second is
-/// true tells the customer something untrue about the property.
 class _TourUnavailable extends StatelessWidget {
   const _TourUnavailable();
 
@@ -844,9 +772,7 @@ class _TourUnavailable extends StatelessWidget {
           child: Text(
             'The tour could not be loaded. Check your connection and try again.',
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
+            style: Theme.of(context).textTheme.bodyMedium
                 ?.copyWith(color: Colors.white70),
           ),
         ),
@@ -884,8 +810,8 @@ class _NoTour extends StatelessWidget {
                 'The photos are all this owner has published so far.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),

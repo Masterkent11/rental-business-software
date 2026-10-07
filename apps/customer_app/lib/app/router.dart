@@ -15,8 +15,11 @@ import '../features/listing/listing_detail_screen.dart';
 import '../features/saved/saved_screen.dart';
 import '../features/shell/home_shell.dart';
 import '../features/tour/tour_screen.dart';
+import '../features/property_search/domain/property_search_criteria.dart';
+import '../features/property_search/domain/property_type.dart';
+import '../features/property_search/presentation/property_results_screen.dart';
+import '../features/property_search/presentation/property_search_screen.dart';
 
-/// Route paths, in one place. Screens never write a path literal.
 abstract final class Routes {
   static const discover = '/discover';
   static const saved = '/saved';
@@ -25,7 +28,10 @@ abstract final class Routes {
   static const notifications = '/notifications';
   static const applications = '/applications';
   static const messages = '/messages';
+  static const propertyResults = '$discover/results';
 
+  static String propertySearch(PropertyType type) =>
+      '$discover/search/${type.name}';
   static String listing(String id) => '$discover/listing/$id';
   static String tour(String id) => '${listing(id)}/tour';
   static String book(String id) => '${listing(id)}/book';
@@ -47,14 +53,6 @@ abstract final class Routes {
       '${d.day.toString().padLeft(2, '0')}';
 }
 
-/// The customer app's navigation.
-///
-/// A stateful shell with three branches, so scroll position and search state
-/// survive tab switches — on a phone over mobile data, losing a search result
-/// list because the user checked their saved listings is a real cost.
-///
-/// Listing detail and the tour are pushed **above** the shell deliberately: the
-/// tour is immersive and must not share the screen with a navigation bar.
 GoRouter buildRouter() {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
@@ -71,6 +69,26 @@ GoRouter buildRouter() {
                 builder: (context, state) => const DiscoveryScreen(),
                 routes: [
                   GoRoute(
+                    path: 'search/:propertyType',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) {
+                      final type =
+                          PropertyType.tryParse(
+                            state.pathParameters['propertyType'],
+                          ) ??
+                          PropertyType.apartment;
+                      return PropertySearchScreen(propertyType: type);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'results',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) {
+                      final criteria = state.extra as PropertySearchCriteria?;
+                      return PropertyResultsScreen(criteria: criteria);
+                    },
+                  ),
+                  GoRoute(
                     path: 'listing/:id',
                     parentNavigatorKey: _rootNavigatorKey,
                     builder: (context, state) => ListingDetailScreen(
@@ -80,9 +98,8 @@ GoRouter buildRouter() {
                       GoRoute(
                         path: 'tour',
                         parentNavigatorKey: _rootNavigatorKey,
-                        builder: (context, state) => TourScreen(
-                          listingId: state.pathParameters['id']!,
-                        ),
+                        builder: (context, state) =>
+                            TourScreen(listingId: state.pathParameters['id']!),
                       ),
                       GoRoute(
                         path: 'book',
@@ -108,9 +125,8 @@ GoRouter buildRouter() {
                       GoRoute(
                         path: 'apply',
                         parentNavigatorKey: _rootNavigatorKey,
-                        builder: (context, state) => ApplyScreen(
-                          listingId: state.pathParameters['id']!,
-                        ),
+                        builder: (context, state) =>
+                            ApplyScreen(listingId: state.pathParameters['id']!),
                       ),
                     ],
                   ),

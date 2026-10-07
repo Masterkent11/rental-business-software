@@ -13,17 +13,6 @@ import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
 import 'widgets/empty_bookings.dart';
 
-/// Bookings.
-///
-/// Short-term only, by design. A booking becomes a stay, the stay completes,
-/// and the guest never becomes a tenant — so there is no lease anywhere on this
-/// screen and no path to one. Long-term applications live under Account,
-/// because they are a different lifecycle with a different vocabulary.
-///
-/// Three tabs, and **Cancelled is genuinely empty** in the sample data. That is
-/// deliberate: the empty state is a screen a real customer meets constantly,
-/// and it should be reachable by tapping rather than existing only in a design
-/// file.
 class BookingsScreen extends ConsumerStatefulWidget {
   const BookingsScreen({super.key});
 
@@ -31,30 +20,21 @@ class BookingsScreen extends ConsumerStatefulWidget {
   ConsumerState<BookingsScreen> createState() => _BookingsScreenState();
 }
 
-/// Turns a paid stay into the card this screen already knows how to draw.
-///
-/// The label and the tab it lands under are the server's decisions, carried
-/// straight through — this maps, it does not decide.
-///
-/// Public (not `_`-prefixed) because [BookingDetailScreen] reuses it against
-/// the same [staysProvider] data rather than standing up a second mapping.
 BookingView toBookingView(StayReceiptView stay) => BookingView(
-      id: stay.id,
-      reference: stay.reference,
-      listingTitle: stay.listingTitle,
-      propertyName: stay.propertyName,
-      areaLabel: '${stay.areaLabel}, ${stay.cityLabel}',
-      photo: stay.photo ?? '',
-      checkIn: stay.startsOn,
-      checkOut: stay.endsOn,
-      nights: stay.nights,
-      // Guest counts arrive with the booking form; the stay does not carry one
-      // yet, and inventing a number would be worse than showing the minimum.
-      guests: 1,
-      totalCentavos: stay.paidCentavos,
-      status: stay.bucket,
-      stateLabel: stay.stateLabel,
-    );
+  id: stay.id,
+  reference: stay.reference,
+  listingTitle: stay.listingTitle,
+  propertyName: stay.propertyName,
+  areaLabel: '${stay.areaLabel}, ${stay.cityLabel}',
+  photo: stay.photo ?? '',
+  checkIn: stay.startsOn,
+  checkOut: stay.endsOn,
+  nights: stay.nights,
+  guests: 1,
+  totalCentavos: stay.paidCentavos,
+  status: stay.bucket,
+  stateLabel: stay.stateLabel,
+);
 
 class _BookingsScreenState extends ConsumerState<BookingsScreen> {
   BookingStatus _tab = BookingStatus.active;
@@ -104,10 +84,6 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
             ),
           ),
 
-          // "No stays booked yet" and "we could not load your stays" are
-          // different facts. Showing the first when the second is true is the
-          // screen lying quietly, which is worse than an error the customer
-          // can act on.
           if (staysAsync.hasError)
             SliverFillRemaining(
               hasScrollBody: false,
@@ -168,8 +144,6 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
   }
 }
 
-/// Segmented control. Counts are on the tabs, because "Past (2)" answers the
-/// question the tab is asking without a trip through it.
 class _StatusTabs extends StatelessWidget {
   const _StatusTabs({
     required this.selected,
@@ -237,7 +211,7 @@ class _StatusTabs extends StatelessWidget {
                             color: status == selected
                                 ? theme.colorScheme.onSurfaceVariant
                                 : theme.colorScheme.onSurfaceVariant
-                                    .withOpacity(0.7),
+                                      .withOpacity(0.7),
                           ),
                         ),
                       ],
@@ -278,8 +252,6 @@ class _BookingCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Not CrossAxisAlignment.stretch: the card sits in a scroll view,
-            // so stretching the cross axis asks for an infinite height.
             Row(
               children: [
                 SizedBox(
@@ -398,10 +370,6 @@ class _StatePill extends StatelessWidget {
   }
 }
 
-/// Empty state: illustration, a sentence that says what this tab holds, and one
-/// action. The action is the point — an empty screen with nothing to do is a
-/// dead end, and the journey is explicit that empty results should offer a way
-/// forward.
 class _EmptyState extends StatelessWidget {
   const _EmptyState({required this.status});
 
@@ -413,19 +381,19 @@ class _EmptyState extends StatelessWidget {
 
     final (title, body) = switch (status) {
       BookingStatus.active => (
-          'No stays booked yet',
-          'When you book a place for a few nights, it shows up here with your '
-              'dates, address, and how to get in.',
-        ),
+        'No stays booked yet',
+        'When you book a place for a few nights, it shows up here with your '
+            'dates, address, and how to get in.',
+      ),
       BookingStatus.past => (
-          'Nothing finished yet',
-          'Stays move here after checkout, with the receipt attached.',
-        ),
+        'Nothing finished yet',
+        'Stays move here after checkout, with the receipt attached.',
+      ),
       BookingStatus.cancelled => (
-          'Nothing cancelled',
-          'Cancelled bookings stay here with whatever was refunded, so there '
-              'is never a question about what happened.',
-        ),
+        'Nothing cancelled',
+        'Cancelled bookings stay here with whatever was refunded, so there '
+            'is never a question about what happened.',
+      ),
     };
 
     return Padding(

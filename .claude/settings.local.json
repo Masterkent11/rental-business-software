@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter --version)",
+      "Bash(flutter create *)",
+      "Bash(flutter pub *)",
+      "Bash(npm --version)",
+      "Bash(npx --version)",
+      "Bash(npm view *)",
+      "Bash(curl -s https://nodejs.org/dist/index.json)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); lts=[x for x in d if x['lts']]; print\\('latest LTS:', lts[0]['version'], lts[0]['lts'], lts[0]['date']\\); print\\('latest current:', d[0]['version'], d[0]['date']\\)\")",
+      "Read(//Users/admin/.nvm/**)",
+      "Bash(brew --version)",
+      "mcp__e916085b-259e-4deb-9381-1389d61fbd57__list_tables",
+      "mcp__e916085b-259e-4deb-9381-1389d61fbd57__list_migrations"
+    ]
+  }
+}

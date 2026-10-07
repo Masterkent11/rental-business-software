@@ -11,22 +11,6 @@ import '../../data/application_repository.dart';
 import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
 
-/// Applications.
-///
-/// The journey calls waiting for approval **the weakest point in the funnel**:
-/// the customer has committed real effort — photographing documents on a phone
-/// — and now waits on someone else. So this screen is a status tracker, not a
-/// list of rows.
-///
-/// Three things it refuses to do:
-///
-///   * **Leave a rejection unexplained.** A reason is shown, and the customer
-///     is told their documents are kept — a rejection returns them to searching
-///     with their profile intact, not to the beginning.
-///   * **Say "approved" and stop.** Approval places a hold, and the hold
-///     expires. The countdown is the most important thing on an approved card.
-///   * **Imply a claim on the place.** Applying reserves nothing, and the
-///     submitted card says so.
 class ApplicationsScreen extends ConsumerWidget {
   const ApplicationsScreen({super.key});
 
@@ -43,9 +27,6 @@ class ApplicationsScreen extends ConsumerWidget {
       ),
     );
 
-    // "You have applied for nothing" and "we could not reach your
-    // applications" are different facts, and the second must not be shown as
-    // the first.
     if (async.hasError) {
       return Scaffold(
         appBar: appBar,
@@ -172,7 +153,6 @@ class _ApplicationCard extends StatelessWidget {
               ],
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.fromLTRB(
               Tokens.s16,
@@ -182,7 +162,6 @@ class _ApplicationCard extends StatelessWidget {
             ),
             child: _Progress(status: app.status),
           ),
-
           _Outcome(app: app),
         ],
       ),
@@ -190,8 +169,6 @@ class _ApplicationCard extends StatelessWidget {
   }
 }
 
-/// Submitted → under review → decided. Three steps, because more would be a
-/// promise about a process the owner runs on their own time.
 class _Progress extends StatelessWidget {
   const _Progress({required this.status});
 
@@ -206,7 +183,8 @@ class _Progress extends StatelessWidget {
       ApplicationStatus.underReview => 1,
       _ => 2,
     };
-    final bad = status == ApplicationStatus.rejected ||
+    final bad =
+        status == ApplicationStatus.rejected ||
         status == ApplicationStatus.expired;
     final doneColor = bad ? Tokens.taken : Tokens.available;
 
@@ -247,9 +225,6 @@ class _Progress extends StatelessWidget {
           ],
         ),
         const SizedBox(height: Tokens.s6),
-        // Expanded thirds rather than spaceBetween: these strings grow with the
-        // user's text size, and three of them across a 390pt phone is already
-        // tight.
         Row(
           children: [
             for (var i = 0; i < labels.length; i++)
@@ -273,7 +248,6 @@ class _Progress extends StatelessWidget {
   }
 }
 
-/// The part that changes by outcome, and the reason this screen exists.
 class _Outcome extends StatelessWidget {
   const _Outcome({required this.app});
 
@@ -377,12 +351,9 @@ class _Outcome extends StatelessWidget {
             Text('You withdrew this', style: theme.textTheme.titleMedium),
             const SizedBox(height: Tokens.s4),
             Text(
-              // Said plainly, because it is the one outcome where the customer
-              // loses the fee — and they should learn that here, not from a
-              // ledger line they never see.
               app.holdExpiresAt != null
                   ? 'The place went back on the market, and any reservation fee '
-                      'was forfeited.'
+                        'was forfeited.'
                   : 'The place went back on the market. You can apply again.',
               style: theme.textTheme.bodyMedium,
             ),

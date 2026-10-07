@@ -18,13 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Widget tests run with no network, so every remote photo falls through to the
-/// tonal placeholder. That is the point of the fallback: the app is fully
-/// navigable and fully testable without a single image loading.
-///
-/// The framework still reports each failed fetch as an unexpected error, so it
-/// is filtered here. Only `NetworkImageLoadException` is swallowed — every other
-/// error still fails the test.
 void _ignoreOfflineImages() {
   final original = FlutterError.onError;
   FlutterError.onError = (details) {
@@ -34,11 +27,7 @@ void _ignoreOfflineImages() {
   addTearDown(() => FlutterError.onError = original);
 }
 
-/// Tests run at iPhone 14 size rather than the 800x600 default, so layout
-/// assertions mean something about the device the app actually targets.
 Future<void> _pumpApp(WidgetTester tester) async {
-  // Decoded outside the fake async zone; `decodeImageFromPixels` completes on
-  // the engine and never resolves under `pump` alone.
   final pixel = (await tester.runAsync(_pixel))!;
 
   _ignoreOfflineImages();
@@ -51,16 +40,10 @@ Future<void> _pumpApp(WidgetTester tester) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        // Signed in, because bookings belong to an account now.
         authRepositoryProvider.overrideWithValue(const _SignedInAuth()),
-        // Widget tests must not open sockets, and image decoding needs the
-        // real async zone — so the pixel is decoded once up front via
-        // `runAsync` and handed back already resolved.
-        // A clone per call: the viewer disposes each image it replaces, and
-        // handing out one shared instance meant later loads touched freed
-        // memory — which crashed the test shell rather than failing an
-        // assertion.
-        panoramaImageLoaderProvider.overrideWithValue((_) async => pixel.clone()),
+        panoramaImageLoaderProvider.overrideWithValue(
+          (_) async => pixel.clone(),
+        ),
         listingRepositoryProvider.overrideWithValue(_fakeApi()),
         apiClientProvider.overrideWithValue(_fakeClient()),
       ],
@@ -70,8 +53,6 @@ Future<void> _pumpApp(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-
-/// A single decoded pixel, standing in for a panorama tile.
 Future<ui.Image> _pixel() {
   final completer = Completer<ui.Image>();
   ui.decodeImageFromPixels(
@@ -84,7 +65,6 @@ Future<ui.Image> _pixel() {
   return completer.future;
 }
 
-/// A gateway that is simply signed in. The widget tests are not about auth.
 class _SignedInAuth implements AuthGateway {
   const _SignedInAuth();
 
@@ -119,69 +99,56 @@ class _SignedInAuth implements AuthGateway {
   Future<void> signOut() async {}
 }
 
-/// Serves the sample listings as the API would.
-///
-/// The fixtures are a **test double** here, not a production path: the request
-/// still goes through the real repository and the real JSON mapping, so a
-/// contract drift breaks these tests rather than sliding past them.
 ApiClient _fakeClient() =>
     ApiClient(client: _fakeTransport(), baseUrl: 'http://test');
 
 ListingRepository _fakeApi() => ListingRepository(_fakeClient());
 
-/// The transport every fake shares, so one request handler serves listings,
-/// stays, and anything else the screens ask for.
 MockClient _fakeTransport() {
   Map<String, dynamic> encode(ListingCardView l) => {
-        'id': l.id,
-        // The sample data predates resourceId. Derived so the tour endpoint has
-        // something stable to key on, exactly as the real API would.
-        'resourceId': 'res-${l.id}',
-        'title': l.title,
-        'description': SampleData.detailById(l.id)?.description ?? '',
-        'propertyName': l.propertyName,
-        'areaLabel': l.areaLabel,
-        'cityLabel': l.cityLabel,
-        'kind': l.kind == ListingKind.shortTerm ? 'SHORT_TERM' : 'LONG_TERM',
-        'resourceType': switch (l.resourceType) {
-          ResourceType.room => 'ROOM',
-          ResourceType.bedSpace => 'BED_SPACE',
-          ResourceType.parking => 'PARKING',
-          ResourceType.storage => 'STORAGE',
-          ResourceType.unit => 'UNIT',
-        },
-        'priceCentavos': l.priceCentavos,
-        'currency': 'PHP',
-        'hasTour': l.hasTour,
-        'sceneCount': l.sceneCount,
-        'photos': l.photos,
-        'availabilityLabel': l.availabilityLabel,
-        'isAvailable': l.isAvailable,
-        'amenities': SampleData.detailById(l.id)?.amenities ?? const <String>[],
-        'houseRules': SampleData.detailById(l.id)?.houseRules ?? const <String>[],
-        'terms': SampleData.detailById(l.id)?.terms ?? const <String>[],
-        'minStayNights': SampleData.detailById(l.id)?.minimumStayNights,
-        'sharedFacilities':
-            SampleData.detailById(l.id)?.sharedFacilities ?? const <String>[],
-        'ownerName': SampleData.detailById(l.id)?.ownerName ?? '',
-        'ownerVerified': SampleData.detailById(l.id)?.ownerVerified ?? false,
-        'moveInCost': l.moveInCost == null
-            ? null
-            : {
-                'lines': l.moveInCost!.lines
-                    .map((line) =>
-                        {'label': line.label, 'centavos': line.centavos})
-                    .toList(),
-                'totalCentavos': l.moveInCost!.totalCentavos,
-              },
-      };
+    'id': l.id,
+    'resourceId': 'res-${l.id}',
+    'title': l.title,
+    'description': SampleData.detailById(l.id)?.description ?? '',
+    'propertyName': l.propertyName,
+    'areaLabel': l.areaLabel,
+    'cityLabel': l.cityLabel,
+    'kind': l.kind == ListingKind.shortTerm ? 'SHORT_TERM' : 'LONG_TERM',
+    'resourceType': switch (l.resourceType) {
+      ResourceType.room => 'ROOM',
+      ResourceType.bedSpace => 'BED_SPACE',
+      ResourceType.parking => 'PARKING',
+      ResourceType.storage => 'STORAGE',
+      ResourceType.unit => 'UNIT',
+    },
+    'priceCentavos': l.priceCentavos,
+    'currency': 'PHP',
+    'hasTour': l.hasTour,
+    'sceneCount': l.sceneCount,
+    'photos': l.photos,
+    'availabilityLabel': l.availabilityLabel,
+    'isAvailable': l.isAvailable,
+    'amenities': SampleData.detailById(l.id)?.amenities ?? const <String>[],
+    'houseRules': SampleData.detailById(l.id)?.houseRules ?? const <String>[],
+    'terms': SampleData.detailById(l.id)?.terms ?? const <String>[],
+    'minStayNights': SampleData.detailById(l.id)?.minimumStayNights,
+    'sharedFacilities':
+        SampleData.detailById(l.id)?.sharedFacilities ?? const <String>[],
+    'ownerName': SampleData.detailById(l.id)?.ownerName ?? '',
+    'ownerVerified': SampleData.detailById(l.id)?.ownerVerified ?? false,
+    'moveInCost': l.moveInCost == null
+        ? null
+        : {
+            'lines': l.moveInCost!.lines
+                .map((line) => {'label': line.label, 'centavos': line.centavos})
+                .toList(),
+            'totalCentavos': l.moveInCost!.totalCentavos,
+          },
+  };
 
   final client = MockClient((request) async {
     final segments = request.url.pathSegments;
 
-    // The tour, in the shape the API serves it. Built from the sample scenes
-    // so the walkthrough test exercises the real API-driven viewer rather than
-    // a fixture path that no longer exists.
     if (segments.length == 3 &&
         segments[0] == 'resources' &&
         segments[2] == 'tour') {
@@ -221,8 +188,6 @@ MockClient _fakeTransport() {
                       'kind': hotspot.kind == HotspotKind.navigation
                           ? 'NAVIGATION'
                           : 'INFO',
-                      // Spread the doors across the forward view so they are
-                      // on screen at the default camera.
                       'yaw': (hotspot.x - 0.5) * 60,
                       'pitch': (0.5 - hotspot.y) * 30,
                       'label': hotspot.label ?? hotspot.note ?? '',
@@ -325,14 +290,19 @@ MockClient _fakeTransport() {
     if (segments.length == 2) {
       final match = SampleData.cardById(segments[1]);
       if (match == null) {
-        return http.Response(jsonEncode({'title': 'Listing not found'}), 404,
-            headers: {'content-type': 'application/json; charset=utf-8'});
+        return http.Response(
+          jsonEncode({'title': 'Listing not found'}),
+          404,
+          headers: {'content-type': 'application/json; charset=utf-8'},
+        );
       }
-      return http.Response(jsonEncode(encode(match)), 200,
-          headers: {'content-type': 'application/json; charset=utf-8'});
+      return http.Response(
+        jsonEncode(encode(match)),
+        200,
+        headers: {'content-type': 'application/json; charset=utf-8'},
+      );
     }
 
-    // The server filters; mirror only what the query asks for.
     final q = request.url.queryParameters;
     var rows = SampleData.listings;
     if (q['kind'] != null) {
@@ -358,13 +328,8 @@ MockClient _fakeTransport() {
   return client;
 }
 
-
-/// The page scroller, as opposed to the horizontal carousels inside it.
-/// `scrollUntilVisible` refuses to guess when several are on screen.
 Finder get _page => find.byType(Scrollable).first;
 
-/// Result cards sit below the search panel, so reaching one means scrolling —
-/// exactly as a thumb would.
 Future<void> _openListing(WidgetTester tester, String title) async {
   final finder = find.text(title);
   await tester.scrollUntilVisible(finder.first, 300, scrollable: _page);
@@ -394,25 +359,24 @@ void main() {
   testWidgets('discovery leads with price and move-in cost', (tester) async {
     await _pumpApp(tester);
 
-    expect(find.text('Find a place'), findsOneWidget);
-    // Twice: once in the featured carousel, once in the list below it.
-    expect(find.text('₱8,500/mo'), findsWidgets);
+    expect(find.text('Find your next place'), findsOneWidget);
+    expect(find.text('₱8,500 / month'), findsWidgets);
 
-    // The number the journey says customers actually need: an ₱8,500 unit
-    // costs ₱34,000 to enter.
     final moveIn = find.text('₱34,000 to move in');
     await tester.scrollUntilVisible(moveIn, 300, scrollable: _page);
     expect(moveIn, findsOneWidget);
   });
 
-  testWidgets('a listing opens its tour and walks between scenes',
-      (tester) async {
+  testWidgets('a listing opens its tour and walks between scenes', (
+    tester,
+  ) async {
     await _pumpApp(tester);
 
-    await _openListing(tester, 'One-bedroom corner unit with cross-ventilation');
+    await _openListing(
+      tester,
+      'One-bedroom corner unit with cross-ventilation',
+    );
 
-    // The detail screen gives each section real air now, so the tour callout
-    // starts below the fold and the sliver has not built it yet.
     final callout = find.text('Walk through it');
     await tester.scrollUntilVisible(callout, 250, scrollable: _page);
     await tester.pumpAndSettle();
@@ -420,8 +384,6 @@ void main() {
     expect(callout, findsOneWidget);
     await tester.tap(callout);
 
-    // Hotspots pulse forever by design, so the tour never "settles" — pump
-    // fixed frames instead of waiting for stillness.
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
 
@@ -430,11 +392,6 @@ void main() {
     expect(find.text('1/5'), findsOneWidget);
 
     await tester.pump(const Duration(milliseconds: 600));
-    // A navigation hotspot carries its destination, and tapping it walks there.
-    //
-    // `hitTestable` rather than `first`: during the route transition an
-    // off-stage copy of the outgoing page also matches, and tapping that hits
-    // nothing.
     await tester.tap(find.text('Kitchen').hitTestable().first);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
@@ -442,20 +399,20 @@ void main() {
     expect(find.text('2/5'), findsOneWidget);
   });
 
-  testWidgets('long-term goes to apply, nightly goes to dates',
-      (tester) async {
+  testWidgets('long-term goes to apply, nightly goes to dates', (tester) async {
     await _pumpApp(tester);
 
-    await _openListing(tester, 'One-bedroom corner unit with cross-ventilation');
+    await _openListing(
+      tester,
+      'One-bedroom corner unit with cross-ventilation',
+    );
     expect(find.text('Apply to rent'), findsOneWidget);
 
     await tester.tap(find.text('Apply to rent'));
     await tester.pumpAndSettle();
 
-    // Nothing is submittable until a document is attached.
     expect(find.text('Attach at least one document'), findsOneWidget);
 
-    // Applying does not reserve the place, and the screen says so out loud.
     final notice = find.textContaining('does not reserve');
     await tester.scrollUntilVisible(notice, 200);
     expect(notice, findsOneWidget);
@@ -501,22 +458,31 @@ void main() {
     expect(button.onPressed, isNull);
   });
 
-  testWidgets('the featured row changes with the lens', (tester) async {
+  testWidgets('the category chips filter rentals', (tester) async {
     await _pumpApp(tester);
 
-    expect(find.text('Worth a walkthrough'), findsOneWidget);
+    expect(find.text('Featured for You'), findsOneWidget);
 
-    await tester.tap(find.text('Nearby'));
+    await tester.tap(find.text('Condo'));
     await tester.pumpAndSettle();
-    expect(find.text('Close to you'), findsOneWidget);
 
-    // "Recommendation" is long enough to sit past the right edge on a 390pt
-    // screen, so the row scrolls to it first — as a thumb would.
-    await tester.ensureVisible(find.text('Recommendation'));
+    expect(find.text('Search Condos'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Recommendation'));
+
+    await tester.tap(find.text('House'));
     await tester.pumpAndSettle();
-    expect(find.text('Picked for you'), findsOneWidget);
+
+    expect(find.text('Search Houses'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Apartment'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Search Apartments'), findsOneWidget);
   });
 
   testWidgets('the header opens notifications and messages', (tester) async {
@@ -525,25 +491,16 @@ void main() {
     await tester.tap(find.bySemanticsLabel(RegExp('Notifications')));
     await tester.pumpAndSettle();
     expect(find.text('Your booking is confirmed'), findsOneWidget);
-
-    // pageBack() looks for a Cupertino back button; these screens use their own
-    // leading icon, so pop directly.
-    await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.bySemanticsLabel(RegExp('Messages')));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('not a general chat'), findsOneWidget);
   });
 
-  testWidgets('bookings list stays, and empty tabs offer a way out',
-      (tester) async {
+  testWidgets('bookings list stays, and empty tabs offer a way out', (
+    tester,
+  ) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.byIcon(Icons.confirmation_number_outlined));
+    await tester.tap(find.text('Bookings'));
     await tester.pumpAndSettle();
 
-    // Active has one confirmed stay.
     expect(find.text('Confirmed'), findsOneWidget);
     expect(find.text('₱4,500'), findsOneWidget);
 
@@ -551,8 +508,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Completed'), findsWidgets);
 
-    // Cancelled is genuinely empty — illustration, explanation, and a CTA that
-    // goes somewhere rather than a dead end.
     await tester.tap(find.text('Cancelled'));
     await tester.pumpAndSettle();
     expect(find.text('Nothing cancelled'), findsOneWidget);
@@ -560,14 +515,15 @@ void main() {
 
     await tester.tap(find.text('Find a place to stay'));
     await tester.pumpAndSettle();
-    expect(find.text('Find a place'), findsOneWidget);
+    expect(find.text('Find your next place'), findsOneWidget);
   });
 
-  testWidgets('a booking opens its detail, with dates and what was paid',
-      (tester) async {
+  testWidgets('a booking opens its detail, with dates and what was paid', (
+    tester,
+  ) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.byIcon(Icons.confirmation_number_outlined));
+    await tester.tap(find.text('Bookings'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Condo stay, walking distance to IT Park'));
@@ -575,40 +531,33 @@ void main() {
 
     expect(find.text('CHECK-IN'), findsOneWidget);
     expect(find.text('CHECK-OUT'), findsOneWidget);
-    // Guest count is not part of the stay contract yet (it arrives with the
-    // booking form, not the receipt) — the detail screen now reads the real
-    // stay via staysProvider instead of a fixture, so it honestly shows the
-    // minimum of 1 rather than a number the API never sent.
     expect(find.text('3 nights · 1 guest'), findsOneWidget);
 
-    // Prepaid in full, and no deposit — a stay settles nothing at checkout.
     final prepaid = find.textContaining('no deposit');
     await tester.scrollUntilVisible(prepaid, 250);
     expect(prepaid, findsOneWidget);
   });
 
-  testWidgets('applications track their outcome, and a rejection explains itself',
-      (tester) async {
-    await _pumpApp(tester);
+  testWidgets(
+    'applications track their outcome, and a rejection explains itself',
+    (tester) async {
+      await _pumpApp(tester);
 
-    await tester.tap(find.byIcon(Icons.person_outline));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.person_outline));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('My applications'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('My applications'));
+      await tester.pumpAndSettle();
 
-    // Waiting: applying reserves nothing, and the card says so.
-    expect(find.textContaining('does not reserve the place'), findsOneWidget);
+      expect(find.textContaining('does not reserve the place'), findsOneWidget);
 
-    // Approved: the hold expires, so the deadline is the message.
-    expect(find.text('You have been approved'), findsOneWidget);
-    expect(find.textContaining('held for you until'), findsOneWidget);
+      expect(find.text('You have been approved'), findsOneWidget);
+      expect(find.textContaining('held for you until'), findsOneWidget);
 
-    // Rejected: a reason, and the documents survive.
-    final rejected = find.textContaining('accepted an application submitted');
-    await tester.scrollUntilVisible(rejected, 250);
-    expect(rejected, findsOneWidget);
-    expect(find.textContaining('still on file'), findsOneWidget);
-  });
+      final rejected = find.textContaining('accepted an application submitted');
+      await tester.scrollUntilVisible(rejected, 250);
+      expect(rejected, findsOneWidget);
+      expect(find.textContaining('still on file'), findsOneWidget);
+    },
+  );
 }
-

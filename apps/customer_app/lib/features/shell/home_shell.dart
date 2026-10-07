@@ -1,73 +1,108 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../design/tokens.dart';
 
-/// The three-tab frame.
-///
-/// A translucent bar with a real blur behind it, so content scrolls *under* the
-/// tabs instead of stopping at an opaque strip — the single detail that most
-/// separates an iOS-feeling app from a boxy one.
 class HomeShell extends StatelessWidget {
   const HomeShell({required this.navigationShell, super.key});
 
   final StatefulNavigationShell navigationShell;
 
-  static const _tabs = [
-    (Icons.search, Icons.search, 'Discover'),
-    (Icons.favorite_border, Icons.favorite, 'Saved'),
-    (Icons.confirmation_number_outlined, Icons.confirmation_number, 'Bookings'),
-    (Icons.person_outline, Icons.person, 'Account'),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final activeIndex = switch (navigationShell.currentIndex) {
+      0 => 0,
+      1 => 2,
+      2 => 3,
+      3 => 4,
+      _ => 0,
+    };
 
     return Scaffold(
       extendBody: true,
       body: navigationShell,
-      bottomNavigationBar: ClipRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-          child: Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface.withOpacity(0.82),
-              border: Border(
-                top: BorderSide(color: theme.colorScheme.outlineVariant),
-              ),
-            ),
-            child: SafeArea(
-              top: false,
-              child: SizedBox(
-                height: 56,
-                child: Row(
-                  children: [
-                    for (var i = 0; i < _tabs.length; i++)
-                      Expanded(
-                        child: _Tab(
-                          icon: _tabs[i].$1,
-                          activeIcon: _tabs[i].$2,
-                          label: _tabs[i].$3,
-                          selected: navigationShell.currentIndex == i,
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            navigationShell.goBranch(
-                              i,
-                              // Tapping the active tab returns to its root,
-                              // which is what every other app on the phone
-                              // does.
-                              initialLocation:
-                                  i == navigationShell.currentIndex,
-                            );
-                          },
-                        ),
-                      ),
-                  ],
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(color: Color(0xFFE7E8EC), width: 0.8),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 56,
+            child: Row(
+              children: [
+                Expanded(
+                  child: _NavItem(
+                    icon: Icons.home,
+                    label: 'Home',
+                    selected: activeIndex == 0,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      navigationShell.goBranch(
+                        0,
+                        initialLocation: navigationShell.currentIndex == 0,
+                      );
+                    },
+                  ),
                 ),
-              ),
+                Expanded(
+                  child: _NavItem(
+                    icon: Icons.explore_outlined,
+                    label: 'Explore',
+                    selected: false,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      navigationShell.goBranch(0);
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: _NavItem(
+                    icon: Icons.favorite_border,
+                    label: 'Saved',
+                    selected: activeIndex == 2,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      navigationShell.goBranch(
+                        1,
+                        initialLocation: navigationShell.currentIndex == 1,
+                      );
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: _NavItem(
+                    icon: Icons.calendar_month_outlined,
+                    label: 'Bookings',
+                    selected: activeIndex == 3,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      navigationShell.goBranch(
+                        2,
+                        initialLocation: navigationShell.currentIndex == 2,
+                      );
+                    },
+                  ),
+                ),
+                Expanded(
+                  child: _NavItem(
+                    icon: Icons.person_outline,
+                    label: 'Profile',
+                    selected: activeIndex == 4,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      navigationShell.goBranch(
+                        3,
+                        initialLocation: navigationShell.currentIndex == 3,
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -76,43 +111,41 @@ class HomeShell extends StatelessWidget {
   }
 }
 
-class _Tab extends StatelessWidget {
-  const _Tab({
+class _NavItem extends StatelessWidget {
+  const _NavItem({
     required this.icon,
-    required this.activeIcon,
     required this.label,
     required this.selected,
     required this.onTap,
   });
 
   final IconData icon;
-  final IconData activeIcon;
   final String label;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = selected
-        ? theme.colorScheme.onSurface
-        : theme.colorScheme.onSurfaceVariant;
+    final color = selected ? Tokens.primaryBlue : Tokens.muted;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(selected ? activeIcon : icon, size: 23, color: color),
-          const SizedBox(height: 3),
+          Icon(icon, size: 21, color: color),
+          const SizedBox(height: 2),
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 10.5,
-              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               color: color,
-              letterSpacing: 0.05,
+              letterSpacing: -0.1,
             ),
           ),
         ],

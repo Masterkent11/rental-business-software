@@ -3,15 +3,6 @@ import 'package:flutter/services.dart';
 
 import 'tokens.dart';
 
-/// A labelled −/+ counter.
-///
-/// One implementation, because there were three: the application form, the
-/// reservation form, and the search panel each had their own, and they had
-/// already drifted on size, minimum, and haptics.
-///
-/// **Bounds are passed in, never assumed.** How many people may occupy a bed
-/// space is a property rule, not a widget's opinion — the caller supplies
-/// [min] and [max] and this widget only enforces what it is told.
 class QuantityStepper extends StatelessWidget {
   const QuantityStepper({
     required this.label,
@@ -26,7 +17,6 @@ class QuantityStepper extends StatelessWidget {
 
   final String label;
 
-  /// Optional second line — "Aged 13 or over", and the like.
   final String? caption;
 
   final int value;
@@ -34,7 +24,6 @@ class QuantityStepper extends StatelessWidget {
   final int max;
   final ValueChanged<int> onChanged;
 
-  /// Denser variant for forms, where the row sits among other fields.
   final bool compact;
 
   @override
@@ -111,8 +100,6 @@ class _Round extends StatelessWidget {
                 onTap!();
               }
             : null,
-        // The visual circle is 34–38pt; the touch target is never smaller than
-        // the platform minimum.
         child: SizedBox(
           width: Tokens.tap,
           height: Tokens.tap,

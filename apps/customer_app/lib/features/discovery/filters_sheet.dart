@@ -7,12 +7,6 @@ import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
 import 'discovery_controller.dart';
 
-/// The filter sheet.
-///
-/// Scoped to what V1 actually supports (journey, Stage 2). Map view and
-/// amenity filters are in scope for V1 but need real data behind them, so they
-/// are absent rather than faked — a filter that does nothing is worse than one
-/// that is not there yet.
 Future<void> showFiltersSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
@@ -31,8 +25,6 @@ class _FiltersSheet extends ConsumerWidget {
     final theme = Theme.of(context);
     final f = ref.watch(filtersProvider);
     final controller = ref.read(filtersProvider.notifier);
-    // Counts only what has actually arrived; a pending request shows 0
-    // rather than a stale number.
     final matches = ref.watch(resultsProvider).valueOrNull?.length ?? 0;
 
     return SafeArea(
@@ -63,7 +55,6 @@ class _FiltersSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: Tokens.s20),
-
             const _Label('How you want to rent'),
             const SizedBox(height: Tokens.s12),
             Wrap(
@@ -83,7 +74,6 @@ class _FiltersSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: Tokens.s24),
-
             const _Label('What kind of place'),
             const SizedBox(height: Tokens.s12),
             Wrap(
@@ -104,7 +94,6 @@ class _FiltersSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: Tokens.s24),
-
             const _Label('Budget'),
             const SizedBox(height: Tokens.s12),
             Wrap(
@@ -120,7 +109,6 @@ class _FiltersSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: Tokens.s20),
-
             _Toggle(
               label: 'Has a virtual tour',
               caption: 'See it properly before you travel',
@@ -134,7 +122,6 @@ class _FiltersSheet extends ConsumerWidget {
               onChanged: controller.setAvailableOnly,
             ),
             const SizedBox(height: Tokens.s24),
-
             FilledButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(

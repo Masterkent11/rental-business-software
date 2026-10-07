@@ -3,11 +3,6 @@ import 'package:flutter/material.dart';
 import 'motion.dart';
 import 'tokens.dart';
 
-/// Light and dark themes.
-///
-/// Material is used as plumbing, not as a look: the ripples, tints, and
-/// elevation overlays that mark an app as "Flutter with default Material" are
-/// switched off deliberately.
 abstract final class AppTheme {
   static ThemeData light() => _build(Brightness.light);
   static ThemeData dark() => _build(Brightness.dark);
@@ -48,15 +43,10 @@ abstract final class AppTheme {
       textTheme: text,
       fontFamilyFallback: Tokens.fontFallback,
 
-      // Kill the Android tells.
       splashFactory: NoSplash.splashFactory,
       highlightColor: Colors.transparent,
       splashColor: Colors.transparent,
 
-      // A rise-and-fade rather than a horizontal push, on every platform. A
-      // marketplace is browsed in short hops — open a place, go back, open
-      // another — and a full-width slide makes ten of those feel like a
-      // journey rather than a browse.
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.iOS: RiseTransitionsBuilder(),
@@ -140,8 +130,6 @@ abstract final class AppTheme {
     );
   }
 
-  /// Tight, iOS-ish type. Negative tracking on the big sizes is most of what
-  /// separates a considered screen from a default one.
   static TextTheme _textTheme(Color ink, Color muted) {
     return TextTheme(
       displaySmall: TextStyle(

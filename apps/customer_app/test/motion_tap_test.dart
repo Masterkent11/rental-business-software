@@ -49,8 +49,6 @@ void main() {
       ),
     );
 
-    // Mid-stagger: the child is still transparent and offset. A customer who
-    // taps before the animation lands must still open the place.
     await tester.pump(const Duration(milliseconds: 40));
     await tester.tap(find.byType(Squeeze), warnIfMissed: false);
     await tester.pumpAndSettle();

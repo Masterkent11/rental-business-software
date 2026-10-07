@@ -10,18 +10,6 @@ import '../../data/application_repository.dart';
 import '../../data/listing_repository.dart';
 import '../../design/tokens.dart';
 
-/// Long-term: submit an application.
-///
-/// Three things the journey is emphatic about, all of them visible on this
-/// screen rather than buried in copy:
-///
-///   * **Applying does not reserve the place.** Several people may apply for
-///     the same unit; approval is what takes it off the market. Saying so here
-///     is the difference between a fair process and a surprise.
-///   * **The platform does not screen anyone.** It carries documents; the owner
-///     judges them. No score, no credit check — permanently.
-///   * **It has to be doable from a phone**, photographing documents on the
-///     spot.
 class ApplyScreen extends ConsumerStatefulWidget {
   const ApplyScreen({required this.listingId, super.key});
 
@@ -44,24 +32,18 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
 
   bool get _ready => _documents.values.any((attached) => attached);
 
-  /// Submit, and say plainly what did and did not happen.
-  ///
-  /// The success message repeats that applying reserves nothing — the moment a
-  /// customer is most likely to assume otherwise is the moment they have just
-  /// pressed the button.
   Future<void> _submit(ListingCardView card) async {
     setState(() => _submitting = true);
 
     try {
-      await ref.read(applicationRepositoryProvider).submit(
+      await ref
+          .read(applicationRepositoryProvider)
+          .submit(
             resourceId: card.resourceId,
             desiredMoveIn: _moveIn,
             desiredTermMonths: 12,
-            // The contract has no headcount field; the occupant count the
-            // customer picked is real information, so it travels in the one
-            // free-text channel the owner actually sees rather than being
-            // silently dropped.
-            message: '$_occupants ${_occupants == 1 ? "person" : "people"} '
+            message:
+                '$_occupants ${_occupants == 1 ? "person" : "people"} '
                 'expected to live here.',
           );
       ref.invalidate(applicationsProvider);
@@ -78,9 +60,8 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
       );
     } on ApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.message)));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -148,7 +129,6 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
             ),
           ),
           const SizedBox(height: Tokens.s24),
-
           const _FieldLabel('When do you want to move in?'),
           const SizedBox(height: Tokens.s8),
           _DateField(
@@ -164,7 +144,6 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
             },
           ),
           const SizedBox(height: Tokens.s24),
-
           const _FieldLabel('How many people will live here?'),
           const SizedBox(height: Tokens.s8),
           _Stepper(
@@ -172,7 +151,6 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
             onChanged: (v) => setState(() => _occupants = v),
           ),
           const SizedBox(height: Tokens.s24),
-
           const _FieldLabel('Documents the owner asks for'),
           const SizedBox(height: Tokens.s4),
           Text(
@@ -185,11 +163,8 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
             _DocumentRow(
               label: entry.key,
               attached: entry.value,
-              onTap: () => setState(
-                () => _documents[entry.key] = !entry.value,
-              ),
+              onTap: () => setState(() => _documents[entry.key] = !entry.value),
             ),
-
           const SizedBox(height: Tokens.s24),
           Container(
             padding: const EdgeInsets.all(Tokens.s16),
@@ -200,11 +175,7 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(
-                  Icons.info_outline,
-                  size: 18,
-                  color: Tokens.accent,
-                ),
+                const Icon(Icons.info_outline, size: 18, color: Tokens.accent),
                 const SizedBox(width: Tokens.s12),
                 Expanded(
                   child: Text(
@@ -217,7 +188,6 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
               ],
             ),
           ),
-
           if (card.moveInCost != null) ...[
             const SizedBox(height: Tokens.s24),
             Row(
@@ -443,9 +413,7 @@ class _DocumentRow extends StatelessWidget {
                     : theme.colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: Tokens.s12),
-              Expanded(
-                child: Text(label, style: theme.textTheme.bodyLarge),
-              ),
+              Expanded(child: Text(label, style: theme.textTheme.bodyLarge)),
               Text(
                 attached ? 'Attached' : 'Add photo',
                 style: theme.textTheme.labelMedium?.copyWith(

@@ -3,15 +3,6 @@ import 'package:flutter/services.dart';
 
 import 'tokens.dart';
 
-/// Content arriving.
-///
-/// A short fade with a small upward drift. The drift matters more than the
-/// fade: things that rise into place read as *settling*, and a screen whose
-/// sections settle in order tells the customer what to read first without a
-/// single line of copy saying so.
-///
-/// [order] staggers siblings. Keep it small — past four or five the last item
-/// is visibly late and the screen feels sluggish rather than considered.
 class Reveal extends StatefulWidget {
   const Reveal({
     required this.child,
@@ -23,7 +14,6 @@ class Reveal extends StatefulWidget {
   final Widget child;
   final int order;
 
-  /// How far it drifts up, in logical pixels.
   final double from;
 
   @override
@@ -31,11 +21,6 @@ class Reveal extends StatefulWidget {
 }
 
 class _RevealState extends State<Reveal> with SingleTickerProviderStateMixin {
-  /// The stagger is *inside* the animation rather than in front of it: the
-  /// controller runs for delay + reveal and an [Interval] holds the child
-  /// still for the first slice. A `Future.delayed` would do the same thing
-  /// visually, but it leaves a live timer behind, and a widget test can never
-  /// settle while one is pending.
   late final Duration _delay = Duration(
     milliseconds: (widget.order * 70).clamp(0, 420),
   );
@@ -76,12 +61,6 @@ class _RevealState extends State<Reveal> with SingleTickerProviderStateMixin {
   }
 }
 
-/// A control that answers the finger.
-///
-/// Scales down a couple of percent while held. Tiny on purpose — the point is
-/// that the surface feels physical, not that anything is animating. On a
-/// listing card it is the difference between tapping a photograph and tapping
-/// a button that happens to have a photograph on it.
 class Squeeze extends StatefulWidget {
   const Squeeze({
     required this.child,
@@ -128,11 +107,6 @@ class _SqueezeState extends State<Squeeze> {
   }
 }
 
-/// The transition between screens.
-///
-/// A gentle rise and fade rather than a full-width slide. A marketplace is
-/// browsed in short hops — open a place, go back, open another — and a heavy
-/// horizontal push makes ten of those feel like a journey.
 class RiseTransitionsBuilder extends PageTransitionsBuilder {
   const RiseTransitionsBuilder();
 

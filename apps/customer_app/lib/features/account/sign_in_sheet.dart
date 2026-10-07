@@ -5,18 +5,14 @@ import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../design/tokens.dart';
 import '../../data/auth_repository.dart';
 
-Future<void> showSignInSheet(BuildContext context) => showModalBottomSheet<void>(
+Future<void> showSignInSheet(BuildContext context) =>
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       builder: (_) => const _SignInSheet(),
     );
 
-/// Sign in, by email or by mobile number.
-///
-/// Mobile + OTP sits alongside email rather than beneath it: a phone number is
-/// the identifier most Philippine tenants actually have and remember, and
-/// burying it would make the app harder to use for the people it is for.
 class _SignInSheet extends ConsumerStatefulWidget {
   const _SignInSheet();
 
@@ -48,8 +44,6 @@ class _SignInSheetState extends ConsumerState<_SignInSheet> {
     super.dispose();
   }
 
-  /// Runs an auth call, turning provider failures into something a person can
-  /// act on rather than a raw exception.
   Future<void> _run(Future<void> Function() action, {String? notice}) async {
     setState(() {
       _busy = true;
@@ -96,7 +90,6 @@ class _SignInSheetState extends ConsumerState<_SignInSheet> {
             ),
             const SizedBox(height: Tokens.s8),
             Text(
-              // D-15, said before it can be got wrong.
               'One account for everything — browsing, renting, and paying.',
               style: theme.textTheme.bodySmall,
             ),
@@ -175,10 +168,10 @@ class _SignInSheetState extends ConsumerState<_SignInSheet> {
                 onPressed: _busy
                     ? null
                     : () => setState(() {
-                          _registering = !_registering;
-                          _error = null;
-                          _notice = null;
-                        }),
+                        _registering = !_registering;
+                        _error = null;
+                        _notice = null;
+                      }),
                 child: Text(
                   _registering
                       ? 'I already have an account'
@@ -202,18 +195,17 @@ class _SignInSheetState extends ConsumerState<_SignInSheet> {
   Future<void> _submit(AuthGateway auth) {
     if (_method == _Method.mobile) {
       if (!_codeSent) {
-        return _run(
-          () async {
-            await auth.sendMobileOtp(_mobile.text.trim());
-            if (mounted) setState(() => _codeSent = true);
-          },
-          notice: 'We sent you a code.',
-        );
+        return _run(() async {
+          await auth.sendMobileOtp(_mobile.text.trim());
+          if (mounted) setState(() => _codeSent = true);
+        }, notice: 'We sent you a code.');
       }
-      return _run(() => auth.verifyMobileOtp(
-            mobile: _mobile.text.trim(),
-            code: _code.text.trim(),
-          ));
+      return _run(
+        () => auth.verifyMobileOtp(
+          mobile: _mobile.text.trim(),
+          code: _code.text.trim(),
+        ),
+      );
     }
 
     if (_registering) {
@@ -226,9 +218,11 @@ class _SignInSheetState extends ConsumerState<_SignInSheet> {
       );
     }
 
-    return _run(() => auth.signInWithPassword(
-          email: _email.text.trim(),
-          password: _password.text,
-        ));
+    return _run(
+      () => auth.signInWithPassword(
+        email: _email.text.trim(),
+        password: _password.text,
+      ),
+    );
   }
 }

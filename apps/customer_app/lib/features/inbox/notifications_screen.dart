@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../design/tokens.dart';
 
-/// Notifications.
-///
-/// The bar the tenant journey sets is that **a customer should never be chased
-/// for something they were not told about** — so this is a log of things that
-/// happened, each with the time it happened, not a marketing channel.
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
 

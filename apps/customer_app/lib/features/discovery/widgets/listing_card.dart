@@ -9,11 +9,6 @@ import '../../../design/tokens.dart';
 import '../../../fixtures/view_models.dart';
 import '../../saved/saved_controller.dart';
 
-/// One result in the marketplace list.
-///
-/// Four things have to be legible at arm's length on a mid-range phone: the
-/// price, **what it actually costs to move in**, whether it is available, and
-/// whether it has a tour. Everything else is secondary and is styled that way.
 class ListingCard extends ConsumerWidget {
   const ListingCard({required this.listing, required this.onTap, super.key});
 
@@ -25,9 +20,6 @@ class ListingCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final saved = ref.watch(isSavedProvider(listing.id));
 
-    // Squeeze rather than a bare tap: the card is mostly photograph, and a
-    // photograph that does not answer the finger feels like an image rather
-    // than a way in.
     return Squeeze(
       onTap: onTap,
       child: Column(
@@ -36,9 +28,6 @@ class ListingCard extends ConsumerWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(Tokens.rLg),
             child: AspectRatio(
-              // Listings with a tour get more room. The journey asks for
-              // photo-only listings to be visibly less compelling — that
-              // asymmetry is what makes owners bother authoring a tour.
               aspectRatio: listing.hasTour ? 4 / 3 : 16 / 10,
               child: Stack(
                 fit: StackFit.expand,
@@ -55,9 +44,6 @@ class ListingCard extends ConsumerWidget {
                     top: Tokens.s12,
                     right: Tokens.s12,
                     child: Glass.circle(
-                      // toggle() already rolls the heart back on failure; this
-                      // just stops that failure surfacing as an unhandled
-                      // future rejection once it has done its job.
                       onTap: () => ref
                           .read(savedIdsProvider.notifier)
                           .toggle(listing.id)
@@ -139,12 +125,12 @@ class ListingCard extends ConsumerWidget {
   }
 
   static IconData _iconFor(ResourceType type) => switch (type) {
-        ResourceType.unit => Icons.apartment_outlined,
-        ResourceType.room => Icons.meeting_room_outlined,
-        ResourceType.bedSpace => Icons.bed_outlined,
-        ResourceType.parking => Icons.local_parking_outlined,
-        ResourceType.storage => Icons.inventory_2_outlined,
-      };
+    ResourceType.unit => Icons.apartment_outlined,
+    ResourceType.room => Icons.meeting_room_outlined,
+    ResourceType.bedSpace => Icons.bed_outlined,
+    ResourceType.parking => Icons.local_parking_outlined,
+    ResourceType.storage => Icons.inventory_2_outlined,
+  };
 }
 
 class _TourBadge extends StatelessWidget {
@@ -197,9 +183,7 @@ class _Availability extends StatelessWidget {
         const SizedBox(width: Tokens.s6),
         Text(
           listing.availabilityLabel,
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
+          style: Theme.of(context).textTheme.bodySmall
               ?.copyWith(color: color, fontWeight: FontWeight.w600),
         ),
       ],

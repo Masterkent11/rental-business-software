@@ -26,10 +26,9 @@ AvailabilityRepository repositoryReturning(
 void main() {
   test('asks for the window as a half-open range', () async {
     Uri? seen;
-    final repo = repositoryReturning(
-      {'nights': <dynamic>[]},
-      onRequest: (uri) => seen = uri,
-    );
+    final repo = repositoryReturning({
+      'nights': <dynamic>[],
+    }, onRequest: (uri) => seen = uri);
 
     await repo.nights(
       resourceId: 'r-1',
@@ -66,14 +65,10 @@ void main() {
       NightStatus.held,
       NightStatus.blocked,
     ]);
-    // Only OPEN is offerable. A held night belongs to someone mid-checkout.
     expect(nights.where((n) => n.status.isTaken).length, 4);
   });
 
   test('treats an unknown status as taken, not as free', () async {
-    // If the server grows a state this build has never heard of, offering the
-    // night anyway risks selling something that is gone. Refusing it only
-    // risks an unnecessary "not available".
     final repo = repositoryReturning({
       'nights': [
         {'night': '2027-03-01', 'status': 'UNDER_RENOVATION'},
@@ -91,10 +86,9 @@ void main() {
 
   test('pads single-digit months and days', () async {
     Uri? seen;
-    final repo = repositoryReturning(
-      {'nights': <dynamic>[]},
-      onRequest: (uri) => seen = uri,
-    );
+    final repo = repositoryReturning({
+      'nights': <dynamic>[],
+    }, onRequest: (uri) => seen = uri);
 
     await repo.nights(
       resourceId: 'r-1',
@@ -102,8 +96,6 @@ void main() {
       to: DateTime(2027, 2, 9),
     );
 
-    // '2027-1-5' is not a date the API accepts, and the failure would look
-    // like an empty calendar rather than an error.
     expect(seen!.queryParameters['from'], '2027-01-05');
     expect(seen!.queryParameters['to'], '2027-02-09');
   });

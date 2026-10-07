@@ -2,19 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'tokens.dart';
 
-/// Photography, with an honest failure mode.
-///
-/// The shell has no media pipeline — Step 5 has not defined one — so the images
-/// are remote placeholders. Two consequences are handled here rather than left
-/// to each screen:
-///
-///   * **Loading is a real state.** A listing that pops in is fine; a listing
-///     that flashes grey then jumps is not. The fade-in is 240ms and the box
-///     reserves its space first.
-///   * **Failure is a real state.** No network — in a widget test, on a plane,
-///     on bad mobile data — falls back to a quiet tonal panel with the resource
-///     icon. Never a broken-image glyph, and never an error message inside a
-///     card.
 class AppImage extends StatelessWidget {
   const AppImage({
     required this.url,
@@ -28,8 +15,6 @@ class AppImage extends StatelessWidget {
   final BoxFit fit;
   final IconData fallbackIcon;
 
-  /// Keeps the fallback panel visually stable per listing instead of uniform
-  /// grey across a whole screen.
   final int seed;
 
   @override
@@ -68,16 +53,14 @@ class _Fallback extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Warm neutrals only. A rainbow of placeholder tints is the fastest way to
-    // make a considered app look generated.
-    //
-    // The dark values are deliberately well above the page background: a
-    // placeholder that matches the canvas reads as a rendering failure, not as
-    // a photo that has not arrived.
     final hue = ((28 + seed * 11) % 44 + 18).toDouble();
     final top = HSLColor.fromAHSL(1, hue, 0.14, isDark ? 0.26 : 0.91).toColor();
-    final bottom =
-        HSLColor.fromAHSL(1, hue, 0.12, isDark ? 0.19 : 0.86).toColor();
+    final bottom = HSLColor.fromAHSL(
+      1,
+      hue,
+      0.12,
+      isDark ? 0.19 : 0.86,
+    ).toColor();
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -91,8 +74,9 @@ class _Fallback extends StatelessWidget {
         child: Icon(
           icon,
           size: 34,
-          color: (isDark ? Colors.white : Tokens.ink)
-              .withOpacity(dim ? 0.14 : 0.26),
+          color: (isDark ? Colors.white : Tokens.ink).withOpacity(
+            dim ? 0.14 : 0.26,
+          ),
         ),
       ),
     );

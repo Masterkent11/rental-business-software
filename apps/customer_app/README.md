@@ -4,7 +4,7 @@ The Flutter app for the **Customer** surface: discover, tour, book, apply.
 
 ```bash
 flutter pub get
-flutter run -d chrome     # or: -d macos
+flutter run -d chrome
 ```
 
 ## Before you change anything

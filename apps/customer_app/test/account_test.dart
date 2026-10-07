@@ -12,7 +12,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
-/// A gateway that is signed in or out on demand, without Supabase.
 class _FakeAuth implements AuthGateway {
   _FakeAuth({String? token}) : _token = token;
 
@@ -40,8 +39,7 @@ class _FakeAuth implements AuthGateway {
   Future<void> signInWithPassword({
     required String email,
     required String password,
-  }) async =>
-      signIn('token-for-$email');
+  }) async => signIn('token-for-$email');
 
   @override
   Future<void> signUpWithPassword({
@@ -56,8 +54,7 @@ class _FakeAuth implements AuthGateway {
   Future<void> verifyMobileOtp({
     required String mobile,
     required String code,
-  }) async =>
-      signIn('token-for-$mobile');
+  }) async => signIn('token-for-$mobile');
 }
 
 ProviderContainer containerWith({
@@ -81,10 +78,10 @@ ProviderContainer containerWith({
 }
 
 http.Response _json(Object body, [int status = 200]) => http.Response(
-      jsonEncode(body),
-      status,
-      headers: {'content-type': 'application/json; charset=utf-8'},
-    );
+  jsonEncode(body),
+  status,
+  headers: {'content-type': 'application/json; charset=utf-8'},
+);
 
 void main() {
   test('sends the access token as a bearer header', () async {
@@ -116,24 +113,23 @@ void main() {
       }),
     );
 
-    // Signed out is answered locally: there is nothing to ask the server.
     expect(await container.read(accountProvider.future), isNull);
     expect(called, isFalse);
   });
 
   test('reads capabilities from the server, never from the token', () async {
-    // The client renders what it is told. If it ever derived capabilities
-    // itself it would be a second, staler source of authority (ADR-0007).
     final container = containerWith(
       auth: _FakeAuth(token: 't'),
-      client: MockClient((_) async => _json({
-            'id': 'u-1',
-            'displayName': 'Ana',
-            'capabilities': [
-              {'capability': 'CUSTOMER', 'organizationId': null},
-              {'capability': 'TENANT', 'organizationId': null},
-            ],
-          })),
+      client: MockClient(
+        (_) async => _json({
+          'id': 'u-1',
+          'displayName': 'Ana',
+          'capabilities': [
+            {'capability': 'CUSTOMER', 'organizationId': null},
+            {'capability': 'TENANT', 'organizationId': null},
+          ],
+        }),
+      ),
     );
 
     final account = await container.read(accountProvider.future);
@@ -142,7 +138,6 @@ void main() {
   });
 
   test('treats a rejected token as signed out, not as an error', () async {
-    // Offer sign-in rather than an error the customer cannot act on.
     final container = containerWith(
       auth: _FakeAuth(token: 'stale'),
       client: MockClient((_) async => _json({'title': 'Unauthorized'}, 401)),
@@ -157,7 +152,11 @@ void main() {
     test('are empty when signed out, and never guessed locally', () async {
       final container = containerWith(
         auth: _FakeAuth(),
-        client: MockClient((_) async => _json({'listingIds': ['x']})),
+        client: MockClient(
+          (_) async => _json({
+            'listingIds': ['x'],
+          }),
+        ),
       );
 
       expect(await container.read(savedIdsProvider.future), isEmpty);
@@ -173,31 +172,35 @@ void main() {
         ),
       );
 
-      expect(
-        await container.read(savedIdsProvider.future),
-        {'c1111111-0000-0000-0000-000000000001'},
-      );
+      expect(await container.read(savedIdsProvider.future), {
+        'c1111111-0000-0000-0000-000000000001',
+      });
     });
 
-    test('show the change immediately, then take the server\'s answer', () async {
-      const id = 'c1111111-0000-0000-0000-000000000001';
-      final container = containerWith(
-        auth: _FakeAuth(token: 't'),
-        client: MockClient((request) async {
-          if (request.method == 'GET') return _json({'listingIds': <String>[]});
-          return _json({'listingIds': [id]});
-        }),
-      );
+    test(
+      'show the change immediately, then take the server\'s answer',
+      () async {
+        const id = 'c1111111-0000-0000-0000-000000000001';
+        final container = containerWith(
+          auth: _FakeAuth(token: 't'),
+          client: MockClient((request) async {
+            if (request.method == 'GET') {
+              return _json({'listingIds': <String>[]});
+            }
+            return _json({
+              'listingIds': [id],
+            });
+          }),
+        );
 
-      await container.read(savedIdsProvider.future);
-      await container.read(savedIdsProvider.notifier).toggle(id);
+        await container.read(savedIdsProvider.future);
+        await container.read(savedIdsProvider.notifier).toggle(id);
 
-      expect(container.read(savedIdsProvider).valueOrNull, {id});
-    });
+        expect(container.read(savedIdsProvider).valueOrNull, {id});
+      },
+    );
 
     test('roll back when the server refuses', () async {
-      // A heart that looks saved but was not is worse than one that visibly
-      // failed.
       const id = 'c1111111-0000-0000-0000-000000000001';
       final container = containerWith(
         auth: _FakeAuth(token: 't'),
@@ -221,7 +224,11 @@ void main() {
       final auth = _FakeAuth();
       final container = containerWith(
         auth: auth,
-        client: MockClient((_) async => _json({'listingIds': [id]})),
+        client: MockClient(
+          (_) async => _json({
+            'listingIds': [id],
+          }),
+        ),
       );
 
       expect(await container.read(savedIdsProvider.future), isEmpty);
@@ -235,35 +242,33 @@ void main() {
   });
 }
 
-// ---------------------------------------------------------------------------
-// Sprint 4 — receipts
-// ---------------------------------------------------------------------------
-
 void _staysTests() {
   test('reads the receipt the server sends, deriving none of it', () async {
     final container = containerWith(
       auth: _FakeAuth(token: 't'),
-      client: MockClient((_) async => _json({
-            'stays': [
-              {
-                'id': 's-1',
-                'reference': 'D7C5BBA7',
-                'listingTitle': 'Bunk near USC',
-                'propertyName': 'Villa Boarding House',
-                'areaLabel': 'Brgy. Sambag II',
-                'cityLabel': 'Cebu City',
-                'startsOn': '2027-11-01',
-                'endsOn': '2027-11-04',
-                'nights': 3,
-                'paidCentavos': 135000,
-                'paidAt': '2027-10-01T08:00:00.000Z',
-                'state': 'CONFIRMED',
-                'photo': 'https://example.test/a.jpg',
-                'stateLabel': 'Confirmed',
-                'bucket': 'ACTIVE',
-              },
-            ],
-          })),
+      client: MockClient(
+        (_) async => _json({
+          'stays': [
+            {
+              'id': 's-1',
+              'reference': 'D7C5BBA7',
+              'listingTitle': 'Bunk near USC',
+              'propertyName': 'Villa Boarding House',
+              'areaLabel': 'Brgy. Sambag II',
+              'cityLabel': 'Cebu City',
+              'startsOn': '2027-11-01',
+              'endsOn': '2027-11-04',
+              'nights': 3,
+              'paidCentavos': 135000,
+              'paidAt': '2027-10-01T08:00:00.000Z',
+              'state': 'CONFIRMED',
+              'photo': 'https://example.test/a.jpg',
+              'stateLabel': 'Confirmed',
+              'bucket': 'ACTIVE',
+            },
+          ],
+        }),
+      ),
     );
 
     final stays = await container.read(staysProvider.future);
@@ -271,40 +276,38 @@ void _staysTests() {
 
     expect(stay.reference, 'D7C5BBA7');
     expect(stay.nights, 3);
-    // Integer centavos end to end.
     expect(stay.paidCentavos, 135000);
     expect(stay.isPaid, isTrue);
-    // The label is rendered, never computed from the dates.
     expect(stay.stateLabel, 'Confirmed');
     expect(stay.bucket, BookingStatus.active);
   });
 
   test('takes the tab from the server, not from the dates', () async {
-    // A stay whose dates are in the future but which the server calls PAST
-    // must land under Past. The server is the one that knows.
     final container = containerWith(
       auth: _FakeAuth(token: 't'),
-      client: MockClient((_) async => _json({
-            'stays': [
-              {
-                'id': 's-2',
-                'reference': 'AAAA1111',
-                'listingTitle': 'Somewhere',
-                'propertyName': 'P',
-                'areaLabel': 'A',
-                'cityLabel': 'C',
-                'startsOn': '2099-01-01',
-                'endsOn': '2099-01-03',
-                'nights': 2,
-                'paidCentavos': 1000,
-                'paidAt': '2027-10-01T08:00:00.000Z',
-                'state': 'CANCELLED',
-                'photo': null,
-                'stateLabel': 'Cancelled',
-                'bucket': 'CANCELLED',
-              },
-            ],
-          })),
+      client: MockClient(
+        (_) async => _json({
+          'stays': [
+            {
+              'id': 's-2',
+              'reference': 'AAAA1111',
+              'listingTitle': 'Somewhere',
+              'propertyName': 'P',
+              'areaLabel': 'A',
+              'cityLabel': 'C',
+              'startsOn': '2099-01-01',
+              'endsOn': '2099-01-03',
+              'nights': 2,
+              'paidCentavos': 1000,
+              'paidAt': '2027-10-01T08:00:00.000Z',
+              'state': 'CANCELLED',
+              'photo': null,
+              'stateLabel': 'Cancelled',
+              'bucket': 'CANCELLED',
+            },
+          ],
+        }),
+      ),
     );
 
     final stay = (await container.read(staysProvider.future)).single;
@@ -324,27 +327,29 @@ void _staysTests() {
   test('an unpaid stay is not shown as paid', () async {
     final container = containerWith(
       auth: _FakeAuth(token: 't'),
-      client: MockClient((_) async => _json({
-            'stays': [
-              {
-                'id': 's-3',
-                'reference': 'BBBB2222',
-                'listingTitle': 'Somewhere',
-                'propertyName': 'P',
-                'areaLabel': 'A',
-                'cityLabel': 'C',
-                'startsOn': '2027-11-01',
-                'endsOn': '2027-11-02',
-                'nights': 1,
-                'paidCentavos': 0,
-                'paidAt': null,
-                'state': 'CONFIRMED',
-                'photo': null,
-                'stateLabel': 'Confirmed',
-                'bucket': 'ACTIVE',
-              },
-            ],
-          })),
+      client: MockClient(
+        (_) async => _json({
+          'stays': [
+            {
+              'id': 's-3',
+              'reference': 'BBBB2222',
+              'listingTitle': 'Somewhere',
+              'propertyName': 'P',
+              'areaLabel': 'A',
+              'cityLabel': 'C',
+              'startsOn': '2027-11-01',
+              'endsOn': '2027-11-02',
+              'nights': 1,
+              'paidCentavos': 0,
+              'paidAt': null,
+              'state': 'CONFIRMED',
+              'photo': null,
+              'stateLabel': 'Confirmed',
+              'bucket': 'ACTIVE',
+            },
+          ],
+        }),
+      ),
     );
 
     expect((await container.read(staysProvider.future)).single.isPaid, isFalse);

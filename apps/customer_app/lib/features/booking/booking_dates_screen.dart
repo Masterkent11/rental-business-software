@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,15 +11,6 @@ import '../../design/money.dart';
 import '../../design/tokens.dart';
 import 'widgets/date_range_calendar.dart';
 
-/// Short-term: pick dates, see the total, then pay.
-///
-/// Two things the journey insists on, both visible here:
-///
-///   * **Honest availability.** A night shown as open must be bookable. The
-///     blocked nights come from the server's projection of one occupancy
-///     timeline — this screen renders them and derives nothing.
-///   * **Total cost before committing.** Payment *is* the commitment on this
-///     path; there is no approval step to change your mind during.
 class BookingDatesScreen extends ConsumerStatefulWidget {
   const BookingDatesScreen({required this.listingId, super.key});
 
@@ -57,22 +48,18 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
     final minStay = detail.minimumStayNights ?? 1;
     final today = DateTime.now();
 
-    // The window the calendar shows, asked for in one request.
     final windowFrom = DateTime(today.year, today.month);
     final windowTo = DateTime(today.year, today.month + 3);
     final nightsAsync = card.resourceId.isEmpty
         ? const AsyncValue<List<NightView>>.data([])
-        : ref.watch(availabilityProvider((
-            resourceId: card.resourceId,
-            from: windowFrom,
-            to: windowTo,
-          )));
+        : ref.watch(
+            availabilityProvider((
+              resourceId: card.resourceId,
+              from: windowFrom,
+              to: windowTo,
+            )),
+          );
 
-    // Until the calendar has loaded, every night is treated as taken.
-    //
-    // The opposite default would show an empty calendar as fully open and let
-    // someone pick nights that are already gone — a screen that lies for a
-    // second is worse than one that waits.
     final loaded = nightsAsync.hasValue;
     final blocked = <DateTime>{
       for (final night in nightsAsync.valueOrNull ?? const <NightView>[])
@@ -145,8 +132,6 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
     );
   }
 
-  /// Half-open, exactly like the domain: `[from, to)`. A guest checking out on
-  /// the 29th frees the 29th.
   bool _isBlocked(DateTime day, Set<DateTime> blocked, bool loaded) {
     if (!loaded) return true;
     return blocked.contains(DateTime(day.year, day.month, day.day));
@@ -162,12 +147,11 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
         return;
       }
 
-      // A range may not swallow a blocked night. Refusing here is the client
-      // being polite; the server refuses for real, because that is where the
-      // timeline lives.
-      for (var d = _checkIn!;
-          d.isBefore(day);
-          d = d.add(const Duration(days: 1))) {
+      for (
+        var d = _checkIn!;
+        d.isBefore(day);
+        d = d.add(const Duration(days: 1))
+      ) {
         if (_isBlocked(d, blocked, loaded)) {
           _checkIn = day;
           _checkOut = null;
