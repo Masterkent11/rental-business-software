@@ -47,9 +47,9 @@ export function postgresPaymentRepository(): PaymentRepository {
         // the join silently matches nothing and a payable reservation looks
         // like an expired hold.
         const [occupancy] = await tx<
-          { organization_id: string; kind: string }[]
+          { organization_id: string; kind: string; held_by: string | null }[]
         >`
-          select organization_id, kind
+          select organization_id, kind, held_by
             from occupancies
            where id = ${occupancyId}
              and state = 'HELD'
@@ -73,20 +73,30 @@ export function postgresPaymentRepository(): PaymentRepository {
           return {
             occupancyId,
             organizationId: occupancy.organization_id,
-            amountCentavos: Number(reservation.fee) as Centavos,
-            nights: 0,
+            heldBy: occupancy.held_by,
+            pricing: { kind: 'FIXED', amountCentavos: Number(reservation.fee) as Centavos },
           } satisfies BookingForPayment;
         }
 
         const [booking] = await tx<
-          { amount_centavos: string; nights: string }[]
+          {
+            starts_on: string;
+            ends_on: string;
+            guests: number | null;
+            price_centavos: string;
+            cleaning_fee_centavos: string;
+            min_stay_nights: number | null;
+            max_occupants: number;
+          }[]
         >`
           select
-            -- Priced from the listing, in the database, in integer centavos.
-            -- A client-supplied amount would be a client deciding what to pay.
-            (l.price_centavos * (upper(o.during) - lower(o.during)))::text
-              as amount_centavos,
-            (upper(o.during) - lower(o.during))::text as nights
+            to_char(lower(o.during), 'YYYY-MM-DD') as starts_on,
+            to_char(upper(o.during), 'YYYY-MM-DD') as ends_on,
+            o.guests,
+            l.price_centavos::text as price_centavos,
+            l.cleaning_fee_centavos::text as cleaning_fee_centavos,
+            l.min_stay_nights,
+            l.max_occupants
             from occupancies o
             join listings l
               on l.resource_id = o.resource_id
@@ -99,8 +109,17 @@ export function postgresPaymentRepository(): PaymentRepository {
         return {
           occupancyId,
           organizationId: occupancy.organization_id,
-          amountCentavos: Number(booking.amount_centavos) as Centavos,
-          nights: Number(booking.nights),
+          heldBy: occupancy.held_by,
+          pricing: {
+            kind: 'STAY',
+            startsOn: booking.starts_on,
+            endsOn: booking.ends_on,
+            guests: booking.guests ?? 1,
+            nightlyCentavos: Number(booking.price_centavos) as Centavos,
+            cleaningFeeCentavos: Number(booking.cleaning_fee_centavos) as Centavos,
+            minStayNights: booking.min_stay_nights ?? 1,
+            maxOccupants: Math.max(booking.max_occupants, booking.guests ?? 1),
+          },
         } satisfies BookingForPayment;
       }) as Promise<BookingForPayment | null>;
     },
@@ -323,10 +342,33 @@ export function postgresPaymentRepository(): PaymentRepository {
           )
         `;
 
+        const [context] = await tx<
+          { held_by: string | null; title: string; starts_on: string; ends_on: string }[]
+        >`
+          select o.held_by, coalesce(l.title, r.label) as title,
+                 to_char(lower(o.during), 'YYYY-MM-DD') as starts_on,
+                 to_char(upper(o.during), 'YYYY-MM-DD') as ends_on
+            from occupancies o
+            join rentable_resources r on r.id = o.resource_id
+            left join listings l on l.resource_id = o.resource_id and l.kind = 'SHORT_TERM'
+           where o.id = ${payment.occupancy_id}
+           limit 1
+        `;
+
         return {
           payment: toPayment({ ...payment, state: 'SUCCEEDED' }),
           stayId: stay!.id,
           applied: true,
+          stay: context
+            ? {
+                stayId: stay!.id,
+                guestId: context.held_by,
+                organizationId: payment.organization_id,
+                listingTitle: context.title,
+                startsOn: context.starts_on,
+                endsOn: context.ends_on,
+              }
+            : null,
         };
       }) as Promise<ConfirmationResult>;
     },

@@ -7,3 +7,5 @@ export const GET_MY_STAYS = Symbol('GET_MY_STAYS');
 export const GET_SAVED_LISTINGS = Symbol('GET_SAVED_LISTINGS');
 export const SAVE_LISTING = Symbol('SAVE_LISTING');
 export const UNSAVE_LISTING = Symbol('UNSAVE_LISTING');
+export const GET_ME = Symbol('GET_ME');
+export const UPDATE_MY_PROFILE = Symbol('UPDATE_MY_PROFILE');

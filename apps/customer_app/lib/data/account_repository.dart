@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../fixtures/view_models.dart' show BookingStatus;
 import 'api_client.dart';
 import 'auth_repository.dart';
 import 'listing_repository.dart';
@@ -12,57 +11,16 @@ class AccountView {
     required this.id,
     required this.displayName,
     required this.capabilities,
+    this.email,
   });
 
   final String id;
   final String displayName;
+  final String? email;
   final List<HeldCapability> capabilities;
 
   bool get isTenant => capabilities.any((c) => c.capability == 'TENANT');
   bool get isOwner => capabilities.any((c) => c.capability == 'OWNER');
-}
-
-class StayReceiptView {
-  const StayReceiptView({
-    required this.id,
-    required this.reference,
-    required this.listingTitle,
-    required this.propertyName,
-    required this.areaLabel,
-    required this.cityLabel,
-    required this.startsOn,
-    required this.endsOn,
-    required this.nights,
-    required this.paidCentavos,
-    required this.paidAt,
-    required this.state,
-    required this.photo,
-    required this.stateLabel,
-    required this.bucket,
-  });
-
-  final String id;
-
-  final String reference;
-
-  final String listingTitle;
-  final String propertyName;
-  final String areaLabel;
-  final String cityLabel;
-  final DateTime startsOn;
-  final DateTime endsOn;
-  final int nights;
-
-  final int paidCentavos;
-  final DateTime? paidAt;
-  final String state;
-  final String? photo;
-
-  final String stateLabel;
-
-  final BookingStatus bucket;
-
-  bool get isPaid => paidCentavos > 0 && paidAt != null;
 }
 
 class AccountRepository {
@@ -73,9 +31,18 @@ class AccountRepository {
   Future<AccountView> me() async {
     final json = await _api.getJson('/me');
 
+    return _account(json);
+  }
+
+  Future<AccountView> updateName(String displayName) async {
+    return _account(await _api.sendJson('PATCH', '/me', body: {'displayName': displayName}));
+  }
+
+  static AccountView _account(Map<String, dynamic> json) {
     return AccountView(
       id: json['id'] as String,
       displayName: json['displayName'] as String? ?? '',
+      email: json['email'] as String?,
       capabilities: (json['capabilities'] as List<dynamic>? ?? const [])
           .whereType<Map<String, dynamic>>()
           .map(
@@ -86,39 +53,6 @@ class AccountRepository {
           )
           .toList(growable: false),
     );
-  }
-
-  Future<List<StayReceiptView>> stays() async {
-    final json = await _api.getJson('/me/stays');
-
-    return (json['stays'] as List<dynamic>? ?? const [])
-        .whereType<Map<String, dynamic>>()
-        .map(
-          (stay) => StayReceiptView(
-            id: stay['id'] as String,
-            reference: stay['reference'] as String? ?? '',
-            listingTitle: stay['listingTitle'] as String? ?? '',
-            propertyName: stay['propertyName'] as String? ?? '',
-            areaLabel: stay['areaLabel'] as String? ?? '',
-            cityLabel: stay['cityLabel'] as String? ?? '',
-            startsOn: DateTime.parse(stay['startsOn'] as String),
-            endsOn: DateTime.parse(stay['endsOn'] as String),
-            nights: (stay['nights'] as num?)?.toInt() ?? 0,
-            paidCentavos: (stay['paidCentavos'] as num?)?.toInt() ?? 0,
-            paidAt: stay['paidAt'] == null
-                ? null
-                : DateTime.parse(stay['paidAt'] as String),
-            state: stay['state'] as String? ?? '',
-            photo: stay['photo'] as String?,
-            stateLabel: stay['stateLabel'] as String? ?? '',
-            bucket: switch (stay['bucket']) {
-              'CANCELLED' => BookingStatus.cancelled,
-              'PAST' => BookingStatus.past,
-              _ => BookingStatus.active,
-            },
-          ),
-        )
-        .toList(growable: false);
   }
 
   Future<List<String>> savedListingIds() async {
@@ -149,18 +83,6 @@ class AccountRepository {
 final accountRepositoryProvider = Provider<AccountRepository>(
   (ref) => AccountRepository(ref.watch(apiClientProvider)),
 );
-
-final staysProvider = FutureProvider<List<StayReceiptView>>((ref) async {
-  ref.watch(sessionProvider);
-  if (ref.watch(authRepositoryProvider).accessToken == null) return const [];
-
-  try {
-    return await ref.watch(accountRepositoryProvider).stays();
-  } on ApiException catch (error) {
-    if (error.isUnauthorized) return const [];
-    rethrow;
-  }
-});
 
 final accountProvider = FutureProvider<AccountView?>((ref) async {
   ref.watch(sessionProvider);

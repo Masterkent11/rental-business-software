@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../design/components.dart';
 import '../features/account/account_screen.dart';
 import '../features/application/applications_screen.dart';
 import '../features/application/apply_screen.dart';
+import '../features/auth/auth_screen.dart';
 import '../features/booking/booking_checkout_screen.dart';
 import '../features/booking/booking_dates_screen.dart';
 import '../features/bookings/booking_detail_screen.dart';
 import '../features/bookings/bookings_screen.dart';
+import '../features/inbox/conversation_screen.dart';
 import '../features/inbox/messages_screen.dart';
 import '../features/inbox/notifications_screen.dart';
+import '../features/inbox/start_conversation_screen.dart';
 import '../features/discovery/discovery_screen.dart';
 import '../features/listing/listing_detail_screen.dart';
 import '../features/saved/saved_screen.dart';
@@ -30,22 +34,39 @@ abstract final class Routes {
   static const messages = '/messages';
   static const propertyResults = '$discover/results';
 
-  static String propertySearch(PropertyType type) =>
-      '$discover/search/${type.name}';
+  static String propertySearch(PropertyType type) => '$discover/search/${type.name}';
   static String listing(String id) => '$discover/listing/$id';
   static String tour(String id) => '${listing(id)}/tour';
   static String book(String id) => '${listing(id)}/book';
   static String apply(String id) => '${listing(id)}/apply';
-  static String booking(String id) => '$bookings/$id';
+  static String booking(String id, {bool confirmed = false}) =>
+      '$bookings/$id${confirmed ? '?confirmed=1' : ''}';
+  static String conversation(String id) => '$messages/$id';
+
+  static String startConversation({required String listingId, String? bookingId}) =>
+      Uri(
+        path: '$messages/start',
+        queryParameters: {'listing': listingId, if (bookingId != null) 'booking': bookingId},
+      ).toString();
+
+  static String auth({String? from, String? reason, String mode = 'signin'}) => Uri(
+        path: '/auth',
+        queryParameters: {
+          'mode': mode,
+          if (from != null) 'from': from,
+          if (reason != null) 'reason': reason,
+        },
+      ).toString();
 
   static String checkout({
     required String listingId,
     required String resourceId,
     required DateTime checkIn,
     required DateTime checkOut,
+    int guests = 1,
   }) =>
       '${book(listingId)}/checkout'
-      '?resourceId=$resourceId&checkIn=${_isoDay(checkIn)}&checkOut=${_isoDay(checkOut)}';
+      '?resourceId=$resourceId&checkIn=${_isoDay(checkIn)}&checkOut=${_isoDay(checkOut)}&guests=$guests';
 
   static String _isoDay(DateTime d) =>
       '${d.year.toString().padLeft(4, '0')}-'
@@ -59,8 +80,7 @@ GoRouter buildRouter() {
     initialLocation: Routes.discover,
     routes: [
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) =>
-            HomeShell(navigationShell: navigationShell),
+        builder: (context, state, navigationShell) => HomeShell(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(
             routes: [
@@ -72,10 +92,7 @@ GoRouter buildRouter() {
                     path: 'search/:propertyType',
                     parentNavigatorKey: _rootNavigatorKey,
                     builder: (context, state) {
-                      final type =
-                          PropertyType.tryParse(
-                            state.pathParameters['propertyType'],
-                          ) ??
+                      final type = PropertyType.tryParse(state.pathParameters['propertyType']) ??
                           PropertyType.apartment;
                       return PropertySearchScreen(propertyType: type);
                     },
@@ -93,30 +110,35 @@ GoRouter buildRouter() {
                     parentNavigatorKey: _rootNavigatorKey,
                     builder: (context, state) => ListingDetailScreen(
                       listingId: state.pathParameters['id']!,
+                      saveOnOpen: state.uri.queryParameters['save'] == '1',
                     ),
                     routes: [
                       GoRoute(
                         path: 'tour',
                         parentNavigatorKey: _rootNavigatorKey,
-                        builder: (context, state) =>
-                            TourScreen(listingId: state.pathParameters['id']!),
+                        builder: (context, state) => TourScreen(listingId: state.pathParameters['id']!),
                       ),
                       GoRoute(
                         path: 'book',
                         parentNavigatorKey: _rootNavigatorKey,
-                        builder: (context, state) => BookingDatesScreen(
-                          listingId: state.pathParameters['id']!,
-                        ),
+                        builder: (context, state) => BookingDatesScreen(listingId: state.pathParameters['id']!),
                         routes: [
                           GoRoute(
                             path: 'checkout',
                             parentNavigatorKey: _rootNavigatorKey,
                             builder: (context, state) {
                               final q = state.uri.queryParameters;
+                              final checkIn = DateTime.tryParse(q['checkIn'] ?? '');
+                              final checkOut = DateTime.tryParse(q['checkOut'] ?? '');
+                              if (checkIn == null || checkOut == null) {
+                                return BookingDatesScreen(listingId: state.pathParameters['id']!);
+                              }
                               return BookingCheckoutScreen(
-                                resourceId: q['resourceId']!,
-                                checkIn: DateTime.parse(q['checkIn']!),
-                                checkOut: DateTime.parse(q['checkOut']!),
+                                listingId: state.pathParameters['id']!,
+                                resourceId: q['resourceId'] ?? '',
+                                checkIn: checkIn,
+                                checkOut: checkOut,
+                                guests: int.tryParse(q['guests'] ?? '') ?? 1,
                               );
                             },
                           ),
@@ -125,8 +147,7 @@ GoRouter buildRouter() {
                       GoRoute(
                         path: 'apply',
                         parentNavigatorKey: _rootNavigatorKey,
-                        builder: (context, state) =>
-                            ApplyScreen(listingId: state.pathParameters['id']!),
+                        builder: (context, state) => ApplyScreen(listingId: state.pathParameters['id']!),
                       ),
                     ],
                   ),
@@ -136,10 +157,7 @@ GoRouter buildRouter() {
           ),
           StatefulShellBranch(
             routes: [
-              GoRoute(
-                path: Routes.saved,
-                builder: (context, state) => const SavedScreen(),
-              ),
+              GoRoute(path: Routes.saved, builder: (context, state) => const SavedScreen()),
             ],
           ),
           StatefulShellBranch(
@@ -153,6 +171,7 @@ GoRouter buildRouter() {
                     parentNavigatorKey: _rootNavigatorKey,
                     builder: (context, state) => BookingDetailScreen(
                       bookingId: state.pathParameters['id']!,
+                      justConfirmed: state.uri.queryParameters['confirmed'] == '1',
                     ),
                   ),
                 ],
@@ -162,12 +181,51 @@ GoRouter buildRouter() {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: Routes.account,
-                builder: (context, state) => const AccountScreen(),
+                path: Routes.messages,
+                builder: (context, state) => const MessagesScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'start',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) => StartConversationScreen(
+                      listingId: state.uri.queryParameters['listing'] ?? '',
+                      bookingId: state.uri.queryParameters['booking'],
+                    ),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) => ConversationScreen(conversationId: state.pathParameters['id']!),
+                  ),
+                ],
               ),
             ],
           ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: Routes.account, builder: (context, state) => const AccountScreen()),
+            ],
+          ),
         ],
+      ),
+      GoRoute(
+        path: '/auth',
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) {
+          final q = state.uri.queryParameters;
+          return MaterialPage(
+            fullscreenDialog: true,
+            child: AuthScreen(
+              from: q['from'],
+              reason: q['reason'],
+              initialMode: switch (q['mode']) {
+                'signup' => AuthMode.signUp,
+                'reset' => AuthMode.reset,
+                _ => AuthMode.signIn,
+              },
+            ),
+          );
+        },
       ),
       GoRoute(
         path: Routes.notifications,
@@ -179,15 +237,16 @@ GoRouter buildRouter() {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const ApplicationsScreen(),
       ),
-      GoRoute(
-        path: Routes.messages,
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const MessagesScreen(),
-      ),
     ],
     errorBuilder: (context, state) => Scaffold(
-      appBar: AppBar(title: const Text('Not found')),
-      body: Center(child: Text('No screen for ${state.uri}')),
+      appBar: AppBar(),
+      body: EmptyState(
+        icon: Icons.explore_off_outlined,
+        title: 'Page not found',
+        message: 'That link doesn’t lead anywhere in the app.',
+        actionLabel: 'Go home',
+        onAction: () => context.go(Routes.discover),
+      ),
     ),
   );
 }

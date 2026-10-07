@@ -212,3 +212,39 @@
     );
   }
 }
+
+:root,
+[data-theme="light"] {
+  --background: #fafaf8;
+  --foreground: #111318;
+  --surface: #ffffff;
+  --surface-foreground: #111318;
+  --surface-secondary: #f3f3f1;
+  --surface-tertiary: #e9e9e6;
+  --border: #e7e8ec;
+  --muted: #6b7180;
+  --accent: #111318;
+  --accent-foreground: #ffffff;
+  --accent-soft: #eef0f4;
+  --focus: #2563eb;
+  --link: #2563eb;
+  --success: #1b7a55;
+  --success-soft: #e8f4ee;
+  --danger: #a33a2e;
+  --danger-soft: #f8ebe9;
+  --warning: #9a6a12;
+  --warning-soft: #fbf3e2;
+  --radius: 0.75rem;
+}
+
+@layer utilities {
+  .focusable {
+    outline: none;
+  }
+  .focusable:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--focus) 35%, transparent);
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}

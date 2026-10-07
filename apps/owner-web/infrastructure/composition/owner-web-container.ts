@@ -1,101 +1,98 @@
-/**
- * Composition Root: OwnerWebContainer
- *
- * The single source of dependency wiring for owner-web.
- *
- * Flow:
- * Infrastructure Adapters -> Application Ports -> Application Use Cases -> Exported Container
- *
- * Rules:
- * - Concrete infrastructure adapters are instantiated HERE, and only here.
- * - Stores import use cases from this container, never concrete adapters.
- */
-
 import { HttpClient } from "../http/http-client";
 import { ApiOwnerRepositoryAdapter } from "../http/api-owner-repository.adapter";
 import { SupabaseSessionAdapter } from "../auth/supabase-session.adapter";
+import { SupabaseRealtimeAdapter } from "../realtime/supabase-realtime.adapter";
+import { SupabasePhotoStorageAdapter } from "../storage/supabase-photo-storage.adapter";
 
 import type { OwnerRepositoryPort } from "../../application/ports/owner-repository.port";
 import type { SessionPort } from "../../application/ports/session.port";
+import type { RealtimePort } from "../../application/ports/realtime.port";
+import type { PhotoStoragePort } from "../../application/ports/photo-storage.port";
 
 import {
   GetCurrentSessionUseCase,
   SignInUseCase,
   SignOutUseCase,
+  SwitchOrganizationUseCase,
 } from "../../application/use-cases/session/session.use-cases";
 import { LoadDashboardUseCase } from "../../application/use-cases/dashboard/load-dashboard.use-case";
 import {
-  LoadPropertiesUseCase,
-  CreatePropertyUseCase,
-} from "../../application/use-cases/properties/properties.use-cases";
-import {
+  BlockDatesUseCase,
+  ChangeListingStateUseCase,
+  CreatePropertyListingUseCase,
+  LoadListingCalendarUseCase,
+  LoadListingUseCase,
   LoadListingsUseCase,
-  LoadResourcesUseCase,
-  CreateListingUseCase,
-  TogglePublishListingUseCase,
+  RemoveListingPhotoUseCase,
+  ReorderListingPhotosUseCase,
+  UnblockDatesUseCase,
+  UpdateListingUseCase,
+  UploadListingPhotoUseCase,
 } from "../../application/use-cases/listings/listings.use-cases";
 import {
-  LoadApplicationsUseCase,
   DecideApplicationUseCase,
+  LoadApplicationsUseCase,
 } from "../../application/use-cases/applications/applications.use-cases";
+import {
+  LoadBookingUseCase,
+  LoadBookingsUseCase,
+  UpdateBookingStatusUseCase,
+} from "../../application/use-cases/bookings/bookings.use-cases";
+import {
+  LoadConversationsUseCase,
+  LoadThreadUseCase,
+  MarkConversationReadUseCase,
+  SendMessageUseCase,
+  WatchMessagesUseCase,
+} from "../../application/use-cases/messaging/messaging.use-cases";
+import {
+  LoadNotificationsUseCase,
+  MarkNotificationsReadUseCase,
+  WatchNotificationsUseCase,
+} from "../../application/use-cases/notifications/notifications.use-cases";
 
 export class OwnerWebContainer {
-  // Infrastructure Adapters & Ports
-  readonly httpClient: HttpClient;
-  readonly ownerRepository: OwnerRepositoryPort;
-  readonly sessionPort: SessionPort;
+  readonly httpClient = new HttpClient();
+  readonly ownerRepository: OwnerRepositoryPort = new ApiOwnerRepositoryAdapter(this.httpClient);
+  readonly sessionPort: SessionPort = new SupabaseSessionAdapter(this.httpClient);
+  readonly realtime: RealtimePort = new SupabaseRealtimeAdapter();
+  readonly photoStorage: PhotoStoragePort = new SupabasePhotoStorageAdapter();
 
-  // Session Use Cases
-  readonly getCurrentSessionUseCase: GetCurrentSessionUseCase;
-  readonly signInUseCase: SignInUseCase;
-  readonly signOutUseCase: SignOutUseCase;
+  readonly getCurrentSessionUseCase = new GetCurrentSessionUseCase(this.sessionPort);
+  readonly signInUseCase = new SignInUseCase(this.sessionPort);
+  readonly signOutUseCase = new SignOutUseCase(this.sessionPort);
+  readonly switchOrganizationUseCase = new SwitchOrganizationUseCase(this.sessionPort);
 
-  // Dashboard Use Case
-  readonly loadDashboardUseCase: LoadDashboardUseCase;
+  readonly loadDashboardUseCase = new LoadDashboardUseCase(this.ownerRepository);
 
-  // Property Use Cases
-  readonly loadPropertiesUseCase: LoadPropertiesUseCase;
-  readonly createPropertyUseCase: CreatePropertyUseCase;
+  readonly loadListingsUseCase = new LoadListingsUseCase(this.ownerRepository);
+  readonly loadListingUseCase = new LoadListingUseCase(this.ownerRepository);
+  readonly createPropertyListingUseCase = new CreatePropertyListingUseCase(this.ownerRepository);
+  readonly updateListingUseCase = new UpdateListingUseCase(this.ownerRepository);
+  readonly changeListingStateUseCase = new ChangeListingStateUseCase(this.ownerRepository);
+  readonly uploadListingPhotoUseCase = new UploadListingPhotoUseCase(this.ownerRepository, this.photoStorage);
+  readonly removeListingPhotoUseCase = new RemoveListingPhotoUseCase(this.ownerRepository, this.photoStorage);
+  readonly reorderListingPhotosUseCase = new ReorderListingPhotosUseCase(this.ownerRepository);
+  readonly loadListingCalendarUseCase = new LoadListingCalendarUseCase(this.ownerRepository);
+  readonly blockDatesUseCase = new BlockDatesUseCase(this.ownerRepository);
+  readonly unblockDatesUseCase = new UnblockDatesUseCase(this.ownerRepository);
 
-  // Listing Use Cases
-  readonly loadListingsUseCase: LoadListingsUseCase;
-  readonly loadResourcesUseCase: LoadResourcesUseCase;
-  readonly createListingUseCase: CreateListingUseCase;
-  readonly togglePublishListingUseCase: TogglePublishListingUseCase;
+  readonly loadBookingsUseCase = new LoadBookingsUseCase(this.ownerRepository);
+  readonly loadBookingUseCase = new LoadBookingUseCase(this.ownerRepository);
+  readonly updateBookingStatusUseCase = new UpdateBookingStatusUseCase(this.ownerRepository);
 
-  // Application Use Cases
-  readonly loadApplicationsUseCase: LoadApplicationsUseCase;
-  readonly decideApplicationUseCase: DecideApplicationUseCase;
+  readonly loadConversationsUseCase = new LoadConversationsUseCase(this.ownerRepository);
+  readonly loadThreadUseCase = new LoadThreadUseCase(this.ownerRepository);
+  readonly sendMessageUseCase = new SendMessageUseCase(this.ownerRepository);
+  readonly markConversationReadUseCase = new MarkConversationReadUseCase(this.ownerRepository);
+  readonly watchMessagesUseCase = new WatchMessagesUseCase(this.realtime);
 
-  constructor() {
-    this.httpClient = new HttpClient();
-    this.ownerRepository = new ApiOwnerRepositoryAdapter(this.httpClient);
-    this.sessionPort = new SupabaseSessionAdapter();
+  readonly loadNotificationsUseCase = new LoadNotificationsUseCase(this.ownerRepository);
+  readonly markNotificationsReadUseCase = new MarkNotificationsReadUseCase(this.ownerRepository);
+  readonly watchNotificationsUseCase = new WatchNotificationsUseCase(this.realtime);
 
-    this.getCurrentSessionUseCase = new GetCurrentSessionUseCase(this.sessionPort);
-    this.signInUseCase = new SignInUseCase(this.sessionPort);
-    this.signOutUseCase = new SignOutUseCase(this.sessionPort);
-
-    this.loadDashboardUseCase = new LoadDashboardUseCase(this.ownerRepository);
-
-    this.loadPropertiesUseCase = new LoadPropertiesUseCase(this.ownerRepository);
-    this.createPropertyUseCase = new CreatePropertyUseCase(this.ownerRepository);
-
-    this.loadListingsUseCase = new LoadListingsUseCase(this.ownerRepository);
-    this.loadResourcesUseCase = new LoadResourcesUseCase(this.ownerRepository);
-    this.createListingUseCase = new CreateListingUseCase(this.ownerRepository);
-    this.togglePublishListingUseCase = new TogglePublishListingUseCase(
-      this.ownerRepository,
-    );
-
-    this.loadApplicationsUseCase = new LoadApplicationsUseCase(
-      this.ownerRepository,
-    );
-    this.decideApplicationUseCase = new DecideApplicationUseCase(
-      this.ownerRepository,
-    );
-  }
+  readonly loadApplicationsUseCase = new LoadApplicationsUseCase(this.ownerRepository);
+  readonly decideApplicationUseCase = new DecideApplicationUseCase(this.ownerRepository);
 }
 
-// Singleton composition instance for production runtime
 export const container = new OwnerWebContainer();

@@ -29,12 +29,12 @@ const principal: Principal = {
   organizationId: VILLA_ORG,
 };
 
-/** A minimal equirectangular JPEG: 2000x1000 pixels (2:1). */
+/** A minimal equirectangular JPEG: 2048x1024 pixels (2:1). */
 const panorama = async () =>
   sharp({
     create: {
-      width: 2000,
-      height: 1000,
+      width: 2048,
+      height: 1024,
       channels: 3,
       background: { r: 120, g: 150, b: 180 },
     },
@@ -68,6 +68,10 @@ suite('tour authoring against real PostgreSQL', { timeout: 60_000 }, () => {
     `);
     await withScope(VILLA_ORG, (tx) => tx`
       delete from tour_scenes where organization_id = ${VILLA_ORG}
+    `);
+    await withScope(VILLA_ORG, (tx) => tx`
+      update virtual_tours set state = 'DRAFT', entry_scene_id = null
+       where organization_id = ${VILLA_ORG} and resource_id = ${BED}
     `);
   };
 

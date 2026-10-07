@@ -74,7 +74,7 @@ class PropertyCategoryList extends StatelessWidget {
                 border: Border.all(
                   color: isSelected
                       ? Colors.transparent
-                      : const Color(0xFFE7E8EC).withOpacity(0.6),
+                      : const Color(0xFFE7E8EC).withValues(alpha: 0.6),
                 ),
               ),
               child: Column(

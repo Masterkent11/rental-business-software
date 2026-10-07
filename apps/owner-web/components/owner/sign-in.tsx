@@ -1,105 +1,100 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Eye, EyeOff } from "lucide-react";
 import { useSessionStore } from "@/stores/use-session-store";
-import { Building2, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { BrandMark } from "./brand";
+import { Btn, Field, InlineError, TextInput } from "./ui";
 
-/**
- * Sign-in component.
- *
- * Rules:
- * - NO direct @supabase/supabase-js call in UI.
- * - Dispatches to useSessionStore.submitSignIn() which delegates through Application Use Cases.
- */
-export function SignIn({ onSignedIn }: { onSignedIn?: () => void }) {
+export function SignIn() {
   const {
     signInEmail,
     signInPassword,
+    showPassword,
     signInProblem,
     signInBusy,
     setSignInEmail,
     setSignInPassword,
+    toggleShowPassword,
     submitSignIn,
   } = useSessionStore();
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await submitSignIn(onSignedIn);
-  };
-
   return (
-    <div className="w-full max-w-[400px] animate-in fade-in zoom-in-95 duration-500">
-      <div className="flex flex-col items-center mb-8">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent-soft text-white shadow-xl shadow-accent/20 mb-4">
-          <Building2 className="h-8 w-8" strokeWidth={1.5} />
+    <div className="grid min-h-dvh bg-background lg:grid-cols-[1fr_1.05fr]">
+      <div className="flex flex-col px-6 py-10 sm:px-12">
+        <div className="flex items-center gap-2.5">
+          <BrandMark className="size-9" />
+          <span className="text-[15px] font-bold tracking-tight">Rental Platform</span>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Welcome back
-        </h1>
-        <p className="text-sm text-muted-foreground mt-2 text-center">
-          Sign in to your owner workspace to manage properties, listings, and tenants.
-        </p>
-      </div>
-
-      <div className="rounded-3xl border border-border/60 bg-surface/80 p-6 md:p-8 shadow-2xl backdrop-blur-xl">
-        <form onSubmit={submit} className="flex flex-col gap-5">
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground/80 ml-1">
-                Email Address
-              </label>
-              <input
-                className="flex h-11 w-full rounded-xl border border-border/80 bg-surface-secondary/50 px-4 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus-visible:border-accent focus-visible:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/20"
-                placeholder="owner@example.com"
-                type="email"
-                value={signInEmail}
-                autoComplete="email"
-                onChange={(e) => setSignInEmail(e.target.value)}
-                disabled={signInBusy}
-              />
-            </div>
-            
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground/80 ml-1">
-                Password
-              </label>
-              <input
-                className="flex h-11 w-full rounded-xl border border-border/80 bg-surface-secondary/50 px-4 py-2 text-sm text-foreground transition-colors placeholder:text-muted-foreground/60 focus-visible:border-accent focus-visible:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/20"
-                placeholder="••••••••"
-                type="password"
-                value={signInPassword}
-                autoComplete="current-password"
-                onChange={(e) => setSignInPassword(e.target.value)}
-                disabled={signInBusy}
-              />
-            </div>
-          </div>
-
-          {signInProblem ? (
-            <div className="flex items-center gap-2 rounded-xl bg-rose-500/10 p-3 text-sm text-rose-500 animate-in slide-in-from-top-2 duration-300">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <p>{signInProblem}</p>
-            </div>
-          ) : null}
-
-          <Button
-            type="submit"
-            disabled={signInBusy}
-            className="mt-2 h-11 w-full rounded-xl bg-accent text-white hover:bg-accent/90 shadow-md shadow-accent/20 group transition-all"
+        <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
+          <h1 className="text-[30px] font-bold tracking-tight">Welcome back</h1>
+          <p className="mt-2 text-[14px] leading-relaxed text-muted">
+            Sign in to manage your properties, bookings and guest messages.
+          </p>
+          <form
+            className="mt-8 flex flex-col gap-4"
+            noValidate
+            onSubmit={(event) => {
+              event.preventDefault();
+              void submitSignIn();
+            }}
           >
-            {signInBusy ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              <>
-                Sign in to Workspace
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </>
-            )}
-          </Button>
-        </form>
+            <Field label="Email" htmlFor="email">
+              <TextInput
+                id="email"
+                type="email"
+                inputMode="email"
+                autoComplete="username"
+                placeholder="you@company.com"
+                value={signInEmail}
+                onChange={(event) => setSignInEmail(event.target.value)}
+                autoFocus
+                required
+              />
+            </Field>
+            <Field label="Password" htmlFor="password">
+              <div className="relative">
+                <TextInput
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  placeholder="Your password"
+                  value={signInPassword}
+                  onChange={(event) => setSignInPassword(event.target.value)}
+                  className="pr-11"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={toggleShowPassword}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="focusable absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-lg text-muted hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}
+                </button>
+              </div>
+            </Field>
+            <InlineError message={signInProblem} />
+            <Btn type="submit" size="lg" busy={signInBusy} className="mt-2 w-full">
+              {signInBusy ? "Signing in…" : "Sign in"}
+            </Btn>
+          </form>
+          <p className="mt-6 text-[12.5px] leading-relaxed text-muted">
+            Owner accounts are set up by the platform team. Customers book and message from the Rental Platform mobile app.
+          </p>
+        </div>
+        <p className="text-[12px] text-muted/80">© {new Date().getFullYear()} Rental Platform</p>
+      </div>
+      <div className="relative hidden overflow-hidden bg-[#0A0F1D] lg:block">
+        <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_85%_100%,#33202A_0%,transparent_55%),linear-gradient(140deg,#1E293B_0%,#0E1526_55%,#0A0F1D_100%)]" />
+        <div className="relative flex h-full flex-col justify-end p-14 text-[#FAF7F2]">
+          <BrandMark className="mb-10 size-20 opacity-95" />
+          <p className="max-w-md text-[28px] font-semibold leading-tight tracking-tight">
+            Publish a place in minutes. Answer guests the moment they write.
+          </p>
+          <p className="mt-4 max-w-md text-[14.5px] leading-relaxed text-[#FAF7F2]/70">
+            Listings, photos, availability, bookings and conversations — one workspace, live with the customer app.
+          </p>
+        </div>
       </div>
     </div>
   );

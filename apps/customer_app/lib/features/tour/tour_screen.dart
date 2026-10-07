@@ -416,7 +416,7 @@ class _HotspotState extends State<_Hotspot>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.28 * (1 - t)),
+                            color: Colors.white.withValues(alpha: 0.28 * (1 - t)),
                           ),
                         ),
                       );
@@ -549,7 +549,7 @@ class _RoomLabel extends StatelessWidget {
           Text(
             position,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.62),
+              color: Colors.white.withValues(alpha: 0.62),
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),
@@ -558,7 +558,7 @@ class _RoomLabel extends StatelessWidget {
           Icon(
             Icons.expand_less,
             size: 18,
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
           ),
         ],
       ),

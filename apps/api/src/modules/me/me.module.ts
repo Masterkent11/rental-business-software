@@ -10,7 +10,11 @@ import {
   GET_SAVED_LISTINGS,
   SAVE_LISTING,
   UNSAVE_LISTING,
+  GET_ME,
+  UPDATE_MY_PROFILE,
 } from './me.tokens.ts';
+import { getMe } from '@/application/me/get-me/get-me.use-case.ts';
+import { updateMyProfile } from '@/application/me/update-my-profile/update-my-profile.use-case.ts';
 import { jwksIdentityProvider } from '@/infrastructure/supabase/jwks-identity.provider.ts';
 import { postgresUserRepository } from '@/infrastructure/postgres/repositories/postgres-user.repository.ts';
 import { resolvePrincipal } from '@/application/identity/resolve-principal/resolve-principal.use-case.ts';
@@ -37,6 +41,16 @@ import type { UserRepository } from '@/application/ports/repositories/user-repos
       inject: [IDENTITY_PROVIDER, USER_REPOSITORY],
       useFactory: (identity: IdentityProvider, users: UserRepository) =>
         resolvePrincipal(identity, users),
+    },
+    {
+      provide: GET_ME,
+      inject: [USER_REPOSITORY],
+      useFactory: (users: UserRepository) => getMe(users),
+    },
+    {
+      provide: UPDATE_MY_PROFILE,
+      inject: [USER_REPOSITORY],
+      useFactory: (users: UserRepository) => updateMyProfile(users),
     },
     {
       provide: GET_MY_STAYS,

@@ -1,20 +1,10 @@
-/**
- * Pure TypeScript Domain Entity: User Session & Tenant Context
- *
- * Rules:
- * - NO Zod
- * - NO React
- * - NO Supabase
- * - NO Zustand
- * - NO Infrastructure/HTTP imports
- */
-
 export type OrganizationRole = "OWNER" | "STAFF";
 
 export interface OrganizationMembership {
   readonly organizationId: string;
   readonly role: OrganizationRole;
-  readonly organizationName?: string;
+  readonly organizationName: string;
+  readonly verified: boolean;
 }
 
 export interface UserCapability {
@@ -34,3 +24,5 @@ export interface ActiveSession {
   readonly memberships: readonly OrganizationMembership[];
   readonly capabilities: readonly UserCapability[];
 }
+
+export class NotAnOwnerError extends Error {}

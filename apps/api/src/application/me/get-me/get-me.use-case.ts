@@ -3,10 +3,14 @@ import type { GetMeInput, GetMeResult } from './get-me.types.ts';
 
 export function getMe(users: UserRepository) {
   return async function execute(input: GetMeInput): Promise<GetMeResult> {
-    const profile = await users.findProfile(input.principal.userId);
+    const [profile, organizations] = await Promise.all([
+      users.findProfile(input.principal.userId),
+      users.organizationsFor(input.principal.userId),
+    ]);
     return {
       principal: input.principal,
       profile,
+      organizations,
     };
   };
 }

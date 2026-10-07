@@ -30,6 +30,13 @@ export interface StayReceipt {
   readonly bucket: 'ACTIVE' | 'PAST' | 'CANCELLED';
 }
 
+export interface OrganizationMembershipView {
+  readonly organizationId: string;
+  readonly name: string;
+  readonly role: 'OWNER' | 'STAFF';
+  readonly verified: boolean;
+}
+
 export interface PrincipalData {
   readonly profile: UserProfile | null;
   readonly capabilities: readonly HeldCapability[];
@@ -48,11 +55,19 @@ export interface UserRepository {
     id: string;
     email: string | null;
     mobile: string | null;
+    displayName?: string | null;
   }): Promise<UserProfile>;
+
+  updateProfile(
+    userId: string,
+    patch: { readonly displayName: string },
+  ): Promise<UserProfile | null>;
 
   capabilitiesFor(userId: string): Promise<readonly HeldCapability[]>;
 
   isMemberOf(userId: string, organizationId: string): Promise<boolean>;
+
+  organizationsFor(userId: string): Promise<readonly OrganizationMembershipView[]>;
 
   staysFor(userId: string): Promise<readonly StayReceipt[]>;
 

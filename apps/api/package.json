@@ -2,11 +2,15 @@
   "name": "api",
   "version": "0.1.0",
   "scripts": {
-    "dev": "tsx watch src/main.ts",
-    "start": "node --experimental-strip-types src/main.ts",
+    "dev": "tsx watch --env-file-if-exists=.env.local src/main.ts",
+    "dev:local": "DATABASE_URL=postgresql://rental_app:rental_app@127.0.0.1:55432/rental_mvp tsx watch --env-file-if-exists=.env.local src/main.ts",
+    "build": "esbuild src/main.ts --bundle --platform=node --target=node22 --format=esm --packages=external --tsconfig=tsconfig.json --outfile=dist/main.js",
+    "start": "node --env-file-if-exists=.env.local dist/main.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "eslint src"
+    "test:integration": "./scripts/test-db.sh up >/dev/null && DATABASE_URL=postgresql://rental_app:rental_app@127.0.0.1:55432/rental_mvp TEST_ADMIN_DATABASE_URL=postgresql://postgres@127.0.0.1:55432/rental_mvp vitest run",
+    "lint": "eslint src",
+    "demo:media": "tsx --env-file-if-exists=.env.local scripts/demo/seed-demo-media.mts"
   },
   "license": "ISC",
   "type": "module",
@@ -24,6 +28,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
+    "esbuild": "0.28.2",
     "eslint": "^9.39.5",
     "tsx": "^4.23.12",
     "typescript": "^5.9.3",

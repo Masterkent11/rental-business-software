@@ -39,5 +39,7 @@ export interface OccupancyRepository {
     during: DateRange;
     holdMinutes: number;
     heldBy: string;
+    guests?: number;
+    clientRef?: string | null;
   }): Promise<Occupancy>;
 }

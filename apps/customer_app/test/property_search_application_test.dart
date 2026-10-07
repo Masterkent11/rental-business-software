@@ -12,19 +12,45 @@ import 'package:flutter_test/flutter_test.dart';
 
 class _CapturingSearchRepository implements PropertySearchRepository {
   PropertySearchCriteria? lastCriteria;
+  PropertyRefinements? lastRefinements;
+  int? lastOffset;
   bool shouldThrow = false;
+  List<ListingCardView> Function(int offset) pages = (_) => const [];
+  int total = 0;
 
   @override
-  Future<List<ListingCardView>> searchProperties(
-    PropertySearchCriteria criteria,
-  ) async {
+  Future<PropertySearchPage> searchProperties(
+    PropertySearchCriteria criteria, {
+    int offset = 0,
+    PropertyRefinements refinements = const PropertyRefinements(),
+  }) async {
     lastCriteria = criteria;
+    lastRefinements = refinements;
+    lastOffset = offset;
     if (shouldThrow) {
       throw Exception('Network connection failure');
     }
-    return const [];
+    final items = pages(offset);
+    return PropertySearchPage(items: items, total: total, hasMore: offset + items.length < total);
   }
 }
+
+ListingCardView _card(String id) => ListingCardView(
+      id: id,
+      resourceId: 'res-$id',
+      title: 'Place $id',
+      propertyName: 'Property $id',
+      areaLabel: 'Lahug',
+      cityLabel: 'Cebu City',
+      priceCentavos: 250000,
+      kind: ListingKind.shortTerm,
+      resourceType: ResourceType.unit,
+      availabilityLabel: 'Available',
+      isAvailable: true,
+      hasTour: false,
+      sceneCount: 0,
+      photos: const [],
+    );
 
 void main() {
   group('ValidateSearchCriteria', () {
@@ -220,9 +246,66 @@ void main() {
       );
 
       expect(
-        element.read(propertyResultsProvider(criteria).future),
+        element.read(propertyResultsProvider((criteria: criteria, refinements: const PropertyRefinements())).future),
         throwsA(isA<Exception>()),
       );
+    });
+
+    test('refinements are sent to the server, not applied on the device', () async {
+      final repo = _CapturingSearchRepository();
+      final container = ProviderContainer(
+        overrides: [propertySearchRepositoryProvider.overrideWithValue(repo)],
+      );
+      addTearDown(container.dispose);
+      final criteria = ShortStaySearchCriteria(
+        propertyType: PropertyType.condo,
+        location: 'Cebu City',
+        checkIn: DateTime(2026, 11, 2),
+        checkOut: DateTime(2026, 11, 5),
+        guests: 2,
+      );
+      const refinements = PropertyRefinements(
+        sort: PropertySortOrder.priceLowToHigh,
+        maxPriceCentavos: 400000,
+        minBedrooms: 2,
+        keyword: 'pool',
+      );
+
+      await container.read(propertyResultsProvider((criteria: criteria, refinements: refinements)).future);
+
+      expect(repo.lastRefinements, refinements);
+      expect(repo.lastOffset, 0);
+    });
+
+    test('loads the next page from where the list ends, without duplicates', () async {
+      final repo = _CapturingSearchRepository()
+        ..total = 3
+        ..pages = (offset) => offset == 0 ? [_card('a'), _card('b')] : [_card('b'), _card('c')];
+      final container = ProviderContainer(
+        overrides: [propertySearchRepositoryProvider.overrideWithValue(repo)],
+      );
+      addTearDown(container.dispose);
+      final criteria = MonthlySearchCriteria(
+        propertyType: PropertyType.apartment,
+        location: 'Cebu City',
+        moveInDate: DateTime(2026, 11, 1),
+        leaseDuration: LeaseDuration.sixMonths,
+        occupants: 1,
+      );
+      final query = (criteria: criteria, refinements: const PropertyRefinements());
+      final sub = container.listen(propertyResultsProvider(query), (_, __) {});
+      addTearDown(sub.close);
+
+      final first = await container.read(propertyResultsProvider(query).future);
+      expect(first.items.map((l) => l.id), ['a', 'b']);
+      expect(first.hasMore, isTrue);
+
+      await container.read(propertyResultsProvider(query).notifier).loadMore();
+
+      final next = container.read(propertyResultsProvider(query)).requireValue;
+      expect(repo.lastOffset, 2);
+      expect(next.items.map((l) => l.id), ['a', 'b', 'c']);
+      expect(next.total, 3);
     });
   });
 }

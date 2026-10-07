@@ -35,6 +35,8 @@ export function placeHold(occupancies: OccupancyRepository) {
           during,
           holdMinutes: HOLD_MINUTES,
           heldBy: input.heldBy,
+          ...(input.guests !== undefined ? { guests: input.guests } : {}),
+          ...(input.clientRef !== undefined ? { clientRef: input.clientRef } : {}),
         });
       } catch (error) {
         if (error instanceof OccupancyConflictError) throw error;

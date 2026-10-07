@@ -35,21 +35,28 @@ const listing = (over: Partial<Listing> = {}): Listing => ({
 });
 
 const leakyRepo = (rows: Listing[]): ListingRepository => ({
-  search: async () => rows,
+  search: async () => ({ items: rows, total: rows.length }),
   findPublicById: async (_s, id) => rows.find((r) => r.id === id) ?? null,
   forOrganization: async () => rows,
   findById: async (_orgId, id) => rows.find((r) => r.id === id) ?? null,
   createListing: async () => rows[0]!,
-  addPhoto: async () => {},
+  createPropertyListing: async () => rows[0]!,
+  updateListing: async () => rows[0] ?? null,
+  addPhoto: async () => ({ id: 'p-1', url: 'u', storagePath: null, position: 0 }),
+  removePhoto: async () => null,
+  reorderPhotos: async () => {},
   setListingState: async () => rows[0] ?? null,
+  isOrganizationVerified: async () => true,
   listResources: async () => [],
+  listProperties: async () => [],
+  stayPricing: async () => null,
 });
 
 describe('searchListings', () => {
   it('returns published listings', async () => {
     const search = searchListings(leakyRepo([listing()]));
     const found = await search({ limit: 20, offset: 0 });
-    expect(found).toHaveLength(1);
+    expect(found.items).toHaveLength(1);
   });
 
   it('never returns a listing that is not published, even if the repository does', async () => {
@@ -61,7 +68,8 @@ describe('searchListings', () => {
     const search = searchListings(leakyRepo(rows));
     const found = await search({ limit: 20, offset: 0 });
 
-    expect(found.map((l) => l.id)).toEqual(['live']);
+    expect(found.items.map((l) => l.id)).toEqual(['live']);
+    expect(found.total).toBe(1);
   });
 
   it('treats an unpublished listing as absent, not forbidden', async () => {

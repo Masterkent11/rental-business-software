@@ -2,8 +2,12 @@ import 'reflect-metadata';
 import { Readable } from 'node:stream';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
-import { AppModule } from './app.module.ts';
-import { sql } from './infrastructure/postgres/db.ts';
+import { loadEnvironmentConfig } from './infrastructure/config/environment-config.ts';
+
+const config = loadEnvironmentConfig();
+
+const { AppModule } = await import('./app.module.ts');
+const { sql } = await import('./infrastructure/postgres/db.ts');
 
 /**
  * Fastify under Nest, keeping ADR-0002's transport reasoning: long-lived
@@ -46,10 +50,9 @@ const app = await NestFactory.create<NestFastifyApplication>(
   adapter,
 );
 
-app.enableCors({ origin: true });
+app.enableCors({ origin: config.corsOrigins === true ? true : [...config.corsOrigins] });
 
-const port = Number(process.env.PORT ?? 8080);
-await app.listen(port, '0.0.0.0');
+await app.listen(config.port, '0.0.0.0');
 
 /**
  * Warm the two cold caches before the first customer request arrives.
@@ -69,7 +72,7 @@ void (async () => {
   await Promise.allSettled([
     sql`select 1`,
     fetch(
-      `${(process.env.SUPABASE_URL ?? '').replace(/\/$/, '')}/auth/v1/.well-known/jwks.json`,
+      `${config.supabaseUrl}/auth/v1/.well-known/jwks.json`,
     ).catch(() => undefined),
   ]);
 })();

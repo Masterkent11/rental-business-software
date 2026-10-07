@@ -66,6 +66,25 @@ export function postgresUserRepository(): UserRepository {
       });
     },
 
+    async organizationsFor(userId) {
+      const rows = await withUser(userId, (tx) =>
+        tx<{ organization_id: string; name: string; role: 'OWNER' | 'STAFF'; state: string }[]>`
+          select distinct on (m.organization_id)
+                 m.organization_id, o.trading_name as name, m.role, o.state
+            from organization_members m
+            join organizations o on o.id = m.organization_id
+           where m.user_id = ${userId} and m.revoked_at is null
+           order by m.organization_id, (m.role = 'OWNER') desc
+        `,
+      );
+      return rows.map((row) => ({
+        organizationId: row.organization_id,
+        name: row.name,
+        role: row.role,
+        verified: row.state === 'VERIFIED',
+      }));
+    },
+
     async findProfile(userId) {
       const rows = await withUser(userId, (tx) =>
         tx<ProfileRow[]>`
@@ -77,14 +96,25 @@ export function postgresUserRepository(): UserRepository {
       return rows[0] ? toProfile(rows[0]) : null;
     },
 
-    async createProfile({ id, email, mobile }) {
+    async updateProfile(userId, patch) {
+      const rows = await withUser(userId, (tx) =>
+        tx<ProfileRow[]>`
+          update user_profiles set display_name = ${patch.displayName}
+           where id = ${userId}
+          returning id, display_name, email, mobile
+        `,
+      );
+      return rows[0] ? toProfile(rows[0]) : null;
+    },
+
+    async createProfile({ id, email, mobile, displayName }) {
       // The row may already exist from a concurrent first request, so this is
       // an upsert rather than an insert. Two requests arriving together for a
       // brand-new user is ordinary, not exceptional.
       const rows = await withUser(id, (tx) =>
         tx<ProfileRow[]>`
           insert into user_profiles (id, email, mobile, display_name)
-          values (${id}, ${email}, ${mobile}, ${email ?? mobile ?? ''})
+          values (${id}, ${email}, ${mobile}, ${displayName?.trim() || email?.split('@')[0] || mobile || ''})
           on conflict (id) do update set
             email  = coalesce(user_profiles.email, excluded.email),
             mobile = coalesce(user_profiles.mobile, excluded.mobile)

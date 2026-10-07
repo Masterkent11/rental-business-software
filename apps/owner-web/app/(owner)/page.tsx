@@ -1,314 +1,146 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
-import {
-  ArrowDownRight,
-  ArrowUpRight,
-  CheckCircle2,
-  Plus,
-} from "lucide-react";
-import {
-  Card,
-  Chip,
-} from "@heroui/react";
+import { ArrowRight, Building2, CalendarCheck, MessageSquare, Plus } from "lucide-react";
 
-import {
-  ButtonLink,
-  Page,
-  SectionHeading,
-  TopBar,
-} from "@/components/owner/shell";
-import { CollectionChart } from "@/components/owner/nivo";
-import { OriginPill } from "@/components/owner/status";
-import { formatDateTime, peso } from "@/lib/money";
-import { useSessionStore } from "@/stores/use-session-store";
+import { Page, TopBar, SectionHeading } from "@/components/owner/shell";
+import { Badge, Card, EmptyState, ErrorState, LinkBtn, Skeleton, Stat } from "@/components/owner/ui";
+import { Photo } from "@/components/owner/photo";
+import { formatDate, peso } from "@/lib/money";
 import { useDashboardStore } from "@/stores/use-dashboard-store";
-import type { Collection } from "@/domain/payments/collection";
-
-function Delta({
-  value,
-  suffix = "%",
-  goodWhen = "up",
-}: {
-  value: number;
-  suffix?: string;
-  goodWhen?: "up" | "down";
-}) {
-  const up = value > 0;
-  const good = up === (goodWhen === "up");
-  const Icon = up ? ArrowUpRight : ArrowDownRight;
-
-  return (
-    <Chip
-      color={good ? "success" : "danger"}
-      variant="soft"
-      size="sm"
-      className="font-bold text-[11px] h-5 px-1.5 flex items-center gap-0.5"
-    >
-      <Icon className="size-3" />
-      {`${Math.abs(value)}${suffix}`}
-    </Chip>
-  );
-}
+import { useMessagesStore } from "@/stores/use-messages-store";
+import { useNotificationsStore } from "@/stores/use-notifications-store";
+import { useSessionStore } from "@/stores/use-session-store";
 
 export default function DashboardPage() {
-  const activeOrganizationId = useSessionStore((state) => state.activeOrganizationId);
-  const { collection, loading, error, loadCollection } = useDashboardStore();
+  const organizationId = useSessionStore((s) => s.activeOrganizationId);
+  const user = useSessionStore((s) => s.user);
+  const { listings, upcoming, upcomingTotal, awaitingPayment, collection, loading, loaded, error, collectionError, load } = useDashboardStore();
+  const conversations = useMessagesStore((s) => s.conversations);
+  const unreadTotal = useMessagesStore((s) => s.unreadTotal);
+  const latest = useNotificationsStore((s) => s.latest);
 
   useEffect(() => {
-    if (activeOrganizationId) {
-      void loadCollection(activeOrganizationId);
-    }
-  }, [activeOrganizationId, loadCollection]);
+    if (organizationId) void load(organizationId);
+  }, [organizationId, load]);
 
-  if (loading || !collection) {
-    return (
-      <>
-        <TopBar title="Executive Dashboard" />
-        <Page>
-          <div className="p-8 text-center">
-            {error ? (
-              <p className="text-red-500 text-[14px] font-medium">{error}</p>
+  useEffect(() => {
+    if (organizationId && latest?.kind === "BOOKING_RECEIVED") void load(organizationId);
+  }, [latest, organizationId, load]);
+
+  const published = listings.filter((l) => l.state === "PUBLISHED").length;
+  const drafts = listings.filter((l) => l.state === "DRAFT").length;
+  const firstName = user?.displayName.split(" ")[0] ?? "there";
+
+  return (
+    <Page>
+      <TopBar title={`Good day, ${firstName}`} caption="Here's what's happening across your properties.">
+        <LinkBtn href="/properties/new">
+          <Plus className="size-4" aria-hidden /> New property
+        </LinkBtn>
+      </TopBar>
+
+      {error ? (
+        <Card><ErrorState message={error} onRetry={() => organizationId && void load(organizationId)} /></Card>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {loading && !loaded ? (
+              Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[118px] rounded-2xl" />)
             ) : (
               <>
-                <div className="inline-block size-6 animate-spin rounded-full border-2 border-accent border-t-transparent mb-3" />
-                <p className="text-muted-foreground text-[14px] font-medium">
-                  Loading financial and operations state…
-                </p>
+                <Stat label="Published listings" value={published} hint={drafts > 0 ? `${drafts} draft${drafts === 1 ? "" : "s"} in progress` : "All caught up"} href="/properties" />
+                <Stat label="Upcoming stays" value={upcomingTotal} hint={awaitingPayment > 0 ? `${awaitingPayment} awaiting payment` : "Confirmed and paid"} href="/bookings" />
+                <Stat label="Unread messages" value={unreadTotal} hint={`${conversations.length} conversation${conversations.length === 1 ? "" : "s"}`} href="/messages" />
+                <Stat
+                  label="Received this month"
+                  value={collection ? peso(collection.receivedCentavos) : "—"}
+                  hint={collectionError ? "Unavailable right now" : collection ? `${peso(collection.outstandingCentavos)} outstanding` : "Loading…"}
+                  href="/payments"
+                />
               </>
             )}
           </div>
-        </Page>
-      </>
-    );
-  }
 
-  return <Dashboard collection={collection} />;
-}
+          <div className="mt-8 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+            <section>
+              <SectionHeading title="Upcoming stays">
+                <Link href="/bookings" className="focusable flex items-center gap-1 rounded text-[12.5px] font-medium text-muted hover:text-foreground">
+                  All bookings <ArrowRight className="size-3.5" aria-hidden />
+                </Link>
+              </SectionHeading>
+              <Card>
+                {loading && !loaded ? (
+                  <div className="space-y-3 p-5"><Skeleton className="h-12" /><Skeleton className="h-12" /></div>
+                ) : upcoming.length === 0 ? (
+                  <EmptyState icon={<CalendarCheck className="size-5" aria-hidden />} title="No upcoming stays" body="Confirmed bookings for your nightly listings will appear here." />
+                ) : (
+                  <ul className="divide-y divide-border">
+                    {upcoming.map((booking) => (
+                      <li key={booking.id}>
+                        <Link href={`/bookings?b=${booking.id}`} className="focusable flex items-center gap-3 px-5 py-3.5 hover:bg-surface-secondary/50">
+                          <div className="size-11 shrink-0 overflow-hidden rounded-xl bg-surface-secondary">
+                            {booking.photo ? <Photo src={booking.photo} alt="" className="size-full" sizes="44px" /> : null}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[13.5px] font-semibold">{booking.guestName}</p>
+                            <p className="truncate text-[12.5px] text-muted">{booking.listingTitle}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[12.5px] font-medium">{formatDate(booking.startsOn)}</p>
+                            <p className="text-[11.5px] text-muted">{booking.nights} night{booking.nights === 1 ? "" : "s"}</p>
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            </section>
 
-function Dashboard({ collection }: { collection: Collection }) {
-  const collectionPct =
-    collection.claimedCentavos > 0
-      ? Math.round(
-          (collection.receivedCentavos / collection.claimedCentavos) * 100,
-        )
-      : 0;
+            <section>
+              <SectionHeading title="Recent messages">
+                <Link href="/messages" className="focusable flex items-center gap-1 rounded text-[12.5px] font-medium text-muted hover:text-foreground">
+                  Inbox <ArrowRight className="size-3.5" aria-hidden />
+                </Link>
+              </SectionHeading>
+              <Card>
+                {conversations.length === 0 ? (
+                  <EmptyState icon={<MessageSquare className="size-5" aria-hidden />} title="No messages yet" body="Customer questions arrive here in real time." />
+                ) : (
+                  <ul className="divide-y divide-border">
+                    {conversations.slice(0, 5).map((conversation) => (
+                      <li key={conversation.id}>
+                        <Link href={`/messages?c=${conversation.id}`} className="focusable flex items-start gap-3 px-5 py-3.5 hover:bg-surface-secondary/50">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <p className="truncate text-[13.5px] font-semibold">{conversation.customerName}</p>
+                              {conversation.unreadCount > 0 ? <Badge tone="dark">{conversation.unreadCount}</Badge> : null}
+                            </div>
+                            <p className="truncate text-[12.5px] text-muted">{conversation.lastMessagePreview}</p>
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            </section>
+          </div>
 
-  const totalArrears = collection.arrears.reduce(
-    (n, a) => n + a.owedCentavos,
-    0,
-  );
-
-  const previous = collection.history[collection.history.length - 2];
-  const collectedChange =
-    previous && previous.receivedCentavos > 0
-      ? Math.round(
-          ((collection.receivedCentavos - previous.receivedCentavos) /
-            previous.receivedCentavos) *
-            100,
-        )
-      : 0;
-
-  return (
-    <>
-      <TopBar title="Executive Dashboard">
-        <ButtonLink href="/listings" variant="primary" size="sm">
-          <Plus className="size-3.5" />
-          Create Listing
-        </ButtonLink>
-      </TopBar>
-
-      <Page>
-        {/* Top Metric Cards */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="border-border/80 bg-surface/70 backdrop-blur-xl p-5 shadow-xs transition-all duration-200 hover:shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground text-[12.5px] font-medium">
-                Collected this month
-              </span>
-              <Delta value={collectedChange} />
-            </div>
-            <div className="mt-3">
-              <p className="text-[26px] font-extrabold tracking-tight text-foreground font-mono">
-                {peso(collection.receivedCentavos)}
-              </p>
-              <p className="text-muted-foreground text-[12px] mt-1 font-medium">
-                Target: {peso(collection.claimedCentavos)}
-              </p>
-            </div>
-          </Card>
-
-          <Card className="border-border/80 bg-surface/70 backdrop-blur-xl p-5 shadow-xs transition-all duration-200 hover:shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground text-[12.5px] font-medium">
-                Collection rate
-              </span>
-              <Chip
-                color={collectionPct >= 90 ? "success" : "warning"}
-                variant="soft"
-                size="sm"
-                className="font-bold text-[11px]"
-              >
-                {collectionPct}%
-              </Chip>
-            </div>
-            <div className="mt-3">
-              <p className="text-[26px] font-extrabold tracking-tight text-foreground">
-                {collectionPct}%
-              </p>
-              <p className="text-muted-foreground text-[12px] mt-1 font-medium">
-                Outstanding: {peso(collection.outstandingCentavos)}
-              </p>
-            </div>
-          </Card>
-
-          <Card className="border-border/80 bg-surface/70 backdrop-blur-xl p-5 shadow-xs transition-all duration-200 hover:shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground text-[12.5px] font-medium">
-                Offline cash share
-              </span>
-              <Chip color="default" variant="soft" size="sm" className="font-semibold text-[11px]">
-                Audited
-              </Chip>
-            </div>
-            <div className="mt-3">
-              <p className="text-[26px] font-extrabold tracking-tight text-foreground">
-                {collection.offlineSharePercent}%
-              </p>
-              <p className="text-muted-foreground text-[12px] mt-1 font-medium">
-                Attested by property staff
-              </p>
-            </div>
-          </Card>
-
-          <Card className="border-border/80 bg-surface/70 backdrop-blur-xl p-5 shadow-xs transition-all duration-200 hover:shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground text-[12.5px] font-medium">
-                Total active arrears
-              </span>
-              <Chip
-                color={totalArrears > 0 ? "danger" : "success"}
-                variant="soft"
-                size="sm"
-                className="font-bold text-[11px]"
-              >
-                {collection.arrears.length} Overdue
-              </Chip>
-            </div>
-            <div className="mt-3">
-              <p className="text-[26px] font-extrabold tracking-tight text-red-500 font-mono">
-                {peso(totalArrears)}
-              </p>
-              <p className="text-muted-foreground text-[12px] mt-1 font-medium">
-                Needs follow-up
-              </p>
-            </div>
-          </Card>
-        </div>
-
-        {/* Collection Trend Chart */}
-        <div className="mt-8">
-          <SectionHeading
-            title="Revenue Performance & Historical Collections"
-            caption="Comparison of claimed rent vs actual received payments over the last 6 months"
-          />
-          <Card className="border-border/80 bg-surface/70 backdrop-blur-xl p-5 shadow-xs">
-            <div className="h-[320px] w-full">
-              <CollectionChart
-                data={collection.history.map((h) => ({
-                  month: h.month,
-                  claimed: h.claimedCentavos,
-                  received: h.receivedCentavos,
-                }))}
+          {loaded && listings.length === 0 ? (
+            <Card className="mt-8">
+              <EmptyState
+                icon={<Building2 className="size-5" aria-hidden />}
+                title="List your first property"
+                body="Add photos, pricing and availability. Customers see it in the app the moment you publish."
+                action={<LinkBtn href="/properties/new"><Plus className="size-4" aria-hidden /> Add a property</LinkBtn>}
               />
-            </div>
-          </Card>
-        </div>
-
-        {/* Arrears & Recent Payments */}
-        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Active Arrears List */}
-          <div>
-            <SectionHeading
-              title="Tenants with Overdue Balances"
-              caption="Track active unpaid lease invoices"
-            />
-            <Card className="border-border/80 bg-surface/70 backdrop-blur-xl p-4 shadow-xs">
-              {collection.arrears.length === 0 ? (
-                <div className="p-6 text-center text-muted-foreground text-[13px]">
-                  <CheckCircle2 className="size-6 text-emerald-500 mx-auto mb-2" />
-                  All accounts are fully settled. No active arrears.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {collection.arrears.map((item) => (
-                    <div
-                      key={item.occupancyId}
-                      className="flex items-center justify-between border-b border-border/50 pb-3 last:border-0 last:pb-0"
-                    >
-                      <div>
-                        <p className="font-semibold text-[13.5px] text-foreground">
-                          {item.tenantName}
-                        </p>
-                        <p className="text-muted-foreground text-[12px]">
-                          {item.resourceLabel} · {item.daysOverdue} days overdue
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-mono font-bold text-red-500 text-[14px]">
-                          {peso(item.owedCentavos)}
-                        </p>
-                        <p className="text-muted-foreground text-[11px]">
-                          {item.invoiceCount} invoices
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </Card>
-          </div>
-
-          {/* Recent Payments List */}
-          <div>
-            <SectionHeading
-              title="Recent Verified Payments"
-              caption="Real-time stream of online and recorded offline payments"
-            />
-            <Card className="border-border/80 bg-surface/70 backdrop-blur-xl p-4 shadow-xs">
-              {collection.recentPayments.length === 0 ? (
-                <div className="p-6 text-center text-muted-foreground text-[13px]">
-                  No recent payment activity recorded this month.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {collection.recentPayments.map((p) => (
-                    <div
-                      key={p.id}
-                      className="flex items-center justify-between border-b border-border/50 pb-3 last:border-0 last:pb-0"
-                    >
-                      <div>
-                        <p className="font-semibold text-[13.5px] text-foreground">
-                          {p.tenantName}
-                        </p>
-                        <p className="text-muted-foreground text-[12px]">
-                          {p.resourceLabel} · {formatDateTime(p.recordedAt)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-mono font-bold text-foreground text-[14px]">
-                          {peso(p.amountCentavos)}
-                        </p>
-                        <OriginPill origin={p.origin} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          </div>
-        </div>
-      </Page>
-    </>
+          ) : null}
+        </>
+      )}
+    </Page>
   );
 }

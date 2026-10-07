@@ -5,9 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/router.dart';
+import '../../data/api_client.dart';
 import '../../data/availability_repository.dart';
 import '../../data/listing_repository.dart';
 import '../../design/money.dart';
+import '../../design/quantity_stepper.dart';
 import '../../design/tokens.dart';
 import 'widgets/date_range_calendar.dart';
 
@@ -23,6 +25,7 @@ class BookingDatesScreen extends ConsumerStatefulWidget {
 class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
   DateTime? _checkIn;
   DateTime? _checkOut;
+  int _guests = 1;
 
   int get _nights => (_checkIn != null && _checkOut != null)
       ? _checkOut!.difference(_checkIn!).inDays
@@ -34,7 +37,7 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
     final detailAsync = ref.watch(listingDetailProvider(widget.listingId));
     final detail = detailAsync.valueOrNull;
 
-    if (detailAsync.isLoading) {
+    if (detailAsync.isLoading && detail == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     if (detail == null) {
@@ -93,6 +96,15 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
             style: theme.textTheme.bodySmall,
           ),
           const SizedBox(height: Tokens.s20),
+          QuantityStepper(
+            label: 'Guests',
+            caption: 'Up to ${card.maxGuests}',
+            value: _guests.clamp(1, card.maxGuests),
+            min: 1,
+            max: card.maxGuests,
+            onChanged: (value) => setState(() => _guests = value),
+          ),
+          const SizedBox(height: Tokens.s20),
           const DateRangeLegend(),
           const SizedBox(height: Tokens.s16),
           DateRangeCalendar(
@@ -116,7 +128,14 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
       ),
       bottomNavigationBar: _BookingBar(
         nights: _nights,
-        nightlyCentavos: card.priceCentavos,
+        quote: canBook
+            ? ref.watch(stayQuoteProvider((
+                listingId: widget.listingId,
+                checkIn: _checkIn!,
+                checkOut: _checkOut!,
+                guests: _guests.clamp(1, card.maxGuests),
+              )))
+            : null,
         checkIn: _checkIn,
         checkOut: _checkOut,
         enabled: canBook,
@@ -126,6 +145,7 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
             resourceId: card.resourceId,
             checkIn: _checkIn!,
             checkOut: _checkOut!,
+            guests: _guests.clamp(1, card.maxGuests),
           ),
         ),
       ),
@@ -166,7 +186,7 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
 class _BookingBar extends StatelessWidget {
   const _BookingBar({
     required this.nights,
-    required this.nightlyCentavos,
+    required this.quote,
     required this.checkIn,
     required this.checkOut,
     required this.enabled,
@@ -174,7 +194,7 @@ class _BookingBar extends StatelessWidget {
   });
 
   final int nights;
-  final int nightlyCentavos;
+  final AsyncValue<StayQuote>? quote;
   final DateTime? checkIn;
   final DateTime? checkOut;
   final bool enabled;
@@ -184,14 +204,13 @@ class _BookingBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final format = DateFormat('MMM d');
-    final total = nights * nightlyCentavos;
+    final priced = quote?.valueOrNull;
+    final failed = quote?.hasError == true;
 
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        border: Border(
-          top: BorderSide(color: theme.colorScheme.outlineVariant),
-        ),
+        border: Border(top: BorderSide(color: theme.colorScheme.outlineVariant)),
       ),
       child: SafeArea(
         top: false,
@@ -205,48 +224,44 @@ class _BookingBar extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        '${format.format(checkIn!)} – ${format.format(checkOut!)}'
-                        ' · $nights ${nights == 1 ? "night" : "nights"}',
+                        '${format.format(checkIn!)} – ${format.format(checkOut!)} · $nights ${nights == 1 ? "night" : "nights"}',
                         style: theme.textTheme.bodyMedium,
                       ),
                     ),
-                    Text(
-                      '$nights × ${Money.peso(nightlyCentavos)}',
-                      style: theme.textTheme.bodySmall,
-                    ),
+                    if (priced != null)
+                      Text(Money.peso(priced.totalCentavos), style: theme.textTheme.headlineSmall)
+                    else if (!failed)
+                      const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
                   ],
                 ),
-                const SizedBox(height: Tokens.s8),
-                Row(
-                  children: [
-                    Text('Total', style: theme.textTheme.titleMedium),
-                    const Spacer(),
-                    Text(
-                      Money.peso(total),
-                      style: theme.textTheme.headlineSmall,
+                if (failed)
+                  Padding(
+                    padding: const EdgeInsets.only(top: Tokens.s8),
+                    child: Text(
+                      quote!.error is ApiException ? (quote!.error as ApiException).message : 'We could not price these dates.',
+                      style: theme.textTheme.bodySmall?.copyWith(color: Tokens.taken),
                     ),
-                  ],
-                ),
+                  )
+                else if (priced != null && !priced.available)
+                  Padding(
+                    padding: const EdgeInsets.only(top: Tokens.s8),
+                    child: Text(
+                      'Some of these nights were just taken. Pick other dates.',
+                      style: theme.textTheme.bodySmall?.copyWith(color: Tokens.taken),
+                    ),
+                  ),
                 const SizedBox(height: Tokens.s12),
               ] else
                 Padding(
                   padding: const EdgeInsets.only(bottom: Tokens.s12),
                   child: Text(
                     'Pick a check-in and check-out date',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
                 ),
               FilledButton(
-                onPressed: enabled ? onBook : null,
-                child: const Text('Book and pay in full'),
-              ),
-              const SizedBox(height: Tokens.s8),
-              Text(
-                'Payment confirms the booking. There is no approval step.',
-                style: theme.textTheme.bodySmall,
-                textAlign: TextAlign.center,
+                onPressed: enabled && priced != null && priced.available ? onBook : null,
+                child: const Text('Review booking'),
               ),
             ],
           ),

@@ -79,6 +79,7 @@ describe('jwksIdentityProvider', () => {
       userId: 'aaaaaaaa-0000-0000-0000-000000000001',
       email: 'ana@example.test',
       mobile: null,
+      displayName: null,
     });
   });
 

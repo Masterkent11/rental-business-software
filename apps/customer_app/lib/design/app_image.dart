@@ -8,9 +8,11 @@ class AppImage extends StatelessWidget {
     this.fit = BoxFit.cover,
     this.fallbackIcon = Icons.home_outlined,
     this.seed = 0,
+    this.cacheWidth,
     super.key,
   });
 
+  final int? cacheWidth;
   final String url;
   final BoxFit fit;
   final IconData fallbackIcon;
@@ -19,9 +21,11 @@ class AppImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ratio = MediaQuery.maybeDevicePixelRatioOf(context) ?? 2;
     return Image.network(
       url,
       fit: fit,
+      cacheWidth: cacheWidth == null ? null : (cacheWidth! * ratio / 2).round(),
       gaplessPlayback: true,
       loadingBuilder: (context, child, progress) {
         if (progress == null) return child;
@@ -74,7 +78,7 @@ class _Fallback extends StatelessWidget {
         child: Icon(
           icon,
           size: 34,
-          color: (isDark ? Colors.white : Tokens.ink).withOpacity(
+          color: (isDark ? Colors.white : Tokens.ink).withValues(alpha: 
             dim ? 0.14 : 0.26,
           ),
         ),

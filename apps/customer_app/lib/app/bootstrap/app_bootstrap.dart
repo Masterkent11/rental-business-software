@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -6,10 +7,21 @@ import 'app_bootstrap_state.dart';
 export 'app_bootstrap_error_view.dart';
 export 'app_bootstrap_state.dart';
 
+class AppConfigurationError implements Exception {
+  const AppConfigurationError(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 class AppBootstrap {
   AppBootstrap({
     String? supabaseUrl,
     String? supabasePublishableKey,
+    String? apiBaseUrl,
+    bool? release,
     Future<void> Function({
       required String url,
       required String publishableKey,
@@ -18,8 +30,34 @@ class AppBootstrap {
   })  : _supabaseUrl = supabaseUrl ?? defaultSupabaseUrl,
         _supabasePublishableKey =
             supabasePublishableKey ?? defaultSupabasePublishableKey,
+        _apiBaseUrl = apiBaseUrl ?? configuredApiBaseUrl,
+        _release = release ?? kReleaseMode,
         _initializeSupabase = initializeSupabase ?? _defaultInitSupabase,
         _onStateChanged = onStateChanged;
+
+  static const configuredApiBaseUrl = String.fromEnvironment('API_BASE_URL');
+
+  static String? configurationProblem({
+    required bool release,
+    required String apiBaseUrl,
+    required String supabaseUrl,
+    required String supabasePublishableKey,
+  }) {
+    if (supabaseUrl.isEmpty || supabasePublishableKey.isEmpty) {
+      return 'This build is missing its Supabase settings.';
+    }
+    if (supabasePublishableKey.startsWith('sb_secret_') || supabasePublishableKey.contains('service_role')) {
+      return 'This build was given a secret key. Only the publishable key may ship in the app.';
+    }
+    if (!release) return null;
+    if (apiBaseUrl.isEmpty) {
+      return 'This build has no server address. Rebuild with --dart-define=API_BASE_URL=https://your-api.';
+    }
+    if (!apiBaseUrl.startsWith('https://') || !supabaseUrl.startsWith('https://')) {
+      return 'Release builds must talk to the server over HTTPS.';
+    }
+    return null;
+  }
 
   static const defaultSupabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
@@ -33,6 +71,8 @@ class AppBootstrap {
 
   final String _supabaseUrl;
   final String _supabasePublishableKey;
+  final String _apiBaseUrl;
+  final bool _release;
   final Future<void> Function({
     required String url,
     required String publishableKey,
@@ -75,6 +115,18 @@ class AppBootstrap {
     }
 
     _setState(const AppBootstrapState.loading());
+
+    final problem = configurationProblem(
+      release: _release,
+      apiBaseUrl: _apiBaseUrl,
+      supabaseUrl: _supabaseUrl,
+      supabasePublishableKey: _supabasePublishableKey,
+    );
+    if (problem != null) {
+      _initFuture = null;
+      _setState(AppBootstrapState.error(AppConfigurationError(problem)));
+      return _state;
+    }
 
     try {
       await _initializeSupabase(

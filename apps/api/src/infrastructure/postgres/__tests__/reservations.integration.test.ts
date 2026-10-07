@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { amountDue } from '@/application/payments/start-booking-payment/start-booking-payment.use-case.ts';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { postgresApplicationRepository } from '@/infrastructure/postgres/repositories/postgres-application.repository.ts';
 import { postgresPaymentRepository } from '@/infrastructure/postgres/repositories/postgres-payment.repository.ts';
@@ -283,9 +284,9 @@ suite('reservations against real PostgreSQL', { timeout: 30_000 }, () => {
       const payable = await payments.findPayableBooking(reservation.occupancyId!);
 
       expect(payable).not.toBeNull();
-      expect(payable!.amountCentavos).toBe(FEE);
+      expect(amountDue(payable!).amountCentavos).toBe(FEE);
       // Not priced by nights: a reservation fee is the owner's number.
-      expect(payable!.nights).toBe(0);
+      expect(amountDue(payable!).nights).toBe(0);
     });
 
     it('records the outcome once, not on every read', async () => {

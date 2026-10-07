@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { SearchListingsController } from '@/modules/listings/controllers/search-listings.controller.ts';
 import { ViewListingController } from '@/modules/listings/controllers/view-listing.controller.ts';
 import { searchListings } from '@/application/listings/search-listings/search-listings.use-case.ts';
@@ -46,16 +46,23 @@ const repo = (rows: Listing[]): ListingRepository => ({
     if (query.maxPriceCentavos !== undefined) {
       out = out.filter((r) => r.priceCentavos <= query.maxPriceCentavos!);
     }
-    return out;
+    return { items: out, total: out.length };
   },
   findPublicById: async (_scope, id) =>
     rows.find((r) => r.id === id && r.state === 'PUBLISHED') ?? null,
   forOrganization: async () => rows,
   findById: async (_orgId, id) => rows.find((r) => r.id === id) ?? null,
   createListing: async () => rows[0]!,
-  addPhoto: async () => {},
+  createPropertyListing: async () => rows[0]!,
+  updateListing: async () => rows[0] ?? null,
+  addPhoto: async () => ({ id: 'p-1', url: 'u', storagePath: null, position: 0 }),
+  removePhoto: async () => null,
+  reorderPhotos: async () => {},
   setListingState: async () => rows[0] ?? null,
+  isOrganizationVerified: async () => true,
   listResources: async () => [],
+  listProperties: async () => [],
+  stayPricing: async () => null,
 });
 
 const searchControllerFor = (rows: Listing[]) => {
@@ -93,13 +100,11 @@ describe('GET /listings', () => {
   });
 
   it('refuses an unknown filter value rather than ignoring it', async () => {
-    const body = await searchControllerFor([listing()]).list({ kind: 'WEEKLY' });
-    expect((body as { statusCode?: number }).statusCode).toBe(400);
+    await expect(searchControllerFor([listing()]).list({ kind: 'WEEKLY' })).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('refuses a limit beyond the documented maximum', async () => {
-    const body = await searchControllerFor([listing()]).list({ limit: '500' });
-    expect((body as { statusCode?: number }).statusCode).toBe(400);
+    await expect(searchControllerFor([listing()]).list({ limit: '500' })).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('applies the kind filter', async () => {
@@ -148,8 +153,7 @@ describe('GET /listings', () => {
 
   it('refuses an unbounded id set', async () => {
     const many = Array.from({ length: 51 }, () => '55555555-5555-4555-8555-555555555555').join(',');
-    const body = await searchControllerFor([listing()]).list({ ids: many });
-    expect((body as { statusCode?: number }).statusCode).toBe(400);
+    await expect(searchControllerFor([listing()]).list({ ids: many })).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('still hides a draft even when asked for by id', async () => {

@@ -46,7 +46,14 @@ export * from './listings/view-listing/view-listing.use-case.ts';
 export * from './listings/list-owner-listings/list-owner-listings.use-case.ts';
 export * from './listings/list-owner-resources/list-owner-resources.use-case.ts';
 export * from './listings/create-listing/create-listing.use-case.ts';
-export * from './listings/upload-listing-photo/upload-listing-photo.use-case.ts';
+export * from './listings/register-listing-photo/register-listing-photo.use-case.ts';
+export * from './listings/remove-listing-photo/remove-listing-photo.use-case.ts';
+export * from './listings/reorder-listing-photos/reorder-listing-photos.use-case.ts';
+export * from './listings/create-property-listing/create-property-listing.use-case.ts';
+export * from './listings/update-listing/update-listing.use-case.ts';
+export * from './listings/get-owner-listing/get-owner-listing.use-case.ts';
+export * from './listings/list-owner-properties/list-owner-properties.use-case.ts';
+export * from './listings/quote-stay/quote-stay.use-case.ts';
 export * from './listings/set-listing-state/set-listing-state.use-case.ts';
 
 export * from './tours/view-tour/view-tour.use-case.ts';

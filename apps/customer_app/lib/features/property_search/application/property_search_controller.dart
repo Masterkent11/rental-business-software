@@ -20,11 +20,67 @@ final searchPropertiesUseCaseProvider = Provider<SearchProperties>((ref) {
   return SearchProperties(repository);
 });
 
-final propertyResultsProvider = FutureProvider.autoDispose
-    .family<List<ListingCardView>, PropertySearchCriteria>((ref, criteria) async {
-  final useCase = ref.watch(searchPropertiesUseCaseProvider);
-  return useCase(criteria);
-});
+typedef PropertyResultsQuery = ({PropertySearchCriteria criteria, PropertyRefinements refinements});
+
+class PropertyResultsState {
+  const PropertyResultsState({
+    required this.items,
+    required this.total,
+    required this.hasMore,
+    this.loadingMore = false,
+    this.loadMoreError,
+  });
+
+  final List<ListingCardView> items;
+  final int total;
+  final bool hasMore;
+  final bool loadingMore;
+  final Object? loadMoreError;
+}
+
+class PropertyResults extends AutoDisposeFamilyAsyncNotifier<PropertyResultsState, PropertyResultsQuery> {
+  @override
+  Future<PropertyResultsState> build(PropertyResultsQuery query) async {
+    final page = await ref
+        .watch(searchPropertiesUseCaseProvider)
+        .call(query.criteria, refinements: query.refinements);
+    return PropertyResultsState(items: page.items, total: page.total, hasMore: page.hasMore);
+  }
+
+  Future<void> loadMore() async {
+    final current = state.valueOrNull;
+    if (current == null || !current.hasMore || current.loadingMore) return;
+    state = AsyncData(PropertyResultsState(
+      items: current.items,
+      total: current.total,
+      hasMore: current.hasMore,
+      loadingMore: true,
+    ));
+    try {
+      final page = await ref.read(searchPropertiesUseCaseProvider).call(
+            arg.criteria,
+            offset: current.items.length,
+            refinements: arg.refinements,
+          );
+      final seen = current.items.map((l) => l.id).toSet();
+      state = AsyncData(PropertyResultsState(
+        items: [...current.items, ...page.items.where((l) => !seen.contains(l.id))],
+        total: page.total,
+        hasMore: page.hasMore,
+      ));
+    } catch (error) {
+      state = AsyncData(PropertyResultsState(
+        items: current.items,
+        total: current.total,
+        hasMore: current.hasMore,
+        loadMoreError: error,
+      ));
+    }
+  }
+}
+
+final propertyResultsProvider = AsyncNotifierProvider.autoDispose
+    .family<PropertyResults, PropertyResultsState, PropertyResultsQuery>(PropertyResults.new);
 
 class PropertySearchFormState {
   const PropertySearchFormState({

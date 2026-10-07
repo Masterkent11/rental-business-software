@@ -1,4 +1,3 @@
-import '../../../fixtures/view_models.dart';
 import '../domain/property_search_criteria.dart';
 import 'property_search_repository.dart';
 
@@ -7,7 +6,11 @@ class SearchProperties {
 
   final PropertySearchRepository _repository;
 
-  Future<List<ListingCardView>> call(PropertySearchCriteria criteria) {
-    return _repository.searchProperties(criteria);
+  Future<PropertySearchPage> call(
+    PropertySearchCriteria criteria, {
+    int offset = 0,
+    PropertyRefinements refinements = const PropertyRefinements(),
+  }) {
+    return _repository.searchProperties(criteria, offset: offset, refinements: refinements);
   }
 }

@@ -10,6 +10,10 @@ import {
   START_BOOKING_PAYMENT,
 } from './payment.tokens.ts';
 import { sandboxPaymentGateway } from '@/infrastructure/payments/sandbox-payment-gateway.adapter.ts';
+import { unavailablePaymentGateway } from '@/infrastructure/payments/unavailable-payment-gateway.adapter.ts';
+import { loadEnvironmentConfig } from '@/infrastructure/config/environment-config.ts';
+import { NOTIFICATION_REPOSITORY } from '@/modules/shared/shared.tokens.ts';
+import type { NotificationRepository } from '@/application/ports/repositories/notification-repository.port.ts';
 import { postgresPaymentRepository } from '@/infrastructure/postgres/repositories/postgres-payment.repository.ts';
 import { startBookingPayment } from '@/application/payments/start-booking-payment/start-booking-payment.use-case.ts';
 import { confirmBookingPayment } from '@/application/payments/confirm-booking-payment/confirm-booking-payment.use-case.ts';
@@ -30,7 +34,15 @@ import type { UserRepository } from '@/application/ports/repositories/user-repos
     SimulateBookingPaymentController,
   ],
   providers: [
-    { provide: PAYMENT_GATEWAY, useFactory: (): PaymentGateway => sandboxPaymentGateway() },
+    {
+      provide: PAYMENT_GATEWAY,
+      useFactory: (): PaymentGateway => {
+        const config = loadEnvironmentConfig();
+        return config.paymentProvider === 'sandbox'
+          ? sandboxPaymentGateway(config.paymentWebhookSecret ?? 'sandbox-secret')
+          : unavailablePaymentGateway();
+      },
+    },
     { provide: PAYMENT_REPOSITORY, useFactory: (): PaymentRepository => postgresPaymentRepository() },
     {
       provide: START_BOOKING_PAYMENT,
@@ -40,9 +52,9 @@ import type { UserRepository } from '@/application/ports/repositories/user-repos
     },
     {
       provide: CONFIRM_BOOKING_PAYMENT,
-      inject: [PAYMENT_REPOSITORY, PAYMENT_GATEWAY],
-      useFactory: (repo: PaymentRepository, gateway: PaymentGateway) =>
-        confirmBookingPayment(repo, gateway),
+      inject: [PAYMENT_REPOSITORY, PAYMENT_GATEWAY, NOTIFICATION_REPOSITORY],
+      useFactory: (repo: PaymentRepository, gateway: PaymentGateway, notifications: NotificationRepository) =>
+        confirmBookingPayment(repo, gateway, notifications),
     },
     {
       provide: SIMULATE_BOOKING_PAYMENT,

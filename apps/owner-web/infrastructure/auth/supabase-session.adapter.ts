@@ -1,93 +1,110 @@
-/**
- * Infrastructure Adapter: SupabaseSessionAdapter
- *
- * Implements SessionPort.
- * Encapsulates Supabase Auth SDK and coordinates with the API `/me` endpoint
- * to resolve dynamic user identity, organization memberships, and capabilities.
- */
-
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { SessionPort } from "../../application/ports/session.port";
-import type { ActiveSession, OrganizationMembership } from "../../domain/session/session";
-import { env } from "../config/env";
+import {
+  NotAnOwnerError,
+  type ActiveSession,
+  type OrganizationMembership,
+} from "../../domain/session/session";
+import { HttpClient } from "../http/http-client";
+import { MeDtoSchema } from "../http/dto/owner.dto";
+import { supabaseBrowserClient } from "../supabase/browser-client";
+
+const ACTIVE_ORG_KEY = "owner-web.activeOrganizationId";
+
+function friendlyAuthError(message: string | undefined): string {
+  const text = (message ?? "").toLowerCase();
+  if (text.includes("invalid login") || text.includes("invalid credentials")) {
+    return "That email and password don't match an account.";
+  }
+  if (text.includes("email not confirmed")) {
+    return "Confirm your email address first, then sign in.";
+  }
+  if (text.includes("rate limit") || text.includes("too many")) {
+    return "Too many attempts. Wait a minute and try again.";
+  }
+  if (text.includes("fetch") || text.includes("network")) {
+    return "Can't reach the sign-in service. Check your connection.";
+  }
+  return "Sign-in failed. Please try again.";
+}
+
+function rememberedOrganization(): string | null {
+  try {
+    return window.localStorage.getItem(ACTIVE_ORG_KEY);
+  } catch {
+    return null;
+  }
+}
 
 export class SupabaseSessionAdapter implements SessionPort {
-  private client: SupabaseClient;
-
-  constructor() {
-    this.client = createClient(env.supabaseUrl, env.supabasePublishableKey);
-  }
+  constructor(private readonly http: HttpClient) {}
 
   async getCurrentSession(): Promise<ActiveSession | null> {
-    const {
-      data: { session },
-    } = await this.client.auth.getSession();
-
-    if (!session || !session.user) {
-      return null;
+    const { data } = await supabaseBrowserClient().auth.getSession();
+    if (!data.session) return null;
+    try {
+      return await this.resolveActiveSession();
+    } catch (error) {
+      if (error instanceof NotAnOwnerError) {
+        await supabaseBrowserClient().auth.signOut();
+        return null;
+      }
+      throw error;
     }
-
-    return this.resolveActiveSession(session.access_token);
   }
 
   async signIn(email: string, password: string): Promise<ActiveSession> {
-    const { data, error } = await this.client.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error || !data.session) {
-      throw new Error(error?.message ?? "Authentication failed");
+    const { data, error } = await supabaseBrowserClient().auth.signInWithPassword({ email, password });
+    if (error || !data.session) throw new Error(friendlyAuthError(error?.message));
+    try {
+      return await this.resolveActiveSession();
+    } catch (resolveError) {
+      await supabaseBrowserClient().auth.signOut();
+      throw resolveError;
     }
-
-    return this.resolveActiveSession(data.session.access_token);
   }
 
   async signOut(): Promise<void> {
-    const { error } = await this.client.auth.signOut();
-    if (error) {
-      throw new Error(error.message);
+    this.forgetOrganization();
+    await supabaseBrowserClient().auth.signOut();
+  }
+
+  private forgetOrganization(): void {
+    try {
+      window.localStorage.removeItem(ACTIVE_ORG_KEY);
+    } catch {
+      return;
     }
   }
 
-  private async resolveActiveSession(accessToken: string): Promise<ActiveSession> {
-    const response = await fetch(`${env.apiBaseUrl}/me`, {
-      headers: {
-        accept: "application/json",
-        authorization: `Bearer ${accessToken}`,
-      },
-    });
+  rememberOrganization(organizationId: string): void {
+    try {
+      window.localStorage.setItem(ACTIVE_ORG_KEY, organizationId);
+    } catch {
+      return;
+    }
+  }
 
-    if (!response.ok) {
-      throw new Error(`Failed to resolve tenant context (HTTP ${response.status})`);
+  private async resolveActiveSession(): Promise<ActiveSession> {
+    const me = MeDtoSchema.parse(await this.http.request<unknown>("/me"));
+    const memberships: OrganizationMembership[] = me.organizations.map((o) => ({
+      organizationId: o.id,
+      role: o.role,
+      organizationName: o.name,
+      verified: o.verified,
+    }));
+
+    if (memberships.length === 0) {
+      throw new NotAnOwnerError(
+        "This account doesn't manage any properties. Sign in with an owner account, or use the customer app.",
+      );
     }
 
-    const me = (await response.json()) as {
-      id: string;
-      displayName: string;
-      email?: string;
-      capabilities: { capability: string; organizationId: string | null }[];
-    };
-
-    const memberships: OrganizationMembership[] = me.capabilities
-      .filter((c) => (c.capability === "OWNER" || c.capability === "STAFF") && c.organizationId)
-      .map((c) => ({
-        organizationId: c.organizationId!,
-        role: (c.capability as "OWNER" | "STAFF"),
-        organizationName: "Owner Workspace",
-      }));
-
-    const activeOrganizationId = memberships[0]?.organizationId;
-    if (!activeOrganizationId) {
-      throw new Error("No active organization membership found for this owner account.");
-    }
+    const remembered = rememberedOrganization();
+    const activeOrganizationId =
+      memberships.find((m) => m.organizationId === remembered)?.organizationId ?? memberships[0]!.organizationId;
 
     return {
-      user: {
-        id: me.id,
-        displayName: me.displayName,
-        email: me.email,
-      },
+      user: { id: me.id, displayName: me.displayName, ...(me.email ? { email: me.email } : {}) },
       activeOrganizationId,
       memberships,
       capabilities: me.capabilities,

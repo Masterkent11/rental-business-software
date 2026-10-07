@@ -23,7 +23,7 @@ BookingRepository repositoryReturning(
 }
 
 void main() {
-  group('placeHold', () {
+  group('createBooking', () {
     test('parses the hold the server returns', () async {
       final repo = repositoryReturning({
         'id': 'occ-1',
@@ -35,10 +35,12 @@ void main() {
         'expiresAt': '2029-01-01T01:00:00.000Z',
       });
 
-      final hold = await repo.placeHold(
-        resourceId: 'res-1',
+      final hold = await repo.createBooking(
+        listingId: 'lst-1',
         startsOn: DateTime(2029, 1, 5),
         endsOn: DateTime(2029, 1, 8),
+        guests: 2,
+        idempotencyKey: 'key-1',
       );
 
       expect(hold.id, 'occ-1');
@@ -47,8 +49,9 @@ void main() {
       expect(hold.expiresAt, DateTime.parse('2029-01-01T01:00:00.000Z'));
     });
 
-    test('sends the dates as padded ISO days', () async {
+    test('sends padded ISO days, guests and the idempotency key', () async {
       String? body;
+      String? path;
       final repo = repositoryReturning({
         'id': 'occ-1',
         'resourceId': 'res-1',
@@ -57,27 +60,39 @@ void main() {
         'endsOn': '2029-01-08',
         'nights': 3,
         'expiresAt': null,
-      }, onRequest: (request) => body = request.body);
+      }, onRequest: (request) {
+        body = request.body;
+        path = request.url.path;
+      });
 
-      await repo.placeHold(
-        resourceId: 'res-1',
+      await repo.createBooking(
+        listingId: 'lst-1',
         startsOn: DateTime(2029, 1, 5),
         endsOn: DateTime(2029, 1, 8),
+        guests: 2,
+        idempotencyKey: 'key-1',
       );
 
       final sent = jsonDecode(body!) as Map<String, dynamic>;
+      expect(path, '/bookings');
+      expect(sent['listingId'], 'lst-1');
       expect(sent['startsOn'], '2029-01-05');
       expect(sent['endsOn'], '2029-01-08');
+      expect(sent['guests'], 2);
+      expect(sent['idempotencyKey'], 'key-1');
+      expect(sent.containsKey('totalCentavos'), isFalse);
     });
 
     test('a conflict is a 409, not swallowed', () async {
       final repo = repositoryReturning({'title': 'Taken'}, status: 409);
 
       await expectLater(
-        repo.placeHold(
-          resourceId: 'res-1',
+        repo.createBooking(
+          listingId: 'lst-1',
           startsOn: DateTime(2029, 1, 5),
           endsOn: DateTime(2029, 1, 8),
+          guests: 2,
+          idempotencyKey: 'key-1',
         ),
         throwsA(
           isA<ApiException>().having((e) => e.statusCode, 'statusCode', 409),
@@ -85,14 +100,47 @@ void main() {
       );
     });
 
+    test('taken dates carry the server code so the UI can recover', () async {
+      final repo = repositoryReturning(
+        {'title': 'Conflict', 'message': 'Those dates were just booked.', 'code': 'DATES_UNAVAILABLE'},
+        status: 409,
+      );
+
+      await expectLater(
+        repo.createBooking(
+          listingId: 'lst-1',
+          startsOn: DateTime(2029, 1, 5),
+          endsOn: DateTime(2029, 1, 8),
+          guests: 2,
+          idempotencyKey: 'key-1',
+        ),
+        throwsA(
+          isA<ApiException>()
+              .having((e) => e.datesUnavailable, 'datesUnavailable', isTrue)
+              .having((e) => e.message, 'message', 'Those dates were just booked.'),
+        ),
+      );
+    });
+
+    test('server errors never leak internals to the guest', () async {
+      final repo = repositoryReturning({'message': 'relation "occupancies" does not exist'}, status: 500);
+
+      await expectLater(
+        repo.myBookings(),
+        throwsA(isA<ApiException>().having((e) => e.message, 'message', isNot(contains('relation')))),
+      );
+    });
+
     test('a busy server is a 503, not a generic failure', () async {
       final repo = repositoryReturning({'title': 'Busy'}, status: 503);
 
       await expectLater(
-        repo.placeHold(
-          resourceId: 'res-1',
+        repo.createBooking(
+          listingId: 'lst-1',
           startsOn: DateTime(2029, 1, 5),
           endsOn: DateTime(2029, 1, 8),
+          guests: 2,
+          idempotencyKey: 'key-1',
         ),
         throwsA(
           isA<ApiException>().having((e) => e.statusCode, 'statusCode', 503),
@@ -115,6 +163,22 @@ void main() {
       expect(intent.paymentId, 'pay-1');
       expect(intent.amountCentavos, 450000);
       expect(intent.nights, 3);
+    });
+
+    test('knows whether the server is in sandbox mode', () async {
+      final sandbox = await repositoryReturning({
+        'paymentId': 'pay-1',
+        'amountCentavos': 1,
+        'provider': 'sandbox',
+      }).startPaymentIntent('occ-1');
+      final live = await repositoryReturning({
+        'paymentId': 'pay-2',
+        'amountCentavos': 1,
+        'provider': 'paymongo',
+      }).startPaymentIntent('occ-1');
+
+      expect(sandbox.isSandbox, isTrue);
+      expect(live.isSandbox, isFalse);
     });
 
     test('a gone hold is a 404', () async {

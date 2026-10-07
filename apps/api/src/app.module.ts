@@ -7,6 +7,10 @@ import { PaymentsModule } from './modules/payments/payments.module.ts';
 import { ApplicationsModule } from './modules/applications/applications.module.ts';
 import { ToursModule } from './modules/tours/tours.module.ts';
 import { CollectionModule } from './modules/collection/collection.module.ts';
+import { MessagingModule } from './modules/messaging/messaging.module.ts';
+import { NotificationsModule } from './modules/notifications/notifications.module.ts';
+import { IdentityModule } from './modules/shared/identity.module.ts';
+import { PlatformModule } from './modules/shared/platform.module.ts';
 import { PresentationExceptionFilter } from './modules/shared/http-exception.filter.ts';
 
 @Controller()
@@ -22,6 +26,8 @@ class HealthController {
  */
 @Module({
   imports: [
+    IdentityModule,
+    PlatformModule,
     ListingsModule,
     MeModule,
     BookingsModule,
@@ -29,6 +35,8 @@ class HealthController {
     ApplicationsModule,
     ToursModule,
     CollectionModule,
+    MessagingModule,
+    NotificationsModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -14,6 +14,7 @@ import { nightsIn, type Occupancy } from '@/domain/occupancy/occupancy.ts';
 const EXCLUSION_VIOLATION = '23P01';
 const SERIALIZATION_FAILURE = '40001';
 const DEADLOCK_DETECTED = '40P01';
+const UNIQUE_VIOLATION = '23505';
 
 interface OccupancyRow {
   id: string;
@@ -85,7 +86,7 @@ export function postgresOccupancyRepository(): OccupancyRepository {
       }));
     },
 
-    async placeHold({ resourceId, during, holdMinutes, heldBy }) {
+    async placeHold({ resourceId, during, holdMinutes, heldBy, guests, clientRef }) {
       try {
         return await sql.begin(async (tx) => {
           // ADR-0005, in order. Each mechanism is necessary; none is
@@ -135,17 +136,30 @@ export function postgresOccupancyRepository(): OccupancyRepository {
                and expires_at <= now()
           `;
 
+          if (clientRef) {
+            const [previous] = await tx<OccupancyRow[]>`
+              select id, organization_id, resource_id, kind, state,
+                     to_char(lower(during), 'YYYY-MM-DD') as starts_on,
+                     to_char(upper(during), 'YYYY-MM-DD') as ends_on,
+                     expires_at
+                from occupancies
+               where held_by = ${heldBy} and client_ref = ${clientRef}
+               limit 1
+            `;
+            if (previous) return toOccupancy(previous);
+          }
+
           const [inserted] = await tx<OccupancyRow[]>`
             insert into occupancies (
               organization_id, resource_id, root_id, subtree,
-              during, kind, state, expires_at, held_by
+              during, kind, state, expires_at, held_by, guests, client_ref
             )
             select
               r.organization_id, r.id, r.root_id, r.subtree,
               daterange(${during.startsOn}::date, ${during.endsOn}::date, '[)'),
               'BOOKING', 'HELD',
               now() + (${holdMinutes} || ' minutes')::interval,
-              ${heldBy}
+              ${heldBy}, ${guests ?? null}, ${clientRef ?? null}
               from rentable_resources r
              where r.id = ${resourceId}
             returning
@@ -195,7 +209,7 @@ function translate(error: unknown): unknown {
   if (code === EXCLUSION_VIOLATION) {
     return new OccupancyConflictError('Those nights have just been taken');
   }
-  if (code === SERIALIZATION_FAILURE || code === DEADLOCK_DETECTED) {
+  if (code === SERIALIZATION_FAILURE || code === DEADLOCK_DETECTED || code === UNIQUE_VIOLATION) {
     return new SerializationError('Could not complete; try again');
   }
   return error;

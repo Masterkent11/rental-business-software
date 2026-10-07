@@ -396,7 +396,7 @@ class _Outcome extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(Tokens.s16),
       decoration: BoxDecoration(
-        color: tint.withOpacity(0.06),
+        color: tint.withValues(alpha: 0.06),
         border: Border(
           top: BorderSide(color: theme.colorScheme.outlineVariant),
         ),
