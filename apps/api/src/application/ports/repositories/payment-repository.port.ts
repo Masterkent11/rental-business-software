@@ -4,11 +4,36 @@ import type { Payment } from '@/domain/payments/payment.ts';
 export class BookingNotHeldError extends Error {}
 export class AmountMismatchError extends Error {}
 
+export interface StayPricingForPayment {
+  readonly kind: 'STAY';
+  readonly startsOn: string;
+  readonly endsOn: string;
+  readonly guests: number;
+  readonly nightlyCentavos: Centavos;
+  readonly cleaningFeeCentavos: Centavos;
+  readonly minStayNights: number;
+  readonly maxOccupants: number;
+}
+
+export interface FixedPricingForPayment {
+  readonly kind: 'FIXED';
+  readonly amountCentavos: Centavos;
+}
+
 export interface BookingForPayment {
   readonly occupancyId: string;
   readonly organizationId: string;
-  readonly amountCentavos: Centavos;
-  readonly nights: number;
+  readonly heldBy: string | null;
+  readonly pricing: StayPricingForPayment | FixedPricingForPayment;
+}
+
+export interface ConfirmedStay {
+  readonly stayId: string;
+  readonly guestId: string | null;
+  readonly organizationId: string;
+  readonly listingTitle: string;
+  readonly startsOn: string;
+  readonly endsOn: string;
 }
 
 export interface ConfirmationResult {
@@ -16,6 +41,7 @@ export interface ConfirmationResult {
   readonly stayId: string;
   /** False when the event had already been applied. */
   readonly applied: boolean;
+  readonly stay?: ConfirmedStay | null;
 }
 
 export interface PendingPayment {

@@ -116,7 +116,7 @@ class _Round extends StatelessWidget {
                 size: 18,
                 color: enabled
                     ? theme.colorScheme.onSurface
-                    : theme.colorScheme.onSurfaceVariant.withOpacity(0.38),
+                    : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.38),
               ),
             ),
           ),

@@ -15,3 +15,22 @@ export type ResourceType =
   | 'BED_SPACE'
   | 'PARKING'
   | 'STORAGE';
+
+export type PropertyType =
+  | 'APARTMENT'
+  | 'CONDO'
+  | 'HOUSE'
+  | 'ROOM'
+  | 'BOARDING_HOUSE';
+
+export const PROPERTY_TYPES: readonly PropertyType[] = [
+  'APARTMENT',
+  'CONDO',
+  'HOUSE',
+  'ROOM',
+  'BOARDING_HOUSE',
+];
+
+export type ListingSort = 'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC';
+
+export type ListingLifecycleAction = 'PUBLISH' | 'UNPUBLISH' | 'ARCHIVE';

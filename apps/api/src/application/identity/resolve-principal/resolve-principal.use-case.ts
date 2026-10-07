@@ -34,6 +34,7 @@ export const resolvePrincipal =
         id: verified.userId,
         email: verified.email,
         mobile: verified.mobile,
+        displayName: verified.displayName ?? null,
       });
       loaded = await users.loadPrincipal(verified.userId, input.organizationId);
     }

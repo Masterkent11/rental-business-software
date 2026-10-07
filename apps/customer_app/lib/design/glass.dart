@@ -57,7 +57,7 @@ class Glass extends StatelessWidget {
             color: color,
             borderRadius: BorderRadius.circular(radius),
             border: border
-                ? Border.all(color: Colors.white.withOpacity(0.14), width: 0.5)
+                ? Border.all(color: Colors.white.withValues(alpha: 0.14), width: 0.5)
                 : null,
           ),
           child: child,
@@ -93,10 +93,10 @@ class PhotoScrim extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.black.withOpacity(top),
+              Colors.black.withValues(alpha: top),
               Colors.transparent,
               Colors.transparent,
-              Colors.black.withOpacity(bottom),
+              Colors.black.withValues(alpha: bottom),
             ],
             stops: const [0, 0.24, 0.34, 1],
           ),

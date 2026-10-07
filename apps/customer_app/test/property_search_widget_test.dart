@@ -8,13 +8,15 @@ import 'package:customer_app/data/api_client.dart';
 import 'package:customer_app/data/auth_repository.dart';
 import 'package:customer_app/data/listing_repository.dart';
 import 'package:customer_app/data/tour_repository.dart';
-import 'package:customer_app/fixtures/sample_data.dart';
 import 'package:customer_app/fixtures/view_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+
+import 'support/fake_auth.dart';
+import 'support/sample_data.dart';
 
 void _ignoreOfflineImages() {
   final original = FlutterError.onError;
@@ -37,39 +39,6 @@ Future<ui.Image> _pixel() {
   return completer.future;
 }
 
-class _TestAuth implements AuthGateway {
-  const _TestAuth();
-
-  @override
-  String? get accessToken => 'test-token';
-
-  @override
-  Stream<void> get changes => const Stream<void>.empty();
-
-  @override
-  Future<void> signInWithPassword({
-    required String email,
-    required String password,
-  }) async {}
-
-  @override
-  Future<void> signUpWithPassword({
-    required String email,
-    required String password,
-  }) async {}
-
-  @override
-  Future<void> sendMobileOtp(String mobile) async {}
-
-  @override
-  Future<void> verifyMobileOtp({
-    required String mobile,
-    required String code,
-  }) async {}
-
-  @override
-  Future<void> signOut() async {}
-}
 
 MockClient _mockClient() {
   Map<String, dynamic> encode(ListingCardView l) => {
@@ -144,7 +113,7 @@ Future<void> _pumpApp(WidgetTester tester) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        authRepositoryProvider.overrideWithValue(const _TestAuth()),
+        authRepositoryProvider.overrideWithValue(FakeAuth.signedIn()),
         panoramaImageLoaderProvider.overrideWithValue(
           (_) async => pixel.clone(),
         ),

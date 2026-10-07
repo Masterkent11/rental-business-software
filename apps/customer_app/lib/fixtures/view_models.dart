@@ -88,8 +88,12 @@ class ListingCardView {
     this.isVerified = false,
     this.beds = 1,
     this.baths = 1,
-    this.sqm = 32,
+    this.sqm,
     this.isPopular = false,
+    this.maxGuests = 1,
+    this.cleaningFeeCentavos = 0,
+    this.propertyType,
+    this.minStayNights,
   });
 
   final String id;
@@ -113,10 +117,23 @@ class ListingCardView {
   final bool isVerified;
   final int beds;
   final int baths;
-  final int sqm;
+  final int? sqm;
   final bool isPopular;
+  final int maxGuests;
+  final int cleaningFeeCentavos;
+  final String? propertyType;
+  final int? minStayNights;
 
   String get location => '$areaLabel, $cityLabel';
+
+  String get typeLabel => switch (propertyType) {
+    'APARTMENT' => 'Apartment',
+    'CONDO' => 'Condo',
+    'HOUSE' => 'House',
+    'ROOM' => 'Room',
+    'BOARDING_HOUSE' => 'Boarding house',
+    _ => resourceType.label,
+  };
 }
 
 @immutable

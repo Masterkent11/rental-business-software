@@ -1,3 +1,4 @@
+import { InvalidProfileError } from './identity-errors.ts';
 import type { Capability } from './role.ts';
 import { ORGANIZATION_SCOPED } from './role.ts';
 
@@ -37,4 +38,14 @@ export function hasCapability(
     // inside a competitor's.
     return held.organizationId === (organizationId ?? null);
   });
+}
+
+export { InvalidProfileError } from './identity-errors.ts';
+
+export function normaliseDisplayName(raw: string): string {
+  const name = raw.replace(/\s+/g, ' ').trim();
+  if (name.length < 2 || name.length > 80) {
+    throw new InvalidProfileError('Use a name between 2 and 80 characters');
+  }
+  return name;
 }

@@ -1,15 +1,64 @@
+export type AppEnvironment = 'development' | 'demo' | 'production' | 'test';
+export type PaymentProviderName = 'sandbox' | 'none';
+
 export interface EnvironmentConfig {
+  readonly appEnv: AppEnvironment;
   readonly databaseUrl: string;
   readonly port: number;
-  readonly supabaseUrl?: string | undefined;
-  readonly supabaseAnonKey?: string | undefined;
+  readonly supabaseUrl: string;
+  readonly paymentProvider: PaymentProviderName;
+  readonly paymentWebhookSecret: string | null;
+  readonly corsOrigins: readonly string[] | true;
 }
 
-export function loadEnvironmentConfig(): EnvironmentConfig {
+export class EnvironmentConfigError extends Error {}
+
+const APP_ENVS: readonly AppEnvironment[] = ['development', 'demo', 'production', 'test'];
+
+export function loadEnvironmentConfig(env: NodeJS.ProcessEnv = process.env): EnvironmentConfig {
+  const problems: string[] = [];
+  const appEnv = (env.APP_ENV ?? 'development') as AppEnvironment;
+  if (!APP_ENVS.includes(appEnv)) problems.push(`APP_ENV must be one of ${APP_ENVS.join(', ')}`);
+
+  const databaseUrl = env.DATABASE_URL ?? '';
+  if (!databaseUrl) problems.push('DATABASE_URL is required');
+
+  const supabaseUrl = (env.SUPABASE_URL ?? '').replace(/\/$/, '');
+  if (!supabaseUrl) problems.push('SUPABASE_URL is required');
+
+  const requestedProvider = env.PAYMENT_PROVIDER ?? (appEnv === 'production' ? 'none' : 'sandbox');
+  if (requestedProvider !== 'sandbox' && requestedProvider !== 'none') {
+    problems.push('PAYMENT_PROVIDER must be sandbox or none until a live provider is integrated');
+  }
+  if (appEnv === 'production' && requestedProvider === 'sandbox') {
+    problems.push('The sandbox payment provider cannot run with APP_ENV=production');
+  }
+
+  const paymentWebhookSecret = env.PAYMENT_WEBHOOK_SECRET?.trim() || null;
+  if (requestedProvider === 'sandbox' && appEnv !== 'development' && appEnv !== 'test' && !paymentWebhookSecret) {
+    problems.push('PAYMENT_WEBHOOK_SECRET is required for the sandbox provider outside development');
+  }
+
+  const corsOrigins = env.CORS_ORIGINS
+    ? env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
+    : appEnv === 'production'
+      ? []
+      : true;
+  if (appEnv === 'production' && Array.isArray(corsOrigins) && corsOrigins.length === 0) {
+    problems.push('CORS_ORIGINS is required in production');
+  }
+
+  if (problems.length > 0) {
+    throw new EnvironmentConfigError(`Invalid API configuration:\n- ${problems.join('\n- ')}`);
+  }
+
   return {
-    databaseUrl: process.env.DATABASE_URL || '',
-    port: parseInt(process.env.PORT || '3000', 10),
-    supabaseUrl: process.env.SUPABASE_URL,
-    supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
+    appEnv,
+    databaseUrl,
+    port: Number(env.PORT ?? 8080),
+    supabaseUrl,
+    paymentProvider: requestedProvider as PaymentProviderName,
+    paymentWebhookSecret,
+    corsOrigins,
   };
 }

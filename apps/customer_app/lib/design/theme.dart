@@ -100,7 +100,7 @@ abstract final class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(Tokens.rMd),
-          borderSide: BorderSide(color: ink.withOpacity(0.45)),
+          borderSide: BorderSide(color: ink.withValues(alpha: 0.45)),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: Tokens.s16,

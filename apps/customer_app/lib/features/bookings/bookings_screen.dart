@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/router.dart';
-import '../../data/account_repository.dart';
+import '../../data/api_client.dart';
+import '../../data/auth_repository.dart';
+import '../../data/booking_repository.dart';
 import '../../design/app_image.dart';
+import '../../design/components.dart';
 import '../../design/money.dart';
 import '../../design/motion.dart';
 import '../../design/tokens.dart';
-import '../../fixtures/view_models.dart';
 import 'widgets/empty_bookings.dart';
+
+enum _Tab { upcoming, past }
+
+BadgeTone bookingTone(BookingBucket bucket) => switch (bucket) {
+      BookingBucket.upcoming => BadgeTone.info,
+      BookingBucket.current => BadgeTone.good,
+      BookingBucket.pendingPayment => BadgeTone.warning,
+      BookingBucket.cancelled => BadgeTone.bad,
+      BookingBucket.past => BadgeTone.neutral,
+    };
 
 class BookingsScreen extends ConsumerStatefulWidget {
   const BookingsScreen({super.key});
@@ -20,199 +31,44 @@ class BookingsScreen extends ConsumerStatefulWidget {
   ConsumerState<BookingsScreen> createState() => _BookingsScreenState();
 }
 
-BookingView toBookingView(StayReceiptView stay) => BookingView(
-  id: stay.id,
-  reference: stay.reference,
-  listingTitle: stay.listingTitle,
-  propertyName: stay.propertyName,
-  areaLabel: '${stay.areaLabel}, ${stay.cityLabel}',
-  photo: stay.photo ?? '',
-  checkIn: stay.startsOn,
-  checkOut: stay.endsOn,
-  nights: stay.nights,
-  guests: 1,
-  totalCentavos: stay.paidCentavos,
-  status: stay.bucket,
-  stateLabel: stay.stateLabel,
-);
-
 class _BookingsScreenState extends ConsumerState<BookingsScreen> {
-  BookingStatus _tab = BookingStatus.active;
+  _Tab _tab = _Tab.upcoming;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final staysAsync = ref.watch(staysProvider);
-    final all = (staysAsync.valueOrNull ?? const <StayReceiptView>[])
-        .map(toBookingView)
-        .toList(growable: false);
-    final bookings = all.where((b) => b.status == _tab).toList(growable: false);
+    final signedIn = ref.watch(isSignedInProvider);
+    final bookings = ref.watch(myBookingsProvider);
+    final all = bookings.valueOrNull ?? const <BookingSummaryView>[];
+    final visible = all.where((b) => _tab == _Tab.upcoming ? b.isActive : !b.isActive).toList(growable: false);
 
     return Scaffold(
-      body: CustomScrollView(
-        physics: Tokens.scroll,
-        slivers: [
-          SliverSafeArea(
-            bottom: false,
-            sliver: SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  Tokens.gutter,
-                  Tokens.s16,
-                  Tokens.gutter,
-                  Tokens.s16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Bookings', style: theme.textTheme.displaySmall),
-                    const SizedBox(height: Tokens.s4),
-                    Text(
-                      'Your nightly stays. Long-term applications live under '
-                      'Account.',
-                      style: theme.textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: Tokens.s20),
-                    _StatusTabs(
-                      selected: _tab,
-                      countFor: (s) => all.where((b) => b.status == s).length,
-                      onSelected: (s) => setState(() => _tab = s),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          if (staysAsync.hasError)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Padding(
-                padding: const EdgeInsets.all(Tokens.gutter),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Could not load your stays',
-                      style: theme.textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: Tokens.s8),
-                    Text(
-                      '${staysAsync.error}',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: Tokens.s16),
-                    FilledButton(
-                      onPressed: () => ref.invalidate(staysProvider),
-                      child: const Text('Try again'),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else if (staysAsync.isLoading)
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (bookings.isEmpty)
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: _EmptyState(status: _tab),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                Tokens.gutter,
-                Tokens.s8,
-                Tokens.gutter,
-                Tokens.s40,
-              ),
-              sliver: SliverList.separated(
-                itemCount: bookings.length,
-                separatorBuilder: (_, __) => const SizedBox(height: Tokens.s16),
-                itemBuilder: (context, i) => Reveal(
-                  order: i.clamp(0, 3),
-                  child: _BookingCard(booking: bookings[i]),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatusTabs extends StatelessWidget {
-  const _StatusTabs({
-    required this.selected,
-    required this.countFor,
-    required this.onSelected,
-  });
-
-  final BookingStatus selected;
-  final int Function(BookingStatus) countFor;
-  final ValueChanged<BookingStatus> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-      ),
-      child: Row(
-        children: [
-          for (final status in BookingStatus.values)
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  onSelected(status);
-                },
-                behavior: HitTestBehavior.opaque,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeOut,
-                  height: 38,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: status == selected
-                        ? theme.colorScheme.surface
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(999),
-                    boxShadow: status == selected ? Tokens.lift : null,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+      body: RefreshIndicator(
+        onRefresh: () => ref.refresh(myBookingsProvider.future),
+        child: CustomScrollView(
+          physics: Tokens.scroll,
+          slivers: [
+            SliverSafeArea(
+              bottom: false,
+              sliver: SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s16, Tokens.gutter, Tokens.s16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Flexible(
-                        child: Text(
-                          status.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: status == selected
-                                ? theme.colorScheme.onSurface
-                                : theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                      if (countFor(status) > 0) ...[
-                        const SizedBox(width: Tokens.s6),
-                        Text(
-                          '${countFor(status)}',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: status == selected
-                                ? theme.colorScheme.onSurfaceVariant
-                                : theme.colorScheme.onSurfaceVariant
-                                      .withOpacity(0.7),
-                          ),
+                      Text('Bookings', style: theme.textTheme.displaySmall),
+                      const SizedBox(height: Tokens.s4),
+                      Text('Your stays. Monthly applications live under Profile.', style: theme.textTheme.bodySmall),
+                      if (signedIn) ...[
+                        const SizedBox(height: Tokens.s20),
+                        SegmentedButton<_Tab>(
+                          showSelectedIcon: false,
+                          segments: [
+                            ButtonSegment(value: _Tab.upcoming, label: Text('Upcoming (${all.where((b) => b.isActive).length})')),
+                            ButtonSegment(value: _Tab.past, label: Text('Past (${all.where((b) => !b.isActive).length})')),
+                          ],
+                          selected: {_tab},
+                          onSelectionChanged: (next) => setState(() => _tab = next.first),
                         ),
                       ],
                     ],
@@ -220,7 +76,75 @@ class _StatusTabs extends StatelessWidget {
                 ),
               ),
             ),
-        ],
+            if (!signedIn)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: EmptyState(
+                  icon: Icons.luggage_outlined,
+                  title: 'Your trips live here',
+                  message: 'Sign in to see your bookings, pay for held dates, and message hosts.',
+                  actionLabel: 'Sign in',
+                  onAction: () => context.push(Routes.auth(from: Routes.bookings, reason: 'Sign in to see your bookings.')),
+                ),
+              )
+            else if (bookings.hasError && all.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: ErrorState(
+                  message: bookings.error is ApiException
+                      ? (bookings.error as ApiException).message
+                      : 'We could not load your bookings.',
+                  onRetry: () => ref.invalidate(myBookingsProvider),
+                ),
+              )
+            else if (bookings.isLoading && all.isEmpty)
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: Tokens.gutter),
+                sliver: SliverList.list(
+                  children: const [
+                    SkeletonBox(height: 200, radius: Tokens.rLg),
+                    SizedBox(height: Tokens.s20),
+                    SkeletonBox(height: 200, radius: Tokens.rLg),
+                  ],
+                ),
+              )
+            else if (visible.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: const EdgeInsets.all(Tokens.s32),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const EmptyBookingsArt(),
+                      const SizedBox(height: Tokens.s20),
+                      Text(
+                        _tab == _Tab.upcoming ? 'No upcoming stays' : 'No past stays yet',
+                        style: theme.textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: Tokens.s8),
+                      Text(
+                        'Find a place you love and book your dates — it shows up here right away.',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                      const SizedBox(height: Tokens.s20),
+                      AppButton(label: 'Explore places', expand: false, onPressed: () => context.go(Routes.discover)),
+                    ],
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(Tokens.gutter, 0, Tokens.gutter, Tokens.s64),
+                sliver: SliverList.separated(
+                  itemCount: visible.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: Tokens.s20),
+                  itemBuilder: (context, i) => Reveal(order: i.clamp(0, 3), child: _BookingCard(booking: visible[i])),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -229,210 +153,62 @@ class _StatusTabs extends StatelessWidget {
 class _BookingCard extends StatelessWidget {
   const _BookingCard({required this.booking});
 
-  final BookingView booking;
+  final BookingSummaryView booking;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final fmt = DateFormat('MMM d');
-    final past = booking.status != BookingStatus.active;
-
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        context.push(Routes.booking(booking.id));
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(Tokens.rLg),
-          border: Border.all(color: theme.colorScheme.outlineVariant),
-          color: theme.colorScheme.surfaceContainerHighest,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                SizedBox(
-                  width: 104,
-                  height: 104,
-                  child: Opacity(
-                    opacity: past ? 0.55 : 1,
-                    child: AppImage(
-                      url: booking.photo,
-                      fallbackIcon: Icons.apartment_outlined,
-                      seed: booking.id.length,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(Tokens.s12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
+    final format = DateFormat('MMM d');
+    return Semantics(
+      button: true,
+      label: '${booking.listingTitle}, ${booking.statusLabel}',
+      child: Squeeze(
+        onTap: () => context.push(Routes.booking(booking.id)),
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(Tokens.rLg),
+            boxShadow: Tokens.lift,
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AspectRatio(
+                aspectRatio: 16 / 8,
+                child: booking.photo == null
+                    ? Container(color: theme.colorScheme.outlineVariant)
+                    : AppImage(url: booking.photo!, cacheWidth: 800),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(Tokens.s16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        if (booking.stateLabel != null)
-                          _StatePill(
-                            label: booking.stateLabel!,
-                            status: booking.status,
-                          ),
-                        const SizedBox(height: Tokens.s6),
-                        Text(
-                          booking.listingTitle,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: Tokens.s2),
-                        Text(
-                          booking.areaLabel,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall,
-                        ),
+                        StatusBadge(label: booking.statusLabel, tone: bookingTone(booking.bucket)),
+                        const Spacer(),
+                        Text('#${booking.reference}', style: theme.textTheme.labelSmall),
                       ],
                     ),
-                  ),
-                ),
-              ],
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Tokens.s16,
-                vertical: Tokens.s12,
-              ),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                border: Border(
-                  top: BorderSide(color: theme.colorScheme.outlineVariant),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.calendar_today_outlined,
-                    size: 15,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: Tokens.s8),
-                  Expanded(
-                    child: Text(
-                      '${fmt.format(booking.checkIn)} – '
-                      '${fmt.format(booking.checkOut)} · '
-                      '${booking.nights} night${booking.nights == 1 ? "" : "s"}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodyMedium,
+                    const SizedBox(height: Tokens.s8),
+                    Text(booking.listingTitle, style: theme.textTheme.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${format.format(booking.startsOn)} – ${format.format(booking.endsOn)} · ${booking.nights} night${booking.nights == 1 ? '' : 's'}',
+                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     ),
-                  ),
-                  const SizedBox(width: Tokens.s8),
-                  Text(
-                    Money.peso(booking.totalCentavos),
-                    style: theme.textTheme.titleMedium,
-                  ),
-                ],
+                    if (booking.isPaid) ...[
+                      const SizedBox(height: 2),
+                      Text('${Money.peso(booking.paidCentavos)} paid', style: theme.textTheme.bodySmall),
+                    ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
-  }
-}
-
-class _StatePill extends StatelessWidget {
-  const _StatePill({required this.label, required this.status});
-
-  final String label;
-  final BookingStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = switch (status) {
-      BookingStatus.active => Tokens.available,
-      BookingStatus.past => Theme.of(context).colorScheme.onSurfaceVariant,
-      BookingStatus.cancelled => Tokens.taken,
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: color),
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.status});
-
-  final BookingStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    final (title, body) = switch (status) {
-      BookingStatus.active => (
-        'No stays booked yet',
-        'When you book a place for a few nights, it shows up here with your '
-            'dates, address, and how to get in.',
-      ),
-      BookingStatus.past => (
-        'Nothing finished yet',
-        'Stays move here after checkout, with the receipt attached.',
-      ),
-      BookingStatus.cancelled => (
-        'Nothing cancelled',
-        'Cancelled bookings stay here with whatever was refunded, so there '
-            'is never a question about what happened.',
-      ),
-    };
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        Tokens.s32,
-        Tokens.s24,
-        Tokens.s32,
-        Tokens.s40,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const EmptyBookingsArt(),
-          const SizedBox(height: Tokens.s24),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.headlineSmall,
-          ),
-          const SizedBox(height: Tokens.s8),
-          Text(
-            body,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: Tokens.s24),
-          SizedBox(
-            width: 240,
-            child: FilledButton(
-              onPressed: () {
-                HapticFeedback.selectionClick();
-                context.go(Routes.discover);
-              },
-              child: const Text('Find a place to stay'),
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -1,149 +1,156 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
+import '../../app/router.dart';
+import '../../data/api_client.dart';
+import '../../data/auth_repository.dart';
+import '../../data/messaging_repository.dart';
+import '../../design/app_image.dart';
+import '../../design/components.dart';
 import '../../design/tokens.dart';
 
-class MessagesScreen extends StatelessWidget {
+String conversationTime(DateTime? at) {
+  if (at == null) return '';
+  final local = at.toLocal();
+  final now = DateTime.now();
+  if (now.difference(local).inHours < 24 && now.day == local.day) return DateFormat.jm().format(local);
+  if (now.difference(local).inDays < 7) return DateFormat.E().format(local);
+  return DateFormat.MMMd().format(local);
+}
+
+class MessagesScreen extends ConsumerWidget {
   const MessagesScreen({super.key});
 
-  static const _threads = [
-    (
-      'Santos Property Holdings',
-      'Unit 203, ABC Apartment',
-      'Yes, the aircon in the bedroom is inverter. Water is separate, '
-          'usually ₱300–400 a month.',
-      '1h ago',
-      true,
-    ),
-    (
-      'Skyline Property Management',
-      'Condo stay · Dec 26–29',
-      'Check-in is 2 PM. I will send the gate code the day before.',
-      'Yesterday',
-      true,
-    ),
-    (
-      'Villa Rentals',
-      'Bed space near USC',
-      'The lower bunk is still open. Would you like to see it in person?',
-      '4 days ago',
-      false,
-    ),
-  ];
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final signedIn = ref.watch(isSignedInProvider);
+    final inbox = ref.watch(inboxProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Messages'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.separated(
-              physics: Tokens.scroll,
-              padding: const EdgeInsets.symmetric(vertical: Tokens.s8),
-              itemCount: _threads.length,
-              separatorBuilder: (_, __) => Divider(
-                height: 1,
-                indent: Tokens.gutter,
-                color: theme.colorScheme.outlineVariant,
-              ),
-              itemBuilder: (context, i) {
-                final (org, about, preview, ago, unread) = _threads[i];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: Tokens.gutter,
-                    vertical: Tokens.s16,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 42,
-                        height: 42,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: theme.colorScheme.primary.withOpacity(0.07),
-                        ),
-                        child: Text(
-                          org.split(' ').take(2).map((w) => w[0]).join(),
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: theme.colorScheme.primary,
+      appBar: AppBar(title: const Text('Messages'), automaticallyImplyLeading: context.canPop()),
+      body: !signedIn
+          ? EmptyState(
+              icon: Icons.chat_bubble_outline,
+              title: 'Talk to owners',
+              message: 'Sign in to ask owners about a place or your booking. Replies arrive here instantly.',
+              actionLabel: 'Sign in',
+              onAction: () => context.push(Routes.auth(from: Routes.messages, reason: 'Sign in to see your conversations.')),
+            )
+          : switch (inbox) {
+              AsyncError(:final error) => ErrorState(
+                  message: error is ApiException ? error.message : 'We could not load your messages.',
+                  onRetry: () => ref.invalidate(inboxProvider),
+                ),
+              AsyncData(:final value) when value.conversations.isEmpty => const EmptyState(
+                  icon: Icons.forum_outlined,
+                  title: 'No conversations yet',
+                  message: 'Open any place and tap “Message owner” to ask a question before you book.',
+                ),
+              AsyncData(:final value) => RefreshIndicator(
+                  onRefresh: () => ref.read(inboxProvider.notifier).refreshQuietly(),
+                  child: ListView.separated(
+                    physics: Tokens.scroll,
+                    padding: const EdgeInsets.only(bottom: Tokens.s64),
+                    itemCount: value.conversations.length,
+                    separatorBuilder: (_, __) => Divider(height: 1, indent: 88, color: theme.colorScheme.outlineVariant),
+                    itemBuilder: (context, i) {
+                      final c = value.conversations[i];
+                      final unread = c.unreadCount > 0;
+                      return InkWell(
+                        onTap: () => context.push(Routes.conversation(c.id)),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: Tokens.gutter, vertical: Tokens.s12),
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(Tokens.rSm),
+                                child: SizedBox(
+                                  width: 56,
+                                  height: 56,
+                                  child: c.listingPhoto == null
+                                      ? Container(color: theme.colorScheme.outlineVariant)
+                                      : AppImage(url: c.listingPhoto!, cacheWidth: 168),
+                                ),
+                              ),
+                              const SizedBox(width: Tokens.s12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            c.organizationName,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: theme.textTheme.titleMedium?.copyWith(
+                                              fontWeight: unread ? FontWeight.w700 : FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                        Text(conversationTime(c.lastMessageAt), style: theme.textTheme.bodySmall),
+                                      ],
+                                    ),
+                                    Text(c.listingTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
+                                    const SizedBox(height: 2),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            c.lastMessagePreview.isEmpty
+                                                ? 'Say hello'
+                                                : '${c.lastSenderRole == SenderRole.customer ? 'You: ' : ''}${c.lastMessagePreview}',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: theme.textTheme.bodyMedium?.copyWith(
+                                              color: unread ? theme.colorScheme.onSurface : theme.colorScheme.onSurfaceVariant,
+                                              fontWeight: unread ? FontWeight.w600 : FontWeight.w400,
+                                            ),
+                                          ),
+                                        ),
+                                        CountBadge(count: c.unreadCount),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      const SizedBox(width: Tokens.s12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      );
+                    },
+                  ),
+                ),
+              _ => ListView(
+                  padding: const EdgeInsets.all(Tokens.gutter),
+                  children: [
+                    for (var i = 0; i < 5; i++)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: Tokens.s20),
+                        child: Row(
                           children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    org,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.titleMedium,
-                                  ),
-                                ),
-                                const SizedBox(width: Tokens.s8),
-                                Text(ago, style: theme.textTheme.labelSmall),
-                              ],
-                            ),
-                            const SizedBox(height: 1),
-                            Text(
-                              about,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: Tokens.accent,
-                              ),
-                            ),
-                            const SizedBox(height: Tokens.s4),
-                            Text(
-                              preview,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                fontWeight: unread
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
-                                color: unread
-                                    ? theme.colorScheme.onSurface
-                                    : theme.colorScheme.onSurfaceVariant,
+                            SkeletonBox(width: 56, height: 56, radius: Tokens.rSm),
+                            SizedBox(width: Tokens.s12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SkeletonBox(width: 160),
+                                  SizedBox(height: 8),
+                                  SkeletonBox(width: 220, height: 12),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.all(Tokens.gutter),
-              child: Text(
-                'Messages here are about a listing, an application, or a '
-                'booking. This is not a general chat.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall,
-              ),
-            ),
-          ),
-        ],
-      ),
+                  ],
+                ),
+            },
     );
   }
 }

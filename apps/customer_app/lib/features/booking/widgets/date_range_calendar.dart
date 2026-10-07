@@ -209,9 +209,9 @@ class _DayCell extends StatelessWidget {
       background = theme.colorScheme.primary;
       foreground = theme.colorScheme.onPrimary;
     } else if (inRange) {
-      background = theme.colorScheme.primary.withOpacity(0.10);
+      background = theme.colorScheme.primary.withValues(alpha: 0.10);
     } else if (disabled) {
-      foreground = theme.colorScheme.onSurfaceVariant.withOpacity(0.45);
+      foreground = theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.45);
     }
 
     return GestureDetector(
@@ -240,7 +240,7 @@ class _DayCell extends StatelessWidget {
                 Container(
                   width: 22,
                   height: 1.4,
-                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.55),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
                 ),
             ],
           ),

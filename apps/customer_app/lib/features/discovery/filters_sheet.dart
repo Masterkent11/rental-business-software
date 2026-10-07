@@ -25,7 +25,7 @@ class _FiltersSheet extends ConsumerWidget {
     final theme = Theme.of(context);
     final f = ref.watch(filtersProvider);
     final controller = ref.read(filtersProvider.notifier);
-    final matches = ref.watch(resultsProvider).valueOrNull?.length ?? 0;
+    final matches = ref.watch(resultsProvider).valueOrNull?.total ?? 0;
 
     return SafeArea(
       top: false,
@@ -222,7 +222,7 @@ class _Toggle extends StatelessWidget {
           ),
           Switch.adaptive(
             value: value,
-            activeColor: theme.colorScheme.primary,
+            activeTrackColor: theme.colorScheme.primary,
             onChanged: (v) {
               HapticFeedback.selectionClick();
               onChanged(v);

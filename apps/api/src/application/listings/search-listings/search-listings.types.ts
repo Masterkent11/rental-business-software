@@ -1,4 +1,4 @@
-import type { Listing, ListingQuery } from '@/domain/listings/listing.ts';
+import type { ListingPage, ListingQuery } from '@/domain/listings/listing.ts';
 
 export type SearchListingsInput = ListingQuery;
-export type SearchListingsResult = readonly Listing[];
+export type SearchListingsResult = ListingPage;

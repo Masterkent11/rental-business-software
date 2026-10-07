@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { amountDue } from '@/application/payments/start-booking-payment/start-booking-payment.use-case.ts';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { postgresPaymentRepository } from '@/infrastructure/postgres/repositories/postgres-payment.repository.ts';
 import { postgresOccupancyRepository } from '@/infrastructure/postgres/repositories/postgres-occupancy.repository.ts';
@@ -72,8 +73,8 @@ suite('payments against real PostgreSQL', { timeout: 30_000 }, () => {
     const payable = await payments.findPayableBooking(booking.id);
 
     expect(payable).not.toBeNull();
-    expect(payable!.nights).toBe(3);
-    expect(payable!.amountCentavos).toBe(NIGHTLY * 3);
+    expect(amountDue(payable!).nights).toBe(3);
+    expect(amountDue(payable!).amountCentavos).toBe(NIGHTLY * 3);
   });
 
   it('will not price an expired hold', async () => {
@@ -103,10 +104,10 @@ suite('payments against real PostgreSQL', { timeout: 30_000 }, () => {
       const providerRef = `sbx_${randomUUID()}`;
       await payments.startPayment({
         occupancyId: booking.id,
-        amountCentavos: payable!.amountCentavos,
+        amountCentavos: amountDue(payable!).amountCentavos,
         providerRef,
       });
-      return { booking, providerRef, amount: payable!.amountCentavos };
+      return { booking, providerRef, amount: amountDue(payable!).amountCentavos };
     };
 
     it('commits the hold, creates the stay, and writes the ledger', async () => {
@@ -277,12 +278,12 @@ suite('payments against real PostgreSQL', { timeout: 30_000 }, () => {
       const booking = await heldBooking(startsOn, endsOn);
       const payable = await payments.findPayableBooking(booking.id);
       const intent = await gateway.startPayment({
-        amountCentavos: payable!.amountCentavos,
+        amountCentavos: amountDue(payable!).amountCentavos,
         reference: booking.id,
       });
       const payment = await payments.startPayment({
         occupancyId: booking.id,
-        amountCentavos: payable!.amountCentavos,
+        amountCentavos: amountDue(payable!).amountCentavos,
         providerRef: intent.providerRef,
       });
       return { booking, payment };
@@ -359,14 +360,14 @@ suite('payments against real PostgreSQL', { timeout: 30_000 }, () => {
       const providerRef = `sbx_${randomUUID()}`;
       await payments.startPayment({
         occupancyId: booking.id,
-        amountCentavos: payable!.amountCentavos,
+        amountCentavos: amountDue(payable!).amountCentavos,
         providerRef,
       });
       await payments.confirmPayment({
         providerEventId: `evt_${randomUUID()}`,
         provider: 'sandbox',
         providerRef,
-        amountCentavos: payable!.amountCentavos,
+        amountCentavos: amountDue(payable!).amountCentavos,
         occurredAt: new Date(),
         rawPayload: '{}',
       });
@@ -376,7 +377,7 @@ suite('payments against real PostgreSQL', { timeout: 30_000 }, () => {
 
       expect(stay).toBeDefined();
       expect(stay!.nights).toBe(3);
-      expect(stay!.paidCentavos).toBe(payable!.amountCentavos);
+      expect(stay!.paidCentavos).toBe(amountDue(payable!).amountCentavos);
       expect(stay!.paidCentavos).toBeGreaterThan(0);
       expect(stay!.paidAt).toBeInstanceOf(Date);
       expect(stay!.reference).toMatch(/^[0-9A-F]{8}$/);

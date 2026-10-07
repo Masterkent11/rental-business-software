@@ -9,13 +9,15 @@ import 'package:customer_app/data/auth_repository.dart';
 import 'package:customer_app/data/listing_repository.dart';
 import 'package:customer_app/data/tour_repository.dart';
 import 'package:customer_app/features/discovery/widgets/listing_card.dart';
-import 'package:customer_app/fixtures/sample_data.dart';
 import 'package:customer_app/fixtures/view_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+
+import 'support/fake_auth.dart';
+import 'support/sample_data.dart';
 
 void _ignoreOfflineImages() {
   final original = FlutterError.onError;
@@ -38,39 +40,6 @@ Future<ui.Image> _pixel() {
   return completer.future;
 }
 
-class _TestAuth implements AuthGateway {
-  const _TestAuth();
-
-  @override
-  String? get accessToken => 'test-token';
-
-  @override
-  Stream<void> get changes => const Stream<void>.empty();
-
-  @override
-  Future<void> signInWithPassword({
-    required String email,
-    required String password,
-  }) async {}
-
-  @override
-  Future<void> signUpWithPassword({
-    required String email,
-    required String password,
-  }) async {}
-
-  @override
-  Future<void> sendMobileOtp(String mobile) async {}
-
-  @override
-  Future<void> verifyMobileOtp({
-    required String mobile,
-    required String code,
-  }) async {}
-
-  @override
-  Future<void> signOut() async {}
-}
 
 MockClient _mockClient() {
   Map<String, dynamic> encode(ListingCardView l) => {
@@ -102,6 +71,7 @@ MockClient _mockClient() {
     'sharedFacilities': const <String>[],
     'minStayNights': 2,
     'ownerName': 'Host John',
+    'propertyType': _propertyTypeOf(l),
     'ownerVerified': true,
   };
 
@@ -123,6 +93,9 @@ MockClient _mockClient() {
 
     final q = request.url.queryParameters;
     var rows = SampleData.listings;
+    if (q['propertyType'] != null) {
+      rows = rows.where((l) => _propertyTypeOf(l) == q['propertyType']).toList();
+    }
     if (q['kind'] != null) {
       final want = q['kind'] == 'SHORT_TERM'
           ? ListingKind.shortTerm
@@ -141,6 +114,13 @@ MockClient _mockClient() {
   });
 }
 
+String _propertyTypeOf(ListingCardView l) => switch (l.propertyName) {
+      'Skyline Residences' => 'CONDO',
+      'Greenfield House' => 'HOUSE',
+      'Villa Boarding House' => 'BOARDING_HOUSE',
+      _ => 'APARTMENT',
+    };
+
 Future<void> _pumpApp(WidgetTester tester) async {
   final pixel = (await tester.runAsync(_pixel))!;
   _ignoreOfflineImages();
@@ -155,7 +135,7 @@ Future<void> _pumpApp(WidgetTester tester) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        authRepositoryProvider.overrideWithValue(const _TestAuth()),
+        authRepositoryProvider.overrideWithValue(FakeAuth.signedIn()),
         panoramaImageLoaderProvider.overrideWithValue(
           (_) async => pixel.clone(),
         ),

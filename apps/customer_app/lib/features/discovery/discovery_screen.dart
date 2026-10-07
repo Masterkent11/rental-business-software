@@ -32,9 +32,29 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
   final _controller = ScrollController();
 
   @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_maybeLoadMore);
+  }
+
+  @override
   void dispose() {
+    _controller.removeListener(_maybeLoadMore);
     _controller.dispose();
     super.dispose();
+  }
+
+  void _maybeLoadMore() {
+    if (!_controller.hasClients) return;
+    final position = _controller.position;
+    if (position.pixels >= position.maxScrollExtent - 600) {
+      ref.read(resultsProvider.notifier).loadMore();
+    }
+  }
+
+  Future<void> _refresh() async {
+    ref.invalidate(resultsProvider);
+    await ref.read(resultsProvider.future).catchError((_) => const DiscoveryFeedState(items: [], total: 0, hasMore: false));
   }
 
   void _onCategorySelected(PropertyCategory category) {
@@ -46,7 +66,8 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
   Widget build(BuildContext context) {
     final filters = ref.watch(filtersProvider);
     final results = ref.watch(resultsProvider);
-    final items = results.valueOrNull ?? const <ListingCardView>[];
+    final feed = results.valueOrNull;
+    final items = feed?.items ?? const <ListingCardView>[];
     final selectedCategory = ref.watch(selectedCategoryProvider);
 
     final featured = items.where((l) => l.isPopular || l.hasTour).toList();
@@ -64,9 +85,12 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
 
     return Scaffold(
       backgroundColor: Tokens.canvas,
-      body: CustomScrollView(
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        color: Tokens.primaryNavy,
+        child: CustomScrollView(
         controller: _controller,
-        physics: Tokens.scroll,
+        physics: const AlwaysScrollableScrollPhysics(parent: Tokens.scroll),
         slivers: [
           SliverSafeArea(
             bottom: false,
@@ -165,9 +189,9 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
           SliverToBoxAdapter(
             child: SectionHeader(
               title: isSearching ? 'Results' : 'All rentals',
-              subtitle: items.isEmpty
+              subtitle: feed == null || feed.total == 0
                   ? null
-                  : '${items.length} ${items.length == 1 ? "place" : "places"}',
+                  : '${feed.total} ${feed.total == 1 ? "place" : "places"}',
               topPadding: isSearching ? 18 : 22,
               bottomPadding: 12,
               actionLabel: isSearching ? 'Clear' : '',
@@ -208,21 +232,70 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
                     Tokens.s64,
                   ),
                   sliver: SliverList.separated(
-                    itemCount: items.length,
+                    itemCount: items.length + 1,
                     separatorBuilder: (_, __) =>
                         const SizedBox(height: Tokens.sectionTight),
-                    itemBuilder: (context, i) => Reveal(
-                      order: i.clamp(0, 3),
-                      child: ListingCard(
-                        listing: items[i],
-                        onTap: () => context.push(Routes.listing(items[i].id)),
-                      ),
-                    ),
+                    itemBuilder: (context, i) {
+                      if (i == items.length) {
+                        return _FeedFooter(
+                          state: feed!,
+                          onRetry: () => ref.read(resultsProvider.notifier).loadMore(),
+                        );
+                      }
+                      return Reveal(
+                        order: i.clamp(0, 3),
+                        child: ListingCard(
+                          listing: items[i],
+                          onTap: () => context.push(Routes.listing(items[i].id)),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
           },
         ],
+      ),
+      ),
+    );
+  }
+}
+
+class _FeedFooter extends StatelessWidget {
+  const _FeedFooter({required this.state, required this.onRetry});
+
+  final DiscoveryFeedState state;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    if (state.loadingMore) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: Tokens.s16),
+        child: Center(child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.2))),
+      );
+    }
+    if (state.loadMoreError != null) {
+      return Center(
+        child: TextButton.icon(
+          onPressed: onRetry,
+          icon: const Icon(Icons.refresh, size: 18),
+          label: const Text('Couldn’t load more. Try again'),
+        ),
+      );
+    }
+    if (state.hasMore) {
+      return Center(
+        child: TextButton(onPressed: onRetry, child: const Text('Show more places')),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: Tokens.s8),
+      child: Text(
+        'You’ve seen all ${state.total} ${state.total == 1 ? 'place' : 'places'}',
+        textAlign: TextAlign.center,
+        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
       ),
     );
   }

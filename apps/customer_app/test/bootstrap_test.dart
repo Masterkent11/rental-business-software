@@ -12,7 +12,77 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
+import 'support/fake_auth.dart';
+
 void main() {
+  group('release configuration', () {
+    test('a debug build may use the local API', () {
+      expect(
+        AppBootstrap.configurationProblem(
+          release: false,
+          apiBaseUrl: '',
+          supabaseUrl: 'https://x.supabase.co',
+          supabasePublishableKey: 'sb_publishable_x',
+        ),
+        isNull,
+      );
+    });
+
+    test('a release build without an API address refuses to start', () async {
+      var supabaseStarted = false;
+      final bootstrap = AppBootstrap(
+        release: true,
+        apiBaseUrl: '',
+        supabaseUrl: 'https://x.supabase.co',
+        supabasePublishableKey: 'sb_publishable_x',
+        initializeSupabase: ({required url, required publishableKey}) async => supabaseStarted = true,
+      );
+
+      final state = await bootstrap.initialize();
+
+      expect(state.hasError, isTrue);
+      expect(state.error, isA<AppConfigurationError>());
+      expect(supabaseStarted, isFalse);
+    });
+
+    test('a release build must use HTTPS', () {
+      expect(
+        AppBootstrap.configurationProblem(
+          release: true,
+          apiBaseUrl: 'http://api.example.com',
+          supabaseUrl: 'https://x.supabase.co',
+          supabasePublishableKey: 'sb_publishable_x',
+        ),
+        contains('HTTPS'),
+      );
+    });
+
+    test('a secret key is never accepted in the app', () {
+      expect(
+        AppBootstrap.configurationProblem(
+          release: false,
+          apiBaseUrl: '',
+          supabaseUrl: 'https://x.supabase.co',
+          supabasePublishableKey: 'sb_secret_abc',
+        ),
+        isNotNull,
+      );
+    });
+
+    test('a correctly configured release build starts', () async {
+      final bootstrap = AppBootstrap(
+        release: true,
+        apiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://x.supabase.co',
+        supabasePublishableKey: 'sb_publishable_x',
+        initializeSupabase: ({required url, required publishableKey}) async {},
+      );
+
+      expect((await bootstrap.initialize()).isReady, isTrue);
+    });
+  });
+
+
   group('AppBootstrapState', () {
     test('idle state values', () {
       const state = AppBootstrapState.idle();
@@ -254,7 +324,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            authRepositoryProvider.overrideWithValue(const _MockAuthGateway()),
+            authRepositoryProvider.overrideWithValue(FakeAuth()),
             apiClientProvider.overrideWithValue(_mockClient()),
           ],
           child: CustomerApp(
@@ -285,7 +355,7 @@ void main() {
           ),
           child: ProviderScope(
             overrides: [
-              authRepositoryProvider.overrideWithValue(const _MockAuthGateway()),
+              authRepositoryProvider.overrideWithValue(FakeAuth()),
               apiClientProvider.overrideWithValue(_mockClient()),
             ],
             child: CustomerApp(
@@ -321,7 +391,7 @@ void main() {
           ),
           child: ProviderScope(
             overrides: [
-              authRepositoryProvider.overrideWithValue(const _MockAuthGateway()),
+              authRepositoryProvider.overrideWithValue(FakeAuth()),
               apiClientProvider.overrideWithValue(_mockClient()),
             ],
             child: CustomerApp(
@@ -359,7 +429,7 @@ void main() {
           ),
           child: ProviderScope(
             overrides: [
-              authRepositoryProvider.overrideWithValue(const _MockAuthGateway()),
+              authRepositoryProvider.overrideWithValue(FakeAuth()),
               apiClientProvider.overrideWithValue(_mockClient()),
             ],
             child: CustomerApp(
@@ -400,7 +470,7 @@ void main() {
           ),
           child: ProviderScope(
             overrides: [
-              authRepositoryProvider.overrideWithValue(const _MockAuthGateway()),
+              authRepositoryProvider.overrideWithValue(FakeAuth()),
               apiClientProvider.overrideWithValue(_mockClient()),
             ],
             child: CustomerApp(
@@ -433,36 +503,3 @@ ApiClient _mockClient() {
   return ApiClient(client: handler);
 }
 
-class _MockAuthGateway implements AuthGateway {
-  const _MockAuthGateway();
-
-  @override
-  String? get accessToken => null;
-
-  @override
-  Stream<void> get changes => const Stream<void>.empty();
-
-  @override
-  Future<void> signInWithPassword({
-    required String email,
-    required String password,
-  }) async {}
-
-  @override
-  Future<void> signUpWithPassword({
-    required String email,
-    required String password,
-  }) async {}
-
-  @override
-  Future<void> sendMobileOtp(String mobile) async {}
-
-  @override
-  Future<void> verifyMobileOtp({
-    required String mobile,
-    required String code,
-  }) async {}
-
-  @override
-  Future<void> signOut() async {}
-}

@@ -17,3 +17,4 @@ export interface Booking extends AggregateRoot<string> {
   readonly amountCentavos: Centavos;
   readonly expiresAt: Date | null;
 }
+export * from './stay-quote.ts';

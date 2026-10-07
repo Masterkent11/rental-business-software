@@ -31,3 +31,11 @@ export class SignOutUseCase {
     return this.sessionPort.signOut();
   }
 }
+
+export class SwitchOrganizationUseCase {
+  constructor(private readonly sessionPort: SessionPort) {}
+
+  execute(organizationId: string): void {
+    this.sessionPort.rememberOrganization(organizationId);
+  }
+}

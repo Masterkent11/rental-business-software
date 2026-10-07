@@ -44,6 +44,7 @@ export function jwksIdentityProvider(
           mobile: typeof payload.phone === 'string' && payload.phone
             ? payload.phone
             : null,
+          displayName: displayNameFrom(payload.user_metadata),
         };
       } catch {
         // Signature, expiry, issuer, and audience failures are all the same
@@ -52,4 +53,11 @@ export function jwksIdentityProvider(
       }
     },
   };
+}
+
+function displayNameFrom(metadata: unknown): string | null {
+  if (!metadata || typeof metadata !== 'object') return null;
+  const record = metadata as Record<string, unknown>;
+  const value = record.full_name ?? record.name ?? record.display_name;
+  return typeof value === 'string' && value.trim() ? value.trim().slice(0, 80) : null;
 }

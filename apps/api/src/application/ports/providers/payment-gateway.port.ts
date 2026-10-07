@@ -36,3 +36,5 @@ export interface PaymentGateway {
     amountCentavos: Centavos;
   }): { rawBody: string; signature: string };
 }
+
+export class PaymentProviderUnavailableError extends Error {}

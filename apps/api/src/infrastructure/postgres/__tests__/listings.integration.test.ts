@@ -28,7 +28,7 @@ suite('listings against real PostgreSQL', { timeout: 30_000 }, () => {
   });
 
   it('returns only published listings', async () => {
-    const rows = await repo.search(PUBLIC, { limit: 50, offset: 0 });
+    const rows = (await repo.search(PUBLIC, { limit: 50, offset: 0 })).items;
 
     expect(rows.length).toBeGreaterThan(0);
     expect(rows.every((r) => r.state === 'PUBLISHED')).toBe(true);
@@ -38,7 +38,7 @@ suite('listings against real PostgreSQL', { timeout: 30_000 }, () => {
     // The public read crosses four organization-scoped tables. When their
     // policies were missing this returned zero rows rather than erroring, so
     // the assertion is that the joined fields actually arrive.
-    const rows = await repo.search(PUBLIC, { limit: 50, offset: 0 });
+    const rows = (await repo.search(PUBLIC, { limit: 50, offset: 0 })).items;
     const withTour = rows.find((r) => r.hasTour);
 
     expect(withTour).toBeDefined();
@@ -49,7 +49,7 @@ suite('listings against real PostgreSQL', { timeout: 30_000 }, () => {
   });
 
   it('stores money as integer centavos', async () => {
-    const rows = await repo.search(PUBLIC, { limit: 50, offset: 0 });
+    const rows = (await repo.search(PUBLIC, { limit: 50, offset: 0 })).items;
     // bigint arrives from the driver as a string; the adapter must parse it.
     expect(rows.every((r) => Number.isInteger(r.priceCentavos))).toBe(true);
   });
@@ -72,11 +72,11 @@ suite('listings against real PostgreSQL', { timeout: 30_000 }, () => {
   });
 
   it('applies the kind filter in SQL, not in memory', async () => {
-    const nightly = await repo.search(PUBLIC, {
+    const nightly = (await repo.search(PUBLIC, {
       kind: 'SHORT_TERM',
       limit: 50,
       offset: 0,
-    });
+    })).items;
 
     expect(nightly.length).toBeGreaterThan(0);
     expect(nightly.every((r) => r.kind === 'SHORT_TERM')).toBe(true);

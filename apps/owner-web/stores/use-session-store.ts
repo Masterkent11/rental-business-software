@@ -1,19 +1,6 @@
-/**
- * Presentation Store: useSessionStore
- *
- * Orchestrates user authentication and dynamic tenant organization context.
- *
- * Rules:
- * - NO hardcoded organization IDs or mock fallbacks.
- * - Calls Use Cases via Composition Root container.
- */
-
 import { create } from "zustand";
 import { container } from "../infrastructure/composition/owner-web-container";
-import type {
-  OrganizationMembership,
-  UserProfile,
-} from "../domain/session/session";
+import type { OrganizationMembership, UserProfile } from "../domain/session/session";
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated" | "error";
 
@@ -23,27 +10,25 @@ interface SessionState {
   activeOrganizationId: string | null;
   memberships: readonly OrganizationMembership[];
   error: string | null;
-
-  // Sign-in form state
   signInEmail: string;
   signInPassword: string;
+  showPassword: boolean;
   signInProblem: string | null;
   signInBusy: boolean;
-
-  // Mobile Shell UI state
   mobileDrawerOpen: boolean;
 
-  // Actions
   initialize: () => Promise<void>;
-  signIn: (email: string, pass: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   setActiveOrganizationId: (orgId: string) => void;
   setSignInEmail: (email: string) => void;
   setSignInPassword: (password: string) => void;
+  toggleShowPassword: () => void;
   setSignInProblem: (problem: string | null) => void;
   setMobileDrawerOpen: (open: boolean) => void;
-  submitSignIn: (onSuccess?: () => void) => Promise<void>;
+  submitSignIn: () => Promise<void>;
 }
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const useSessionStore = create<SessionState>((set, get) => ({
   status: "loading",
@@ -51,16 +36,16 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   activeOrganizationId: null,
   memberships: [],
   error: null,
-
   signInEmail: "",
   signInPassword: "",
+  showPassword: false,
   signInProblem: null,
   signInBusy: false,
-
   mobileDrawerOpen: false,
 
-  setSignInEmail: (signInEmail) => set({ signInEmail }),
-  setSignInPassword: (signInPassword) => set({ signInPassword }),
+  setSignInEmail: (signInEmail) => set({ signInEmail, signInProblem: null }),
+  setSignInPassword: (signInPassword) => set({ signInPassword, signInProblem: null }),
+  toggleShowPassword: () => set((state) => ({ showPassword: !state.showPassword })),
   setSignInProblem: (signInProblem) => set({ signInProblem }),
   setMobileDrawerOpen: (mobileDrawerOpen) => set({ mobileDrawerOpen }),
 
@@ -74,65 +59,47 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           user: session.user,
           activeOrganizationId: session.activeOrganizationId,
           memberships: session.memberships,
-          error: null,
         });
       } else {
-        set({
-          status: "unauthenticated",
-          user: null,
-          activeOrganizationId: null,
-          memberships: [],
-          error: null,
-        });
+        set({ status: "unauthenticated", user: null, activeOrganizationId: null, memberships: [] });
       }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to initialize session";
+    } catch (error) {
       set({
-        status: "unauthenticated",
-        user: null,
-        activeOrganizationId: null,
-        memberships: [],
-        error: message,
+        status: "error",
+        error: error instanceof Error ? error.message : "Could not restore your session",
       });
     }
   },
 
-  signIn: async (email: string, pass: string) => {
-    set({ error: null });
+  submitSignIn: async () => {
+    const email = get().signInEmail.trim();
+    const password = get().signInPassword;
+    if (!EMAIL.test(email)) {
+      set({ signInProblem: "Enter a valid email address." });
+      return;
+    }
+    if (password.length < 6) {
+      set({ signInProblem: "Enter your password (at least 6 characters)." });
+      return;
+    }
+    set({ signInBusy: true, signInProblem: null });
     try {
-      const session = await container.signInUseCase.execute(email, pass);
+      const session = await container.signInUseCase.execute(email, password);
       set({
         status: "authenticated",
         user: session.user,
         activeOrganizationId: session.activeOrganizationId,
         memberships: session.memberships,
-        error: null,
+        signInBusy: false,
+        signInEmail: "",
+        signInPassword: "",
+        showPassword: false,
       });
-      return true;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Invalid credentials";
-      set({ status: "unauthenticated", error: message });
-      return false;
-    }
-  },
-
-  submitSignIn: async (onSuccess?: () => void) => {
-    const { signInEmail, signInPassword, signIn } = get();
-    if (!signInEmail.trim() || !signInPassword) {
-      set({ signInProblem: "Please enter both email and password." });
-      return;
-    }
-
-    set({ signInBusy: true, signInProblem: null });
-    const success = await signIn(signInEmail.trim(), signInPassword);
-    set({ signInBusy: false });
-
-    if (success) {
-      set({ signInEmail: "", signInPassword: "", signInProblem: null });
-      onSuccess?.();
-    } else {
-      const errorMsg = get().error;
-      set({ signInProblem: errorMsg ?? "Sign-in failed. Please check your credentials." });
+    } catch (error) {
+      set({
+        signInBusy: false,
+        signInProblem: error instanceof Error ? error.message : "Sign-in failed. Please try again.",
+      });
     }
   },
 
@@ -146,7 +113,6 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         activeOrganizationId: null,
         memberships: [],
         error: null,
-        signInEmail: "",
         signInPassword: "",
         signInProblem: null,
         signInBusy: false,
@@ -154,10 +120,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }
   },
 
-  setActiveOrganizationId: (orgId: string) => {
-    const isMember = get().memberships.some((m) => m.organizationId === orgId);
-    if (isMember) {
-      set({ activeOrganizationId: orgId });
-    }
+  setActiveOrganizationId: (orgId) => {
+    if (!get().memberships.some((m) => m.organizationId === orgId)) return;
+    container.switchOrganizationUseCase.execute(orgId);
+    set({ activeOrganizationId: orgId });
   },
 }));

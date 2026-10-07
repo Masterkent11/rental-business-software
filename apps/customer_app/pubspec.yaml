@@ -31,6 +31,7 @@ flutter:
 
   assets:
     - assets/images/splash/rental_splash_background.png
+    - assets/brand/mark.png
 
   shaders:
     - shaders/panorama.frag

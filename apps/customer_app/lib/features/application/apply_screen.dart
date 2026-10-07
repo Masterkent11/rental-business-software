@@ -169,7 +169,7 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
           Container(
             padding: const EdgeInsets.all(Tokens.s16),
             decoration: BoxDecoration(
-              color: Tokens.accent.withOpacity(0.06),
+              color: Tokens.accent.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(Tokens.rSm),
             ),
             child: Row(
@@ -361,7 +361,7 @@ class _RoundButton extends StatelessWidget {
           size: 18,
           color: enabled
               ? theme.colorScheme.onSurface
-              : theme.colorScheme.onSurfaceVariant.withOpacity(0.4),
+              : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
         ),
       ),
     );
@@ -394,12 +394,12 @@ class _DocumentRow extends StatelessWidget {
           padding: const EdgeInsets.all(Tokens.s16),
           decoration: BoxDecoration(
             color: attached
-                ? Tokens.available.withOpacity(0.07)
+                ? Tokens.available.withValues(alpha: 0.07)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(Tokens.rMd),
             border: Border.all(
               color: attached
-                  ? Tokens.available.withOpacity(0.35)
+                  ? Tokens.available.withValues(alpha: 0.35)
                   : theme.colorScheme.outlineVariant,
             ),
           ),

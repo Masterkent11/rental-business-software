@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Inject, Query } from '@nestjs/common';
 import { SEARCH_LISTINGS } from '@/modules/listings/listing.tokens.ts';
 import type { searchListings } from '@/application/listings/search-listings/search-listings.use-case.ts';
 import { listingQuerySchema } from '@/modules/listings/dto/listing.dto.ts';
@@ -14,23 +14,36 @@ export class SearchListingsController {
 
   @Get()
   async list(@Query() rawQuery: unknown) {
-    const parsed = listingQuerySchema.safeParse(rawQuery);
+    const parsed = listingQuerySchema.safeParse(rawQuery ?? {});
     if (!parsed.success) {
-      return { statusCode: 400, title: 'Invalid query', errors: parsed.error.issues };
+      throw new BadRequestException(parsed.error.issues[0]?.message ?? 'Invalid search');
     }
 
     const q = parsed.data;
-    const results = await this.search({
+    const page = await this.search({
       ...(q.q !== undefined ? { text: q.q } : {}),
       ...(q.ids !== undefined ? { ids: q.ids } : {}),
       ...(q.kind !== undefined ? { kind: q.kind } : {}),
       ...(q.type !== undefined ? { resourceType: q.type } : {}),
+      ...(q.propertyType !== undefined ? { propertyType: q.propertyType } : {}),
+      ...(q.minPrice !== undefined ? { minPriceCentavos: centavos(q.minPrice) } : {}),
       ...(q.maxPrice !== undefined ? { maxPriceCentavos: centavos(q.maxPrice) } : {}),
+      ...(q.guests !== undefined ? { guests: q.guests } : {}),
+      ...(q.bedrooms !== undefined ? { bedrooms: q.bedrooms } : {}),
       ...(q.hasTour !== undefined ? { hasTour: q.hasTour } : {}),
+      ...(q.checkIn !== undefined ? { availableFrom: q.checkIn } : q.moveIn !== undefined ? { availableFrom: q.moveIn } : {}),
+      ...(q.checkOut !== undefined ? { availableTo: q.checkOut } : {}),
+      ...(q.sort !== undefined ? { sort: q.sort } : {}),
       limit: q.limit,
       offset: q.offset,
     });
 
-    return { items: results.map(toListingHttpResponse), limit: q.limit, offset: q.offset };
+    return {
+      items: page.items.map(toListingHttpResponse),
+      total: page.total,
+      limit: q.limit,
+      offset: q.offset,
+      hasMore: q.offset + page.items.length < page.total,
+    };
   }
 }

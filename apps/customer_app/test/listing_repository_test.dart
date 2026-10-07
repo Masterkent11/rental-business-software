@@ -58,8 +58,10 @@ void main() {
     });
     final results = await repo.search(const DiscoveryFilters());
 
-    expect(results, hasLength(1));
-    final card = results.single;
+    expect(results.items, hasLength(1));
+    expect(results.total, 1);
+    expect(results.hasMore, isFalse);
+    final card = results.items.single;
     expect(card.title, 'One-bedroom corner unit');
     expect(card.priceCentavos, 850000);
     expect(card.kind, ListingKind.longTerm);
@@ -131,7 +133,7 @@ void main() {
       'offset': 0,
     });
 
-    final card = (await repo.search(const DiscoveryFilters())).single;
+    final card = (await repo.search(const DiscoveryFilters())).items.single;
     expect(card.areaLabel, 'Brgy. Osmeña');
     expect(card.title, 'Malingin · Cebu');
   });

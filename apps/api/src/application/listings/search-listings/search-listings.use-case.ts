@@ -10,7 +10,11 @@ export function searchListings(listings: ListingRepository) {
   return async function execute(
     query: SearchListingsInput,
   ): Promise<SearchListingsResult> {
-    const found = await listings.search(PUBLIC, query);
-    return found.filter(isPublic);
+    const page = await listings.search(PUBLIC, query);
+    const items = page.items.filter(isPublic);
+    return {
+      items,
+      total: Math.max(page.total - (page.items.length - items.length), items.length),
+    };
   };
 }

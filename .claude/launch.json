@@ -5,8 +5,31 @@
       "name": "owner-web",
       "cwd": "apps/owner-web",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3200
+    },
+    {
+      "name": "api-local",
+      "cwd": "apps/api",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev:local"
+      ],
+      "port": 8080
+    },
+    {
+      "name": "api",
+      "cwd": "apps/api",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "port": 8080
     }
   ]
 }

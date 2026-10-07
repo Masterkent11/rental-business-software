@@ -1,10 +1,23 @@
 import type { Centavos } from '@/domain/shared/money.ts';
 import type { OrganizationId } from '@/domain/shared/organization-scope.ts';
-import type { ListingKind, ResourceType, ListingState } from './listing-state.ts';
+import type {
+  ListingKind,
+  ListingSort,
+  ListingState,
+  PropertyType,
+  ResourceType,
+} from './listing-state.ts';
 
 export * from './listing-state.ts';
 export * from './listing-rules.ts';
 export * from './listing-errors.ts';
+
+export interface ListingPhoto {
+  readonly id: string;
+  readonly url: string;
+  readonly storagePath: string | null;
+  readonly position: number;
+}
 
 export interface Listing {
   readonly id: string;
@@ -22,20 +35,28 @@ export interface Listing {
   readonly hasTour: boolean;
   readonly sceneCount: number;
   readonly photos: readonly string[];
-  /** Owner-authored content for the detail screen. */
   readonly amenities: readonly string[];
   readonly houseRules: readonly string[];
   readonly terms: readonly string[];
-  /** Short-term only; null for a monthly listing. */
   readonly minStayNights: number | null;
-  /** Long-term only; 0 for a nightly listing. Multipliers on the monthly rent. */
   readonly advanceMonths: number;
   readonly depositMonths: number;
-  /** For a bed space this is the whole question. Empty for a whole unit. */
   readonly sharedFacilities: readonly string[];
-  /** The organization behind the listing. Verification gates publishing (D-11). */
   readonly ownerName: string;
   readonly ownerVerified: boolean;
+  readonly propertyId?: string;
+  readonly propertyType?: PropertyType;
+  readonly addressLine?: string;
+  readonly maxOccupants?: number;
+  readonly bedrooms?: number;
+  readonly bathrooms?: number;
+  readonly floorAreaSqm?: number | null;
+  readonly cleaningFeeCentavos?: Centavos;
+  readonly availableFrom?: string | null;
+  readonly media?: readonly ListingPhoto[];
+  readonly publishedAt?: Date | null;
+  readonly updatedAt?: Date | null;
+  readonly nextAvailableOn?: string | null;
 }
 
 export interface ListingQuery {
@@ -43,8 +64,20 @@ export interface ListingQuery {
   readonly ids?: readonly string[];
   readonly kind?: ListingKind;
   readonly resourceType?: ResourceType;
+  readonly propertyType?: PropertyType;
+  readonly minPriceCentavos?: Centavos;
   readonly maxPriceCentavos?: Centavos;
+  readonly guests?: number;
+  readonly bedrooms?: number;
   readonly hasTour?: boolean;
+  readonly availableFrom?: string;
+  readonly availableTo?: string;
+  readonly sort?: ListingSort;
   readonly limit: number;
   readonly offset: number;
+}
+
+export interface ListingPage {
+  readonly items: readonly Listing[];
+  readonly total: number;
 }

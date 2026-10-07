@@ -1,270 +1,303 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import {
+  Bell,
   Building2,
+  CalendarCheck,
   ClipboardList,
   LayoutDashboard,
-  Megaphone,
-  MoreHorizontal,
-  Rotate3d,
-  Search,
-  Sparkles,
-  Wallet,
-  Wrench,
   LogOut,
+  Menu,
+  MessageSquare,
+  Rotate3d,
+  UserRound,
+  Wallet,
+  X,
 } from "lucide-react";
-import {
-  Avatar,
-  Card,
-  Chip,
-  Drawer,
-  Kbd,
-} from "@heroui/react";
+import { toast } from "sonner";
 
 import { useSessionStore } from "@/stores/use-session-store";
+import { useMessagesStore } from "@/stores/use-messages-store";
+import { useNotificationsStore } from "@/stores/use-notifications-store";
 import { cn } from "@/lib/utils";
+import { BrandMark } from "./brand";
 import { SignIn } from "./sign-in";
+import { Btn, ErrorState } from "./ui";
 
 const nav = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/properties", label: "Properties", icon: Building2 },
+  { href: "/bookings", label: "Bookings", icon: CalendarCheck },
+  { href: "/messages", label: "Messages", icon: MessageSquare },
   { href: "/applications", label: "Applications", icon: ClipboardList },
   { href: "/payments", label: "Payments", icon: Wallet },
-  { href: "/maintenance", label: "Maintenance", icon: Wrench },
-  { href: "/listings", label: "Marketplace Listings", icon: Megaphone },
-  { href: "/tours", label: "360° Virtual Tours", icon: Rotate3d },
+  { href: "/tours", label: "Virtual tours", icon: Rotate3d },
+  { href: "/account", label: "Account", icon: UserRound },
 ] as const;
 
-const primaryCount = 4;
-const barItems = nav.slice(0, primaryCount);
-const overflowItems = nav.slice(primaryCount);
+function timeAgo(iso: string) {
+  const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  return `${Math.floor(seconds / 86400)}d ago`;
+}
+
+function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+  const pathname = usePathname();
+  const unread = useMessagesStore((s) => s.unreadTotal);
+  return (
+    <nav aria-label="Main" className="flex flex-col gap-0.5">
+      {nav.map(({ href, label, icon: Icon }) => {
+        const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+        return (
+          <Link
+            key={href}
+            href={href}
+            onClick={onNavigate}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              "focusable group flex items-center gap-3 rounded-xl px-3 py-2 text-[13.5px] font-medium transition-colors",
+              active ? "bg-surface-secondary text-foreground" : "text-muted hover:bg-surface-secondary/70 hover:text-foreground",
+            )}
+          >
+            <Icon className="size-[18px]" aria-hidden />
+            <span className="flex-1">{label}</span>
+            {href === "/messages" && unread > 0 ? (
+              <span className="tabular rounded-full bg-foreground px-1.5 py-0.5 text-[11px] font-semibold text-white" aria-label={`${unread} unread`}>
+                {unread > 99 ? "99+" : unread}
+              </span>
+            ) : null}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+function NotificationsButton() {
+  const router = useRouter();
+  const { items, unreadCount, open, setOpen, markAllRead } = useNotificationsStore();
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => {
+          setOpen(!open);
+          if (!open) void markAllRead();
+        }}
+        aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
+        aria-expanded={open}
+        className="focusable relative flex size-10 items-center justify-center rounded-xl text-muted transition-colors hover:bg-surface-secondary hover:text-foreground"
+      >
+        <Bell className="size-[18px]" aria-hidden />
+        {unreadCount > 0 ? <span className="absolute right-2.5 top-2.5 size-2 rounded-full bg-danger" /> : null}
+      </button>
+      {open ? (
+        <div className="absolute right-0 top-12 z-40 w-[340px] overflow-hidden rounded-2xl border border-border bg-surface shadow-xl">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <p className="text-[13.5px] font-semibold">Notifications</p>
+            <button className="focusable rounded-lg p-1 text-muted hover:text-foreground" onClick={() => setOpen(false)} aria-label="Close notifications">
+              <X className="size-4" aria-hidden />
+            </button>
+          </div>
+          <div className="max-h-96 overflow-y-auto">
+            {items.length === 0 ? (
+              <p className="px-4 py-8 text-center text-[13px] text-muted">New bookings and messages will show up here.</p>
+            ) : (
+              items.map((n) => (
+                <button
+                  key={n.id}
+                  onClick={() => {
+                    setOpen(false);
+                    if (n.link) router.push(n.link);
+                  }}
+                  className="focusable flex w-full flex-col items-start gap-0.5 border-b border-border/70 px-4 py-3 text-left last:border-0 hover:bg-surface-secondary/60"
+                >
+                  <span className="text-[13px] font-semibold text-foreground">{n.title}</span>
+                  <span className="line-clamp-2 text-[12.5px] text-muted">{n.body}</span>
+                  <span className="text-[11.5px] text-muted/80">{timeAgo(n.createdAt)}</span>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function OrganizationSwitcher() {
+  const { memberships, activeOrganizationId, setActiveOrganizationId } = useSessionStore();
+  const active = memberships.find((m) => m.organizationId === activeOrganizationId);
+  if (memberships.length <= 1) {
+    return (
+      <div className="min-w-0">
+        <p className="truncate text-[13.5px] font-semibold text-foreground">{active?.organizationName ?? "Your organization"}</p>
+        <p className="text-[11.5px] text-muted">{active?.role === "STAFF" ? "Staff" : "Owner"}{active && !active.verified ? " · not verified" : ""}</p>
+      </div>
+    );
+  }
+  return (
+    <label className="min-w-0 flex-1">
+      <span className="sr-only">Organization</span>
+      <select
+        value={activeOrganizationId ?? ""}
+        onChange={(event) => setActiveOrganizationId(event.target.value)}
+        className="focusable w-full truncate rounded-lg bg-transparent text-[13.5px] font-semibold text-foreground"
+      >
+        {memberships.map((m) => (
+          <option key={m.organizationId} value={m.organizationId}>
+            {m.organizationName}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function LiveSubscriptions() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const organizationId = useSessionStore((s) => s.activeOrganizationId);
+  const startMessages = useMessagesStore((s) => s.start);
+  const stopMessages = useMessagesStore((s) => s.stop);
+  const lastIncoming = useMessagesStore((s) => s.lastIncoming);
+  const conversations = useMessagesStore((s) => s.conversations);
+  const startNotifications = useNotificationsStore((s) => s.start);
+  const stopNotifications = useNotificationsStore((s) => s.stop);
+  const latest = useNotificationsStore((s) => s.latest);
+  const seen = React.useRef<string | null>(null);
+  const seenNotification = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    if (!organizationId) return;
+    void startMessages(organizationId);
+    void startNotifications(organizationId);
+    return () => {
+      stopMessages();
+      stopNotifications();
+    };
+  }, [organizationId, startMessages, stopMessages, startNotifications, stopNotifications]);
+
+  React.useEffect(() => {
+    if (!lastIncoming || seen.current === lastIncoming.id) return;
+    seen.current = lastIncoming.id;
+    if (pathname.startsWith("/messages")) return;
+    const conversation = conversations.find((c) => c.id === lastIncoming.conversationId);
+    toast(`New message${conversation ? ` from ${conversation.customerName}` : ""}`, {
+      description: lastIncoming.body.slice(0, 120),
+      action: { label: "Open", onClick: () => router.push(`/messages?c=${lastIncoming.conversationId}`) },
+    });
+  }, [lastIncoming, pathname, conversations, router]);
+
+  React.useEffect(() => {
+    if (!latest || seenNotification.current === latest.id) return;
+    seenNotification.current = latest.id;
+    if (latest.kind === "MESSAGE_RECEIVED") return;
+    toast(latest.title, {
+      description: latest.body,
+      ...(latest.link ? { action: { label: "View", onClick: () => router.push(latest.link!) } } : {}),
+    });
+  }, [latest, router]);
+
+  return null;
+}
 
 export function OwnerShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
-
-  const { status, user, activeOrganizationId, memberships, initialize, signOut } =
-    useSessionStore();
+  const { status, user, error, initialize, signOut, mobileDrawerOpen, setMobileDrawerOpen } = useSessionStore();
 
   React.useEffect(() => {
     void initialize();
   }, [initialize]);
 
-  const activeMembership = memberships.find((m) => m.organizationId === activeOrganizationId);
-
   if (status === "loading") {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="inline-block size-8 animate-spin rounded-full border-3 border-accent border-t-transparent mb-3" />
-          <p className="text-muted-foreground text-[14px] font-medium">Resolving tenant session…</p>
-        </div>
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background" aria-busy="true">
+        <BrandMark className="size-12 animate-pulse" />
+        <p className="text-[13px] text-muted">Restoring your session…</p>
+      </div>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-background p-4">
+        <ErrorState message={error ?? "We couldn't reach the server."} onRetry={() => void initialize()} />
       </div>
     );
   }
 
   if (status === "unauthenticated" || !user) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-background p-4">
-        <SignIn />
-      </div>
-    );
+    return <SignIn />;
   }
 
+  const sidebar = (
+    <div className="flex h-full flex-col gap-4 p-4">
+      <Link href="/" className="focusable flex items-center gap-2.5 rounded-xl px-1 py-1" aria-label="Rental Platform home">
+        <BrandMark className="size-9" />
+        <div>
+          <p className="text-[14px] font-bold tracking-tight">Rental Platform</p>
+          <p className="text-[11.5px] text-muted">Owner workspace</p>
+        </div>
+      </Link>
+      <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-3 py-2.5">
+        <OrganizationSwitcher />
+      </div>
+      <NavLinks onNavigate={() => setMobileDrawerOpen(false)} />
+      <div className="mt-auto flex items-center gap-3 rounded-2xl border border-border bg-surface px-3 py-2.5">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-foreground text-[12px] font-semibold text-white" aria-hidden>
+          {user.displayName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "O"}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[13px] font-semibold">{user.displayName}</p>
+          <p className="truncate text-[11.5px] text-muted">{user.email}</p>
+        </div>
+        <button
+          onClick={() => void signOut()}
+          aria-label="Sign out"
+          className="focusable rounded-lg p-2 text-muted transition-colors hover:bg-surface-secondary hover:text-danger"
+        >
+          <LogOut className="size-4" aria-hidden />
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="flex min-h-dvh bg-background text-foreground selection:bg-accent selection:text-white">
-      {/* Sidebar Rail */}
-      <aside className="bg-surface/80 border-border sticky top-0 hidden h-dvh w-[260px] shrink-0 flex-col border-r backdrop-blur-2xl md:flex z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-        {/* Brand Header & Organization Context */}
-        <div className="p-3.5 pb-2">
-          <div className="group flex items-center justify-between gap-3 rounded-2xl border border-border/80 bg-surface-secondary/40 p-2.5 transition-all duration-200 hover:border-accent/30 hover:bg-surface-secondary/70 hover:shadow-sm">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="relative">
-                <Avatar size="md" className="ring-2 ring-accent/20 ring-offset-1 shrink-0 bg-gradient-to-br from-accent to-accent-soft text-white font-bold">
-                  <Avatar.Fallback>
-                    {user.displayName.slice(0, 2).toUpperCase()}
-                  </Avatar.Fallback>
-                </Avatar>
-                <span className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-surface bg-emerald-500 shadow-xs" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <span className="block truncate text-[13.5px] font-bold tracking-tight text-foreground">
-                  {user.displayName}
-                </span>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <Chip
-                    size="sm"
-                    color="success"
-                    variant="soft"
-                    className="h-4 text-[10px] px-1 font-semibold"
-                  >
-                    {activeMembership?.role ?? "OWNER"}
-                  </Chip>
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={() => void signOut()}
-              title="Sign out"
-              className="text-muted-foreground hover:text-red-500 transition-colors p-1"
-            >
-              <LogOut className="size-4" />
-            </button>
+    <div className="flex min-h-dvh bg-background text-foreground">
+      <LiveSubscriptions />
+      <aside className="sticky top-0 hidden h-dvh w-[264px] shrink-0 border-r border-border bg-background lg:block">{sidebar}</aside>
+      {mobileDrawerOpen ? (
+        <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setMobileDrawerOpen(false)} />
+          <div className="absolute inset-y-0 left-0 w-[280px] bg-background shadow-2xl">{sidebar}</div>
+        </div>
+      ) : null}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/85 px-4 backdrop-blur-xl lg:hidden">
+          <button onClick={() => setMobileDrawerOpen(true)} aria-label="Open navigation" className="focusable rounded-lg p-2">
+            <Menu className="size-5" aria-hidden />
+          </button>
+          <BrandMark className="size-8" />
+          <NotificationsButton />
+        </div>
+        <div className="pointer-events-none fixed right-6 top-4 z-30 hidden lg:block">
+          <div className="pointer-events-auto rounded-xl bg-background/80 backdrop-blur">
+            <NotificationsButton />
           </div>
         </div>
-
-        {/* Quick Search */}
-        <div className="px-3.5 py-1.5">
-          <div className="bg-surface-secondary/60 hover:bg-surface-secondary border border-border/60 hover:border-border text-muted-foreground flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-[12.5px] transition-all duration-150 shadow-xs">
-            <Search className="size-3.5 text-muted-foreground" />
-            <span>Search properties, tenants...</span>
-            <Kbd className="ml-auto text-[10.5px]">⌘K</Kbd>
-          </div>
-        </div>
-
-        {/* Navigation items */}
-        <nav className="mt-2 flex-1 space-y-1 px-3">
-          <div className="px-2 py-1.5 text-[10.5px] font-bold tracking-wider uppercase text-muted-foreground/80">
-            Operations
-          </div>
-          {nav.map((item) => {
-            const { href, label, icon: Icon } = item;
-            const active = isActive(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-all duration-200",
-                  active
-                    ? "bg-accent text-white font-semibold shadow-md shadow-accent/25"
-                    : "text-muted-foreground hover:bg-surface-secondary hover:text-foreground",
-                )}
-              >
-                <Icon
-                  className={cn(
-                    "size-[18px] shrink-0 transition-transform duration-200 group-hover:scale-105",
-                    active ? "text-white" : "text-muted-foreground group-hover:text-foreground",
-                  )}
-                  strokeWidth={active ? 2.3 : 1.9}
-                />
-                <span className="truncate">{label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Marketplace Quick Link Card */}
-        <div className="p-3 pb-4">
-          <div className="rounded-2xl border border-accent/20 bg-gradient-to-br from-accent-soft/30 via-surface-secondary/50 to-surface-secondary/80 p-3.5 relative overflow-hidden">
-            <div className="flex items-center gap-2 text-accent text-[12px] font-bold">
-              <Sparkles className="size-3.5" />
-              <span>Live Marketplace</span>
-            </div>
-            <p className="text-muted-foreground text-[11.5px] mt-1 leading-relaxed">
-              Manage live listings, upload photos, and update pricing in real-time.
-            </p>
-            <div className="mt-3 flex items-center gap-2">
-              <ButtonLink
-                href="/listings"
-                variant="primary"
-                size="sm"
-                className="w-full justify-center text-[12px] h-8 rounded-lg shadow-xs font-semibold"
-              >
-                Manage Listings
-              </ButtonLink>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <div className="flex min-w-0 flex-1 flex-col pb-[72px] md:pb-0">
         {children}
       </div>
-
-      <MobileBar isActive={isActive} />
     </div>
   );
 }
 
-function MobileBar({ isActive }: { isActive: (href: string) => boolean }) {
-  const { mobileDrawerOpen, setMobileDrawerOpen } = useSessionStore();
-
-  return (
-    <>
-      <div className="bg-surface/90 border-border fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t px-2 py-1.5 backdrop-blur-xl md:hidden shadow-lg">
-        {barItems.map((item) => {
-          const { href, label, icon: Icon } = item;
-          const active = isActive(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "relative flex flex-col items-center gap-1 rounded-xl px-3 py-1.5 text-[11px] font-medium transition-colors",
-                active ? "text-accent font-bold" : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <Icon className="size-5" />
-              <span>{label}</span>
-            </Link>
-          );
-        })}
-
-        <Drawer isOpen={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
-          <Drawer.Trigger
-            className={cn(
-              "relative flex flex-col items-center gap-1 rounded-xl px-3 py-1.5 text-[11px] font-medium transition-colors",
-              mobileDrawerOpen ? "text-accent font-bold" : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <MoreHorizontal className="size-5" />
-            <span>More</span>
-          </Drawer.Trigger>
-          <Drawer.Content className="bg-surface/95 backdrop-blur-xl border-t border-border rounded-t-3xl p-4">
-            <Drawer.Header>
-              <h3 className="text-[16px] font-bold text-foreground">
-                More Sections
-              </h3>
-            </Drawer.Header>
-            <Drawer.Body className="space-y-1 py-2">
-              {overflowItems.map((item) => {
-                const { href, label, icon: Icon } = item;
-                const active = isActive(href);
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={() => setMobileDrawerOpen(false)}
-                    className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-colors",
-                      active
-                        ? "bg-accent/15 text-accent font-semibold"
-                        : "text-muted-foreground hover:bg-surface-secondary hover:text-foreground",
-                    )}
-                  >
-                    <Icon className="size-5" />
-                    <span>{label}</span>
-                  </Link>
-                );
-              })}
-            </Drawer.Body>
-          </Drawer.Content>
-        </Drawer>
-      </div>
-    </>
-  );
-}
-
-export function Page({ children }: { children: React.ReactNode }) {
-  return <main className="flex-1 p-4 md:p-6 max-w-7xl w-full mx-auto">{children}</main>;
+export function Page({ children, wide = false }: { children: React.ReactNode; wide?: boolean }) {
+  return <main className={cn("mx-auto w-full flex-1 px-4 pb-16 pt-6 md:px-8", wide ? "max-w-[1400px]" : "max-w-6xl")}>{children}</main>;
 }
 
 export function TopBar({
@@ -277,16 +310,12 @@ export function TopBar({
   children?: React.ReactNode;
 }) {
   return (
-    <header className="bg-surface/60 border-border sticky top-0 z-20 flex items-center justify-between border-b px-4 py-3.5 backdrop-blur-xl md:px-6">
-      <div>
-        <h1 className="text-[18px] font-bold tracking-tight text-foreground">
-          {title}
-        </h1>
-        {caption ? (
-          <p className="text-muted-foreground text-[12.5px] mt-0.5">{caption}</p>
-        ) : null}
+    <header className="mb-6 flex flex-wrap items-end justify-between gap-4 pr-0 lg:pr-14">
+      <div className="min-w-0">
+        <h1 className="text-[26px] font-bold tracking-tight text-foreground">{title}</h1>
+        {caption ? <p className="mt-1 text-[13.5px] text-muted">{caption}</p> : null}
       </div>
-      {children ? <div className="flex items-center gap-2">{children}</div> : null}
+      {children ? <div className="flex flex-wrap items-center gap-2">{children}</div> : null}
     </header>
   );
 }
@@ -303,10 +332,8 @@ export function SectionHeading({
   return (
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h2 className="text-[15px] font-bold text-foreground">{title}</h2>
-        {caption ? (
-          <p className="text-muted-foreground text-[12.5px] mt-0.5">{caption}</p>
-        ) : null}
+        <h2 className="text-[15px] font-semibold text-foreground">{title}</h2>
+        {caption ? <p className="mt-0.5 text-[12.5px] text-muted">{caption}</p> : null}
       </div>
       {children ? <div className="flex items-center gap-2">{children}</div> : null}
     </div>
@@ -327,52 +354,17 @@ export function Panel({
   tone?: "bad" | "ok" | "plain";
 }) {
   return (
-    <Card
+    <div
       className={cn(
-        "border-border/80 bg-surface/70 backdrop-blur-xl shadow-xs transition-all duration-200",
-        tone === "bad" && "border-rose-500/30 bg-rose-500/5",
-        tone === "ok" && "border-emerald-500/30 bg-emerald-500/5",
+        "rounded-2xl border border-border bg-surface",
+        tone === "bad" && "border-danger/30 bg-danger-soft/40",
+        tone === "ok" && "border-success/30 bg-success-soft/40",
         className,
       )}
     >
       {children}
-    </Card>
+    </div>
   );
 }
 
-export function ButtonLink({
-  href,
-  children,
-  className,
-  variant = "primary",
-  size = "md",
-}: {
-  href: string;
-  children: React.ReactNode;
-  className?: string;
-  variant?: "primary" | "secondary" | "outline" | "ghost";
-  size?: "sm" | "md" | "lg";
-}) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        "inline-flex items-center justify-center gap-1.5 font-medium transition-all duration-150",
-        variant === "primary" &&
-          "bg-accent hover:bg-accent/90 text-white shadow-xs",
-        variant === "secondary" &&
-          "bg-surface-secondary hover:bg-surface-secondary/80 text-foreground",
-        variant === "outline" &&
-          "border border-border hover:bg-surface-secondary text-foreground",
-        variant === "ghost" &&
-          "hover:bg-surface-secondary text-foreground",
-        size === "sm" && "h-8 px-3 text-[12px] rounded-lg",
-        size === "md" && "h-9 px-4 text-[13px] rounded-xl",
-        size === "lg" && "h-10 px-5 text-[14px] rounded-xl",
-        className,
-      )}
-    >
-      {children}
-    </Link>
-  );
-}
+export { Btn };

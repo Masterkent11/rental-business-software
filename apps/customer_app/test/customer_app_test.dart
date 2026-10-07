@@ -8,7 +8,6 @@ import 'package:customer_app/data/api_client.dart';
 import 'package:customer_app/data/auth_repository.dart';
 import 'package:customer_app/data/listing_repository.dart';
 import 'package:customer_app/data/tour_repository.dart';
-import 'package:customer_app/fixtures/sample_data.dart';
 import 'package:customer_app/fixtures/view_models.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -17,6 +16,9 @@ import 'package:customer_app/features/bookings/widgets/empty_bookings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'support/fake_auth.dart';
+import 'support/sample_data.dart';
 
 void _ignoreOfflineImages() {
   final original = FlutterError.onError;
@@ -40,7 +42,7 @@ Future<void> _pumpApp(WidgetTester tester) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        authRepositoryProvider.overrideWithValue(const _SignedInAuth()),
+        authRepositoryProvider.overrideWithValue(FakeAuth.signedIn()),
         panoramaImageLoaderProvider.overrideWithValue(
           (_) async => pixel.clone(),
         ),
@@ -65,39 +67,6 @@ Future<ui.Image> _pixel() {
   return completer.future;
 }
 
-class _SignedInAuth implements AuthGateway {
-  const _SignedInAuth();
-
-  @override
-  String? get accessToken => 'test-token';
-
-  @override
-  Stream<void> get changes => const Stream<void>.empty();
-
-  @override
-  Future<void> signInWithPassword({
-    required String email,
-    required String password,
-  }) async {}
-
-  @override
-  Future<void> signUpWithPassword({
-    required String email,
-    required String password,
-  }) async {}
-
-  @override
-  Future<void> sendMobileOtp(String mobile) async {}
-
-  @override
-  Future<void> verifyMobileOtp({
-    required String mobile,
-    required String code,
-  }) async {}
-
-  @override
-  Future<void> signOut() async {}
-}
 
 ApiClient _fakeClient() =>
     ApiClient(client: _fakeTransport(), baseUrl: 'http://test');
@@ -252,39 +221,76 @@ MockClient _fakeTransport() {
       );
     }
 
-    if (segments.length == 2 && segments[0] == 'me' && segments[1] == 'stays') {
-      return http.Response(
-        jsonEncode({
-          'stays': [
-            for (final b in SampleData.bookings)
-              {
-                'id': b.id,
-                'reference': b.reference,
-                'listingTitle': b.listingTitle,
-                'propertyName': b.propertyName,
-                'areaLabel': b.areaLabel,
-                'cityLabel': '',
-                'startsOn': b.checkIn.toIso8601String().substring(0, 10),
-                'endsOn': b.checkOut.toIso8601String().substring(0, 10),
-                'nights': b.nights,
-                'paidCentavos': b.totalCentavos,
-                'paidAt': '2027-01-01T00:00:00.000Z',
-                'state': b.status == BookingStatus.cancelled
-                    ? 'CANCELLED'
-                    : 'CONFIRMED',
-                'photo': b.photo,
-                'stateLabel': b.stateLabel ?? b.status.label,
-                'bucket': switch (b.status) {
-                  BookingStatus.cancelled => 'CANCELLED',
-                  BookingStatus.past => 'PAST',
-                  BookingStatus.active => 'ACTIVE',
-                },
-              },
-          ],
-        }),
-        200,
-        headers: {'content-type': 'application/json; charset=utf-8'},
-      );
+    http.Response json(Object body, [int status = 200]) => http.Response(
+          jsonEncode(body),
+          status,
+          headers: {'content-type': 'application/json; charset=utf-8'},
+        );
+
+    Map<String, dynamic> booking(BookingView b) => {
+          'id': b.id,
+          'reference': b.reference,
+          'listingId': null,
+          'listingTitle': b.listingTitle,
+          'propertyName': b.propertyName,
+          'areaLabel': b.areaLabel,
+          'cityLabel': 'Cebu City',
+          'photo': b.photo,
+          'guests': b.guests,
+          'startsOn': b.checkIn.toIso8601String().substring(0, 10),
+          'endsOn': b.checkOut.toIso8601String().substring(0, 10),
+          'nights': b.nights,
+          'bucket': switch (b.status) {
+            BookingStatus.cancelled => 'CANCELLED',
+            BookingStatus.past => 'PAST',
+            BookingStatus.active => 'UPCOMING',
+          },
+          'statusLabel': b.stateLabel ?? b.status.label,
+          'paidCentavos': b.totalCentavos,
+          'paidAt': '2026-10-01T08:00:00.000Z',
+          'holdExpiresAt': null,
+          'conversationId': null,
+        };
+
+    if (segments.length >= 2 && segments[0] == 'me' && segments[1] == 'bookings') {
+      final rows = _noBookings ? <BookingView>[] : SampleData.bookings;
+      if (segments.length == 3) {
+        final match = rows.where((b) => b.id == segments[2]).toList();
+        return match.isEmpty ? json({'title': 'Not found'}, 404) : json(booking(match.single));
+      }
+      return json({'bookings': rows.map(booking).toList()});
+    }
+
+    if (segments.length == 2 && segments[0] == 'me' && segments[1] == 'notifications') {
+      return json({
+        'notifications': [
+          {
+            'id': 'n-1',
+            'kind': 'BOOKING_CONFIRMED',
+            'title': 'Your booking is confirmed',
+            'body': 'Skyline Residences · Dec 26 – Dec 29',
+            'link': '/bookings/bkg-4471',
+            'readAt': null,
+            'createdAt': '2026-10-01T08:00:00.000Z',
+          },
+        ],
+      });
+    }
+
+    if (segments.length == 2 && segments[0] == 'me' && segments[1] == 'conversations') {
+      return json({'conversations': <dynamic>[]});
+    }
+
+    if (segments.length == 1 && segments[0] == 'me') {
+      return json({
+        'id': 'user-test',
+        'displayName': 'Carlo Mendoza',
+        'email': 'guest@example.test',
+        'capabilities': [
+          {'capability': 'CUSTOMER', 'organizationId': null},
+        ],
+        'organizations': <dynamic>[],
+      });
     }
 
     if (segments.length == 2) {
@@ -327,6 +333,8 @@ MockClient _fakeTransport() {
 
   return client;
 }
+
+bool _noBookings = false;
 
 Finder get _page => find.byType(Scrollable).first;
 
@@ -493,7 +501,7 @@ void main() {
     expect(find.text('Your booking is confirmed'), findsOneWidget);
   });
 
-  testWidgets('bookings list stays, and empty tabs offer a way out', (
+  testWidgets('bookings come from the server and split into upcoming and past', (
     tester,
   ) async {
     await _pumpApp(tester);
@@ -501,21 +509,31 @@ void main() {
     await tester.tap(find.text('Bookings'));
     await tester.pumpAndSettle();
 
+    expect(find.text('Upcoming (1)'), findsOneWidget);
+    expect(find.text('Past (2)'), findsOneWidget);
     expect(find.text('Confirmed'), findsOneWidget);
-    expect(find.text('₱4,500'), findsOneWidget);
+    expect(find.text('₱4,500 paid'), findsOneWidget);
 
-    await tester.tap(find.text('Past'));
+    await tester.tap(find.text('Past (2)'));
     await tester.pumpAndSettle();
-    expect(find.text('Completed'), findsWidgets);
+    expect(find.text('Completed'), findsNWidgets(2));
+  });
 
-    await tester.tap(find.text('Cancelled'));
+  testWidgets('an empty bookings tab offers a way back to discovery', (
+    tester,
+  ) async {
+    _noBookings = true;
+    addTearDown(() => _noBookings = false);
+    await _pumpApp(tester);
+
+    await tester.tap(find.text('Bookings'));
     await tester.pumpAndSettle();
-    expect(find.text('Nothing cancelled'), findsOneWidget);
+
+    expect(find.text('No upcoming stays'), findsOneWidget);
     expect(find.byType(EmptyBookingsArt), findsOneWidget);
-
-    await tester.tap(find.text('Find a place to stay'));
+    await tester.tap(find.text('Explore places'));
     await tester.pumpAndSettle();
-    expect(find.text('Find your next place'), findsOneWidget);
+    expect(find.text('Featured for You'), findsOneWidget);
   });
 
   testWidgets('a booking opens its detail, with dates and what was paid', (
@@ -529,13 +547,16 @@ void main() {
     await tester.tap(find.text('Condo stay, walking distance to IT Park'));
     await tester.pumpAndSettle();
 
-    expect(find.text('CHECK-IN'), findsOneWidget);
-    expect(find.text('CHECK-OUT'), findsOneWidget);
-    expect(find.text('3 nights · 1 guest'), findsOneWidget);
+    expect(find.text('Reference #BK-2026-4471'), findsOneWidget);
+    expect(find.text('Check-in'), findsOneWidget);
+    expect(find.text('Check-out'), findsOneWidget);
+    expect(find.text('Guests'), findsOneWidget);
 
-    final prepaid = find.textContaining('no deposit');
-    await tester.scrollUntilVisible(prepaid, 250);
-    expect(prepaid, findsOneWidget);
+    final paid = find.text('Paid');
+    await tester.scrollUntilVisible(paid, 250, scrollable: find.byType(Scrollable).last);
+    expect(paid, findsOneWidget);
+    expect(find.text('₱4,500'), findsOneWidget);
+    expect(find.text('Sandbox payment'), findsOneWidget);
   });
 
   testWidgets(
@@ -546,7 +567,9 @@ void main() {
       await tester.tap(find.byIcon(Icons.person_outline));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('My applications'));
+      final applications = find.text('Applications');
+      await tester.scrollUntilVisible(applications, 200, scrollable: find.byType(Scrollable).last);
+      await tester.tap(applications);
       await tester.pumpAndSettle();
 
       expect(find.textContaining('does not reserve the place'), findsOneWidget);

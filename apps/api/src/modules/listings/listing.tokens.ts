@@ -1,10 +1,19 @@
 export const LISTING_REPOSITORY = Symbol('ListingRepository');
 export const SEARCH_LISTINGS = Symbol('SearchListings');
 export const VIEW_LISTING = Symbol('ViewListing');
+export const QUOTE_STAY = Symbol('QUOTE_STAY');
 
-// Owner Listings Use Cases
 export const LIST_OWNER_LISTINGS = Symbol('LIST_OWNER_LISTINGS');
 export const LIST_RESOURCES = Symbol('LIST_RESOURCES');
+export const LIST_OWNER_PROPERTIES = Symbol('LIST_OWNER_PROPERTIES');
+export const GET_OWNER_LISTING = Symbol('GET_OWNER_LISTING');
 export const CREATE_LISTING = Symbol('CREATE_LISTING');
-export const UPLOAD_LISTING_PHOTO = Symbol('UPLOAD_LISTING_PHOTO');
+export const CREATE_PROPERTY_LISTING = Symbol('CREATE_PROPERTY_LISTING');
+export const UPDATE_LISTING = Symbol('UPDATE_LISTING');
+export const REGISTER_LISTING_PHOTO = Symbol('REGISTER_LISTING_PHOTO');
+export const REMOVE_LISTING_PHOTO = Symbol('REMOVE_LISTING_PHOTO');
+export const REORDER_LISTING_PHOTOS = Symbol('REORDER_LISTING_PHOTOS');
 export const SET_LISTING_STATE = Symbol('SET_LISTING_STATE');
+export const GET_LISTING_CALENDAR = Symbol('GET_LISTING_CALENDAR');
+export const ADD_AVAILABILITY_BLOCK = Symbol('ADD_AVAILABILITY_BLOCK');
+export const REMOVE_AVAILABILITY_BLOCK = Symbol('REMOVE_AVAILABILITY_BLOCK');

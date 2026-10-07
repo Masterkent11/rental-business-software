@@ -1,17 +1,28 @@
-import type { Principal } from '@/domain/identity/identity.ts';
+import type { GetMeResult } from '@/application/me/get-me/get-me.types.ts';
 
-export function toMeHttpResponse(principal: Principal) {
+export function toMeHttpResponse(result: GetMeResult) {
+  const { principal, profile, organizations } = result;
+  const displayName = profile?.displayName || principal.displayName;
   return {
+    id: principal.userId,
+    displayName,
+    email: profile?.email ?? null,
     user: {
       id: principal.userId,
-      displayName: principal.displayName,
+      displayName,
+      email: profile?.email ?? null,
     },
-    memberships: principal.capabilities
-      .filter((c) => c.organizationId !== null)
-      .map((c) => ({
-        organizationId: c.organizationId as string,
-        role: c.capability,
-      })),
+    organizations: organizations.map((o) => ({
+      id: o.organizationId,
+      name: o.name,
+      role: o.role,
+      verified: o.verified,
+    })),
+    memberships: organizations.map((o) => ({
+      organizationId: o.organizationId,
+      organizationName: o.name,
+      role: o.role,
+    })),
     capabilities: principal.capabilities.map((c) => ({
       capability: c.capability,
       organizationId: c.organizationId,

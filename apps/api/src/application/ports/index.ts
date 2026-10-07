@@ -16,3 +16,7 @@ export * from './providers/authorization-provider.port.ts';
 export * from './storage/document-storage.port.ts';
 export * from './storage/media-storage.port.ts';
 export * from './transactions/unit-of-work.port.ts';
+export * from './repositories/booking-repository.port.ts';
+export * from './repositories/messaging-repository.port.ts';
+export * from './repositories/notification-repository.port.ts';
+export * from './storage/listing-media.port.ts';

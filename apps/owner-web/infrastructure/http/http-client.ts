@@ -1,73 +1,75 @@
-/**
- * Infrastructure HTTP Client
- *
- * Rules:
- * - NO hardcoded fallback values.
- * - Handles authentication headers and transaction-scoped `X-Organization-Id`.
- * - Throws typed HttpError on failure.
- */
-
-import { createClient } from "@supabase/supabase-js";
 import { env } from "../config/env";
+import { currentAccessToken } from "../supabase/browser-client";
 
 export class HttpError extends Error {
   constructor(
     message: string,
     readonly status: number,
-    readonly details?: unknown,
+    readonly code: string | null = null,
+    readonly details: readonly string[] = [],
   ) {
     super(message);
     this.name = "HttpError";
   }
 }
 
-export class HttpClient {
-  private supabaseClient = createClient(env.supabaseUrl, env.supabasePublishableKey);
+const FRIENDLY: Record<number, string> = {
+  401: "Your session has expired. Please sign in again.",
+  403: "You don't have access to this organization.",
+  404: "We couldn't find that. It may have been removed.",
+  413: "That file is too large.",
+  429: "Too many requests. Please wait a moment and try again.",
+  500: "Something went wrong on our side. Please try again.",
+  502: "The server is unavailable right now. Please try again.",
+  503: "The server is busy right now. Please try again.",
+};
 
+export class HttpClient {
   async request<T>(
     path: string,
-    options: {
-      method?: string;
-      body?: unknown;
-      organizationId?: string;
-    } = {},
+    options: { method?: string; body?: unknown; organizationId?: string; signal?: AbortSignal } = {},
   ): Promise<T> {
-    const {
-      data: { session },
-    } = await this.supabaseClient.auth.getSession();
-
-    const headers: Record<string, string> = {
-      accept: "application/json",
-      ...(session ? { authorization: `Bearer ${session.access_token}` } : {}),
-      ...(options.organizationId
-        ? { "x-organization-id": options.organizationId }
-        : {}),
-      ...(options.body ? { "content-type": "application/json" } : {}),
-    };
-
-    const response = await fetch(`${env.apiBaseUrl}${path}`, {
-      method: options.method ?? "GET",
-      headers,
-      ...(options.body ? { body: JSON.stringify(options.body) } : {}),
-    });
+    const token = await currentAccessToken();
+    let response: Response;
+    try {
+      response = await fetch(`${env.apiBaseUrl}${path}`, {
+        method: options.method ?? "GET",
+        headers: {
+          accept: "application/json",
+          ...(token ? { authorization: `Bearer ${token}` } : {}),
+          ...(options.organizationId ? { "x-organization-id": options.organizationId } : {}),
+          ...(options.body !== undefined ? { "content-type": "application/json" } : {}),
+        },
+        ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
+        ...(options.signal ? { signal: options.signal } : {}),
+        cache: "no-store",
+      });
+    } catch {
+      throw new HttpError("Can't reach the server. Check your connection and try again.", 0, "NETWORK");
+    }
 
     if (!response.ok) {
-      let message = `API request failed with HTTP ${response.status}`;
-      let details: unknown = undefined;
+      let message = FRIENDLY[response.status] ?? "Request failed. Please try again.";
+      let code: string | null = null;
+      let details: string[] = [];
       try {
         const problem = (await response.json()) as {
           message?: string;
           title?: string;
-          details?: unknown;
+          code?: string;
+          problems?: string[];
         };
-        message = problem.message ?? problem.title ?? message;
-        details = problem.details ?? problem;
+        code = problem.code ?? null;
+        details = problem.problems ?? [];
+        const candidate = problem.message ?? problem.title;
+        if (candidate && response.status < 500 && response.status !== 401) message = candidate;
       } catch {
-        // Not JSON
+        message = FRIENDLY[response.status] ?? message;
       }
-      throw new HttpError(message, response.status, details);
+      throw new HttpError(message, response.status, code, details);
     }
 
+    if (response.status === 204) return undefined as T;
     return (await response.json()) as T;
   }
 }

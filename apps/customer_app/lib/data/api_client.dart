@@ -18,12 +18,14 @@ class ApiException implements Exception {
   const ApiException(
     this.message, {
     this.statusCode,
+    this.code,
     this.isNetwork = false,
     this.cause,
   });
 
   final String message;
   final int? statusCode;
+  final String? code;
   final bool isNetwork;
 
   final Object? cause;
@@ -31,6 +33,10 @@ class ApiException implements Exception {
   bool get isNotFound => statusCode == 404;
 
   bool get isUnauthorized => statusCode == 401;
+
+  bool get isConflict => statusCode == 409;
+
+  bool get datesUnavailable => code == 'DATES_UNAVAILABLE';
 
   @override
   String toString() =>
@@ -86,12 +92,7 @@ class ApiClient {
       );
     }
 
-    if (response.statusCode >= 400) {
-      throw ApiException(
-        _titleFrom(response.body) ?? 'Request failed',
-        statusCode: response.statusCode,
-      );
-    }
+    if (response.statusCode >= 400) throw _failure(response);
 
     final decoded = jsonDecode(utf8.decode(response.bodyBytes));
     if (decoded is! Map<String, dynamic>) {
@@ -125,12 +126,7 @@ class ApiClient {
       );
     }
 
-    if (response.statusCode >= 400) {
-      throw ApiException(
-        _titleFrom(response.body) ?? 'Request failed',
-        statusCode: response.statusCode,
-      );
-    }
+    if (response.statusCode >= 400) throw _failure(response);
 
     if (response.bodyBytes.isEmpty) return const {};
     final decoded = jsonDecode(utf8.decode(response.bodyBytes));
@@ -140,14 +136,30 @@ class ApiClient {
     return decoded;
   }
 
-  String? _titleFrom(String body) {
+  ApiException _failure(http.Response response) {
+    final status = response.statusCode;
+    String? message;
+    String? code;
     try {
-      final decoded = jsonDecode(body);
-      if (decoded is Map && decoded['title'] is String) {
-        return decoded['title'] as String;
+      final decoded = jsonDecode(utf8.decode(response.bodyBytes));
+      if (decoded is Map) {
+        final candidate = decoded['message'] ?? decoded['title'];
+        if (candidate is String && candidate.isNotEmpty) message = candidate;
+        if (decoded['code'] is String) code = decoded['code'] as String;
       }
-    } catch (_) {}
-    return null;
+    } on FormatException {
+      message = null;
+    }
+    if (status >= 500 || message == null) {
+      message = switch (status) {
+        401 => 'Please sign in again.',
+        403 => 'You do not have access to that.',
+        404 => 'We could not find that. It may have been removed.',
+        503 => 'The service is busy right now. Please try again.',
+        _ => 'Something went wrong on our side. Please try again.',
+      };
+    }
+    return ApiException(message, statusCode: status, code: code);
   }
 
   void close() => _client.close();

@@ -12,13 +12,15 @@ import '../../data/listing_repository.dart';
 import '../../design/motion.dart';
 import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
+import '../auth/auth_guard.dart';
 import '../saved/saved_controller.dart';
 import 'widgets/move_in_cost_card.dart';
 
 class ListingDetailScreen extends ConsumerStatefulWidget {
-  const ListingDetailScreen({required this.listingId, super.key});
+  const ListingDetailScreen({required this.listingId, this.saveOnOpen = false, super.key});
 
   final String listingId;
+  final bool saveOnOpen;
 
   @override
   ConsumerState<ListingDetailScreen> createState() =>
@@ -39,6 +41,37 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
   void initState() {
     super.initState();
     _scroll.addListener(_onScroll);
+    if (widget.saveOnOpen) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted || ref.read(isSavedProvider(widget.listingId))) return;
+        await ref.read(savedIdsProvider.future);
+        if (mounted && !ref.read(isSavedProvider(widget.listingId))) _toggleSave(widget.listingId);
+      });
+    }
+  }
+
+  Future<void> _toggleSave(String id) async {
+    if (!requireSignIn(
+      context,
+      ref,
+      resumeTo: '${Routes.listing(id)}?save=1',
+      reason: 'Sign in to save places to your account.',
+    )) {
+      return;
+    }
+    try {
+      await ref.read(savedIdsProvider.notifier).toggle(id);
+    } on ApiException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    }
+  }
+
+  void _messageOwner(ListingCardView card) {
+    final target = Routes.startConversation(listingId: card.id);
+    if (!requireSignIn(context, ref, resumeTo: target, reason: 'Sign in to message the owner.')) return;
+    context.push(target);
   }
 
   void _onScroll() {
@@ -124,7 +157,9 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: Tokens.s24),
+                    const SizedBox(height: Tokens.s20),
+                    Reveal(order: 2, child: _FactsRow(card: card)),
+                    const SizedBox(height: Tokens.s20),
                     Reveal(order: 2, child: _AvailabilityRow(card: card)),
 
                     if (card.hasTour) ...[
@@ -171,7 +206,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                       ),
 
                     _Section(
-                      title: 'What is included',
+                      title: 'What’s included',
                       child: Wrap(
                         spacing: Tokens.s8,
                         runSpacing: Tokens.s8,
@@ -214,7 +249,12 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                       ),
                     ),
 
-                    _EnquireRow(isLongTerm: isLongTerm),
+                    const _SectionGap(),
+                    _GhostButton(
+                      icon: Icons.chat_bubble_outline,
+                      label: 'Message ${detail.ownerName.isEmpty ? 'the owner' : detail.ownerName}',
+                      onTap: () => _messageOwner(card),
+                    ),
                   ],
                 ),
               ),
@@ -229,10 +269,10 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
             child: IgnorePointer(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surface.withOpacity(_chrome),
+                  color: theme.colorScheme.surface.withValues(alpha: _chrome),
                   border: Border(
                     bottom: BorderSide(
-                      color: theme.colorScheme.outlineVariant.withOpacity(
+                      color: theme.colorScheme.outlineVariant.withValues(alpha: 
                         _chrome,
                       ),
                     ),
@@ -265,10 +305,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     ),
                     const Spacer(),
                     Glass.circle(
-                      onTap: () => ref
-                          .read(savedIdsProvider.notifier)
-                          .toggle(card.id)
-                          .catchError((_) {}),
+                      onTap: () => _toggleSave(card.id),
                       child: Icon(
                         saved ? Icons.favorite : Icons.favorite_border,
                         size: 18,
@@ -285,7 +322,22 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: _CommitBar(card: card),
+            child: _CommitBar(
+              card: card,
+              onCommit: () {
+                final target = isLongTerm ? Routes.apply(card.id) : Routes.book(card.id);
+                if (!requireSignIn(
+                  context,
+                  ref,
+                  resumeTo: target,
+                  reason: isLongTerm ? 'Sign in to apply for this place.' : 'Sign in to book your stay.',
+                )) {
+                  return;
+                }
+                HapticFeedback.mediumImpact();
+                context.push(target);
+              },
+            ),
           ),
         ],
       ),
@@ -347,7 +399,7 @@ class _Gallery extends StatelessWidget {
                       width: i == index ? 18 : 6,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(i == index ? 1 : 0.5),
+                        color: Colors.white.withValues(alpha: i == index ? 1 : 0.5),
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
@@ -377,7 +429,7 @@ class _AvailabilityRow extends StatelessWidget {
         vertical: Tokens.s12,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(Tokens.rSm),
       ),
       child: Row(
@@ -455,7 +507,7 @@ class _TourCallout extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onPrimary.withOpacity(0.7),
+                      color: theme.colorScheme.onPrimary.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -496,7 +548,7 @@ class _OwnerCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.08),
+              color: theme.colorScheme.primary.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -540,42 +592,34 @@ class _OwnerCard extends StatelessWidget {
   }
 }
 
-class _EnquireRow extends StatelessWidget {
-  const _EnquireRow({required this.isLongTerm});
+class _FactsRow extends StatelessWidget {
+  const _FactsRow({required this.card});
 
-  final bool isLongTerm;
+  final ListingCardView card;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final theme = Theme.of(context);
+    final facts = <(IconData, String)>[
+      (Icons.people_outline, '${card.maxGuests} guest${card.maxGuests == 1 ? '' : 's'}'),
+      if (card.beds > 0) (Icons.bed_outlined, '${card.beds} bedroom${card.beds == 1 ? '' : 's'}'),
+      if (card.baths > 0) (Icons.bathtub_outlined, '${card.baths} bath${card.baths == 1 ? '' : 's'}'),
+      if (card.sqm != null) (Icons.square_foot, '${card.sqm} m²'),
+    ];
+    return Wrap(
+      spacing: Tokens.s16,
+      runSpacing: Tokens.s8,
       children: [
-        const _SectionGap(),
-        Row(
-          children: [
-            Expanded(
-              child: _GhostButton(
-                icon: Icons.chat_bubble_outline,
-                label: 'Ask a question',
-                onTap: () => _notYet(context, 'Enquiries'),
-              ),
-            ),
-            const SizedBox(width: Tokens.s12),
-            Expanded(
-              child: _GhostButton(
-                icon: Icons.calendar_today_outlined,
-                label: 'Request a viewing',
-                onTap: () => _notYet(context, 'Viewing requests'),
-              ),
-            ),
-          ],
-        ),
+        for (final (icon, label) in facts)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
+              const SizedBox(width: 6),
+              Text(label, style: theme.textTheme.bodyMedium),
+            ],
+          ),
       ],
-    );
-  }
-
-  static void _notYet(BuildContext context, String what) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$what need the API contracts from Step 5.')),
     );
   }
 }
@@ -625,9 +669,10 @@ class _GhostButton extends StatelessWidget {
 }
 
 class _CommitBar extends StatelessWidget {
-  const _CommitBar({required this.card});
+  const _CommitBar({required this.card, required this.onCommit});
 
   final ListingCardView card;
+  final VoidCallback onCommit;
 
   @override
   Widget build(BuildContext context) {
@@ -675,19 +720,10 @@ class _CommitBar extends StatelessWidget {
               const SizedBox(width: Tokens.s16),
               Expanded(
                 child: FilledButton(
-                  onPressed: card.isAvailable
-                      ? () {
-                          HapticFeedback.mediumImpact();
-                          context.push(
-                            isLongTerm
-                                ? Routes.apply(card.id)
-                                : Routes.book(card.id),
-                          );
-                        }
-                      : null,
+                  onPressed: card.isAvailable ? onCommit : null,
                   child: Text(
                     card.isAvailable
-                        ? (isLongTerm ? 'Apply to rent' : 'Check dates')
+                        ? (isLongTerm ? 'Apply to rent' : 'Book a stay')
                         : 'Not available',
                   ),
                 ),

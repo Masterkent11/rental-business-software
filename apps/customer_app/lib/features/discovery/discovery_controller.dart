@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/listing_repository.dart';
-import '../../fixtures/sample_data.dart';
 import '../../fixtures/view_models.dart';
 import 'search_criteria.dart';
 
@@ -88,17 +87,71 @@ class FiltersController extends Notifier<DiscoveryFilters> {
   void clear() => state = DiscoveryFilters(query: state.query);
 }
 
-final resultsProvider = FutureProvider.autoDispose<List<ListingCardView>>((
-  ref,
-) async {
-  final filters = ref.watch(filtersProvider);
-  final repository = ref.watch(listingRepositoryProvider);
-  try {
-    return await repository.search(filters);
-  } catch (_) {
-    return SampleData.listings;
+class DiscoveryFeedState {
+  const DiscoveryFeedState({
+    required this.items,
+    required this.total,
+    required this.hasMore,
+    this.loadingMore = false,
+    this.loadMoreError,
+  });
+
+  final List<ListingCardView> items;
+  final int total;
+  final bool hasMore;
+  final bool loadingMore;
+  final Object? loadMoreError;
+
+  DiscoveryFeedState copyWith({
+    List<ListingCardView>? items,
+    int? total,
+    bool? hasMore,
+    bool? loadingMore,
+    Object? loadMoreError,
+    bool clearError = false,
+  }) =>
+      DiscoveryFeedState(
+        items: items ?? this.items,
+        total: total ?? this.total,
+        hasMore: hasMore ?? this.hasMore,
+        loadingMore: loadingMore ?? this.loadingMore,
+        loadMoreError: clearError ? null : (loadMoreError ?? this.loadMoreError),
+      );
+}
+
+class DiscoveryFeed extends AutoDisposeAsyncNotifier<DiscoveryFeedState> {
+  @override
+  Future<DiscoveryFeedState> build() async {
+    final filters = ref.watch(filtersProvider);
+    final page = await ref.watch(listingRepositoryProvider).search(filters);
+    return DiscoveryFeedState(items: page.items, total: page.total, hasMore: page.hasMore);
   }
-});
+
+  Future<void> loadMore() async {
+    final current = state.valueOrNull;
+    if (current == null || !current.hasMore || current.loadingMore) return;
+    state = AsyncData(current.copyWith(loadingMore: true, clearError: true));
+    try {
+      final page = await ref
+          .read(listingRepositoryProvider)
+          .search(ref.read(filtersProvider), offset: current.items.length);
+      final seen = current.items.map((l) => l.id).toSet();
+      state = AsyncData(
+        current.copyWith(
+          items: [...current.items, ...page.items.where((l) => !seen.contains(l.id))],
+          total: page.total,
+          hasMore: page.hasMore,
+          loadingMore: false,
+        ),
+      );
+    } catch (error) {
+      state = AsyncData(current.copyWith(loadingMore: false, loadMoreError: error));
+    }
+  }
+}
+
+final resultsProvider =
+    AsyncNotifierProvider.autoDispose<DiscoveryFeed, DiscoveryFeedState>(DiscoveryFeed.new);
 
 final featuredLensProvider = StateProvider<FeaturedLens>(
   (ref) => FeaturedLens.popular,

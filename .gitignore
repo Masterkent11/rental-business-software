@@ -48,3 +48,5 @@ out/
 npm-debug.log*
 
 
+
+supabase/demo/generated-*.sql

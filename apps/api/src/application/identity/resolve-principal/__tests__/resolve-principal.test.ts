@@ -47,6 +47,8 @@ function usersWith(options: {
       options.onCreate?.();
       return { id, displayName: '', email: null, mobile: null };
     },
+    updateProfile: async () => profile,
+    organizationsFor: async () => [],
     capabilitiesFor: async () => options.capabilities ?? [],
     isMemberOf: async (_userId, organizationId) =>
       (options.memberships ?? []).includes(organizationId),

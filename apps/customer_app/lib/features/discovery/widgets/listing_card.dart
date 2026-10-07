@@ -63,7 +63,7 @@ class ListingCard extends ConsumerWidget {
                     ),
                   if (!listing.isAvailable)
                     Positioned.fill(
-                      child: ColoredBox(color: Colors.white.withOpacity(0.45)),
+                      child: ColoredBox(color: Colors.white.withValues(alpha: 0.45)),
                     ),
                 ],
               ),
