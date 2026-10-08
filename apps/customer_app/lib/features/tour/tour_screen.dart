@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/listing_repository.dart';
 import '../../data/tour_repository.dart';
-import '../../fixtures/view_models.dart';
 import '../../design/app_image.dart';
 import '../../design/glass.dart';
 import '../../design/tokens.dart';
@@ -107,8 +106,6 @@ class _TourScreenState extends ConsumerState<TourScreen> {
           _source = _sourceFor(entry)..start();
         }
 
-        final card = detail.valueOrNull?.card;
-        final index = tour.scenes.indexWhere((s) => s.id == scene.id);
         final source = _source;
 
         return Scaffold(
@@ -151,10 +148,26 @@ class _TourScreenState extends ConsumerState<TourScreen> {
                     title: '360° Virtual Tour',
                     onClose: () => Navigator.of(context).maybePop(),
                     currentRoom: scene.label,
+                    counter: tour.scenes.isEmpty
+                        ? null
+                        : '${tour.scenes.indexOf(scene) + 1}/${tour.scenes.length}',
                     onRoomTap: () => _showScenePicker(context, tour, scene),
                     isFullscreen: _fullscreen,
                     onFullscreenToggle: () =>
                         setState(() => _fullscreen = !_fullscreen),
+                  ),
+                ),
+              ),
+
+              Positioned(
+                right: Tokens.gutter,
+                bottom: _fullscreen || tour.scenes.length <= 1 ? Tokens.s24 : 110,
+                child: Glass.circle(
+                  onTap: () => setState(() => _fullscreen = !_fullscreen),
+                  child: Icon(
+                    _fullscreen ? Icons.fullscreen_exit : Icons.crop_free,
+                    size: 22,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -167,26 +180,21 @@ class _TourScreenState extends ConsumerState<TourScreen> {
                   child: SafeArea(
                     top: false,
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        Tokens.gutter,
-                        0,
-                        Tokens.gutter,
-                        Tokens.s20,
-                      ),
+                      padding: const EdgeInsets.only(bottom: Tokens.s16),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           if (!_hasLooked) const _DragHint(),
-                          const SizedBox(height: Tokens.s16),
                           if (tour.scenes.length > 1) ...[
+                            const SizedBox(height: Tokens.s8),
                             SizedBox(
-                              height: 64,
+                              height: 84,
                               child: ListView.separated(
                                 scrollDirection: Axis.horizontal,
                                 physics: Tokens.scroll,
+                                padding: const EdgeInsets.symmetric(horizontal: Tokens.gutter),
                                 itemCount: tour.scenes.length,
-                                separatorBuilder: (_, __) =>
-                                    const SizedBox(width: Tokens.s8),
+                                separatorBuilder: (_, __) => const SizedBox(width: Tokens.s12),
                                 itemBuilder: (context, i) => _RoomChip(
                                   scene: tour.scenes[i],
                                   selected: tour.scenes[i].id == scene.id,
@@ -202,23 +210,7 @@ class _TourScreenState extends ConsumerState<TourScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: Tokens.s12),
                           ],
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Flexible(
-                                child: _RoomLabel(
-                                  label: scene.label,
-                                  position: '${index + 1}/${tour.scenes.length}',
-                                  onTap: () =>
-                                      _showScenePicker(context, tour, scene),
-                                ),
-                              ),
-                              const SizedBox(width: Tokens.s8),
-                              if (card != null) _NextStep(card: card),
-                            ],
-                          ),
                         ],
                       ),
                     ),
@@ -457,23 +449,33 @@ class _HotspotState extends State<_Hotspot>
                       );
                     },
                   ),
-                Glass.circle(
-                  size: isNav ? 43 : 34,
-                  child: isNav
-                      ? Container(
-                          width: 13,
-                          height: 13,
+                isNav
+                    ? Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black.withValues(alpha: 0.5),
+                          border: Border.all(color: Colors.white, width: 3.5),
+                        ),
+                        alignment: Alignment.center,
+                        child: Container(
+                          width: 14,
+                          height: 14,
                           decoration: const BoxDecoration(
-                            color: Colors.white,
                             shape: BoxShape.circle,
+                            color: Colors.white,
                           ),
-                        )
-                      : const Icon(
+                        ),
+                      )
+                    : const Glass.circle(
+                        size: 34,
+                        child: Icon(
                           Icons.info_outline,
                           size: 17,
                           color: Colors.white,
                         ),
-                ),
+                      ),
               ],
             ),
           ),
@@ -506,6 +508,7 @@ class _TourNav extends StatelessWidget {
     required this.title,
     required this.onClose,
     this.currentRoom,
+    this.counter,
     this.onRoomTap,
     this.isFullscreen = false,
     this.onFullscreenToggle,
@@ -514,6 +517,7 @@ class _TourNav extends StatelessWidget {
   final String title;
   final VoidCallback onClose;
   final String? currentRoom;
+  final String? counter;
   final VoidCallback? onRoomTap;
   final bool isFullscreen;
   final VoidCallback? onFullscreenToggle;
@@ -572,6 +576,17 @@ class _TourNav extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
+                        if (counter != null) ...[
+                          const SizedBox(width: 5),
+                          Text(
+                            counter!,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                         const SizedBox(width: Tokens.s4),
                         const Icon(
                           Icons.keyboard_arrow_down,
@@ -593,99 +608,6 @@ class _TourNav extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RoomLabel extends StatelessWidget {
-  const _RoomLabel({
-    required this.label,
-    required this.position,
-    required this.onTap,
-  });
-
-  final String label;
-  final String position;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Glass(
-      onTap: onTap,
-      padding: const EdgeInsets.fromLTRB(14, 9, 12, 9),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 1.6),
-            ),
-          ),
-          const SizedBox(width: Tokens.s8),
-          Flexible(
-            child: Text(
-              label,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                letterSpacing: -0.2,
-              ),
-            ),
-          ),
-          const SizedBox(width: Tokens.s8),
-          Text(
-            position,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.62),
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(width: Tokens.s4),
-          Icon(
-            Icons.expand_less,
-            size: 18,
-            color: Colors.white.withValues(alpha: 0.8),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NextStep extends StatelessWidget {
-  const _NextStep({required this.card});
-
-  final ListingCardView card;
-
-  @override
-  Widget build(BuildContext context) {
-    final isLongTerm = card.kind == ListingKind.longTerm;
-
-    return Glass(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-      onTap: () => Navigator.of(context).maybePop(),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            isLongTerm ? 'Apply' : 'Book',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.2,
-            ),
-          ),
-          const SizedBox(width: Tokens.s6),
-          const Icon(Icons.arrow_forward, size: 16, color: Colors.white),
         ],
       ),
     );
@@ -716,40 +638,43 @@ class _RoomChip extends StatelessWidget {
       label: scene.label,
       child: GestureDetector(
         onTap: onTap,
-        child: Container(
-          width: 96,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Tokens.rSm),
-            border: Border.all(color: selected ? Colors.white : Colors.white24, width: selected ? 2 : 1),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(Tokens.rSm - 1),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                AppImage(url: scene.thumbnailUrl ?? '', fallbackIcon: Icons.threed_rotation, seed: scene.label.length),
-                const DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Colors.black87],
-                    ),
+        child: SizedBox(
+          width: 82,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 80,
+                height: 58,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: selected ? Colors.white : Colors.transparent,
+                    width: selected ? 2.5 : 0,
                   ),
                 ),
-                Positioned(
-                  left: 6,
-                  right: 6,
-                  bottom: 5,
-                  child: Text(
-                    scene.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w600),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(selected ? 7.5 : 10),
+                  child: AppImage(
+                    url: scene.thumbnailUrl ?? '',
+                    fallbackIcon: Icons.threed_rotation,
+                    seed: scene.label.length,
                   ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                scene.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: selected ? Colors.white : Colors.white70,
+                  fontSize: 12,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       ),

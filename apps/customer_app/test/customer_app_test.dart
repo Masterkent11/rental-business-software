@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:customer_app/design/money.dart';
 import 'package:customer_app/features/bookings/widgets/empty_bookings.dart';
+import 'package:customer_app/features/tour/tour_intro_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -105,6 +106,10 @@ MockClient _fakeTransport() {
         SampleData.detailById(l.id)?.sharedFacilities ?? const <String>[],
     'ownerName': SampleData.detailById(l.id)?.ownerName ?? '',
     'ownerVerified': SampleData.detailById(l.id)?.ownerVerified ?? false,
+    'bedrooms': l.beds,
+    'bathrooms': l.baths,
+    'floorAreaSqm': l.sqm,
+    'maxOccupants': l.maxGuests,
     'moveInCost': l.moveInCost == null
         ? null
         : {
@@ -583,4 +588,70 @@ void main() {
       expect(find.textContaining('still on file'), findsOneWidget);
     },
   );
+
+  testWidgets('property details rental layout matches 1:1 reference mockup', (tester) async {
+    await _pumpApp(tester);
+
+    await _openListing(
+      tester,
+      'One-bedroom corner unit with cross-ventilation',
+    );
+
+    expect(find.text('One-bedroom corner unit with cross-ventilation'), findsWidgets);
+    expect(find.text('₱8,500/mo'), findsWidgets);
+
+    expect(find.text('1 Guest'), findsOneWidget);
+    expect(find.text('1 Bed'), findsOneWidget);
+    expect(find.text('1 Bath'), findsOneWidget);
+    expect(find.text('32 sqm'), findsOneWidget);
+
+    for (final tab in ['Overview', 'Photos', '360° Tour', 'Map', 'Reviews']) {
+      expect(find.text(tab, skipOffstage: false), findsOneWidget);
+    }
+
+    final callout = find.text('Explore in 360°');
+    await tester.scrollUntilVisible(callout, 250, scrollable: _page);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Explore in 360°'), findsOneWidget);
+    expect(find.text('Move your phone or drag to look around'), findsOneWidget);
+
+    expect(find.text('Check dates'), findsOneWidget);
+    expect(find.text('About this place'), findsOneWidget);
+    expect(find.text('Message'), findsOneWidget);
+    expect(find.text('Apply to rent'), findsOneWidget);
+  });
+
+  testWidgets('360 tour intro screen matches reference mockup layout and controls', (tester) async {
+    final pixel = (await tester.runAsync(_pixel))!;
+    _ignoreOfflineImages();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(FakeAuth.signedIn()),
+          panoramaImageLoaderProvider.overrideWithValue((_) async => pixel.clone()),
+          listingRepositoryProvider.overrideWithValue(_fakeApi()),
+          apiClientProvider.overrideWithValue(_fakeClient()),
+        ],
+        child: const MaterialApp(
+          home: TourIntroScreen(listingId: 'listing-1'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Explore in 360°'), findsOneWidget);
+    expect(find.textContaining('Move your phone left and right'), findsOneWidget);
+
+    expect(find.text('Tap & Drag'), findsOneWidget);
+    expect(find.text('Look around'), findsOneWidget);
+    expect(find.text('Move Phone'), findsOneWidget);
+    expect(find.text('Left and right'), findsOneWidget);
+    expect(find.text('Immersive View'), findsOneWidget);
+    expect(find.text('See every angle'), findsOneWidget);
+
+    expect(find.text('Start 360° Tour'), findsOneWidget);
+    expect(find.byIcon(Icons.close), findsOneWidget);
+  });
 }

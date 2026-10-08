@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../data/listing_repository.dart';
-
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
+import '../../data/listing_repository.dart';
+import '../../design/app_image.dart';
 import '../../design/money.dart';
 import '../../design/motion.dart';
 import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
-import '../discovery/widgets/listing_card.dart';
 import '../listing/listing_price.dart';
+import 'saved_controller.dart';
 
 class SavedScreen extends ConsumerStatefulWidget {
   const SavedScreen({super.key});
@@ -57,6 +56,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
         : null;
 
     return Scaffold(
+      backgroundColor: Tokens.canvas,
       body: CustomScrollView(
         physics: Tokens.scroll,
         slivers: [
@@ -74,22 +74,58 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Saved', style: theme.textTheme.displaySmall),
-                    const SizedBox(height: Tokens.s12),
-                    Row(
-                      children: [
-                        _SavedTabChip(
-                          label: 'Properties',
-                          count: saved.length,
-                          selected: _tab == 0,
-                          onTap: () => setState(() => _tab = 0),
-                        ),
-                        const SizedBox(width: Tokens.s8),
-                        _SavedTabChip(
-                          label: 'Searches',
-                          selected: _tab == 1,
-                          onTap: () => setState(() => _tab = 1),
-                        ),
-                      ],
+                    const SizedBox(height: Tokens.s16),
+                    Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F4F8),
+                        borderRadius: BorderRadius.circular(Tokens.rSm),
+                      ),
+                      padding: const EdgeInsets.all(4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => _tab = 0),
+                              child: Container(
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: _tab == 0 ? Tokens.primaryNavy : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(Tokens.rSm - 2),
+                                ),
+                                child: Text(
+                                  'Properties',
+                                  style: TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: _tab == 0 ? Colors.white : Tokens.primaryNavy,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => _tab = 1),
+                              child: Container(
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: _tab == 1 ? Tokens.primaryNavy : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(Tokens.rSm - 2),
+                                ),
+                                child: Text(
+                                  'Searches',
+                                  style: TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: _tab == 1 ? Colors.white : Tokens.primaryNavy,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -121,12 +157,13 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
               sliver: SliverList.separated(
                 itemCount: saved.length,
                 separatorBuilder: (_, __) =>
-                    const SizedBox(height: Tokens.section),
+                    const SizedBox(height: Tokens.s16),
                 itemBuilder: (context, i) => Reveal(
                   order: i.clamp(0, 3),
-                  child: ListingCard(
+                  child: _SavedListingCard(
                     listing: saved[i],
                     onTap: () => context.push(Routes.listing(saved[i].id)),
+                    onToggleSave: () => ref.read(savedIdsProvider.notifier).toggle(saved[i].id),
                   ),
                 ),
               ),
@@ -325,66 +362,135 @@ class _EmptySavedSearches extends StatelessWidget {
   }
 }
 
-class _SavedTabChip extends StatelessWidget {
-  const _SavedTabChip({
-    required this.label,
-    required this.selected,
+class _SavedListingCard extends StatelessWidget {
+  const _SavedListingCard({
+    required this.listing,
     required this.onTap,
-    this.count,
+    required this.onToggleSave,
   });
 
-  final String label;
-  final bool selected;
+  final ListingCardView listing;
   final VoidCallback onTap;
-  final int? count;
+  final VoidCallback onToggleSave;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: selected ? Tokens.primaryNavy : Colors.transparent,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: selected ? Tokens.primaryNavy : Tokens.hairline,
-          ),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(Tokens.rMd),
+          border: Border.all(color: Tokens.hairline),
         ),
+        padding: const EdgeInsets.all(12),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: selected ? Colors.white : Tokens.primaryNavy,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(Tokens.rSm),
+              child: SizedBox(
+                width: 110,
+                height: 105,
+                child: AppImage(
+                  url: listing.photos.firstOrNull ?? '',
+                  fit: BoxFit.cover,
+                  fallbackIcon: Icons.apartment_outlined,
+                ),
               ),
             ),
-            if (count != null && count! > 0) ...[
-              const SizedBox(width: 5),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                decoration: BoxDecoration(
-                  color: selected
-                      ? Colors.white.withValues(alpha: 0.25)
-                      : Tokens.softBlue,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  '$count',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: selected ? Colors.white : Tokens.primaryBlue,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          listing.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Tokens.primaryNavy,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: onToggleSave,
+                        child: const Icon(
+                          Icons.favorite,
+                          size: 20,
+                          color: Tokens.primaryNavy,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                  const SizedBox(height: 2),
+                  Text(
+                    [listing.place, if (listing.propertyName.isNotEmpty) listing.propertyName].join(' · '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: Tokens.muted,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          listing.isSale ? kPriceOnInquiry : listingPriceLabel(listing),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: Tokens.primaryNavy,
+                          ),
+                        ),
+                      ),
+                      const Icon(Icons.more_horiz, size: 20, color: Tokens.muted),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(Icons.bed_outlined, size: 14, color: Tokens.muted),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${listing.beds} Beds',
+                        style: const TextStyle(fontSize: 11.5, color: Tokens.muted),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.bathtub_outlined, size: 14, color: Tokens.muted),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${listing.baths} Baths',
+                        style: const TextStyle(fontSize: 11.5, color: Tokens.muted),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.aspect_ratio, size: 14, color: Tokens.muted),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${listing.sqm ?? 0} sqm',
+                        style: const TextStyle(fontSize: 11.5, color: Tokens.muted),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
           ],
         ),
       ),
     );
   }
 }
+

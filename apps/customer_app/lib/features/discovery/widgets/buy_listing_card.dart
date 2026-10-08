@@ -17,13 +17,6 @@ class BuyListingCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final saved = ref.watch(isSavedProvider(listing.id));
-    final facts = [
-      if (listing.beds > 0) '${listing.beds} bd',
-      if (listing.baths > 0) '${listing.baths} ba',
-      if (listing.sqm != null) '${listing.sqm} m²',
-      if (listing.sqm == null && listing.lotAreaSqm != null) '${listing.lotAreaSqm} m² lot',
-      if (listing.parkingSlots > 0) '${listing.parkingSlots} prk',
-    ];
     return Semantics(
       button: true,
       label: '${listing.title}, ${listing.place}, $kPriceOnInquiry',
@@ -57,24 +50,40 @@ class BuyListingCard extends ConsumerWidget {
                           cacheWidth: 720,
                         ),
                       ),
-                      Positioned(
-                        left: 10,
-                        top: 10,
-                        child: Row(
-                          children: [
-                            _Badge(label: listing.typeLabel),
-                            if (listing.saleStatus == 'PRE_SELLING') ...[
-                              const SizedBox(width: 6),
-                              const _Badge(label: 'Pre-selling'),
-                            ],
-                          ],
-                        ),
-                      ),
                       if (listing.hasTour)
-                        const Positioned(
+                        Positioned(
                           left: 10,
                           bottom: 10,
-                          child: _Badge(label: '360°', icon: Icons.threed_rotation, dark: true),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.65),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.view_in_ar_outlined, size: 14, color: Colors.white),
+                                SizedBox(width: 5),
+                                Text.rich(
+                                  TextSpan(
+                                    text: '360°\u200b Tour',
+                                    style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      if (listing.photos.isNotEmpty)
+                        Positioned(
+                          right: 10,
+                          bottom: 10,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(999)),
+                            child: Text('1/${listing.photos.length}', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                          ),
                         ),
                       if (onToggleSave != null)
                         Positioned(
@@ -100,7 +109,7 @@ class BuyListingCard extends ConsumerWidget {
                       listing.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w700, color: Tokens.primaryNavy, letterSpacing: -0.2),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Tokens.primaryNavy, letterSpacing: -0.2),
                     ),
                     const SizedBox(height: 3),
                     Row(
@@ -117,11 +126,7 @@ class BuyListingCard extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    if (facts.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(facts.join('  ·  '), style: const TextStyle(fontSize: 12.5, color: Tokens.primaryNavy)),
-                    ],
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     const Row(
                       children: [
                         Icon(Icons.lock_outline, size: 14, color: Tokens.primaryNavy),
@@ -129,10 +134,41 @@ class BuyListingCard extends ConsumerWidget {
                         Expanded(
                           child: Text(
                             kPriceOnInquiry,
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Tokens.primaryNavy),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Tokens.primaryNavy),
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          if (listing.beds > 0) ...[
+                            const Icon(Icons.bed_outlined, size: 16, color: Tokens.primaryNavy),
+                            const SizedBox(width: 4),
+                            Text('${listing.beds} Beds', style: const TextStyle(fontSize: 12, color: Tokens.primaryNavy, fontWeight: FontWeight.w500)),
+                            const SizedBox(width: 12),
+                          ],
+                          if (listing.baths > 0) ...[
+                            const Icon(Icons.bathtub_outlined, size: 16, color: Tokens.primaryNavy),
+                            const SizedBox(width: 4),
+                            Text('${listing.baths} Baths', style: const TextStyle(fontSize: 12, color: Tokens.primaryNavy, fontWeight: FontWeight.w500)),
+                            const SizedBox(width: 12),
+                          ],
+                          if (listing.sqm != null || listing.lotAreaSqm != null) ...[
+                            const Icon(Icons.aspect_ratio, size: 16, color: Tokens.primaryNavy),
+                            const SizedBox(width: 4),
+                            Text('${listing.sqm ?? listing.lotAreaSqm} sqm', style: const TextStyle(fontSize: 12, color: Tokens.primaryNavy, fontWeight: FontWeight.w500)),
+                            const SizedBox(width: 12),
+                          ],
+                          if (listing.parkingSlots > 0) ...[
+                            const Icon(Icons.directions_car_outlined, size: 16, color: Tokens.primaryNavy),
+                            const SizedBox(width: 4),
+                            Text('${listing.parkingSlots} Garage', style: const TextStyle(fontSize: 12, color: Tokens.primaryNavy, fontWeight: FontWeight.w500)),
+                          ],
+                        ],
+                      ),
                     ),
                     if (listing.representative != null) ...[
                       const SizedBox(height: 10),
@@ -203,35 +239,6 @@ class BuyListingCard extends ConsumerWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  const _Badge({required this.label, this.icon, this.dark = false});
-
-  final String label;
-  final IconData? icon;
-  final bool dark;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: dark ? Colors.black.withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.94),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 13, color: dark ? Colors.white : Tokens.primaryNavy),
-            const SizedBox(width: 3),
-          ],
-          Text(label, style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: dark ? Colors.white : Tokens.primaryNavy)),
-        ],
       ),
     );
   }

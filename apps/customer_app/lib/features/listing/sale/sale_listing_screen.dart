@@ -90,23 +90,12 @@ class _SaleListingViewState extends ConsumerState<SaleListingView> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s20, Tokens.gutter, Tokens.s8),
+              padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s16, Tokens.gutter, Tokens.s8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Wrap(
-                    spacing: Tokens.s8,
-                    runSpacing: Tokens.s6,
-                    children: [
-                      const _Pill(label: 'For sale', dark: true),
-                      _Pill(label: card.typeLabel),
-                      _Pill(label: card.saleStatusLabel),
-                      if (card.hasTour) const _Pill(label: '360° tour', icon: Icons.threed_rotation),
-                    ],
-                  ),
-                  const SizedBox(height: Tokens.s12),
-                  Text(card.title, style: theme.textTheme.headlineMedium?.copyWith(color: Tokens.primaryNavy)),
-                  const SizedBox(height: Tokens.s6),
+                  Text(card.title, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       const Icon(Icons.location_on_outlined, size: 16, color: Tokens.muted),
@@ -121,6 +110,8 @@ class _SaleListingViewState extends ConsumerState<SaleListingView> {
                   ),
                   const SizedBox(height: Tokens.s12),
                   const _PriceOnInquiry(),
+                  const SizedBox(height: Tokens.s16),
+                  _PropertyAttributesRow(card: card),
                 ],
               ),
             ),
@@ -180,7 +171,7 @@ class _Hero extends StatelessWidget {
   Widget build(BuildContext context) {
     final photos = card.photos;
     return SizedBox(
-      height: 320,
+      height: 340,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -195,7 +186,7 @@ class _Hero extends StatelessWidget {
                 return i == 0 ? Hero(tag: 'photo-${card.id}', child: image) : image;
               },
             ),
-          const IgnorePointer(child: PhotoScrim(top: 0.3, bottom: 0.2)),
+          const IgnorePointer(child: PhotoScrim(top: 0.3, bottom: 0.25)),
           Positioned(
             top: 0,
             left: 0,
@@ -219,53 +210,73 @@ class _Hero extends StatelessWidget {
                         child: Icon(saved ? Icons.favorite : Icons.favorite_border, size: 18, color: Colors.white),
                       ),
                     ),
+                    const SizedBox(width: Tokens.s8),
+                    Glass.circle(
+                      onTap: () {},
+                      child: const Icon(Icons.share_outlined, size: 18, color: Colors.white),
+                    ),
                   ],
                 ),
               ),
             ),
           ),
-          if (photos.length > 1)
+          if (card.hasTour)
+            Positioned(
+              left: Tokens.s16,
+              bottom: Tokens.s16,
+              child: GestureDetector(
+                onTap: () => context.push(Routes.tour(card.id)),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.view_in_ar, size: 16, color: Colors.white),
+                      SizedBox(width: 6),
+                      Text.rich(
+                        TextSpan(
+                          text: '360°\u200b Tour',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          if (photos.isNotEmpty)
             Positioned(
               right: Tokens.s16,
               bottom: Tokens.s16,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(999)),
-                child: Text('${index + 1}/${photos.length}', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '${index + 1}/${photos.length}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Pill extends StatelessWidget {
-  const _Pill({required this.label, this.dark = false, this.icon});
-
-  final String label;
-  final bool dark;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: dark ? Tokens.primaryNavy : Tokens.softBlue,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 13, color: dark ? Colors.white : Tokens.primaryNavy),
-            const SizedBox(width: 4),
-          ],
-          Text(
-            label,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: dark ? Colors.white : Tokens.primaryNavy),
-          ),
         ],
       ),
     );
@@ -277,33 +288,98 @@ class _PriceOnInquiry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return const Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.lock_outline, size: 18, color: Tokens.primaryNavy),
+        SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            kPriceOnInquiry,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: Tokens.primaryNavy,
+              letterSpacing: -0.3,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PropertyAttributesRow extends StatelessWidget {
+  const _PropertyAttributesRow({required this.card});
+
+  final ListingCardView card;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(Tokens.s16),
+      padding: const EdgeInsets.symmetric(vertical: Tokens.s12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(Tokens.rMd),
+        borderRadius: BorderRadius.circular(Tokens.rSm),
         border: Border.all(color: Tokens.hairline),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.lock_outline, size: 20, color: Tokens.primaryNavy),
-          SizedBox(width: Tokens.s12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(kPriceOnInquiry, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
-                SizedBox(height: 2),
-                Text(
-                  'The agent or owner shares pricing and payment terms privately when you inquire.',
-                  style: TextStyle(fontSize: 12.5, color: Tokens.muted),
-                ),
-              ],
+            child: _AttributeCol(
+              icon: Icons.bed_outlined,
+              label: '${card.beds} Beds',
+            ),
+          ),
+          Container(width: 1, height: 32, color: Tokens.hairline),
+          Expanded(
+            child: _AttributeCol(
+              icon: Icons.bathtub_outlined,
+              label: '${card.baths} Baths',
+            ),
+          ),
+          Container(width: 1, height: 32, color: Tokens.hairline),
+          Expanded(
+            child: _AttributeCol(
+              icon: Icons.aspect_ratio,
+              label: '${card.sqm ?? card.lotAreaSqm ?? 0} sqm',
+            ),
+          ),
+          Container(width: 1, height: 32, color: Tokens.hairline),
+          Expanded(
+            child: _AttributeCol(
+              icon: Icons.directions_car_outlined,
+              label: '${card.parkingSlots > 0 ? card.parkingSlots : 1} Garage',
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AttributeCol extends StatelessWidget {
+  const _AttributeCol({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 20, color: Tokens.primaryNavy),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+            color: Tokens.primaryNavy,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -396,95 +472,12 @@ class _Overview extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final card = detail.card;
-    final facts = <(IconData, String, String)>[
-      if (card.beds > 0) (Icons.bed_outlined, '${card.beds}', card.beds == 1 ? 'Bedroom' : 'Bedrooms'),
-      if (card.baths > 0) (Icons.bathtub_outlined, '${card.baths}', card.baths == 1 ? 'Bathroom' : 'Bathrooms'),
-      if (card.sqm != null) (Icons.square_foot, '${card.sqm} m²', 'Floor area'),
-      if (card.lotAreaSqm != null) (Icons.crop_square, '${card.lotAreaSqm} m²', 'Lot area'),
-      if (card.parkingSlots > 0) (Icons.directions_car_outlined, '${card.parkingSlots}', card.parkingSlots == 1 ? 'Parking' : 'Parking slots'),
-    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (facts.isNotEmpty)
-          Wrap(
-            spacing: Tokens.s8,
-            runSpacing: Tokens.s8,
-            children: [
-              for (final (icon, value, label) in facts)
-                Container(
-                  width: 104,
-                  padding: const EdgeInsets.all(Tokens.s12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(Tokens.rSm),
-                    border: Border.all(color: Tokens.hairline),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(icon, size: 18, color: Tokens.primaryNavy),
-                      const SizedBox(height: 6),
-                      Text(value, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Tokens.primaryNavy)),
-                      Text(label, style: const TextStyle(fontSize: 11.5, color: Tokens.muted)),
-                    ],
-                  ),
-                ),
-            ],
-          ),
         if (card.hasTour) ...[
-          const SizedBox(height: Tokens.s16),
-          Material(
-            color: Tokens.primaryNavy,
-            borderRadius: BorderRadius.circular(Tokens.rMd),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(Tokens.rMd),
-              onTap: () => context.push(Routes.tour(card.id)),
-              child: Padding(
-                padding: const EdgeInsets.all(Tokens.s16),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.threed_rotation,
-                      color: Colors.white,
-                      size: 26,
-                    ),
-                    const SizedBox(width: Tokens.s16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Walk through it',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            card.sceneCount > 0
-                                ? '${card.sceneCount} room${card.sceneCount == 1 ? '' : 's'} to walk through'
-                                : 'Explore with 360° virtual tour',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.75),
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(
-                      Icons.arrow_forward_ios,
-                      color: Colors.white70,
-                      size: 16,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          _ExploreTourPromoCard(card: card),
+          const SizedBox(height: Tokens.s20),
         ],
         const SizedBox(height: Tokens.s20),
         if (openInquiry != null)
@@ -535,6 +528,113 @@ class _Overview extends StatelessWidget {
         const SizedBox(height: Tokens.s12),
         _PartnerCard(card: card, ownerName: detail.ownerName, ownerVerified: detail.ownerVerified),
       ],
+    );
+  }
+}
+
+class _ExploreTourPromoCard extends StatelessWidget {
+  const _ExploreTourPromoCard({required this.card});
+
+  final ListingCardView card;
+
+  @override
+  Widget build(BuildContext context) {
+    final photo = card.photos.isNotEmpty ? card.photos.first : '';
+    return Container(
+      height: 180,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(Tokens.rMd),
+        color: Tokens.primaryNavy,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (photo.isNotEmpty)
+            AppImage(url: photo, fallbackIcon: Icons.threed_rotation, seed: 1)
+          else
+            Container(color: Tokens.primaryNavy),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.1),
+                  Colors.black.withValues(alpha: 0.75),
+                ],
+              ),
+            ),
+          ),
+          Center(
+            child: Material(
+              color: Colors.white,
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () => context.push(Routes.tour(card.id)),
+                child: const Padding(
+                  padding: EdgeInsets.all(14),
+                  child: Icon(Icons.play_arrow, size: 28, color: Tokens.primaryNavy),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: Tokens.s16,
+            right: Tokens.s16,
+            bottom: Tokens.s12,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Explore in 360°',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Take a virtual tour of this property',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Material(
+                  color: Colors.white,
+                  shape: const CircleBorder(),
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: () => context.push(Routes.tour(card.id)),
+                    child: const Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Icon(Icons.arrow_forward, size: 18, color: Tokens.primaryNavy),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => context.push(Routes.tour(card.id)),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

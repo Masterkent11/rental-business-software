@@ -23,6 +23,7 @@ import '../features/listing/listing_detail_screen.dart';
 import '../features/saved/saved_screen.dart';
 import '../features/shell/home_shell.dart';
 import '../features/tour/tour_screen.dart';
+import '../features/tour/tour_intro_screen.dart';
 import '../features/property_search/domain/property_search_criteria.dart';
 import '../features/property_search/domain/property_type.dart';
 import '../features/property_search/presentation/property_results_screen.dart';
@@ -41,6 +42,7 @@ abstract final class Routes {
   static String propertySearch(PropertyType type) => '$discover/search/${type.name}';
   static String listing(String id) => '$discover/listing/$id';
   static String tour(String id) => '${listing(id)}/tour';
+  static String tourIntro(String id) => '${listing(id)}/tour-intro';
   static String book(String id) => '${listing(id)}/book';
   static String apply(String id) => '${listing(id)}/apply';
   static String inquire(String id) => '${listing(id)}/inquire';
@@ -125,6 +127,11 @@ GoRouter buildRouter() {
                         path: 'tour',
                         parentNavigatorKey: _rootNavigatorKey,
                         builder: (context, state) => TourScreen(listingId: state.pathParameters['id']!),
+                      ),
+                      GoRoute(
+                        path: 'tour-intro',
+                        parentNavigatorKey: _rootNavigatorKey,
+                        builder: (context, state) => TourIntroScreen(listingId: state.pathParameters['id']!),
                       ),
                       GoRoute(
                         path: 'book',
