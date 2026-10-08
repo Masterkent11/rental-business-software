@@ -469,7 +469,7 @@ void main() {
   testWidgets('the category chips filter rentals', (tester) async {
     await _pumpApp(tester);
 
-    expect(find.text('Featured for You'), findsOneWidget);
+    expect(find.text('Find your next place'), findsOneWidget);
 
     await tester.tap(find.text('Condo'));
     await tester.pumpAndSettle();
@@ -533,7 +533,7 @@ void main() {
     expect(find.byType(EmptyBookingsArt), findsOneWidget);
     await tester.tap(find.text('Explore places'));
     await tester.pumpAndSettle();
-    expect(find.text('Featured for You'), findsOneWidget);
+    expect(find.text('Find your next place'), findsOneWidget);
   });
 
   testWidgets('a booking opens its detail, with dates and what was paid', (

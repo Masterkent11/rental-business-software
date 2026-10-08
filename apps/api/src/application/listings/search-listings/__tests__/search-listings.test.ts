@@ -10,6 +10,7 @@ const listing = (over: Partial<Listing> = {}): Listing => ({
   id: 'l-1',
   organizationId: 'org-1' as OrganizationId,
   resourceId: 'r-1',
+  intent: 'RENT',
   kind: 'LONG_TERM',
   resourceType: 'UNIT',
   title: 'One-bedroom corner unit',
@@ -50,6 +51,20 @@ const leakyRepo = (rows: Listing[]): ListingRepository => ({
   listResources: async () => [],
   listProperties: async () => [],
   stayPricing: async () => null,
+  createSaleListing: async () => rows[0]!,
+  updateSaleListing: async () => rows[0] ?? null,
+  saleTerms: async () => null,
+  saveSaleTerms: async () => ({
+    listingId: 'l-1',
+    askingPriceInternalCentavos: null,
+    priceNegotiable: true,
+    commercialNotes: '',
+    updatedAt: null,
+  }),
+  areas: async () => [],
+  addFloorPlan: async () => ({ id: 'f-1', url: 'u', storagePath: null, position: 0, label: 'Ground floor' }),
+  removeFloorPlan: async () => null,
+  findRepresented: async () => null,
 });
 
 describe('searchListings', () => {

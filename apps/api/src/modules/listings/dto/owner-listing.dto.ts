@@ -36,13 +36,73 @@ const listingDetailsShape = {
   availableFrom: isoDay.nullable(),
 };
 
+const locationSchema = z.object({
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  privacy: z.enum(['EXACT', 'APPROXIMATE']).default('APPROXIMATE'),
+});
+
 const propertyShape = {
   name: z.string().trim().min(2).max(120),
-  propertyType: z.enum(['APARTMENT', 'CONDO', 'HOUSE', 'ROOM', 'BOARDING_HOUSE']),
+  propertyType: z.enum(['APARTMENT', 'CONDO', 'HOUSE', 'ROOM', 'BOARDING_HOUSE', 'TOWNHOUSE', 'LOT', 'COMMERCIAL']),
   addressLine: z.string().trim().max(200),
   areaLabel: z.string().trim().min(2).max(120),
   cityLabel: z.string().trim().min(2).max(120),
+  location: locationSchema.nullable().optional(),
 };
+
+const saleListingShape = {
+  title: z.string().trim().min(3).max(120),
+  description: z.string().trim().max(4000),
+  amenities: textList,
+  saleStatus: z.enum(['READY_FOR_OCCUPANCY', 'PRE_SELLING', 'UNDER_CONSTRUCTION']),
+  bedrooms: z.number().int().min(0).max(50),
+  bathrooms: z.number().int().min(0).max(50),
+  floorAreaSqm: z.number().int().positive().max(100_000).nullable(),
+  lotAreaSqm: z.number().int().positive().max(10_000_000).nullable(),
+  parkingSlots: z.number().int().min(0).max(50),
+  availableFrom: isoDay.nullable(),
+};
+
+export const saleTermsSchema = z.object({
+  askingPriceInternalCentavos: z.number().int().positive().max(10_000_000_000_00).nullable(),
+  priceNegotiable: z.boolean().default(true),
+  commercialNotes: z.string().max(4000).default(''),
+});
+
+export const createSaleListingSchema = z.object({
+  property: z.object({
+    ...propertyShape,
+    propertyType: z.enum(['HOUSE', 'CONDO', 'TOWNHOUSE', 'LOT', 'COMMERCIAL']),
+    addressLine: propertyShape.addressLine.default(''),
+    location: locationSchema,
+  }),
+  listing: z.object({
+    ...saleListingShape,
+    description: saleListingShape.description.default(''),
+    amenities: textList.default([]),
+    bedrooms: saleListingShape.bedrooms.default(0),
+    bathrooms: saleListingShape.bathrooms.default(0),
+    floorAreaSqm: saleListingShape.floorAreaSqm.default(null),
+    lotAreaSqm: saleListingShape.lotAreaSqm.default(null),
+    parkingSlots: saleListingShape.parkingSlots.default(0),
+    availableFrom: saleListingShape.availableFrom.default(null),
+  }),
+  saleTerms: saleTermsSchema.nullable().default(null),
+});
+
+export const updateSaleListingSchema = z.object({
+  listing: z.object(saleListingShape).partial().default({}),
+  property: z
+    .object({ ...propertyShape, propertyType: z.enum(['HOUSE', 'CONDO', 'TOWNHOUSE', 'LOT', 'COMMERCIAL']) })
+    .partial()
+    .optional(),
+});
+
+export const registerFloorPlanSchema = z.object({
+  storagePath: z.string().trim().min(10).max(300),
+  label: z.string().trim().min(2).max(60),
+});
 
 export const createPropertyListingSchema = z.object({
   property: z.object({ ...propertyShape, addressLine: propertyShape.addressLine.default('') }),

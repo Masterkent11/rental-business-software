@@ -143,7 +143,7 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
                         children: [
                           Text(detail.card.title, style: theme.textTheme.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
                           const SizedBox(height: 2),
-                          Text(detail.card.location, style: theme.textTheme.bodySmall),
+                          Text(detail.card.place, style: theme.textTheme.bodySmall),
                         ],
                       ),
                     ),

@@ -3,59 +3,84 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/listing_repository.dart';
 import '../../fixtures/view_models.dart';
+import '../location/location_controller.dart';
 import 'search_criteria.dart';
+
+enum MarketIntent { rent, buy }
+
+enum BuyCategory {
+  houseAndLot('House & Lot', propertyType: 'HOUSE'),
+  condo('Condo', propertyType: 'CONDO'),
+  townhouse('Townhouse', propertyType: 'TOWNHOUSE'),
+  lot('Lot', propertyType: 'LOT'),
+  commercial('Commercial', propertyType: 'COMMERCIAL'),
+  preSelling('Pre-selling', saleStatus: 'PRE_SELLING');
+
+  const BuyCategory(this.label, {this.propertyType, this.saleStatus});
+
+  final String label;
+  final String? propertyType;
+  final String? saleStatus;
+}
 
 @immutable
 class DiscoveryFilters {
   const DiscoveryFilters({
     this.query = '',
+    this.intent = MarketIntent.rent,
+    this.buyCategory,
     this.kind,
     this.type,
     this.maxCentavos,
     this.tourOnly = false,
-    this.availableOnly = false,
   });
 
   final String query;
+  final MarketIntent intent;
+  final BuyCategory? buyCategory;
   final ListingKind? kind;
   final ResourceType? type;
   final int? maxCentavos;
   final bool tourOnly;
-  final bool availableOnly;
+
+  bool get isBuy => intent == MarketIntent.buy;
 
   bool get isFiltered =>
+      buyCategory != null ||
       kind != null ||
       type != null ||
       maxCentavos != null ||
-      tourOnly ||
-      availableOnly;
+      tourOnly;
 
   int get activeCount => [
+    buyCategory != null,
     kind != null,
     type != null,
     maxCentavos != null,
     tourOnly,
-    availableOnly,
   ].where((on) => on).length;
 
   DiscoveryFilters copyWith({
     String? query,
+    MarketIntent? intent,
+    BuyCategory? buyCategory,
+    bool clearBuyCategory = false,
     ListingKind? kind,
     ResourceType? type,
     int? maxCentavos,
     bool? tourOnly,
-    bool? availableOnly,
     bool clearKind = false,
     bool clearType = false,
     bool clearMax = false,
   }) {
     return DiscoveryFilters(
       query: query ?? this.query,
+      intent: intent ?? this.intent,
+      buyCategory: clearBuyCategory ? null : (buyCategory ?? this.buyCategory),
       kind: clearKind ? null : (kind ?? this.kind),
       type: clearType ? null : (type ?? this.type),
       maxCentavos: clearMax ? null : (maxCentavos ?? this.maxCentavos),
       tourOnly: tourOnly ?? this.tourOnly,
-      availableOnly: availableOnly ?? this.availableOnly,
     );
   }
 }
@@ -70,6 +95,14 @@ class FiltersController extends Notifier<DiscoveryFilters> {
 
   void setQuery(String value) => state = state.copyWith(query: value);
 
+  void setIntent(MarketIntent intent) {
+    if (intent == state.intent) return;
+    state = DiscoveryFilters(query: state.query, intent: intent);
+  }
+
+  void setBuyCategory(BuyCategory? category) =>
+      state = state.copyWith(buyCategory: category, clearBuyCategory: category == null);
+
   void setKind(ListingKind? kind) =>
       state = state.copyWith(kind: kind, clearKind: kind == null);
 
@@ -81,10 +114,8 @@ class FiltersController extends Notifier<DiscoveryFilters> {
 
   void setTourOnly(bool value) => state = state.copyWith(tourOnly: value);
 
-  void setAvailableOnly(bool value) =>
-      state = state.copyWith(availableOnly: value);
 
-  void clear() => state = DiscoveryFilters(query: state.query);
+  void clear() => state = DiscoveryFilters(query: state.query, intent: state.intent);
 }
 
 class DiscoveryFeedState {
@@ -123,7 +154,8 @@ class DiscoveryFeed extends AutoDisposeAsyncNotifier<DiscoveryFeedState> {
   @override
   Future<DiscoveryFeedState> build() async {
     final filters = ref.watch(filtersProvider);
-    final page = await ref.watch(listingRepositoryProvider).search(filters);
+    final place = ref.watch(locationProvider.select((s) => s.place));
+    final page = await ref.watch(listingRepositoryProvider).search(filters, place: place);
     return DiscoveryFeedState(items: page.items, total: page.total, hasMore: page.hasMore);
   }
 
@@ -134,7 +166,7 @@ class DiscoveryFeed extends AutoDisposeAsyncNotifier<DiscoveryFeedState> {
     try {
       final page = await ref
           .read(listingRepositoryProvider)
-          .search(ref.read(filtersProvider), offset: current.items.length);
+          .search(ref.read(filtersProvider), place: ref.read(locationProvider).place, offset: current.items.length);
       final seen = current.items.map((l) => l.id).toSet();
       state = AsyncData(
         current.copyWith(
@@ -152,6 +184,18 @@ class DiscoveryFeed extends AutoDisposeAsyncNotifier<DiscoveryFeedState> {
 
 final resultsProvider =
     AsyncNotifierProvider.autoDispose<DiscoveryFeed, DiscoveryFeedState>(DiscoveryFeed.new);
+
+final nearbyProvider = FutureProvider.autoDispose<List<ListingCardView>>((ref) async {
+  final place = ref.watch(locationProvider.select((s) => s.place));
+  if (place is! NearMePlace) return const [];
+  final intent = ref.watch(filtersProvider.select((f) => f.intent));
+  final page = await ref.watch(listingRepositoryProvider).search(
+        DiscoveryFilters(intent: intent),
+        place: place,
+        limit: 10,
+      );
+  return page.items;
+});
 
 final featuredLensProvider = StateProvider<FeaturedLens>(
   (ref) => FeaturedLens.popular,

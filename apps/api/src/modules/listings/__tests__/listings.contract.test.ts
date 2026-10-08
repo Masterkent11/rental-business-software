@@ -13,6 +13,7 @@ const listing = (over: Partial<Listing> = {}): Listing => ({
   id: '11111111-1111-1111-1111-111111111111',
   organizationId: 'org-1' as OrganizationId,
   resourceId: 'r-1',
+  intent: 'RENT',
   kind: 'LONG_TERM',
   resourceType: 'UNIT',
   title: 'One-bedroom corner unit',
@@ -42,6 +43,7 @@ const repo = (rows: Listing[]): ListingRepository => ({
     let out = rows.filter((r) => r.state === 'PUBLISHED');
     if (query.ids) out = out.filter((r) => query.ids!.includes(r.id));
     if (query.kind) out = out.filter((r) => r.kind === query.kind);
+    if (query.intent) out = out.filter((r) => r.intent === query.intent);
     if (query.hasTour) out = out.filter((r) => r.hasTour);
     if (query.maxPriceCentavos !== undefined) {
       out = out.filter((r) => r.priceCentavos <= query.maxPriceCentavos!);
@@ -63,6 +65,20 @@ const repo = (rows: Listing[]): ListingRepository => ({
   listResources: async () => [],
   listProperties: async () => [],
   stayPricing: async () => null,
+  createSaleListing: async () => rows[0]!,
+  updateSaleListing: async () => rows[0] ?? null,
+  saleTerms: async () => null,
+  saveSaleTerms: async () => ({
+    listingId: 'l-1',
+    askingPriceInternalCentavos: null,
+    priceNegotiable: true,
+    commercialNotes: '',
+    updatedAt: null,
+  }),
+  areas: async () => [],
+  addFloorPlan: async () => ({ id: 'f-1', url: 'u', storagePath: null, position: 0, label: 'Ground floor' }),
+  removeFloorPlan: async () => null,
+  findRepresented: async () => null,
 });
 
 const searchControllerFor = (rows: Listing[]) => {
@@ -203,5 +219,66 @@ describe('GET /listings/:id', () => {
     await expect(
       viewControllerFor([listing()]).byId('not-a-uuid'),
     ).rejects.toBeInstanceOf(NotFoundException);
+  });
+});
+
+describe('confidential sale pricing on public endpoints', () => {
+  const LEAKED = 1_850_000_000;
+  const sale = (over: Partial<Listing> = {}) =>
+    listing({
+      id: '55555555-5555-5555-5555-555555555555',
+      intent: 'SALE',
+      kind: null,
+      priceCentavos: centavos(LEAKED),
+      cleaningFeeCentavos: centavos(0),
+      saleStatus: 'READY_FOR_OCCUPANCY',
+      lotAreaSqm: 300,
+      parkingSlots: 2,
+      location: { latitude: 10.358912, longitude: 123.911234, privacy: 'APPROXIMATE' },
+      publicLocation: { latitude: 10.36, longitude: 123.91 },
+      advanceMonths: 0,
+      depositMonths: 0,
+      ...over,
+    });
+
+  it('search returns no sale price even if one reached the listing row', async () => {
+    const body = await searchControllerFor([sale()]).list({ intent: 'SALE' });
+    const item = (body as { items: Record<string, unknown>[] }).items[0]!;
+    expect(item.pricing).toBe('ON_INQUIRY');
+    expect(item.priceCentavos).toBeNull();
+    expect(item.cleaningFeeCentavos).toBeNull();
+    expect(item.moveInCost).toBeNull();
+    expect(JSON.stringify(body)).not.toContain(String(LEAKED));
+    expect(JSON.stringify(body)).not.toContain('18500000');
+  });
+
+  it('the detail endpoint returns no sale price and only the rounded location', async () => {
+    const body = await viewControllerFor([sale()]).byId('55555555-5555-5555-5555-555555555555');
+    const json = JSON.stringify(body);
+    expect(body.priceCentavos).toBeNull();
+    expect(json).not.toContain(String(LEAKED));
+    expect(json).not.toContain('askingPrice');
+    expect(json).not.toContain('10.358912');
+    expect(body.location).toEqual({ latitude: 10.36, longitude: 123.91, precision: 'APPROXIMATE' });
+  });
+
+  it('refuses to filter or sort sale listings by price', async () => {
+    const controller = searchControllerFor([sale()]);
+    await expect(controller.list({ intent: 'SALE', maxPrice: '2000000000' })).rejects.toBeInstanceOf(BadRequestException);
+    await expect(controller.list({ intent: 'SALE', minPrice: '1' })).rejects.toBeInstanceOf(BadRequestException);
+    await expect(controller.list({ intent: 'SALE', sort: 'PRICE_ASC' })).rejects.toBeInstanceOf(BadRequestException);
+    await expect(controller.list({ intent: 'SALE', sort: 'PRICE_DESC' })).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('needs both coordinates for a location search', async () => {
+    await expect(searchControllerFor([sale()]).list({ lat: '10.3' })).rejects.toBeInstanceOf(BadRequestException);
+    await expect(searchControllerFor([sale()]).list({ sort: 'DISTANCE' })).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('rental listings still show their price', async () => {
+    const body = await searchControllerFor([listing()]).list({ intent: 'RENT' });
+    const item = (body as { items: Record<string, unknown>[] }).items[0]!;
+    expect(item.pricing).toBe('LISTED');
+    expect(item.priceCentavos).toBe(850_000);
   });
 });

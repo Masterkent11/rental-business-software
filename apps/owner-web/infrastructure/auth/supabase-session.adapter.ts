@@ -1,14 +1,12 @@
 import type { SessionPort } from "../../application/ports/session.port";
-import {
-  NotAnOwnerError,
-  type ActiveSession,
-  type OrganizationMembership,
-} from "../../domain/session/session";
+import type { ActiveSession, OrganizationMembership } from "../../domain/session/session";
+import { chooseWorkspace, ownerKey, workspacesFor, type AgentSummary } from "../../domain/workspace/workspace";
 import { HttpClient } from "../http/http-client";
 import { MeDtoSchema } from "../http/dto/owner.dto";
 import { supabaseBrowserClient } from "../supabase/browser-client";
 
-const ACTIVE_ORG_KEY = "owner-web.activeOrganizationId";
+const ACTIVE_WORKSPACE_KEY = "partner-portal.workspace";
+const LEGACY_ORG_KEY = "owner-web.activeOrganizationId";
 
 function friendlyAuthError(message: string | undefined): string {
   const text = (message ?? "").toLowerCase();
@@ -27,9 +25,12 @@ function friendlyAuthError(message: string | undefined): string {
   return "Sign-in failed. Please try again.";
 }
 
-function rememberedOrganization(): string | null {
+function rememberedWorkspace(): string | null {
   try {
-    return window.localStorage.getItem(ACTIVE_ORG_KEY);
+    const current = window.localStorage.getItem(ACTIVE_WORKSPACE_KEY);
+    if (current) return current;
+    const legacy = window.localStorage.getItem(LEGACY_ORG_KEY);
+    return legacy ? ownerKey(legacy) : null;
   } catch {
     return null;
   }
@@ -41,15 +42,7 @@ export class SupabaseSessionAdapter implements SessionPort {
   async getCurrentSession(): Promise<ActiveSession | null> {
     const { data } = await supabaseBrowserClient().auth.getSession();
     if (!data.session) return null;
-    try {
-      return await this.resolveActiveSession();
-    } catch (error) {
-      if (error instanceof NotAnOwnerError) {
-        await supabaseBrowserClient().auth.signOut();
-        return null;
-      }
-      throw error;
-    }
+    return this.resolveActiveSession();
   }
 
   async signIn(email: string, password: string): Promise<ActiveSession> {
@@ -64,24 +57,29 @@ export class SupabaseSessionAdapter implements SessionPort {
   }
 
   async signOut(): Promise<void> {
-    this.forgetOrganization();
+    this.forgetWorkspace();
     await supabaseBrowserClient().auth.signOut();
   }
 
-  private forgetOrganization(): void {
+  private forgetWorkspace(): void {
     try {
-      window.localStorage.removeItem(ACTIVE_ORG_KEY);
+      window.localStorage.removeItem(ACTIVE_WORKSPACE_KEY);
+      window.localStorage.removeItem(LEGACY_ORG_KEY);
     } catch {
       return;
     }
   }
 
-  rememberOrganization(organizationId: string): void {
+  rememberWorkspace(key: string): void {
     try {
-      window.localStorage.setItem(ACTIVE_ORG_KEY, organizationId);
+      window.localStorage.setItem(ACTIVE_WORKSPACE_KEY, key);
     } catch {
       return;
     }
+  }
+
+  async refresh(): Promise<ActiveSession> {
+    return this.resolveActiveSession();
   }
 
   private async resolveActiveSession(): Promise<ActiveSession> {
@@ -93,21 +91,25 @@ export class SupabaseSessionAdapter implements SessionPort {
       verified: o.verified,
     }));
 
-    if (memberships.length === 0) {
-      throw new NotAnOwnerError(
-        "This account doesn't manage any properties. Sign in with an owner account, or use the customer app.",
-      );
-    }
-
-    const remembered = rememberedOrganization();
-    const activeOrganizationId =
-      memberships.find((m) => m.organizationId === remembered)?.organizationId ?? memberships[0]!.organizationId;
+    const agent: AgentSummary | null = me.agentProfile
+      ? {
+          id: me.agentProfile.id,
+          displayName: me.agentProfile.displayName,
+          headline: me.agentProfile.headline,
+          photoUrl: me.agentProfile.photoUrl,
+          verificationState: me.agentProfile.verificationState,
+        }
+      : null;
+    const workspaces = workspacesFor(memberships, agent);
+    const active = chooseWorkspace(workspaces, rememberedWorkspace());
 
     return {
       user: { id: me.id, displayName: me.displayName, ...(me.email ? { email: me.email } : {}) },
-      activeOrganizationId,
+      workspaces,
+      activeWorkspaceKey: active?.key ?? null,
       memberships,
       capabilities: me.capabilities,
+      agent,
     };
   }
 }

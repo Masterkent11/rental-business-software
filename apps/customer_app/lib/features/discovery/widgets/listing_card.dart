@@ -8,6 +8,7 @@ import '../../../design/motion.dart';
 import '../../../design/tokens.dart';
 import '../../../fixtures/view_models.dart';
 import '../../saved/saved_controller.dart';
+import '../../listing/listing_price.dart';
 
 class ListingCard extends ConsumerWidget {
   const ListingCard({required this.listing, required this.onTap, super.key});
@@ -83,16 +84,14 @@ class ListingCard extends ConsumerWidget {
               ),
               const SizedBox(width: Tokens.s12),
               Text(
-                listing.kind == ListingKind.longTerm
-                    ? Money.perMonth(listing.priceCentavos)
-                    : Money.perNight(listing.priceCentavos),
+                listingPriceLabel(listing),
                 style: theme.textTheme.titleMedium,
               ),
             ],
           ),
           const SizedBox(height: Tokens.s4),
           Text(
-            '${listing.resourceType.label} · ${listing.location}',
+            '${listing.resourceType.label} · ${listing.place}',
             style: theme.textTheme.bodySmall,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

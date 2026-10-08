@@ -11,6 +11,7 @@ import '../../design/motion.dart';
 import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
 import '../discovery/widgets/listing_card.dart';
+import '../listing/listing_price.dart';
 
 class SavedScreen extends ConsumerWidget {
   const SavedScreen({super.key});
@@ -148,7 +149,7 @@ class _CompareCard extends StatelessWidget {
                         style: theme.textTheme.bodyLarge,
                       ),
                       Text(
-                        '${Money.perMonth(listing.priceCentavos)} rent',
+                        listing.isSale ? kPriceOnInquiry : listingPriceLabel(listing),
                         style: theme.textTheme.bodySmall,
                       ),
                     ],

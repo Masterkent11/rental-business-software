@@ -76,6 +76,37 @@ import {
   InvalidMessageError,
 } from '@/domain/messaging/conversation.ts';
 import { InvalidProfileError } from '@/domain/identity/identity.ts';
+import {
+  AgentNotAssignableError,
+  AgentProfileExistsError,
+  AgentProfileNotFoundError,
+  InvalidAgentProfileError,
+  InvalidRepresentationTransitionError,
+  InvalidVerificationRequestError,
+  ListingAlreadyRepresentedError,
+  RepresentationForbiddenError,
+  RepresentationNotFoundError,
+} from '@/domain/agents/agent.ts';
+import {
+  InquiryNotAllowedError,
+  InquiryNotFoundError,
+  InvalidInquiryError,
+  InvalidInquiryTransitionError,
+} from '@/domain/inquiries/inquiry.ts';
+import {
+  InvalidViewingSlotError,
+  InvalidViewingTransitionError,
+  ViewingAlreadyRequestedError,
+  ViewingNotFoundError,
+  ViewingSlotTakenError,
+} from '@/domain/viewings/viewing.ts';
+import {
+  InvalidSceneViewError,
+  InvalidTourProviderError,
+  SceneRemovalBlockedError,
+  TourNotFoundError as DomainTourNotFoundError,
+} from '@/domain/tours/tour.ts';
+import { InvalidLocationError } from '@/domain/shared/geo.ts';
 
 type Rule = readonly [
   readonly (abstract new (...args: never[]) => Error)[],
@@ -100,12 +131,21 @@ const RULES: readonly Rule[] = [
       NotBookableError,
       ListingNotFoundError,
       ConversationNotFoundError,
+      AgentProfileNotFoundError,
+      RepresentationNotFoundError,
+      InquiryNotFoundError,
+      ViewingNotFoundError,
+      DomainTourNotFoundError,
     ],
     HttpStatus.NOT_FOUND,
     'NOT_FOUND',
     null,
   ],
   [[OccupancyConflictError, BlockConflictError], HttpStatus.CONFLICT, 'DATES_UNAVAILABLE', null],
+  [[ViewingSlotTakenError], HttpStatus.CONFLICT, 'SLOT_TAKEN', null],
+  [[ViewingAlreadyRequestedError], HttpStatus.CONFLICT, 'ALREADY_REQUESTED', null],
+  [[ListingAlreadyRepresentedError], HttpStatus.CONFLICT, 'ALREADY_REPRESENTED', null],
+  [[RepresentationForbiddenError], HttpStatus.FORBIDDEN, 'FORBIDDEN', null],
   [
     [
       ApprovalConflictError,
@@ -114,6 +154,11 @@ const RULES: readonly Rule[] = [
       InvoiceNotSettleableError,
       InvalidListingTransitionError,
       InvalidStayTransitionError,
+      AgentProfileExistsError,
+      InvalidRepresentationTransitionError,
+      InvalidInquiryTransitionError,
+      InvalidViewingTransitionError,
+      SceneRemovalBlockedError,
     ],
     HttpStatus.CONFLICT,
     'CONFLICT',
@@ -144,6 +189,15 @@ const RULES: readonly Rule[] = [
       ListingPhotoRejectedError,
       InvalidMessageError,
       InvalidProfileError,
+      InvalidAgentProfileError,
+      AgentNotAssignableError,
+      InvalidVerificationRequestError,
+      InvalidInquiryError,
+      InquiryNotAllowedError,
+      InvalidViewingSlotError,
+      InvalidTourProviderError,
+      InvalidSceneViewError,
+      InvalidLocationError,
     ],
     HttpStatus.BAD_REQUEST,
     'INVALID_REQUEST',

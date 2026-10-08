@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../design/app_image.dart';
-import '../../../design/money.dart';
 import '../../../design/tokens.dart';
 import '../../../fixtures/view_models.dart';
 import '../../saved/saved_controller.dart';
+import '../../listing/listing_price.dart';
 
 class PropertyCard extends ConsumerWidget {
   const PropertyCard({
@@ -142,7 +142,7 @@ class PropertyCard extends ConsumerWidget {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text: Money.peso(listing.priceCentavos),
+                          text: listingPriceShort(listing),
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
@@ -151,9 +151,11 @@ class PropertyCard extends ConsumerWidget {
                           ),
                         ),
                         TextSpan(
-                          text: listing.kind == ListingKind.longTerm
-                              ? ' / month'
-                              : ' / night',
+                          text: !listing.hasListedPrice
+                              ? ''
+                              : listing.kind == ListingKind.longTerm
+                                  ? ' / month'
+                                  : ' / night',
                           style: const TextStyle(
                             fontSize: 9.5,
                             fontWeight: FontWeight.w400,

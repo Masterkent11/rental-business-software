@@ -45,7 +45,7 @@ class _PropertyResultsScreenState extends ConsumerState<PropertyResultsScreen> {
     _criteria = widget.criteria ??
         ShortStaySearchCriteria(
           propertyType: PropertyType.apartment,
-          location: 'Cebu City',
+          location: '',
           checkIn: DateTime.now().add(const Duration(days: 7)),
           checkOut: DateTime.now().add(const Duration(days: 9)),
           guests: 2,
@@ -177,7 +177,9 @@ class _PropertyResultsScreenState extends ConsumerState<PropertyResultsScreen> {
     final resultsAsync = ref.watch(propertyResultsProvider(_query));
     final state = resultsAsync.valueOrNull;
 
-    final title = '${criteria.propertyType.pluralLabel} in ${criteria.location}';
+    final title = criteria.location.trim().isEmpty
+        ? '${criteria.propertyType.pluralLabel} to rent'
+        : '${criteria.propertyType.pluralLabel} in ${criteria.location}';
     final hint = 'Search ${criteria.propertyType.pluralLabel.toLowerCase()}...';
     const countStyle = TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Tokens.muted);
 

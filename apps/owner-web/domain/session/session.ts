@@ -1,3 +1,5 @@
+import type { AgentSummary, Workspace } from "../workspace/workspace";
+
 export type OrganizationRole = "OWNER" | "STAFF";
 
 export interface OrganizationMembership {
@@ -20,9 +22,9 @@ export interface UserProfile {
 
 export interface ActiveSession {
   readonly user: UserProfile;
-  readonly activeOrganizationId: string;
+  readonly workspaces: readonly Workspace[];
+  readonly activeWorkspaceKey: string | null;
   readonly memberships: readonly OrganizationMembership[];
   readonly capabilities: readonly UserCapability[];
+  readonly agent: AgentSummary | null;
 }
-
-export class NotAnOwnerError extends Error {}

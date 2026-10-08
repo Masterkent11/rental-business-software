@@ -12,6 +12,7 @@ import { useDashboardStore } from "@/stores/use-dashboard-store";
 import { useMessagesStore } from "@/stores/use-messages-store";
 import { useNotificationsStore } from "@/stores/use-notifications-store";
 import { useSessionStore } from "@/stores/use-session-store";
+import { useEngagementStore } from "@/stores/use-engagement-store";
 
 export default function DashboardPage() {
   const organizationId = useSessionStore((s) => s.activeOrganizationId);
@@ -20,6 +21,11 @@ export default function DashboardPage() {
   const conversations = useMessagesStore((s) => s.conversations);
   const unreadTotal = useMessagesStore((s) => s.unreadTotal);
   const latest = useNotificationsStore((s) => s.latest);
+  const engagementLoaded = useEngagementStore((s) => s.inquiriesLoaded && s.viewingsLoaded);
+  const newInquiries = useEngagementStore((s) => s.inquiries.filter((i) => i.status === "NEW").length);
+  const openInquiries = useEngagementStore((s) => s.inquiries.filter((i) => i.status !== "CLOSED" && i.status !== "LOST").length);
+  const viewingRequests = useEngagementStore((s) => s.viewings.filter((v) => v.status === "REQUESTED").length);
+  const upcomingViewings = useEngagementStore((s) => s.viewings.filter((v) => v.status === "CONFIRMED" && new Date(v.scheduledAt).getTime() > Date.now()).length);
 
   useEffect(() => {
     if (organizationId) void load(organizationId);
@@ -36,8 +42,11 @@ export default function DashboardPage() {
   return (
     <Page>
       <TopBar title={`Good day, ${firstName}`} caption="Here's what's happening across your properties.">
+        <LinkBtn href="/properties/new?intent=sale" variant="outline">
+          <Plus className="size-4" aria-hidden /> Property for sale
+        </LinkBtn>
         <LinkBtn href="/properties/new">
-          <Plus className="size-4" aria-hidden /> New property
+          <Plus className="size-4" aria-hidden /> Rental
         </LinkBtn>
       </TopBar>
 
@@ -60,6 +69,17 @@ export default function DashboardPage() {
                   href="/payments"
                 />
               </>
+            )}
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            {engagementLoaded ? (
+              <>
+                <Stat label="New inquiries" value={newInquiries} hint={`${openInquiries} open in the pipeline`} href="/inquiries" />
+                <Stat label="Viewing requests" value={viewingRequests} hint={`${upcomingViewings} confirmed and upcoming`} href="/viewings" />
+              </>
+            ) : (
+              Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-[118px] rounded-2xl" />)
             )}
           </div>
 

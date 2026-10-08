@@ -11,6 +11,7 @@ import {
   type Listing,
 } from '@/domain/listings/listing.ts';
 import { centavos } from '@/domain/shared/money.ts';
+import { assertCoordinates } from '@/domain/shared/geo.ts';
 import type { Principal } from '@/domain/identity/identity.ts';
 import { assertMayManageOrganization } from '@/application/identity/application-authorization.rules.ts';
 
@@ -29,12 +30,16 @@ export const updateListing =
 
     const current = await listings.findById(command.organizationId, command.listingId);
     if (!current) throw new ListingNotFoundError('Listing not found');
+    if (current.intent === 'SALE' || current.kind === null) {
+      throw new InvalidListingDetailsError('Sale listings are edited with the sale editor');
+    }
 
     if (command.listing.kind !== undefined && command.listing.kind !== current.kind && !canEditKind(current.state)) {
       throw new InvalidListingDetailsError('The rental mode can only change while the listing is a draft');
     }
 
     const kind = command.listing.kind ?? current.kind;
+    if (command.property?.location) assertCoordinates(command.property.location);
     const merged: ListingDetails = {
       kind,
       title: command.listing.title ?? current.title,

@@ -66,3 +66,27 @@ export const getOrganizationThread =
       hasMore: messages.length > limit,
     };
   };
+
+export const getAgentThread =
+  (messaging: MessagingRepository) =>
+  async (input: {
+    readonly principal: Principal;
+    readonly conversationId: string;
+    readonly before: Date | null;
+    readonly limit?: number;
+  }): Promise<ConversationThread> => {
+    const conversation = await messaging.findForAgent(input.principal.userId, input.conversationId);
+    if (!conversation) throw new ConversationNotFoundError('Conversation not found');
+    const limit = clampLimit(input.limit);
+    const messages = await messaging.messages({
+      conversationId: conversation.id,
+      scope: { agentUserId: input.principal.userId },
+      before: input.before,
+      limit: limit + 1,
+    });
+    return {
+      conversation,
+      messages: messages.slice(-limit),
+      hasMore: messages.length > limit,
+    };
+  };

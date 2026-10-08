@@ -109,7 +109,7 @@ class _PanoramaViewState extends State<PanoramaView> {
     widget.onCameraChanged(
       widget.camera.copyWith(
         yaw: widget.camera.yaw - delta.dx * perPixel,
-        pitch: widget.camera.pitch + delta.dy * perPixel,
+        pitch: widget.camera.pitch - delta.dy * perPixel,
         fov: details.scale == 1.0 ? null : _startFov / details.scale,
       ),
     );

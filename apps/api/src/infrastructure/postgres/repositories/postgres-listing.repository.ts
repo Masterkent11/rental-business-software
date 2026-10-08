@@ -1,32 +1,51 @@
 import type postgres from 'postgres';
 import type {
+  AreaSummary,
   CreateListingInput,
   CreatePropertyListingInput,
+  CreateSaleListingInput,
   ListingRepository,
   NewListingPhoto,
   OrganizationResource,
   OwnerProperty,
+  PropertyDetails,
+  SaleTerms,
+  SaleTermsInput,
   StayPricingSource,
   UpdateListingInput,
+  UpdateSaleListingInput,
 } from '@/application/ports/repositories/listing-repository.port.ts';
 import type {
   Listing,
+  ListingFloorPlan,
+  ListingIntent,
   ListingKind,
   ListingPhoto,
   ListingQuery,
   ListingState,
   PropertyType,
   ResourceType,
+  SaleStatus,
 } from '@/domain/listings/listing.ts';
 import { centavos } from '@/domain/shared/money.ts';
+import { boundingBox, roundDistanceKm, type LocationPrivacy } from '@/domain/shared/geo.ts';
 import type { OrganizationId } from '@/domain/shared/organization-scope.ts';
-import { sql, withScope } from '@/infrastructure/postgres/db.ts';
+import { sql, withScope, withUser } from '@/infrastructure/postgres/db.ts';
 
 interface MediaRow {
   id: string;
   url: string;
   path: string | null;
   position: number;
+  label?: string;
+}
+
+interface RepresentativeRow {
+  agent_id: string;
+  display_name: string;
+  headline: string;
+  photo_url: string | null;
+  verified: boolean;
 }
 
 interface Row {
@@ -34,7 +53,8 @@ interface Row {
   organization_id: string;
   resource_id: string;
   property_id: string;
-  kind: string;
+  intent: string;
+  kind: string | null;
   resource_type: string;
   title: string;
   description: string;
@@ -66,6 +86,18 @@ interface Row {
   published_at: Date | null;
   updated_at: Date | null;
   next_available_on: string | null;
+  sale_status: string | null;
+  lot_area_sqm: number | null;
+  parking_slots: number;
+  latitude: number | null;
+  longitude: number | null;
+  location_privacy: string;
+  public_latitude: number | null;
+  public_longitude: number | null;
+  floor_plans: MediaRow[] | null;
+  representative: RepresentativeRow | null;
+  tour_provider: string | null;
+  distance_km?: number | null;
   total_count?: string;
 }
 
@@ -87,7 +119,8 @@ const toListing = (row: Row): Listing => {
     organizationId: row.organization_id as OrganizationId,
     resourceId: row.resource_id,
     propertyId: row.property_id,
-    kind: row.kind as ListingKind,
+    intent: row.intent as ListingIntent,
+    kind: row.kind as ListingKind | null,
     resourceType: row.resource_type as ResourceType,
     title: row.title,
     description: row.description,
@@ -100,7 +133,8 @@ const toListing = (row: Row): Listing => {
     cleaningFeeCentavos: centavos(Number(row.cleaning_fee_centavos)),
     state: row.state as ListingState,
     hasTour: row.tour_state === 'PUBLISHED',
-    sceneCount: row.tour_state === 'PUBLISHED' ? (row.scene_count ?? 0) : 0,
+    sceneCount: row.tour_state === 'PUBLISHED' && row.tour_provider !== 'MATTERPORT' ? (row.scene_count ?? 0) : 0,
+    tourProvider: row.tour_state === 'PUBLISHED' ? (row.tour_provider as 'PLATFORM' | 'MATTERPORT') : null,
     photos: media.map((m) => m.url),
     media: media.map<ListingPhoto>((m) => ({
       id: m.id,
@@ -125,12 +159,67 @@ const toListing = (row: Row): Listing => {
     publishedAt: row.published_at,
     updatedAt: row.updated_at,
     nextAvailableOn: row.next_available_on,
+    saleStatus: row.sale_status as SaleStatus | null,
+    lotAreaSqm: row.lot_area_sqm,
+    parkingSlots: row.parking_slots,
+    location:
+      row.latitude !== null && row.longitude !== null
+        ? { latitude: row.latitude, longitude: row.longitude, privacy: row.location_privacy as LocationPrivacy }
+        : null,
+    publicLocation:
+      row.public_latitude !== null && row.public_longitude !== null
+        ? { latitude: row.public_latitude, longitude: row.public_longitude }
+        : null,
+    distanceKm:
+      row.distance_km === undefined || row.distance_km === null ? null : roundDistanceKm(Number(row.distance_km)),
+    floorPlans: [...(row.floor_plans ?? [])]
+      .sort((a, b) => a.position - b.position)
+      .map<ListingFloorPlan>((m) => ({
+        id: m.id,
+        url: m.url,
+        storagePath: m.path,
+        position: m.position,
+        label: m.label ?? '',
+      })),
+    representative: row.representative
+      ? {
+          agentId: row.representative.agent_id,
+          displayName: row.representative.display_name,
+          headline: row.representative.headline,
+          photoUrl: row.representative.photo_url,
+          verified: row.representative.verified,
+        }
+      : null,
   };
 };
 
 const SELECT = sql`
   select
-    l.id, l.organization_id, l.resource_id, l.kind, l.title, l.description,
+    l.id, l.organization_id, l.resource_id, l.intent, l.kind, l.title, l.description,
+    l.sale_status, l.lot_area_sqm, l.parking_slots,
+    p.latitude, p.longitude, p.location_privacy,
+    case when p.latitude is null then null
+         when p.location_privacy = 'EXACT' then p.latitude
+         else round(p.latitude::numeric, 2)::float8 end as public_latitude,
+    case when p.longitude is null then null
+         when p.location_privacy = 'EXACT' then p.longitude
+         else round(p.longitude::numeric, 2)::float8 end as public_longitude,
+    t.provider as tour_provider,
+    coalesce(
+      (select json_agg(json_build_object(
+                'id', m.id, 'url', m.storage_url, 'path', m.storage_path, 'position', m.position, 'label', m.label
+              ) order by m.position, m.created_at)
+         from media_assets m
+        where m.listing_id = l.id and m.kind = 'FLOOR_PLAN'),
+      '[]'::json
+    ) as floor_plans,
+    (select json_build_object(
+              'agent_id', a.id, 'display_name', a.display_name, 'headline', a.headline,
+              'photo_url', a.photo_url, 'verified', a.verification_state = 'VERIFIED')
+       from listing_representations rp
+       join agent_profiles a on a.id = rp.agent_id
+      where rp.listing_id = l.id and rp.state = 'ACTIVE' and a.public_state = 'PUBLIC'
+      limit 1) as representative,
     l.price_centavos::text as price_centavos,
     l.cleaning_fee_centavos::text as cleaning_fee_centavos,
     l.state,
@@ -152,6 +241,7 @@ const SELECT = sql`
       '[]'::json
     ) as media,
     case
+      when l.intent = 'SALE' then null
       when l.kind = 'LONG_TERM' then
         case
           when exists (
@@ -188,28 +278,136 @@ async function loadOne(
   return rows[0] ? toListing(rows[0]) : null;
 }
 
+
+async function insertProperty(
+  tx: postgres.TransactionSql,
+  organizationId: string,
+  property: PropertyDetails,
+): Promise<{ id: string }> {
+  const location = property.location ?? null;
+  const [row] = await tx<{ id: string }[]>`
+    insert into properties (
+      organization_id, name, property_type, address_line, area_label, city_label,
+      latitude, longitude, location_privacy
+    )
+    values (
+      ${organizationId}, ${property.name.trim()}, ${property.propertyType},
+      ${property.addressLine.trim()}, ${property.areaLabel.trim()}, ${property.cityLabel.trim()},
+      ${location?.latitude ?? null}, ${location?.longitude ?? null}, ${location?.privacy ?? 'APPROXIMATE'}
+    )
+    returning id
+  `;
+  return row!;
+}
+
+async function updateProperty(
+  tx: postgres.TransactionSql,
+  organizationId: string,
+  propertyId: string,
+  p: Partial<PropertyDetails>,
+): Promise<void> {
+  await tx`
+    update properties set
+      name = coalesce(${p.name?.trim() ?? null}, name),
+      property_type = coalesce(${p.propertyType ?? null}, property_type),
+      address_line = coalesce(${p.addressLine?.trim() ?? null}, address_line),
+      area_label = coalesce(${p.areaLabel?.trim() ?? null}, area_label),
+      city_label = coalesce(${p.cityLabel?.trim() ?? null}, city_label)
+    where id = ${propertyId} and organization_id = ${organizationId}
+  `;
+  if (p.location !== undefined) {
+    await tx`
+      update properties set
+        latitude = ${p.location?.latitude ?? null},
+        longitude = ${p.location?.longitude ?? null},
+        location_privacy = ${p.location?.privacy ?? 'APPROXIMATE'}
+      where id = ${propertyId} and organization_id = ${organizationId}
+    `;
+  }
+}
+
+interface SaleTermsRow {
+  listing_id: string;
+  asking_price_internal_centavos: string | null;
+  price_negotiable: boolean;
+  commercial_notes: string;
+  updated_at: Date | null;
+}
+
+const toSaleTerms = (row: SaleTermsRow): SaleTerms => ({
+  listingId: row.listing_id,
+  askingPriceInternalCentavos:
+    row.asking_price_internal_centavos === null ? null : Number(row.asking_price_internal_centavos),
+  priceNegotiable: row.price_negotiable,
+  commercialNotes: row.commercial_notes,
+  updatedAt: row.updated_at,
+});
+
+async function upsertSaleTerms(
+  tx: postgres.TransactionSql,
+  organizationId: string,
+  listingId: string,
+  terms: SaleTermsInput,
+  updatedBy: string,
+): Promise<SaleTerms> {
+  const [row] = await tx<SaleTermsRow[]>`
+    insert into listing_sale_terms (
+      listing_id, organization_id, asking_price_internal_centavos, price_negotiable, commercial_notes, updated_by, updated_at
+    ) values (
+      ${listingId}, ${organizationId}, ${terms.askingPriceInternalCentavos}, ${terms.priceNegotiable},
+      ${terms.commercialNotes.trim()}, ${updatedBy}, now()
+    )
+    on conflict (listing_id) do update set
+      asking_price_internal_centavos = excluded.asking_price_internal_centavos,
+      price_negotiable = excluded.price_negotiable,
+      commercial_notes = excluded.commercial_notes,
+      updated_by = excluded.updated_by,
+      updated_at = now()
+    returning listing_id, asking_price_internal_centavos::text, price_negotiable, commercial_notes, updated_at
+  `;
+  return toSaleTerms(row!);
+}
+
 export const postgresListingRepository = (): ListingRepository => ({
   async search(_scope, query: ListingQuery) {
     return withScope(null, async (tx) => {
       const text = query.text ? `%${query.text}%` : null;
+      const city = query.city ? query.city : null;
+      const near = query.near ?? null;
+      const box = near ? boundingBox(near, near.radiusKm) : null;
+      const priceFiltered = query.minPriceCentavos !== undefined || query.maxPriceCentavos !== undefined;
+      const sort = query.sort ?? (near ? 'DISTANCE' : 'NEWEST');
       const order =
-        query.sort === 'PRICE_ASC'
-          ? tx`order by base.price_centavos::bigint asc, base.published_at desc nulls last`
-          : query.sort === 'PRICE_DESC'
-            ? tx`order by base.price_centavos::bigint desc, base.published_at desc nulls last`
-            : tx`order by base.published_at desc nulls last, base.id`;
+        sort === 'PRICE_ASC'
+          ? tx`order by (ranked.intent = 'SALE'), ranked.price_centavos::bigint asc, ranked.published_at desc nulls last`
+          : sort === 'PRICE_DESC'
+            ? tx`order by (ranked.intent = 'SALE'), ranked.price_centavos::bigint desc, ranked.published_at desc nulls last`
+            : sort === 'DISTANCE' && near
+              ? tx`order by ranked.distance_km asc nulls last, ranked.published_at desc nulls last, ranked.id`
+              : tx`order by ranked.published_at desc nulls last, ranked.id`;
+
+      const distance = near
+        ? tx`2 * 6371.0088 * asin(least(1, sqrt(
+              power(sin(radians(base.public_latitude - ${near.latitude}) / 2), 2)
+              + cos(radians(${near.latitude})) * cos(radians(base.public_latitude))
+              * power(sin(radians(base.public_longitude - ${near.longitude}) / 2), 2))))`
+        : tx`null::float8`;
 
       const rows = await tx<Row[]>`
         with base as (
           ${SELECT}
           where l.state = 'PUBLISHED'
             ${query.ids ? tx`and l.id = any(${tx.array([...query.ids])}::uuid[])` : tx``}
+            ${query.intent ? tx`and l.intent = ${query.intent}` : tx``}
+            ${query.saleStatus ? tx`and l.sale_status = ${query.saleStatus}` : tx``}
             ${query.kind ? tx`and l.kind = ${query.kind}` : tx``}
             ${query.resourceType ? tx`and r.resource_type = ${query.resourceType}` : tx``}
             ${query.propertyType ? tx`and p.property_type = ${query.propertyType}` : tx``}
+            ${city ? tx`and p.city_label ilike ${city}` : tx``}
             ${query.hasTour ? tx`and t.state = 'PUBLISHED'` : tx``}
-            ${query.guests !== undefined ? tx`and l.max_occupants >= ${query.guests}` : tx``}
+            ${query.guests !== undefined ? tx`and l.intent = 'RENT' and l.max_occupants >= ${query.guests}` : tx``}
             ${query.bedrooms !== undefined ? tx`and l.bedrooms >= ${query.bedrooms}` : tx``}
+            ${priceFiltered ? tx`and l.intent = 'RENT'` : tx``}
             ${
               query.minPriceCentavos !== undefined
                 ? tx`and l.price_centavos >= ${query.minPriceCentavos}`
@@ -218,6 +416,14 @@ export const postgresListingRepository = (): ListingRepository => ({
             ${
               query.maxPriceCentavos !== undefined
                 ? tx`and l.price_centavos <= ${query.maxPriceCentavos}`
+                : tx``
+            }
+            ${
+              box
+                ? tx`and p.latitude is not null
+                     and point(p.longitude, p.latitude) <@ box(
+                       point(${box.minLongitude - 0.02}, ${box.minLatitude - 0.02}),
+                       point(${box.maxLongitude + 0.02}, ${box.maxLatitude + 0.02}))`
                 : tx``
             }
             ${
@@ -234,7 +440,7 @@ export const postgresListingRepository = (): ListingRepository => ({
             }
             ${
               query.availableFrom && query.availableTo
-                ? tx`and not exists (
+                ? tx`and l.intent = 'RENT' and not exists (
                       select 1 from occupancies o3
                        where o3.root_id = r.root_id
                          and o3.subtree && r.subtree
@@ -243,12 +449,16 @@ export const postgresListingRepository = (): ListingRepository => ({
                     )
                     and (l.available_from is null or l.available_from <= ${query.availableFrom}::date)`
                 : query.availableFrom
-                  ? tx`and (l.available_from is null or l.available_from <= ${query.availableFrom}::date)`
+                  ? tx`and l.intent = 'RENT' and (l.available_from is null or l.available_from <= ${query.availableFrom}::date)`
                   : tx``
             }
+        ),
+        ranked as (
+          select base.*, ${distance} as distance_km from base
         )
-        select base.*, count(*) over ()::text as total_count
-          from base
+        select ranked.*, count(*) over ()::text as total_count
+          from ranked
+         ${near ? tx`where ranked.distance_km <= ${near.radiusKm}` : tx``}
         ${order}
         limit ${query.limit} offset ${query.offset}
       `;
@@ -308,14 +518,7 @@ export const postgresListingRepository = (): ListingRepository => ({
 
   async createPropertyListing(input: CreatePropertyListingInput) {
     return withScope(input.organizationId, async (tx) => {
-      const [property] = await tx<{ id: string }[]>`
-        insert into properties (organization_id, name, property_type, address_line, area_label, city_label)
-        values (
-          ${input.organizationId}, ${input.property.name.trim()}, ${input.property.propertyType},
-          ${input.property.addressLine.trim()}, ${input.property.areaLabel.trim()}, ${input.property.cityLabel.trim()}
-        )
-        returning id
-      `;
+      const property = await insertProperty(tx, input.organizationId, input.property);
       const [resource] = await tx<{ id: string }[]>`
         with gen as (select uuid_generate_v4() as id)
         insert into rentable_resources (
@@ -376,17 +579,8 @@ export const postgresListingRepository = (): ListingRepository => ({
         where id = ${input.listingId} and organization_id = ${input.organizationId}
       `;
 
-      const p = input.property;
-      if (p && current.propertyId) {
-        await tx`
-          update properties set
-            name = coalesce(${p.name?.trim() ?? null}, name),
-            property_type = coalesce(${p.propertyType ?? null}, property_type),
-            address_line = coalesce(${p.addressLine?.trim() ?? null}, address_line),
-            area_label = coalesce(${p.areaLabel?.trim() ?? null}, area_label),
-            city_label = coalesce(${p.cityLabel?.trim() ?? null}, city_label)
-          where id = ${current.propertyId} and organization_id = ${input.organizationId}
-        `;
+      if (input.property && current.propertyId) {
+        await updateProperty(tx, input.organizationId, current.propertyId, input.property);
       }
       if (l.kind && l.kind !== current.kind) {
         await tx`
@@ -581,6 +775,187 @@ export const postgresListingRepository = (): ListingRepository => ({
         minStayNights: row.min_stay_nights ?? 1,
         maxOccupants: row.max_occupants,
       };
+    });
+  },
+
+  async createSaleListing(input: CreateSaleListingInput) {
+    return withScope(input.organizationId, async (tx) => {
+      const property = await insertProperty(tx, input.organizationId, input.property);
+      const [resource] = await tx<{ id: string }[]>`
+        with gen as (select uuid_generate_v4() as id)
+        insert into rentable_resources (
+          id, organization_id, property_id, root_id, label, resource_type, rental_mode
+        )
+        select gen.id, ${input.organizationId}, ${property.id}, gen.id, ${input.property.name.trim()}, 'UNIT', 'SALE'
+          from gen
+        returning id
+      `;
+      const l = input.listing;
+      const [listing] = await tx<{ id: string }[]>`
+        insert into listings (
+          organization_id, resource_id, intent, kind, title, description, price_centavos,
+          amenities, house_rules, terms, min_stay_nights, advance_months, deposit_months,
+          max_occupants, bedrooms, bathrooms, floor_area_sqm, cleaning_fee_centavos,
+          available_from, sale_status, lot_area_sqm, parking_slots, state
+        ) values (
+          ${input.organizationId}, ${resource!.id}, 'SALE', null, ${l.title.trim()}, ${l.description.trim()}, 0,
+          ${textArray(tx, l.amenities)}, ${textArray(tx, [])}, ${textArray(tx, [])}, null, 0, 0,
+          1, ${l.bedrooms}, ${l.bathrooms}, ${l.floorAreaSqm}, 0,
+          ${l.availableFrom}, ${l.saleStatus}, ${l.lotAreaSqm}, ${l.parkingSlots}, 'DRAFT'
+        )
+        returning id
+      `;
+      if (input.saleTerms) {
+        await upsertSaleTerms(tx, input.organizationId, listing!.id, input.saleTerms, input.updatedBy);
+      }
+      const created = await loadOne(tx, input.organizationId, listing!.id);
+      return created!;
+    });
+  },
+
+  async updateSaleListing(input: UpdateSaleListingInput) {
+    return withScope(input.organizationId, async (tx) => {
+      const current = await loadOne(tx, input.organizationId, input.listingId);
+      if (!current || current.intent !== 'SALE') return null;
+      const l = input.listing;
+      await tx`
+        update listings set
+          title = coalesce(${l.title?.trim() ?? null}, title),
+          description = coalesce(${l.description?.trim() ?? null}, description),
+          amenities = ${l.amenities ? textArray(tx, l.amenities) : tx`amenities`},
+          sale_status = coalesce(${l.saleStatus ?? null}, sale_status),
+          bedrooms = coalesce(${l.bedrooms ?? null}, bedrooms),
+          bathrooms = coalesce(${l.bathrooms ?? null}, bathrooms),
+          floor_area_sqm = ${l.floorAreaSqm !== undefined ? l.floorAreaSqm : tx`floor_area_sqm`},
+          lot_area_sqm = ${l.lotAreaSqm !== undefined ? l.lotAreaSqm : tx`lot_area_sqm`},
+          parking_slots = coalesce(${l.parkingSlots ?? null}, parking_slots),
+          available_from = ${l.availableFrom !== undefined ? l.availableFrom : tx`available_from`},
+          updated_at = now()
+        where id = ${input.listingId} and organization_id = ${input.organizationId} and intent = 'SALE'
+      `;
+      if (input.property && current.propertyId) {
+        await updateProperty(tx, input.organizationId, current.propertyId, input.property);
+        if (input.property.name) {
+          await tx`
+            update rentable_resources set label = ${input.property.name.trim()}
+             where id = ${current.resourceId} and organization_id = ${input.organizationId}
+          `;
+        }
+      }
+      return loadOne(tx, input.organizationId, input.listingId);
+    });
+  },
+
+  async saleTerms(organizationId: string, listingId: string) {
+    return withScope(organizationId, async (tx) => {
+      const [row] = await tx<SaleTermsRow[]>`
+        select listing_id, asking_price_internal_centavos::text, price_negotiable, commercial_notes, updated_at
+          from listing_sale_terms
+         where listing_id = ${listingId} and organization_id = ${organizationId}
+      `;
+      return row ? toSaleTerms(row) : null;
+    });
+  },
+
+  async saveSaleTerms(organizationId: string, listingId: string, terms: SaleTermsInput, updatedBy: string) {
+    return withScope(organizationId, (tx) => upsertSaleTerms(tx, organizationId, listingId, terms, updatedBy));
+  },
+
+  async areas(): Promise<readonly AreaSummary[]> {
+    return withScope(null, async (tx) => {
+      const rows = await tx<{
+        city_label: string;
+        latitude: number;
+        longitude: number;
+        listing_count: number;
+        rent_count: number;
+        sale_count: number;
+      }[]>`
+        select p.city_label,
+               avg(case when p.location_privacy = 'EXACT' then p.latitude else round(p.latitude::numeric, 2)::float8 end) as latitude,
+               avg(case when p.location_privacy = 'EXACT' then p.longitude else round(p.longitude::numeric, 2)::float8 end) as longitude,
+               count(*)::int as listing_count,
+               count(*) filter (where l.intent = 'RENT')::int as rent_count,
+               count(*) filter (where l.intent = 'SALE')::int as sale_count
+          from listings l
+          join rentable_resources r on r.id = l.resource_id
+          join properties p on p.id = r.property_id
+         where l.state = 'PUBLISHED' and p.latitude is not null and btrim(p.city_label) <> ''
+         group by p.city_label
+         order by count(*) desc, p.city_label
+         limit 60
+      `;
+      return rows.map((row) => ({
+        cityLabel: row.city_label,
+        latitude: Math.round(Number(row.latitude) * 1000) / 1000,
+        longitude: Math.round(Number(row.longitude) * 1000) / 1000,
+        listingCount: row.listing_count,
+        rentCount: row.rent_count,
+        saleCount: row.sale_count,
+      }));
+    });
+  },
+
+  async addFloorPlan(organizationId: string, listingId: string, media: NewListingPhoto, label: string) {
+    return withScope(organizationId, async (tx) => {
+      await tx`select pg_advisory_xact_lock(hashtext(${'listing-media:' + listingId}))`;
+      const [existing] = await tx<MediaRow[]>`
+        select id, storage_url as url, storage_path as path, position, label
+          from media_assets
+         where storage_path = ${media.storagePath} and organization_id = ${organizationId}
+      `;
+      if (existing) {
+        return { id: existing.id, url: existing.url, storagePath: existing.path, position: existing.position, label: existing.label ?? '' };
+      }
+      const [inserted] = await tx<MediaRow[]>`
+        insert into media_assets (
+          organization_id, listing_id, kind, storage_url, storage_path, content_type, size_bytes, position, label
+        )
+        select ${organizationId}, ${listingId}, 'FLOOR_PLAN', ${media.url}, ${media.storagePath},
+               ${media.contentType}, ${media.sizeBytes}, coalesce(max(position) + 1, 0), ${label}
+          from media_assets
+         where listing_id = ${listingId} and organization_id = ${organizationId} and kind = 'FLOOR_PLAN'
+        returning id, storage_url as url, storage_path as path, position, label
+      `;
+      await tx`update listings set updated_at = now() where id = ${listingId}`;
+      return {
+        id: inserted!.id,
+        url: inserted!.url,
+        storagePath: inserted!.path,
+        position: inserted!.position,
+        label: inserted!.label ?? label,
+      };
+    });
+  },
+
+  async removeFloorPlan(organizationId: string, listingId: string, floorPlanId: string) {
+    return withScope(organizationId, async (tx) => {
+      const removed = await tx<{ storage_path: string | null }[]>`
+        delete from media_assets
+         where id = ${floorPlanId} and listing_id = ${listingId} and organization_id = ${organizationId}
+           and kind = 'FLOOR_PLAN'
+        returning storage_path
+      `;
+      if (removed.length === 0) return null;
+      await tx`update listings set updated_at = now() where id = ${listingId}`;
+      return { storagePath: removed[0]!.storage_path };
+    });
+  },
+
+  async findRepresented(agentUserId: string, listingId: string) {
+    return withUser(agentUserId, async (tx) => {
+      const rows = await tx<Row[]>`
+        ${SELECT}
+        where l.id = ${listingId}
+          and exists (
+            select 1 from listing_representations rp
+             where rp.listing_id = l.id
+               and rp.state in ('PENDING', 'ACTIVE')
+               and rp.agent_id = app_private.current_app_agent()
+          )
+        limit 1
+      `;
+      return rows[0] ? toListing(rows[0]) : null;
     });
   },
 });

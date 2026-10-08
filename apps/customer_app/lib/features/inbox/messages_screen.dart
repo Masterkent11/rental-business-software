@@ -84,7 +84,7 @@ class MessagesScreen extends ConsumerWidget {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            c.organizationName,
+                                            c.partnerName,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: theme.textTheme.titleMedium?.copyWith(

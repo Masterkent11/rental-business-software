@@ -71,7 +71,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> with Wi
             ? const Text('Conversation')
             : Column(
                 children: [
-                  Text(conversation.organizationName, style: theme.textTheme.titleLarge),
+                  Text(conversation.partnerName, style: theme.textTheme.titleLarge),
                   Text(conversation.listingTitle, style: theme.textTheme.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],
               ),

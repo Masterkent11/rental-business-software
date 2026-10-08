@@ -2,6 +2,7 @@ import type postgres from 'postgres';
 import type {
   ConversationContext,
   MessagingRepository,
+  MessagingScope,
 } from '@/application/ports/repositories/messaging-repository.port.ts';
 import type {
   Conversation,
@@ -10,7 +11,7 @@ import type {
 } from '@/domain/messaging/conversation.ts';
 import { sql, withScope, withUser } from '@/infrastructure/postgres/db.ts';
 
-type Scope = { readonly customerId: string } | { readonly organizationId: string };
+type Scope = MessagingScope;
 
 interface ConversationRow {
   id: string;
@@ -22,6 +23,11 @@ interface ConversationRow {
   customer_id: string;
   customer_name: string | null;
   customer_email: string | null;
+  listing_intent: string;
+  agent_id: string | null;
+  agent_name: string | null;
+  agent_user_id: string | null;
+  agent_last_read_at: Date | null;
   occupancy_id: string | null;
   booking_starts_on: string | null;
   booking_ends_on: string | null;
@@ -53,6 +59,11 @@ const toConversation = (row: ConversationRow): Conversation => ({
   listingPhoto: row.listing_photo,
   customerId: row.customer_id,
   customerName: row.customer_name?.trim() || row.customer_email?.split('@')[0] || 'Guest',
+  listingIntent: row.listing_intent === 'SALE' ? 'SALE' : 'RENT',
+  agentId: row.agent_id,
+  agentName: row.agent_id ? row.agent_name?.trim() || 'Agent' : null,
+  agentUserId: row.agent_user_id,
+  agentLastReadAt: row.agent_last_read_at,
   occupancyId: row.occupancy_id,
   bookingStartsOn: row.booking_starts_on,
   bookingEndsOn: row.booking_ends_on,
@@ -75,37 +86,42 @@ const toMessage = (row: MessageRow): Message => ({
   createdAt: row.created_at,
 });
 
+const unreadFor = (tx: postgres.TransactionSql, reader: ParticipantRole) =>
+  reader === 'CUSTOMER'
+    ? tx`mm.sender_role <> 'CUSTOMER' and mm.created_at > coalesce(c.customer_last_read_at, '-infinity'::timestamptz)`
+    : reader === 'AGENT'
+      ? tx`mm.sender_role = 'CUSTOMER' and mm.created_at > coalesce(c.agent_last_read_at, '-infinity'::timestamptz)`
+      : tx`mm.sender_role = 'CUSTOMER' and mm.created_at > coalesce(c.owner_last_read_at, '-infinity'::timestamptz)`;
+
 const SELECT_CONVERSATION = (tx: postgres.TransactionSql, reader: ParticipantRole) => tx`
   select
     c.id, c.organization_id, o.trading_name as organization_name,
-    c.listing_id, l.title as listing_title,
+    c.listing_id, l.title as listing_title, l.intent as listing_intent,
     (select m.storage_url from media_assets m
       where m.listing_id = l.id and m.kind = 'PHOTO'
       order by m.position limit 1) as listing_photo,
     c.customer_id, u.display_name as customer_name, u.email as customer_email,
+    c.agent_id, a.display_name as agent_name, a.user_id as agent_user_id, c.agent_last_read_at,
     c.occupancy_id,
     to_char(lower(oc.during), 'YYYY-MM-DD') as booking_starts_on,
     to_char(upper(oc.during), 'YYYY-MM-DD') as booking_ends_on,
     c.last_message_at, c.last_message_preview, c.last_sender_role,
     c.customer_last_read_at, c.owner_last_read_at,
     (select count(*)::int from messages mm
-      where mm.conversation_id = c.id
-        and mm.sender_role <> ${reader}
-        and mm.created_at > coalesce(
-          ${reader === 'CUSTOMER' ? tx`c.customer_last_read_at` : tx`c.owner_last_read_at`},
-          '-infinity'::timestamptz)) as unread_count,
+      where mm.conversation_id = c.id and ${unreadFor(tx, reader)}) as unread_count,
     c.created_at
   from conversations c
   join organizations o on o.id = c.organization_id
   join listings l on l.id = c.listing_id
   left join user_profiles u on u.id = c.customer_id
+  left join agent_profiles a on a.id = c.agent_id
   left join occupancies oc on oc.id = c.occupancy_id
 `;
 
 function inScope<T>(scope: Scope, work: (tx: postgres.TransactionSql) => Promise<T>): Promise<T> {
-  return 'customerId' in scope
-    ? withUser(scope.customerId, work)
-    : withScope(scope.organizationId, work);
+  if ('customerId' in scope) return withUser(scope.customerId, work);
+  if ('agentUserId' in scope) return withUser(scope.agentUserId, work);
+  return withScope(scope.organizationId, work);
 }
 
 export const postgresMessagingRepository = (): MessagingRepository => ({
@@ -142,10 +158,12 @@ export const postgresMessagingRepository = (): MessagingRepository => ({
   async openForCustomer(input) {
     return withUser(input.customerId, async (tx) => {
       await tx`
-        insert into conversations (organization_id, listing_id, customer_id, occupancy_id)
-        values (${input.organizationId}, ${input.listingId}, ${input.customerId}, ${input.occupancyId})
+        insert into conversations (organization_id, listing_id, customer_id, occupancy_id, agent_id)
+        values (${input.organizationId}, ${input.listingId}, ${input.customerId}, ${input.occupancyId},
+                ${input.agentId ?? null})
         on conflict (listing_id, customer_id) do update
-          set occupancy_id = coalesce(excluded.occupancy_id, conversations.occupancy_id)
+          set occupancy_id = coalesce(excluded.occupancy_id, conversations.occupancy_id),
+              agent_id = coalesce(conversations.agent_id, excluded.agent_id)
       `;
       const [row] = await tx<ConversationRow[]>`
         ${SELECT_CONVERSATION(tx, 'CUSTOMER')}
@@ -172,6 +190,41 @@ export const postgresMessagingRepository = (): MessagingRepository => ({
         where c.id = ${conversationId} and c.organization_id = ${organizationId}
       `;
       return row ? toConversation(row) : null;
+    });
+  },
+
+  async findForAgent(agentUserId, conversationId) {
+    return withUser(agentUserId, async (tx) => {
+      const [row] = await tx<ConversationRow[]>`
+        ${SELECT_CONVERSATION(tx, 'AGENT')}
+        where c.id = ${conversationId} and c.agent_id = app_private.current_app_agent()
+      `;
+      return row ? toConversation(row) : null;
+    });
+  },
+
+  async listForAgent(agentUserId) {
+    return withUser(agentUserId, async (tx) => {
+      const rows = await tx<ConversationRow[]>`
+        ${SELECT_CONVERSATION(tx, 'AGENT')}
+        where c.agent_id = app_private.current_app_agent()
+          and c.last_message_at is not null
+        order by c.last_message_at desc
+        limit 200
+      `;
+      return rows.map(toConversation);
+    });
+  },
+
+  async activeAgentForListing(listingId) {
+    return withScope(null, async (tx) => {
+      const [row] = await tx<{ agent_id: string }[]>`
+        select r.agent_id from listing_representations r
+          join agent_profiles a on a.id = r.agent_id
+         where r.listing_id = ${listingId} and r.state = 'ACTIVE' and a.verification_state = 'VERIFIED'
+         limit 1
+      `;
+      return row?.agent_id ?? null;
     });
   },
 
@@ -239,7 +292,8 @@ export const postgresMessagingRepository = (): MessagingRepository => ({
                last_message_preview = ${input.preview},
                last_sender_role = ${input.senderRole},
                customer_last_read_at = case when ${input.senderRole} = 'CUSTOMER' then ${message.created_at}::timestamptz else customer_last_read_at end,
-               owner_last_read_at = case when ${input.senderRole} = 'OWNER' then ${message.created_at}::timestamptz else owner_last_read_at end
+               owner_last_read_at = case when ${input.senderRole} = 'OWNER' then ${message.created_at}::timestamptz else owner_last_read_at end,
+               agent_last_read_at = case when ${input.senderRole} = 'AGENT' then ${message.created_at}::timestamptz else agent_last_read_at end
          where id = ${input.conversation.id}
       `;
       return { message: toMessage(message), created: true };
@@ -250,6 +304,8 @@ export const postgresMessagingRepository = (): MessagingRepository => ({
     await inScope(scope, async (tx) => {
       if (role === 'CUSTOMER') {
         await tx`update conversations set customer_last_read_at = now() where id = ${conversationId}`;
+      } else if (role === 'AGENT') {
+        await tx`update conversations set agent_last_read_at = now() where id = ${conversationId}`;
       } else {
         await tx`update conversations set owner_last_read_at = now() where id = ${conversationId}`;
       }

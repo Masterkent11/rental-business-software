@@ -9,7 +9,11 @@ import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
 import 'discovery_controller.dart';
 import 'filters_sheet.dart';
+import '../location/location_controller.dart';
+import '../location/location_sheet.dart';
+import 'widgets/buy_listing_card.dart';
 import 'widgets/discover_header.dart';
+import 'widgets/intent_toggle.dart';
 import 'widgets/featured_card.dart';
 import 'widgets/listing_card.dart';
 import 'widgets/property_card.dart';
@@ -70,18 +74,17 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
     final items = feed?.items ?? const <ListingCardView>[];
     final selectedCategory = ref.watch(selectedCategoryProvider);
 
-    final featured = items.where((l) => l.isPopular || l.hasTour).toList();
-    final featuredListings =
-        featured.isNotEmpty ? featured : items.take(4).toList();
-
-    final nearYou = items
-        .where((l) =>
-            l.cityLabel.toLowerCase().contains('cebu') ||
-            l.areaLabel.isNotEmpty)
-        .toList();
-    final nearYouListings = nearYou.isNotEmpty ? nearYou : items;
+    final buy = filters.isBuy;
+    final location = ref.watch(locationProvider);
+    final nearby = ref.watch(nearbyProvider).valueOrNull ?? const <ListingCardView>[];
+    final featuredListings = buy ? const <ListingCardView>[] : items.where((l) => l.hasTour).take(6).toList();
 
     final isSearching = filters.isFiltered || filters.query.isNotEmpty;
+    final placeSuffix = switch (location.place) {
+      NearMePlace() => ' near you',
+      AreaPlace(:final area) => ' in ${area.cityLabel}',
+      AnywherePlace() => '',
+    };
 
     return Scaffold(
       backgroundColor: Tokens.canvas,
@@ -121,6 +124,11 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
+                    IntentToggle(
+                      value: filters.intent,
+                      onChanged: ref.read(filtersProvider.notifier).setIntent,
+                    ),
+                    const SizedBox(height: 12),
                   ],
                 ),
               ),
@@ -129,23 +137,57 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
           SliverToBoxAdapter(
             child: Reveal(
               order: 2,
-              child: PropertyCategoryList(
-                selected: selectedCategory,
-                onSelected: _onCategorySelected,
-              ),
+              child: buy
+                  ? BuyCategoryList(
+                      selected: filters.buyCategory,
+                      onSelected: ref.read(filtersProvider.notifier).setBuyCategory,
+                    )
+                  : PropertyCategoryList(
+                      selected: selectedCategory,
+                      onSelected: _onCategorySelected,
+                    ),
             ),
           ),
-          if (!isSearching) ...[
+          if (location.place is AnywherePlace && !isSearching)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(Tokens.gutter, 16, Tokens.gutter, 0),
+                child: _LocationPrompt(state: location),
+              ),
+            ),
+          if (!isSearching && nearby.isNotEmpty) ...[
             SliverToBoxAdapter(
               child: SectionHeader(
-                title: 'Featured for You',
+                title: buy ? 'For sale near you' : 'Near you',
                 topPadding: 18,
                 bottomPadding: 8,
-                onAction: () => _controller.animateTo(
-                  400,
-                  duration: Tokens.slow,
-                  curve: Tokens.ease,
+                actionLabel: '',
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 195,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: Tokens.scroll,
+                  padding: const EdgeInsets.symmetric(horizontal: Tokens.gutter),
+                  itemCount: nearby.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                  itemBuilder: (context, i) => PropertyCard(
+                    listing: nearby[i],
+                    onTap: () => context.push(Routes.listing(nearby[i].id)),
+                  ),
                 ),
+              ),
+            ),
+          ],
+          if (!isSearching && featuredListings.isNotEmpty) ...[
+            const SliverToBoxAdapter(
+              child: SectionHeader(
+                title: 'Walk through before you visit',
+                topPadding: 18,
+                bottomPadding: 8,
+                actionLabel: '',
               ),
             ),
             SliverToBoxAdapter(
@@ -155,43 +197,15 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
                     context.push(Routes.listing(listing.id)),
               ),
             ),
-            SliverToBoxAdapter(
-              child: SectionHeader(
-                title: 'Near You',
-                topPadding: 18,
-                bottomPadding: 8,
-                onAction: () => _controller.animateTo(
-                  700,
-                  duration: Tokens.slow,
-                  curve: Tokens.ease,
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 195,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  physics: Tokens.scroll,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: Tokens.gutter),
-                  itemCount: nearYouListings.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 10),
-                  itemBuilder: (context, i) => PropertyCard(
-                    listing: nearYouListings[i],
-                    onTap: () =>
-                        context.push(Routes.listing(nearYouListings[i].id)),
-                  ),
-                ),
-              ),
-            ),
           ],
           SliverToBoxAdapter(
             child: SectionHeader(
-              title: isSearching ? 'Results' : 'All rentals',
+              title: isSearching ? 'Results$placeSuffix' : (buy ? 'Properties for sale$placeSuffix' : 'Places to rent$placeSuffix'),
               subtitle: feed == null || feed.total == 0
                   ? null
-                  : '${feed.total} ${feed.total == 1 ? "place" : "places"}',
+                  : buy
+                      ? '${feed.total} ${feed.total == 1 ? "property" : "properties"}'
+                      : '${feed.total} ${feed.total == 1 ? "place" : "places"}',
               topPadding: isSearching ? 18 : 22,
               bottomPadding: 12,
               actionLabel: isSearching ? 'Clear' : '',
@@ -244,10 +258,15 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
                       }
                       return Reveal(
                         order: i.clamp(0, 3),
-                        child: ListingCard(
-                          listing: items[i],
-                          onTap: () => context.push(Routes.listing(items[i].id)),
-                        ),
+                        child: items[i].isSale
+                            ? BuyListingCard(
+                                listing: items[i],
+                                onTap: () => context.push(Routes.listing(items[i].id)),
+                              )
+                            : ListingCard(
+                                listing: items[i],
+                                onTap: () => context.push(Routes.listing(items[i].id)),
+                              ),
                       );
                     },
                   ),
@@ -324,8 +343,7 @@ class _EmptyResults extends ConsumerWidget {
           ),
           const SizedBox(height: Tokens.s8),
           Text(
-            'Try widening the budget, or look at a nearby barangay — '
-            'Kamputhaw and Mabolo usually have more listings.',
+            'Try another area, clear a filter, or search a nearby city.',
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
@@ -457,6 +475,47 @@ class _LoadFailed extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _LocationPrompt extends ConsumerWidget {
+  const _LocationPrompt({required this.state});
+
+  final LocationState state;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final problem = state.problemMessage;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Tokens.hairline),
+      ),
+      child: Row(
+        children: [
+          Icon(problem == null ? Icons.near_me_outlined : Icons.location_off_outlined, color: Tokens.primaryNavy),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              problem ?? 'See homes and properties around you.',
+              style: const TextStyle(fontSize: 13, color: Tokens.primaryNavy),
+            ),
+          ),
+          const SizedBox(width: 8),
+          if (state.locating)
+            const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+          else if (problem == null)
+            TextButton(
+              onPressed: ref.read(locationProvider.notifier).useCurrentLocation,
+              child: const Text('Use location'),
+            )
+          else
+            TextButton(onPressed: () => showLocationSheet(context), child: const Text('Choose area')),
+        ],
       ),
     );
   }

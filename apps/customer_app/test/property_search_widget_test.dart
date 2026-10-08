@@ -157,7 +157,9 @@ void main() {
       expect(find.text('Room'), findsOneWidget);
       expect(find.text('Boarding House'), findsOneWidget);
 
-      expect(find.text('Featured for You'), findsOneWidget);
+      expect(find.text('Find your next place'), findsOneWidget);
+      expect(find.text('Rent'), findsOneWidget);
+      expect(find.text('Buy'), findsOneWidget);
     });
   });
 
@@ -240,7 +242,7 @@ void main() {
       await tester.tap(searchCta);
       await tester.pumpAndSettle();
 
-      expect(find.text('Apartments in Cebu City'), findsOneWidget);
+      expect(find.text('Apartments to rent'), findsOneWidget);
       expect(find.textContaining('place'), findsOneWidget);
     });
   });

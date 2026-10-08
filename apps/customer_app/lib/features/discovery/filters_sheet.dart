@@ -55,59 +55,86 @@ class _FiltersSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: Tokens.s20),
+            if (f.isBuy) ...[
+              const _Label('Property type'),
+              const SizedBox(height: Tokens.s12),
+              Wrap(
+                spacing: Tokens.s8,
+                runSpacing: Tokens.s8,
+                children: [
+                  _Pill(
+                    label: 'Any',
+                    selected: f.buyCategory == null,
+                    onTap: () => controller.setBuyCategory(null),
+                  ),
+                  for (final category in BuyCategory.values)
+                    _Pill(
+                      label: category.label,
+                      selected: f.buyCategory == category,
+                      onTap: () => controller.setBuyCategory(category),
+                    ),
+                ],
+              ),
+              const SizedBox(height: Tokens.s12),
+              Text(
+                'Prices for properties on sale are shared privately when you inquire, so there is no price filter.',
+                style: theme.textTheme.bodySmall,
+              ),
+            ] else ...[
             const _Label('How you want to rent'),
-            const SizedBox(height: Tokens.s12),
-            Wrap(
-              spacing: Tokens.s8,
-              children: [
-                _Pill(
-                  label: 'Any',
-                  selected: f.kind == null,
-                  onTap: () => controller.setKind(null),
-                ),
-                for (final kind in ListingKind.values)
+              const SizedBox(height: Tokens.s12),
+              Wrap(
+                spacing: Tokens.s8,
+                children: [
                   _Pill(
-                    label: kind.label,
-                    selected: f.kind == kind,
-                    onTap: () => controller.setKind(kind),
+                    label: 'Any',
+                    selected: f.kind == null,
+                    onTap: () => controller.setKind(null),
                   ),
-              ],
-            ),
-            const SizedBox(height: Tokens.s24),
-            const _Label('What kind of place'),
-            const SizedBox(height: Tokens.s12),
-            Wrap(
-              spacing: Tokens.s8,
-              runSpacing: Tokens.s8,
-              children: [
-                _Pill(
-                  label: 'Any',
-                  selected: f.type == null,
-                  onTap: () => controller.setType(null),
-                ),
-                for (final type in ResourceType.values)
+                  for (final kind in ListingKind.values)
+                    _Pill(
+                      label: kind.label,
+                      selected: f.kind == kind,
+                      onTap: () => controller.setKind(kind),
+                    ),
+                ],
+              ),
+              const SizedBox(height: Tokens.s24),
+              const _Label('What kind of place'),
+              const SizedBox(height: Tokens.s12),
+              Wrap(
+                spacing: Tokens.s8,
+                runSpacing: Tokens.s8,
+                children: [
                   _Pill(
-                    label: type.label,
-                    selected: f.type == type,
-                    onTap: () => controller.setType(type),
+                    label: 'Any',
+                    selected: f.type == null,
+                    onTap: () => controller.setType(null),
                   ),
-              ],
-            ),
-            const SizedBox(height: Tokens.s24),
-            const _Label('Budget'),
-            const SizedBox(height: Tokens.s12),
-            Wrap(
-              spacing: Tokens.s8,
-              runSpacing: Tokens.s8,
-              children: [
-                for (final step in _priceSteps)
-                  _Pill(
-                    label: step == null ? 'Any' : 'Under ${Money.peso(step)}',
-                    selected: f.maxCentavos == step,
-                    onTap: () => controller.setMax(step),
-                  ),
-              ],
-            ),
+                  for (final type in ResourceType.values)
+                    _Pill(
+                      label: type.label,
+                      selected: f.type == type,
+                      onTap: () => controller.setType(type),
+                    ),
+                ],
+              ),
+              const SizedBox(height: Tokens.s24),
+              const _Label('Budget'),
+              const SizedBox(height: Tokens.s12),
+              Wrap(
+                spacing: Tokens.s8,
+                runSpacing: Tokens.s8,
+                children: [
+                  for (final step in _priceSteps)
+                    _Pill(
+                      label: step == null ? 'Any' : 'Under ${Money.peso(step)}',
+                      selected: f.maxCentavos == step,
+                      onTap: () => controller.setMax(step),
+                    ),
+                ],
+              ),
+            ],
             const SizedBox(height: Tokens.s20),
             _Toggle(
               label: 'Has a virtual tour',
@@ -115,19 +142,13 @@ class _FiltersSheet extends ConsumerWidget {
               value: f.tourOnly,
               onChanged: controller.setTourOnly,
             ),
-            _Toggle(
-              label: 'Available only',
-              caption: 'Hide places that are already taken',
-              value: f.availableOnly,
-              onChanged: controller.setAvailableOnly,
-            ),
             const SizedBox(height: Tokens.s24),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 matches == 0
                     ? 'No matches'
-                    : 'Show $matches ${matches == 1 ? "place" : "places"}',
+                    : 'Show $matches ${f.isBuy ? (matches == 1 ? "property" : "properties") : (matches == 1 ? "place" : "places")}',
               ),
             ),
           ],

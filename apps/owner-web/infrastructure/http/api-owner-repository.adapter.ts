@@ -1,28 +1,21 @@
-import type { OwnerRepositoryPort, ThreadPage } from "../../application/ports/owner-repository.port";
+import type { OwnerRepositoryPort } from "../../application/ports/owner-repository.port";
 import type {
   AvailabilityBlock,
   CreatePropertyListingInput,
   ListingAction,
   ListingCalendar,
-  ListingPhoto,
   OwnerListing,
   UpdateListingInput,
 } from "../../domain/listings/listing";
 import type { OwnerApplication, DecisionInput } from "../../domain/applications/application";
 import type { Collection } from "../../domain/payments/collection";
 import type { BookingAction, BookingBucket, BookingPage, OwnerBooking } from "../../domain/bookings/booking";
-import type { Conversation, Message } from "../../domain/messaging/conversation";
-import type { AppNotification } from "../../domain/notifications/notification";
 import { HttpClient } from "./http-client";
 import { DecisionInputDtoSchema, OwnerApplicationDtoSchema } from "./dto/application.dto";
 import { CollectionDtoSchema } from "./dto/collection.dto";
 import {
   BlockDtoSchema,
   CalendarDtoSchema,
-  ConversationDtoSchema,
-  ListingPhotoDtoSchema,
-  MessageDtoSchema,
-  NotificationDtoSchema,
   OwnerBookingDtoSchema,
   OwnerListingDtoSchema,
 } from "./dto/owner.dto";
@@ -35,11 +28,6 @@ export class ApiOwnerRepositoryAdapter implements OwnerRepositoryPort {
   async getListings(organizationId: string): Promise<readonly OwnerListing[]> {
     const res = await this.http.request<{ items: unknown[] }>(`${org(organizationId)}/listings`, { organizationId });
     return (res.items ?? []).map((item) => OwnerListingDtoSchema.parse(item));
-  }
-
-  async getListing(organizationId: string, listingId: string): Promise<OwnerListing> {
-    const res = await this.http.request<unknown>(`${org(organizationId)}/listings/${listingId}`, { organizationId });
-    return OwnerListingDtoSchema.parse(res);
   }
 
   async createPropertyListing(organizationId: string, input: CreatePropertyListingInput): Promise<OwnerListing> {
@@ -65,31 +53,6 @@ export class ApiOwnerRepositoryAdapter implements OwnerRepositoryPort {
       method: "POST",
       organizationId,
       body: { action },
-    });
-    return OwnerListingDtoSchema.parse(res);
-  }
-
-  async registerPhoto(organizationId: string, listingId: string, storagePath: string): Promise<ListingPhoto> {
-    const res = await this.http.request<unknown>(`${org(organizationId)}/listings/${listingId}/photos`, {
-      method: "POST",
-      organizationId,
-      body: { storagePath },
-    });
-    return ListingPhotoDtoSchema.parse(res);
-  }
-
-  async removePhoto(organizationId: string, listingId: string, photoId: string): Promise<{ storagePath: string | null }> {
-    return this.http.request<{ storagePath: string | null }>(
-      `${org(organizationId)}/listings/${listingId}/photos/${photoId}`,
-      { method: "DELETE", organizationId },
-    );
-  }
-
-  async reorderPhotos(organizationId: string, listingId: string, photoIds: readonly string[]): Promise<OwnerListing> {
-    const res = await this.http.request<unknown>(`${org(organizationId)}/listings/${listingId}/photos/order`, {
-      method: "PUT",
-      organizationId,
-      body: { photoIds },
     });
     return OwnerListingDtoSchema.parse(res);
   }
@@ -147,67 +110,6 @@ export class ApiOwnerRepositoryAdapter implements OwnerRepositoryPort {
       body: { action },
     });
     return OwnerBookingDtoSchema.parse(res);
-  }
-
-  async getConversations(organizationId: string): Promise<{ conversations: readonly Conversation[]; unreadTotal: number }> {
-    const res = await this.http.request<{ conversations: unknown[]; unreadTotal: number }>(
-      `${org(organizationId)}/conversations`,
-      { organizationId },
-    );
-    return {
-      conversations: (res.conversations ?? []).map((c) => ConversationDtoSchema.parse(c)),
-      unreadTotal: res.unreadTotal ?? 0,
-    };
-  }
-
-  async getThread(organizationId: string, conversationId: string, before?: string): Promise<ThreadPage> {
-    const params = new URLSearchParams({ limit: "50" });
-    if (before) params.set("before", before);
-    const res = await this.http.request<{ conversation: unknown; messages: unknown[]; hasMore: boolean }>(
-      `${org(organizationId)}/conversations/${conversationId}/messages?${params.toString()}`,
-      { organizationId },
-    );
-    return {
-      conversation: ConversationDtoSchema.parse(res.conversation),
-      messages: (res.messages ?? []).map((m) => MessageDtoSchema.parse(m)),
-      hasMore: res.hasMore === true,
-    };
-  }
-
-  async sendMessage(organizationId: string, conversationId: string, body: string, clientId: string): Promise<Message> {
-    const res = await this.http.request<unknown>(`${org(organizationId)}/conversations/${conversationId}/messages`, {
-      method: "POST",
-      organizationId,
-      body: { body, clientId },
-    });
-    return MessageDtoSchema.parse(res);
-  }
-
-  async markConversationRead(organizationId: string, conversationId: string): Promise<void> {
-    await this.http.request(`${org(organizationId)}/conversations/${conversationId}/read`, {
-      method: "POST",
-      organizationId,
-      body: {},
-    });
-  }
-
-  async getNotifications(organizationId: string): Promise<{ notifications: readonly AppNotification[]; unreadCount: number }> {
-    const res = await this.http.request<{ notifications: unknown[]; unreadCount: number }>(
-      `${org(organizationId)}/notifications`,
-      { organizationId },
-    );
-    return {
-      notifications: (res.notifications ?? []).map((n) => NotificationDtoSchema.parse(n)),
-      unreadCount: res.unreadCount ?? 0,
-    };
-  }
-
-  async markNotificationsRead(organizationId: string): Promise<void> {
-    await this.http.request(`${org(organizationId)}/notifications/read`, {
-      method: "POST",
-      organizationId,
-      body: { all: true },
-    });
   }
 
   async getApplications(organizationId: string): Promise<readonly OwnerApplication[]> {

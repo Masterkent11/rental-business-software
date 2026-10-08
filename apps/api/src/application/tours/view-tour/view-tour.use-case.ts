@@ -1,6 +1,6 @@
 import type { TourRepository } from '@/application/ports/repositories/tour-repository.port.ts';
 import type { MediaStorage } from '@/application/ports/storage/media-storage.port.ts';
-import { isWalkable, type Scene } from '@/domain/tours/tour.ts';
+import { isWalkable, matterportEmbedUrl, type Scene, type TourProvider } from '@/domain/tours/tour.ts';
 
 export interface ViewSceneResult {
   readonly id: string;
@@ -10,6 +10,9 @@ export interface ViewSceneResult {
   readonly thumbnailUrl: string | null;
   readonly tileUrlTemplate: string | null;
   readonly tileLevels: number;
+  readonly initialYaw: number;
+  readonly initialPitch: number;
+  readonly initialFov: number;
   readonly hotspots: readonly {
     readonly id: string;
     readonly kind: string;
@@ -23,7 +26,9 @@ export interface ViewSceneResult {
 export interface ViewTourResult {
   readonly id: string;
   readonly resourceId: string;
-  readonly entrySceneId: string;
+  readonly provider: TourProvider;
+  readonly embedUrl: string | null;
+  readonly entrySceneId: string | null;
   readonly scenes: readonly ViewSceneResult[];
 }
 
@@ -32,6 +37,18 @@ export const getResourceTour =
   async (resourceId: string): Promise<ViewTourResult | null> => {
     const tour = await tours.publishedForResource(resourceId);
     if (!tour) return null;
+
+    if (tour.provider === 'MATTERPORT') {
+      if (!tour.externalModelId) return null;
+      return {
+        id: tour.id,
+        resourceId: tour.resourceId,
+        provider: 'MATTERPORT',
+        embedUrl: matterportEmbedUrl(tour.externalModelId),
+        entrySceneId: null,
+        scenes: [],
+      };
+    }
 
     const walkable = tour.scenes.filter(isWalkable);
     if (walkable.length === 0) return null;
@@ -45,6 +62,9 @@ export const getResourceTour =
         thumbnailUrl: scene.thumbnailPath ? await storage.createReadUrl(scene.thumbnailPath).catch(() => null) : null,
         tileUrlTemplate: scene.tilePrefix ? `/tiles/${scene.id}/{level}/{x}/{y}` : null,
         tileLevels: scene.tileLevels,
+        initialYaw: scene.initialYaw ?? 0,
+        initialPitch: scene.initialPitch ?? 0,
+        initialFov: scene.initialFov ?? 75,
         hotspots: scene.hotspots.map((hotspot) => ({
           id: hotspot.id,
           kind: hotspot.kind,
@@ -59,6 +79,8 @@ export const getResourceTour =
     return {
       id: tour.id,
       resourceId: tour.resourceId,
+      provider: 'PLATFORM',
+      embedUrl: null,
       entrySceneId: tour.entrySceneId ?? walkable[0]!.id,
       scenes: mappedScenes,
     };

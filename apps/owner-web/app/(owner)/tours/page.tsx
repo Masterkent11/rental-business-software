@@ -1,58 +1,55 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { Rotate3d } from "lucide-react";
 import { Page, TopBar } from "@/components/owner/shell";
 import { Badge, Card, EmptyState, ErrorState, SkeletonRows } from "@/components/owner/ui";
 import { Photo } from "@/components/owner/photo";
-import { useListingsStore } from "@/stores/use-listings-store";
+import { TOUR_STATE_LABEL } from "@/domain/tours/tour";
 import { useSessionStore } from "@/stores/use-session-store";
+import { useTourStudioStore } from "@/stores/use-tour-studio-store";
 
 export default function ToursPage() {
   const organizationId = useSessionStore((s) => s.activeOrganizationId);
-  const { listings, loading, loaded, error, load } = useListingsStore();
+  const { overview, overviewLoaded, overviewError, loadOverview } = useTourStudioStore();
 
   useEffect(() => {
-    if (organizationId) void load(organizationId);
-  }, [organizationId, load]);
+    if (organizationId) void loadOverview(organizationId);
+  }, [organizationId, loadOverview]);
 
   return (
     <Page>
-      <TopBar
-        title="Virtual tours"
-        caption="360° walkthroughs customers open from a listing. Tours are processed server-side into tiles that load quickly on phones."
-      />
+      <TopBar title="Virtual tours" caption="Build 360° walkthroughs room by room, or link a Matterport model. Customers open them from the listing." />
       <Card>
-        {loading && !loaded ? (
+        {!overviewLoaded ? (
           <SkeletonRows rows={4} />
-        ) : error ? (
-          <ErrorState message={error} onRetry={() => organizationId && void load(organizationId)} />
-        ) : listings.length === 0 ? (
-          <EmptyState icon={<Rotate3d className="size-5" aria-hidden />} title="No listings yet" body="Create a property first; tours attach to the place you list." />
+        ) : overviewError ? (
+          <ErrorState message={overviewError} onRetry={() => organizationId && void loadOverview(organizationId)} />
+        ) : overview.length === 0 ? (
+          <EmptyState icon={<Rotate3d className="size-5" aria-hidden />} title="No listings yet" body="Create a property first. Tours attach to the place you list." />
         ) : (
           <ul className="divide-y divide-border">
-            {listings.map((listing) => (
-              <li key={listing.id} className="flex items-center gap-4 px-5 py-4">
-                <div className="size-12 shrink-0 overflow-hidden rounded-xl bg-surface-secondary">
-                  {listing.photos[0] ? <Photo src={listing.photos[0]} alt="" className="size-full" sizes="48px" /> : null}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] font-semibold">{listing.title}</p>
-                  <p className="text-[12.5px] text-muted">{listing.propertyName}</p>
-                </div>
-                {listing.hasTour ? (
-                  <Badge tone="ok">{listing.sceneCount} room{listing.sceneCount === 1 ? "" : "s"} · live</Badge>
-                ) : (
-                  <Badge>No tour</Badge>
-                )}
+            {overview.map((item) => (
+              <li key={item.listingId}>
+                <Link href={`/tours/${item.listingId}`} className="focusable flex items-center gap-4 px-5 py-4 hover:bg-surface-secondary/50">
+                  <div className="size-12 shrink-0 overflow-hidden rounded-xl bg-surface-secondary">
+                    {item.thumbnailUrl || item.listingPhoto ? <Photo src={(item.thumbnailUrl ?? item.listingPhoto)!} alt="" className="size-full" sizes="48px" /> : null}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[14px] font-semibold">{item.listingTitle}</p>
+                    <p className="text-[12.5px] text-muted">
+                      {item.listingIntent === "SALE" ? "For sale" : "For rent"} · {item.provider === "MATTERPORT" ? "Matterport" : `${item.sceneCount} room${item.sceneCount === 1 ? "" : "s"}`}
+                    </p>
+                  </div>
+                  <Badge tone={item.state === "PUBLISHED" ? "ok" : item.state === "NONE" ? "neutral" : item.state === "FAILED" ? "bad" : "pending"}>{TOUR_STATE_LABEL[item.state]}</Badge>
+                  <span className="hidden text-[13px] font-medium sm:block">{item.state === "NONE" ? "Create" : "Open studio"}</span>
+                </Link>
               </li>
             ))}
           </ul>
         )}
       </Card>
-      <p className="mt-4 text-[12.5px] leading-relaxed text-muted">
-        Tours are prepared by the Rental Platform team from your 360° photos. Listings without a published tour simply don&apos;t show the tour button in the app.
-      </p>
     </Page>
   );
 }

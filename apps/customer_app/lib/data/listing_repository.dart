@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/discovery/discovery_controller.dart';
+import '../features/location/location_controller.dart';
 import '../features/property_search/application/property_search_repository.dart';
 import '../features/property_search/domain/property_search_criteria.dart';
 import '../features/property_search/domain/property_type.dart';
@@ -71,20 +72,50 @@ class ListingRepository implements PropertySearchRepository {
 
   final ApiClient _api;
 
-  Future<ListingPage> search(DiscoveryFilters filters, {int offset = 0}) async {
-    final body = await _api.getJson(
-      '/listings',
-      query: {
-        'q': filters.query.trim().isEmpty ? null : filters.query.trim(),
-        'kind': _kind(filters.kind),
-        'type': _type(filters.type),
-        'maxPrice': filters.maxCentavos?.toString(),
-        'hasTour': filters.tourOnly ? 'true' : null,
-        'limit': '$kListingPageSize',
-        'offset': '$offset',
-      },
-    );
+  Future<ListingPage> search(
+    DiscoveryFilters filters, {
+    SearchPlace place = const AnywherePlace(),
+    int offset = 0,
+    int limit = kListingPageSize,
+  }) async {
+    final body = await _api.getJson('/listings', query: searchQuery(filters, place: place, offset: offset, limit: limit));
     return _page(body, offset);
+  }
+
+  static Map<String, String?> searchQuery(
+    DiscoveryFilters filters, {
+    SearchPlace place = const AnywherePlace(),
+    int offset = 0,
+    int limit = kListingPageSize,
+  }) {
+    final buy = filters.isBuy;
+    final query = <String, String?>{
+      'q': filters.query.trim().isEmpty ? null : filters.query.trim(),
+      'intent': buy ? 'SALE' : 'RENT',
+      'hasTour': filters.tourOnly ? 'true' : null,
+      'limit': '$limit',
+      'offset': '$offset',
+    };
+    if (buy) {
+      query['propertyType'] = filters.buyCategory?.propertyType;
+      query['saleStatus'] = filters.buyCategory?.saleStatus;
+    } else {
+      query['kind'] = _kind(filters.kind);
+      query['type'] = _type(filters.type);
+      query['maxPrice'] = filters.maxCentavos?.toString();
+    }
+    switch (place) {
+      case NearMePlace(:final position):
+        query['lat'] = position.latitude.toStringAsFixed(3);
+        query['lng'] = position.longitude.toStringAsFixed(3);
+        query['radiusKm'] = '25';
+        query['sort'] = 'DISTANCE';
+      case AreaPlace(:final area):
+        query['city'] = area.cityLabel;
+      case AnywherePlace():
+        break;
+    }
+    return query;
   }
 
   Future<List<ListingCardView>> byIds(Iterable<String> ids) async {
@@ -114,6 +145,17 @@ class ListingRepository implements PropertySearchRepository {
         ownerVerified: body['ownerVerified'] as bool? ?? false,
         scenes: const [],
         blockedRanges: const [],
+        floorPlans: (body['floorPlans'] as List<dynamic>? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .where((plan) => (plan['url'] as String? ?? '').startsWith('http'))
+            .map(
+              (plan) => FloorPlanView(
+                id: plan['id'] as String? ?? '',
+                url: plan['url'] as String,
+                label: plan['label'] as String? ?? 'Floor plan',
+              ),
+            )
+            .toList(growable: false),
       );
     } on ApiException catch (error) {
       if (error.isNotFound) return null;
@@ -148,6 +190,7 @@ class ListingRepository implements PropertySearchRepository {
     final queryText = keyword.isNotEmpty ? keyword : criteria.location.trim();
     final query = <String, String?>{
       'q': queryText.isEmpty ? null : queryText,
+      'intent': 'RENT',
       'propertyType': _propertyType(criteria.propertyType),
       'sort': refinements.sort.apiValue,
       'maxPrice': refinements.maxPriceCentavos?.toString(),
@@ -248,7 +291,7 @@ class ListingRepository implements PropertySearchRepository {
         'STORAGE' => ResourceType.storage,
         _ => ResourceType.unit,
       },
-      priceCentavos: (json['priceCentavos'] as num).toInt(),
+      priceCentavos: json['intent'] == 'SALE' ? null : (json['priceCentavos'] as num?)?.toInt(),
       availabilityLabel: json['availabilityLabel'] as String? ?? '',
       isAvailable: json['isAvailable'] as bool? ?? true,
       hasTour: json['hasTour'] as bool? ?? false,
@@ -267,6 +310,40 @@ class ListingRepository implements PropertySearchRepository {
       propertyType: json['propertyType'] as String?,
       minStayNights: (json['minStayNights'] as num?)?.toInt(),
       isPopular: json['hasTour'] as bool? ?? false,
+      intent: json['intent'] == 'SALE' ? ListingIntent.sale : ListingIntent.rent,
+      saleStatus: json['saleStatus'] as String?,
+      lotAreaSqm: (json['lotAreaSqm'] as num?)?.toInt(),
+      parkingSlots: (json['parkingSlots'] as num?)?.toInt() ?? 0,
+      distanceKm: (json['distanceKm'] as num?)?.toDouble(),
+      location: _point(json['location']),
+      representative: _representative(json['representative']),
+      tourProvider: json['tourProvider'] as String?,
+    );
+  }
+
+  static MapPoint? _point(Object? raw) {
+    if (raw is! Map<String, dynamic>) return null;
+    final latitude = (raw['latitude'] as num?)?.toDouble();
+    final longitude = (raw['longitude'] as num?)?.toDouble();
+    if (latitude == null || longitude == null) return null;
+    return MapPoint(
+      latitude: latitude,
+      longitude: longitude,
+      precision: raw['precision'] == 'EXACT' ? LocationPrecision.exact : LocationPrecision.approximate,
+    );
+  }
+
+  static RepresentativeView? _representative(Object? raw) {
+    if (raw is! Map<String, dynamic>) return null;
+    final agentId = raw['agentId'] as String?;
+    if (agentId == null) return null;
+    final photo = raw['photoUrl'] as String?;
+    return RepresentativeView(
+      agentId: agentId,
+      displayName: raw['displayName'] as String? ?? 'Agent',
+      headline: raw['headline'] as String? ?? '',
+      photoUrl: photo != null && photo.startsWith('http') ? photo : null,
+      verified: raw['verified'] as bool? ?? false,
     );
   }
 }

@@ -1,4 +1,7 @@
 import { InvalidMessageError } from './messaging-errors.ts';
+import type { ParticipantRole } from './conversation.ts';
+
+const side = (role: ParticipantRole): 'CUSTOMER' | 'PARTNER' => (role === 'CUSTOMER' ? 'CUSTOMER' : 'PARTNER');
 
 export const MAX_MESSAGE_LENGTH = 4000;
 export const PREVIEW_LENGTH = 140;
@@ -22,24 +25,24 @@ export function previewOf(body: string): string {
 
 export function isUnread(input: {
   readonly lastMessageAt: Date | null;
-  readonly lastSenderRole: 'CUSTOMER' | 'OWNER' | null;
-  readonly readerRole: 'CUSTOMER' | 'OWNER';
+  readonly lastSenderRole: ParticipantRole | null;
+  readonly readerRole: ParticipantRole;
   readonly readerLastReadAt: Date | null;
 }): boolean {
   if (!input.lastMessageAt || !input.lastSenderRole) return false;
-  if (input.lastSenderRole === input.readerRole) return false;
+  if (side(input.lastSenderRole) === side(input.readerRole)) return false;
   return input.readerLastReadAt === null || input.readerLastReadAt < input.lastMessageAt;
 }
 
 export const NOTIFY_GAP_MS = 30 * 60 * 1000;
 
 export function shouldNotifyRecipient(input: {
-  readonly previousSenderRole: 'CUSTOMER' | 'OWNER' | null;
+  readonly previousSenderRole: ParticipantRole | null;
   readonly previousMessageAt: Date | null;
-  readonly senderRole: 'CUSTOMER' | 'OWNER';
+  readonly senderRole: ParticipantRole;
   readonly now: Date;
 }): boolean {
   if (input.previousSenderRole === null || input.previousMessageAt === null) return true;
-  if (input.previousSenderRole !== input.senderRole) return true;
+  if (side(input.previousSenderRole) !== side(input.senderRole)) return true;
   return input.now.getTime() - input.previousMessageAt.getTime() > NOTIFY_GAP_MS;
 }

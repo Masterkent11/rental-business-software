@@ -4,6 +4,7 @@ import type { searchListings } from '@/application/listings/search-listings/sear
 import { listingQuerySchema } from '@/modules/listings/dto/listing.dto.ts';
 import { toListingHttpResponse } from '@/modules/listings/mappers/listing-http.mapper.ts';
 import { centavos } from '@/domain/shared/money.ts';
+import { clampRadiusKm } from '@/domain/shared/geo.ts';
 
 @Controller('listings')
 export class SearchListingsController {
@@ -23,6 +24,12 @@ export class SearchListingsController {
     const page = await this.search({
       ...(q.q !== undefined ? { text: q.q } : {}),
       ...(q.ids !== undefined ? { ids: q.ids } : {}),
+      ...(q.intent !== undefined ? { intent: q.intent } : {}),
+      ...(q.saleStatus !== undefined ? { saleStatus: q.saleStatus } : {}),
+      ...(q.city !== undefined ? { city: q.city } : {}),
+      ...(q.lat !== undefined && q.lng !== undefined
+        ? { near: { latitude: q.lat, longitude: q.lng, radiusKm: clampRadiusKm(q.radiusKm) } }
+        : {}),
       ...(q.kind !== undefined ? { kind: q.kind } : {}),
       ...(q.type !== undefined ? { resourceType: q.type } : {}),
       ...(q.propertyType !== undefined ? { propertyType: q.propertyType } : {}),

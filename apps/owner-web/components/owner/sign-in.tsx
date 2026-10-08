@@ -28,7 +28,7 @@ export function SignIn() {
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
           <h1 className="text-[30px] font-bold tracking-tight">Welcome back</h1>
           <p className="mt-2 text-[14px] leading-relaxed text-muted">
-            Sign in to manage your properties, bookings and guest messages.
+            Sign in to manage properties, inquiries, viewings and client messages.
           </p>
           <form
             className="mt-8 flex flex-col gap-4"
@@ -79,7 +79,7 @@ export function SignIn() {
             </Btn>
           </form>
           <p className="mt-6 text-[12.5px] leading-relaxed text-muted">
-            Owner accounts are set up by the platform team. Customers book and message from the Rental Platform mobile app.
+            Owners and agents use the same sign-in. After signing in you choose your workspace. Customers use the Rental Platform mobile app.
           </p>
         </div>
         <p className="text-[12px] text-muted/80">© {new Date().getFullYear()} Rental Platform</p>

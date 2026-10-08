@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../design/app_image.dart';
-import '../../../design/money.dart';
 import '../../../design/tokens.dart';
 import '../../../fixtures/view_models.dart';
 import '../../saved/saved_controller.dart';
+import '../../listing/listing_price.dart';
 
 class FeaturedPropertyCarousel extends StatefulWidget {
   const FeaturedPropertyCarousel({
@@ -98,7 +98,7 @@ class FeaturedPropertyCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final saved = ref.watch(isSavedProvider(listing.id));
-    final priceStr = Money.peso(listing.priceCentavos);
+    final priceStr = listingPriceShort(listing);
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -271,7 +271,7 @@ class FeaturedPropertyCard extends ConsumerWidget {
                       const SizedBox(width: 2),
                       Expanded(
                         child: Text(
-                          '${listing.areaLabel.isNotEmpty ? listing.areaLabel : "IT Park"}, ${listing.cityLabel.isNotEmpty ? listing.cityLabel : "Cebu City"}',
+                          [listing.areaLabel, listing.cityLabel].where((p) => p.isNotEmpty).join(', '),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -299,9 +299,11 @@ class FeaturedPropertyCard extends ConsumerWidget {
                               ),
                             ),
                             TextSpan(
-                              text: listing.kind == ListingKind.longTerm
-                                  ? ' / month'
-                                  : ' / night',
+                              text: !listing.hasListedPrice
+                                  ? ''
+                                  : listing.kind == ListingKind.longTerm
+                                      ? ' / month'
+                                      : ' / night',
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w400,

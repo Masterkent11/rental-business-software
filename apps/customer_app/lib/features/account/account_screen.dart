@@ -145,6 +145,7 @@ class AccountScreen extends ConsumerWidget {
             ),
           const SizedBox(height: Tokens.s24),
           SettingsRow(icon: Icons.event_note_outlined, label: 'My bookings', onTap: () => context.go(Routes.bookings)),
+          SettingsRow(icon: Icons.event_available_outlined, label: 'Inquiries & viewings', onTap: () => context.push(Routes.activity)),
           SettingsRow(icon: Icons.description_outlined, label: 'Applications', onTap: () => context.push(Routes.applications)),
           SettingsRow(icon: Icons.favorite_border, label: 'Saved places', onTap: () => context.go(Routes.saved)),
           SettingsRow(

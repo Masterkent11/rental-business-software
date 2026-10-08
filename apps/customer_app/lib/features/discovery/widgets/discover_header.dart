@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
+import '../../../data/auth_repository.dart';
+import '../../../data/notification_repository.dart';
 import '../../../design/tokens.dart';
+import '../../location/location_controller.dart';
+import '../../location/location_sheet.dart';
 
-class DiscoverHeader extends StatelessWidget {
-  const DiscoverHeader({
-    super.key,
-    this.location = 'Cebu City',
-    this.hasUnreadNotifications = true,
-  });
-
-  final String location;
-  final bool hasUnreadNotifications;
+class DiscoverHeader extends ConsumerWidget {
+  const DiscoverHeader({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locationState = ref.watch(locationProvider);
+    final location = locationState.locating ? 'Locating…' : locationState.place.label;
+    final signedIn = ref.watch(isSignedInProvider);
+    final hasUnreadNotifications = signedIn && ref.watch(unreadNotificationsProvider) > 0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -26,12 +28,15 @@ class DiscoverHeader extends StatelessWidget {
           children: [
             GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () => HapticFeedback.selectionClick(),
+              onTap: () {
+                HapticFeedback.selectionClick();
+                showLocationSheet(context);
+              },
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.location_on_outlined,
+                  Icon(
+                    locationState.isNearMe ? Icons.near_me_outlined : Icons.location_on_outlined,
                     size: 19,
                     color: Tokens.primaryNavy,
                   ),
@@ -107,7 +112,7 @@ class DiscoverHeader extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         const Text(
-          'Rent with confidence, live the way you want.',
+          'Homes, stays and properties near you.',
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w400,

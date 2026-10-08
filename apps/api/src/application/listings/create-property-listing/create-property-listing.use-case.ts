@@ -11,6 +11,7 @@ import {
   resourceTypeForProperty,
 } from '@/domain/listings/listing.ts';
 import type { Principal } from '@/domain/identity/identity.ts';
+import { assertCoordinates } from '@/domain/shared/geo.ts';
 import { assertMayManageOrganization } from '@/application/identity/application-authorization.rules.ts';
 
 export interface CreatePropertyListingCommand {
@@ -27,6 +28,7 @@ export const createPropertyListing =
   async (command: CreatePropertyListingCommand): Promise<Listing> => {
     assertMayManageOrganization(command.principal, command.organizationId);
     assertValidListingDetails(command.listing);
+    if (command.property.location) assertCoordinates(command.property.location);
 
     const kindMatchesMode =
       command.rentalMode === 'HYBRID' || command.rentalMode === command.listing.kind;

@@ -1,5 +1,83 @@
-import type { Scene, TourState } from './tour-state.ts';
-import { TourNotPublishableError } from './tour-errors.ts';
+import type { Scene, TourProvider, TourState } from './tour-state.ts';
+import {
+  InvalidSceneViewError,
+  InvalidTourProviderError,
+  SceneRemovalBlockedError,
+  TourNotPublishableError,
+} from './tour-errors.ts';
+
+export const MATTERPORT_MODEL_ID = /^[A-Za-z0-9]{8,24}$/;
+export const DEFAULT_INITIAL_FOV = 75;
+
+export function parseMatterportModelId(raw: string): string {
+  const value = raw.trim();
+  if (MATTERPORT_MODEL_ID.test(value)) return value;
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new InvalidTourProviderError('Paste the Matterport share link or model ID');
+  }
+  if (url.protocol !== 'https:' || url.hostname !== 'my.matterport.com' || url.pathname !== '/show/') {
+    throw new InvalidTourProviderError('Only my.matterport.com share links are supported');
+  }
+  const model = url.searchParams.get('m') ?? '';
+  if (!MATTERPORT_MODEL_ID.test(model)) {
+    throw new InvalidTourProviderError('That Matterport link does not contain a valid model ID');
+  }
+  return model;
+}
+
+export function matterportEmbedUrl(modelId: string): string {
+  if (!MATTERPORT_MODEL_ID.test(modelId)) {
+    throw new InvalidTourProviderError('Invalid Matterport model ID');
+  }
+  return `https://my.matterport.com/show/?m=${modelId}&play=1&qs=1&brand=0&help=0`;
+}
+
+export function assertInitialView(view: { yaw: number; pitch: number; fov: number }): void {
+  if (!Number.isFinite(view.yaw) || view.yaw < -180 || view.yaw > 180) {
+    throw new InvalidSceneViewError('The starting direction must be between -180° and 180°');
+  }
+  if (!Number.isFinite(view.pitch) || view.pitch < -85 || view.pitch > 85) {
+    throw new InvalidSceneViewError('The starting tilt must be between -85° and 85°');
+  }
+  if (!Number.isFinite(view.fov) || view.fov < 30 || view.fov > 110) {
+    throw new InvalidSceneViewError('The starting zoom must be between 30° and 110°');
+  }
+}
+
+export function inboundHotspotIds(scenes: readonly Scene[], sceneId: string): string[] {
+  return scenes.flatMap((scene) =>
+    scene.hotspots.filter((hotspot) => hotspot.targetSceneId === sceneId).map((hotspot) => hotspot.id),
+  );
+}
+
+export function assertSceneRemovable(
+  tour: { state: TourState; entrySceneId: string | null; scenes: readonly Scene[]; provider?: TourProvider },
+  sceneId: string,
+): void {
+  if (tour.state !== 'PUBLISHED') return;
+  const remaining = tour.scenes
+    .filter((scene) => scene.id !== sceneId)
+    .map((scene) => ({
+      ...scene,
+      hotspots: scene.hotspots.filter((hotspot) => hotspot.targetSceneId !== sceneId),
+    }));
+  try {
+    assertPublishable({
+      entrySceneId: tour.entrySceneId === sceneId ? null : tour.entrySceneId,
+      scenes: remaining,
+    });
+  } catch (error) {
+    if (error instanceof TourNotPublishableError) {
+      throw new SceneRemovalBlockedError(
+        'Removing this room would break the published tour. Unpublish it or choose another opening room first.',
+      );
+    }
+    throw error;
+  }
+}
 
 /** A scene the viewer can actually open. */
 export function isWalkable(scene: Scene): boolean {
@@ -14,7 +92,19 @@ export function isWalkable(scene: Scene): boolean {
 /**
  * I-07 — tour navigation is total.
  */
-export function assertPublishable(tour: { entrySceneId: string | null; scenes: readonly Scene[] }): void {
+export function assertPublishable(tour: {
+  entrySceneId: string | null;
+  scenes: readonly Scene[];
+  provider?: TourProvider;
+  externalModelId?: string | null;
+}): void {
+  if (tour.provider === 'MATTERPORT') {
+    if (!tour.externalModelId || !MATTERPORT_MODEL_ID.test(tour.externalModelId)) {
+      throw new TourNotPublishableError('Add the Matterport model before publishing.');
+    }
+    return;
+  }
+
   const problems: string[] = [];
 
   const walkable = new Set(

@@ -31,3 +31,15 @@ export const markOrganizationConversationRead =
       scope: { organizationId: input.organizationId },
     });
   };
+
+export const markAgentConversationRead =
+  (messaging: MessagingRepository) =>
+  async (input: { readonly principal: Principal; readonly conversationId: string }): Promise<void> => {
+    const conversation = await messaging.findForAgent(input.principal.userId, input.conversationId);
+    if (!conversation) throw new ConversationNotFoundError('Conversation not found');
+    await messaging.markRead({
+      conversationId: conversation.id,
+      role: 'AGENT',
+      scope: { agentUserId: input.principal.userId },
+    });
+  };

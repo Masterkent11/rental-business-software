@@ -75,10 +75,13 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
     if (detailAsync.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    if (detail == null) {
+    final monthly = detail?.card.isSale == false ? detail?.card.priceCentavos : null;
+    if (detail == null || monthly == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Apply to rent')),
-        body: const Center(child: Text('This place is no longer available.')),
+        body: Center(
+          child: Text(detail == null ? 'This place is no longer available.' : 'This property is not offered for rent.'),
+        ),
       );
     }
 
@@ -117,12 +120,12 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
                     children: [
                       Text(card.title, style: theme.textTheme.titleMedium),
                       const SizedBox(height: 2),
-                      Text(card.location, style: theme.textTheme.bodySmall),
+                      Text(card.place, style: theme.textTheme.bodySmall),
                     ],
                   ),
                 ),
                 Text(
-                  Money.perMonth(card.priceCentavos),
+                  Money.perMonth(monthly),
                   style: theme.textTheme.titleMedium,
                 ),
               ],

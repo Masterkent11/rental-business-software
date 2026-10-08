@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../data/listing_repository.dart';
 import '../../data/tour_repository.dart';
@@ -41,7 +44,7 @@ class _TourScreenState extends ConsumerState<TourScreen> {
     setState(() {
       _sceneId = scene.id;
       _source = source;
-      _camera = const PanoramaCamera();
+      _camera = startingCamera(scene);
       _walking = true;
     });
 
@@ -93,6 +96,8 @@ class _TourScreenState extends ConsumerState<TourScreen> {
       error: (_, __) => const _TourUnavailable(),
       data: (tour) {
         if (tour == null) return const _NoTour();
+        final matterport = tour.matterportUrl;
+        if (matterport != null) return MatterportTour(url: matterport);
 
         final entry = tour.entryScene;
         if (entry == null) return const _NoTour();
@@ -101,6 +106,7 @@ class _TourScreenState extends ConsumerState<TourScreen> {
 
         if (_source == null) {
           _sceneId = entry.id;
+          _camera = startingCamera(entry);
           _source = _sourceFor(entry)..start();
         }
 
@@ -169,6 +175,31 @@ class _TourScreenState extends ConsumerState<TourScreen> {
                       children: [
                         if (!_hasLooked) const _DragHint(),
                         const SizedBox(height: Tokens.s16),
+                        if (tour.scenes.length > 1) ...[
+                          SizedBox(
+                            height: 64,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              physics: Tokens.scroll,
+                              itemCount: tour.scenes.length,
+                              separatorBuilder: (_, __) => const SizedBox(width: Tokens.s8),
+                              itemBuilder: (context, i) => _RoomChip(
+                                scene: tour.scenes[i],
+                                selected: tour.scenes[i].id == scene.id,
+                                onTap: () {
+                                  if (tour.scenes[i].id == scene.id) return;
+                                  if (!tour.scenes[i].isWalkable) {
+                                    _sayUnavailable(context);
+                                    return;
+                                  }
+                                  HapticFeedback.selectionClick();
+                                  _open(tour.scenes[i]);
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: Tokens.s12),
+                        ],
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -592,6 +623,163 @@ class _NextStep extends StatelessWidget {
           ),
           const SizedBox(width: Tokens.s6),
           const Icon(Icons.arrow_forward, size: 16, color: Colors.white),
+        ],
+      ),
+    );
+  }
+}
+
+PanoramaCamera startingCamera(TourSceneApiView scene) {
+  const toRadians = math.pi / 180;
+  return const PanoramaCamera().copyWith(
+    yaw: scene.initialYaw * toRadians,
+    pitch: -scene.initialPitch * toRadians,
+    fov: scene.initialFov * toRadians,
+  );
+}
+
+class _RoomChip extends StatelessWidget {
+  const _RoomChip({required this.scene, required this.selected, required this.onTap});
+
+  final TourSceneApiView scene;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: scene.label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 96,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(Tokens.rSm),
+            border: Border.all(color: selected ? Colors.white : Colors.white24, width: selected ? 2 : 1),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(Tokens.rSm - 1),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                AppImage(url: scene.thumbnailUrl ?? '', fallbackIcon: Icons.threed_rotation, seed: scene.label.length),
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Colors.black87],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 6,
+                  right: 6,
+                  bottom: 5,
+                  child: Text(
+                    scene.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class MatterportTour extends StatefulWidget {
+  const MatterportTour({required this.url, super.key});
+
+  final Uri url;
+
+  @override
+  State<MatterportTour> createState() => _MatterportTourState();
+}
+
+class _MatterportTourState extends State<MatterportTour> {
+  late final WebViewController _controller;
+  bool _loading = true;
+  bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.black)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onNavigationRequest: (request) {
+            final uri = Uri.tryParse(request.url);
+            final allowed = uri != null && uri.scheme == 'https' && (uri.host == 'my.matterport.com' || uri.host.endsWith('.matterport.com'));
+            return allowed ? NavigationDecision.navigate : NavigationDecision.prevent;
+          },
+          onPageFinished: (_) {
+            if (mounted) setState(() => _loading = false);
+          },
+          onWebResourceError: (error) {
+            if (error.isForMainFrame ?? true) {
+              if (mounted) setState(() => _failed = true);
+            }
+          },
+        ),
+      )
+      ..loadRequest(widget.url);
+  }
+
+  void _retry() {
+    setState(() {
+      _failed = false;
+      _loading = true;
+    });
+    _controller.loadRequest(widget.url);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (!_failed) WebViewWidget(controller: _controller),
+          if (_loading && !_failed) const _TourLoading(),
+          if (_failed)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(Tokens.s32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.cloud_off_outlined, color: Colors.white70, size: 36),
+                    const SizedBox(height: Tokens.s12),
+                    const Text(
+                      'The 3D tour could not load. Check your connection and try again.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(height: Tokens.s16),
+                    FilledButton(onPressed: _retry, child: const Text('Try again')),
+                  ],
+                ),
+              ),
+            ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: _TourNav(title: '3D Tour', onClose: () => Navigator.of(context).maybePop()),
+            ),
+          ),
         ],
       ),
     );

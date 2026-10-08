@@ -38,6 +38,9 @@ class TourSceneApiView {
     required this.tileUrlTemplate,
     required this.tileLevels,
     required this.hotspots,
+    this.initialYaw = 0,
+    this.initialPitch = 0,
+    this.initialFov = 75,
   });
 
   final String id;
@@ -51,6 +54,10 @@ class TourSceneApiView {
   final int tileLevels;
 
   final List<TourHotspotView> hotspots;
+
+  final double initialYaw;
+  final double initialPitch;
+  final double initialFov;
 
   bool get isWalkable =>
       previewUrl != null || (tileUrlTemplate != null && tileLevels > 0);
@@ -71,10 +78,15 @@ class TourView {
     required this.resourceId,
     required this.entrySceneId,
     required this.scenes,
+    this.matterportUrl,
   });
 
   final String id;
   final String resourceId;
+
+  final Uri? matterportUrl;
+
+  bool get isMatterport => matterportUrl != null;
 
   final String entrySceneId;
   final List<TourSceneApiView> scenes;
@@ -98,6 +110,18 @@ class TourRepository {
   Future<TourView?> forResource(String resourceId) async {
     try {
       final json = await _api.getJson('/resources/$resourceId/tour');
+
+      if (json['provider'] == 'MATTERPORT') {
+        final embed = matterportEmbed(json['embedUrl'] as String?);
+        if (embed == null) return null;
+        return TourView(
+          id: json['id'] as String,
+          resourceId: json['resourceId'] as String? ?? resourceId,
+          entrySceneId: '',
+          scenes: const [],
+          matterportUrl: embed,
+        );
+      }
 
       final scenes = (json['scenes'] as List<dynamic>? ?? const [])
           .whereType<Map<String, dynamic>>()
@@ -129,6 +153,9 @@ class TourRepository {
       thumbnailUrl: json['thumbnailUrl'] as String?,
       tileUrlTemplate: template == null ? null : '$baseUrl$template',
       tileLevels: (json['tileLevels'] as num?)?.toInt() ?? 0,
+      initialYaw: (json['initialYaw'] as num?)?.toDouble() ?? 0,
+      initialPitch: (json['initialPitch'] as num?)?.toDouble() ?? 0,
+      initialFov: (json['initialFov'] as num?)?.toDouble() ?? 75,
       hotspots: (json['hotspots'] as List<dynamic>? ?? const [])
           .whereType<Map<String, dynamic>>()
           .map(
@@ -144,6 +171,15 @@ class TourRepository {
           .toList(growable: false),
     );
   }
+}
+
+Uri? matterportEmbed(String? raw) {
+  if (raw == null) return null;
+  final uri = Uri.tryParse(raw);
+  if (uri == null || uri.scheme != 'https' || uri.host != 'my.matterport.com' || uri.path != '/show/') return null;
+  final model = uri.queryParameters['m'] ?? '';
+  if (!RegExp(r'^[A-Za-z0-9]{8,24}$').hasMatch(model)) return null;
+  return uri;
 }
 
 final panoramaImageLoaderProvider = Provider<PanoramaImageLoader?>(

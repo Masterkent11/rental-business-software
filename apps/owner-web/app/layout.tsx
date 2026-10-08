@@ -10,9 +10,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rental Platform Owner",
+  title: "Rental Platform Partner Portal",
   description:
-    "Occupancy, collection, applications, and everything that needs a decision today.",
+    "Owner and agent workspaces for listings, inquiries, viewings and virtual tours.",
 };
 
 /**

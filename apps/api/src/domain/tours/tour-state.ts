@@ -2,6 +2,8 @@ export type SceneState = 'UPLOADING' | 'PROCESSING' | 'READY' | 'FAILED';
 
 export type HotspotKind = 'NAVIGATION' | 'INFO';
 
+export type TourProvider = 'PLATFORM' | 'MATTERPORT';
+
 export type TourState =
   | 'DRAFT'
   | 'PROCESSING'
@@ -33,4 +35,8 @@ export interface Scene {
   readonly tilePrefix: string | null;
   readonly tileLevels: number;
   readonly hotspots: readonly Hotspot[];
+  readonly sourcePath?: string | null;
+  readonly initialYaw?: number;
+  readonly initialPitch?: number;
+  readonly initialFov?: number;
 }

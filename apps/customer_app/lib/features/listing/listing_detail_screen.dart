@@ -14,6 +14,7 @@ import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
 import '../auth/auth_guard.dart';
 import '../saved/saved_controller.dart';
+import 'sale/sale_listing_screen.dart';
 import 'widgets/move_in_cost_card.dart';
 
 class ListingDetailScreen extends ConsumerStatefulWidget {
@@ -113,6 +114,11 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     final theme = Theme.of(context);
     final isLongTerm = card.kind == ListingKind.longTerm;
     final saved = ref.watch(isSavedProvider(card.id));
+    final price = card.priceCentavos;
+
+    if (card.isSale || price == null) {
+      return SaleListingView(detail: detail, saved: saved, onToggleSave: () => _toggleSave(card.id));
+    }
 
     return Scaffold(
       body: Stack(
@@ -150,8 +156,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     Reveal(
                       order: 1,
                       child: Text(
-                        '${card.resourceType.label} · ${card.propertyName}\n'
-                        '${card.location}',
+                        '${card.resourceType.label} · ${card.propertyName}\n${card.place}',
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -178,7 +183,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                       const SizedBox(height: Tokens.sectionTight),
                       MoveInCostCard(
                         cost: card.moveInCost!,
-                        monthlyCentavos: card.priceCentavos,
+                        monthlyCentavos: price,
                       ),
                     ],
 
@@ -324,6 +329,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
             bottom: 0,
             child: _CommitBar(
               card: card,
+              price: price,
               onCommit: () {
                 final target = isLongTerm ? Routes.apply(card.id) : Routes.book(card.id);
                 if (!requireSignIn(
@@ -669,9 +675,10 @@ class _GhostButton extends StatelessWidget {
 }
 
 class _CommitBar extends StatelessWidget {
-  const _CommitBar({required this.card, required this.onCommit});
+  const _CommitBar({required this.card, required this.price, required this.onCommit});
 
   final ListingCardView card;
+  final int price;
   final VoidCallback onCommit;
 
   @override
@@ -702,9 +709,7 @@ class _CommitBar extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    isLongTerm
-                        ? Money.perMonth(card.priceCentavos)
-                        : Money.perNight(card.priceCentavos),
+                    isLongTerm ? Money.perMonth(price) : Money.perNight(price),
                     style: theme.textTheme.headlineSmall,
                   ),
                   if (card.moveInCost != null)

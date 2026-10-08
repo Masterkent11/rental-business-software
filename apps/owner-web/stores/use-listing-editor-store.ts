@@ -5,18 +5,23 @@ import type {
   CalendarNight,
   CreatePropertyListingInput,
   OwnerListing,
+  SaleTerms,
 } from "../domain/listings/listing";
-import { photoProblem } from "../domain/listings/listing";
+import { floorPlanProblem, photoProblem } from "../domain/listings/listing";
 import {
-  WIZARD_STEPS,
   emptyForm,
   formFromListing,
   listingDetailsFrom,
+  locationFrom,
+  saleDetailsFrom,
+  saleTermsFrom,
+  stepsFor,
   validateStep,
   type FormErrors,
   type ListingForm,
 } from "../domain/listings/listing-form";
-
+import type { ListingIntent } from "../domain/listings/listing";
+import type { PartnerScope } from "../domain/workspace/workspace";
 
 export interface UploadItem {
   readonly key: string;
@@ -28,7 +33,10 @@ export interface UploadItem {
   readonly file: File;
 }
 
+export type EditorTab = "details" | "location" | "photos" | "plans" | "pricing" | "terms" | "availability" | "agent" | "publish";
+
 interface EditorState {
+  scope: PartnerScope | null;
   form: ListingForm;
   errors: FormErrors;
   step: number;
@@ -36,13 +44,19 @@ interface EditorState {
   saveError: string | null;
   savedAt: number | null;
   listing: OwnerListing | null;
+  terms: SaleTerms | null;
+  termsError: string | null;
   loading: boolean;
   loadError: string | null;
-  tab: "details" | "photos" | "pricing" | "availability" | "publish";
+  tab: EditorTab;
   drafts: { amenities: string; houseRules: string; terms: string };
   uploads: readonly UploadItem[];
   photoError: string | null;
   photoBusyId: string | null;
+  planLabel: string;
+  planProgress: number | null;
+  planError: string | null;
+  planBusyId: string | null;
   calendarFrom: string;
   nights: readonly CalendarNight[];
   blocks: readonly AvailabilityBlock[];
@@ -55,8 +69,9 @@ interface EditorState {
   publishing: boolean;
   publishError: string | null;
   publishProblems: readonly string[];
+  locating: boolean;
 
-  resetForCreate: () => void;
+  resetForCreate: (intent: ListingIntent) => void;
   setField: <K extends keyof ListingForm>(key: K, value: ListingForm[K]) => void;
   setDraft: (key: "amenities" | "houseRules" | "terms", value: string) => void;
   addItem: (key: "amenities" | "houseRules" | "terms") => void;
@@ -64,21 +79,26 @@ interface EditorState {
   nextStep: () => boolean;
   previousStep: () => void;
   goToStep: (step: number) => void;
+  setLocating: (locating: boolean) => void;
+  setCoordinates: (latitude: number, longitude: number) => void;
   createDraft: (organizationId: string) => Promise<OwnerListing | null>;
-  load: (organizationId: string, listingId: string) => Promise<void>;
-  setTab: (tab: EditorState["tab"]) => void;
-  saveDetails: (organizationId: string) => Promise<boolean>;
-  addPhotos: (organizationId: string, files: readonly File[]) => Promise<void>;
-  retryUpload: (organizationId: string, key: string) => Promise<void>;
+  load: (scope: PartnerScope, listingId: string) => Promise<void>;
+  setTab: (tab: EditorTab) => void;
+  saveDetails: () => Promise<boolean>;
+  addPhotos: (files: readonly File[]) => Promise<void>;
+  retryUpload: (key: string) => Promise<void>;
   dismissUpload: (key: string) => void;
-  removePhoto: (organizationId: string, photoId: string) => Promise<void>;
-  makeCover: (organizationId: string, photoId: string) => Promise<void>;
-  movePhoto: (organizationId: string, photoId: string, direction: -1 | 1) => Promise<void>;
-  loadCalendar: (organizationId: string, from?: string) => Promise<void>;
+  removePhoto: (photoId: string) => Promise<void>;
+  makeCover: (photoId: string) => Promise<void>;
+  movePhoto: (photoId: string, direction: -1 | 1) => Promise<void>;
+  setPlanLabel: (label: string) => void;
+  addFloorPlan: (file: File) => Promise<void>;
+  removeFloorPlan: (planId: string) => Promise<void>;
+  loadCalendar: (from?: string) => Promise<void>;
   setBlockField: (key: "blockStart" | "blockEnd" | "blockNote", value: string) => void;
-  addBlock: (organizationId: string) => Promise<void>;
-  removeBlock: (organizationId: string, blockId: string) => Promise<void>;
-  changeState: (organizationId: string, action: "PUBLISH" | "UNPUBLISH" | "ARCHIVE") => Promise<OwnerListing | null>;
+  addBlock: () => Promise<void>;
+  removeBlock: (blockId: string) => Promise<void>;
+  changeState: (action: "PUBLISH" | "UNPUBLISH" | "ARCHIVE") => Promise<OwnerListing | null>;
 }
 
 const isoDay = (date: Date) => date.toISOString().slice(0, 10);
@@ -94,18 +114,30 @@ const addDays = (iso: string, days: number) => {
 
 const messageOf = (error: unknown, fallback: string) => (error instanceof Error ? error.message : fallback);
 
+export const canEditListing = (scope: PartnerScope | null, listing: OwnerListing | null) =>
+  scope?.kind === "OWNER" || Boolean(listing?.permissions?.canEditListing);
+
+export const canSeeTerms = (scope: PartnerScope | null, listing: OwnerListing | null) =>
+  scope?.kind === "OWNER" || Boolean(listing?.permissions?.canViewCommercial);
+
+const organizationOf = (scope: PartnerScope, listing: OwnerListing) =>
+  scope.kind === "OWNER" ? scope.organizationId : (listing.organizationId ?? "");
+
+const ownerOrganization = (scope: PartnerScope | null) => (scope?.kind === "OWNER" ? scope.organizationId : null);
+
 async function uploadOne(
-  organizationId: string,
-  listingId: string,
+  scope: PartnerScope,
+  listing: OwnerListing,
   item: UploadItem,
   currentCount: number,
   set: (fn: (state: EditorState) => Partial<EditorState>) => void,
   get: () => EditorState,
 ) {
   try {
-    const photo = await container.uploadListingPhotoUseCase.execute(
-      organizationId,
-      listingId,
+    const photo = await container.uploadPartnerPhotoUseCase.execute(
+      scope,
+      organizationOf(scope, listing),
+      listing.id,
       item.file,
       currentCount,
       (fraction) =>
@@ -115,16 +147,12 @@ async function uploadOne(
     );
     URL.revokeObjectURL(item.previewUrl);
     set((state) => {
-      const listing = state.listing;
+      const current = state.listing;
       return {
         uploads: state.uploads.filter((u) => u.key !== item.key),
-        listing: listing
-          ? {
-              ...listing,
-              media: [...listing.media, photo],
-              photos: [...listing.photos, photo.url],
-            }
-          : listing,
+        listing: current
+          ? { ...current, media: [...current.media, photo], photos: [...current.photos, photo.url] }
+          : current,
       };
     });
   } catch (error) {
@@ -134,13 +162,11 @@ async function uploadOne(
       ),
     }));
   }
-  if (get().uploads.length === 0) {
-    const listing = get().listing;
-    if (listing) await get().load(organizationId, listing.id);
-  }
+  if (get().uploads.length === 0 && get().listing) await get().load(scope, listing.id);
 }
 
 export const useListingEditorStore = create<EditorState>((set, get) => ({
+  scope: null,
   form: emptyForm(),
   errors: {},
   step: 0,
@@ -148,6 +174,8 @@ export const useListingEditorStore = create<EditorState>((set, get) => ({
   saveError: null,
   savedAt: null,
   listing: null,
+  terms: null,
+  termsError: null,
   loading: false,
   loadError: null,
   tab: "details",
@@ -155,6 +183,10 @@ export const useListingEditorStore = create<EditorState>((set, get) => ({
   uploads: [],
   photoError: null,
   photoBusyId: null,
+  planLabel: "",
+  planProgress: null,
+  planError: null,
+  planBusyId: null,
   calendarFrom: startOfMonth(),
   nights: [],
   blocks: [],
@@ -167,10 +199,12 @@ export const useListingEditorStore = create<EditorState>((set, get) => ({
   publishing: false,
   publishError: null,
   publishProblems: [],
+  locating: false,
 
-  resetForCreate: () =>
+  resetForCreate: (intent) =>
     set({
-      form: emptyForm(),
+      form: emptyForm(intent),
+      terms: null,
       errors: {},
       step: 0,
       saving: false,
@@ -202,16 +236,24 @@ export const useListingEditorStore = create<EditorState>((set, get) => ({
       set({ errors });
       return false;
     }
-    set((state) => ({ step: Math.min(state.step + 1, WIZARD_STEPS.length - 1), errors: {} }));
+    set((state) => ({ step: Math.min(state.step + 1, stepsFor(state.form.intent).length - 1), errors: {} }));
     return true;
   },
 
   previousStep: () => set((state) => ({ step: Math.max(state.step - 1, 0), errors: {} })),
   goToStep: (step) => set({ step, errors: {} }),
+  setLocating: (locating) => set({ locating }),
+  setCoordinates: (latitude, longitude) =>
+    set((state) => ({
+      form: { ...state.form, latitude: latitude.toFixed(6), longitude: longitude.toFixed(6) },
+      errors: { ...state.errors, latitude: undefined },
+      locating: false,
+    })),
 
   createDraft: async (organizationId) => {
     const form = get().form;
-    for (let step = 0; step < WIZARD_STEPS.length; step += 1) {
+    const steps = stepsFor(form.intent);
+    for (let step = 0; step < steps.length; step += 1) {
       const errors = validateStep(form, step);
       if (Object.keys(errors).length > 0) {
         set({ errors, step });
@@ -219,21 +261,40 @@ export const useListingEditorStore = create<EditorState>((set, get) => ({
       }
     }
     set({ saving: true, saveError: null });
+    const property = {
+      name: form.name.trim(),
+      propertyType: form.propertyType,
+      addressLine: form.addressLine.trim(),
+      areaLabel: form.areaLabel.trim(),
+      cityLabel: form.cityLabel.trim(),
+    };
+    const location = locationFrom(form);
     try {
-      const input: CreatePropertyListingInput = {
-        property: {
-          name: form.name.trim(),
-          propertyType: form.propertyType,
-          addressLine: form.addressLine.trim(),
-          areaLabel: form.areaLabel.trim(),
-          cityLabel: form.cityLabel.trim(),
-        },
-        unitLabel: form.unitLabel.trim(),
-        rentalMode: form.rentalMode,
-        listing: listingDetailsFrom(form),
-      };
-      const listing = await container.createPropertyListingUseCase.execute(organizationId, input);
-      set({ saving: false, listing, tab: "photos", publishProblems: listing.publishProblems ?? [] });
+      let listing: OwnerListing;
+      if (form.intent === "SALE") {
+        if (!location) throw new Error("Set the property location before saving");
+        const terms = saleTermsFrom(form);
+        listing = await container.createSaleListingUseCase.execute(organizationId, {
+          property: { ...property, location },
+          listing: saleDetailsFrom(form),
+          saleTerms: terms.askingPriceInternalCentavos !== null || terms.commercialNotes ? terms : null,
+        });
+      } else {
+        const input: CreatePropertyListingInput = {
+          property: { ...property, ...(location ? { location } : {}) },
+          unitLabel: form.unitLabel.trim(),
+          rentalMode: form.rentalMode,
+          listing: listingDetailsFrom(form),
+        };
+        listing = await container.createPropertyListingUseCase.execute(organizationId, input);
+      }
+      set({
+        saving: false,
+        listing,
+        scope: { kind: "OWNER", organizationId },
+        tab: "photos",
+        publishProblems: listing.publishProblems ?? [],
+      });
       return listing;
     } catch (error) {
       set({ saving: false, saveError: messageOf(error, "Could not save the property") });
@@ -241,15 +302,26 @@ export const useListingEditorStore = create<EditorState>((set, get) => ({
     }
   },
 
-  load: async (organizationId, listingId) => {
+  load: async (scope, listingId) => {
     const sameListing = get().listing?.id === listingId;
-    set({ loading: !sameListing, loadError: null });
+    set({ scope, loading: !sameListing, loadError: null });
     try {
-      const listing = await container.loadListingUseCase.execute(organizationId, listingId);
+      const listing = await container.loadPartnerListingUseCase.execute(scope, listingId);
+      let terms: SaleTerms | null = null;
+      let termsError: string | null = null;
+      if (listing.intent === "SALE" && canSeeTerms(scope, listing)) {
+        try {
+          terms = await container.loadSaleTermsUseCase.execute(scope, listingId);
+        } catch (error) {
+          termsError = messageOf(error, "Could not load the private terms");
+        }
+      }
       set((state) => ({
         listing,
+        terms,
+        termsError,
         loading: false,
-        form: sameListing && state.saving ? state.form : formFromListing(listing),
+        form: sameListing && state.saving ? state.form : formFromListing(listing, terms),
         publishProblems: listing.publishProblems ?? [],
       }));
     } catch (error) {
@@ -259,11 +331,11 @@ export const useListingEditorStore = create<EditorState>((set, get) => ({
 
   setTab: (tab) => set({ tab, saveError: null, publishError: null }),
 
-  saveDetails: async (organizationId) => {
-    const listing = get().listing;
-    if (!listing) return false;
-    const form = get().form;
-    for (const step of [1, 2, 3]) {
+  saveDetails: async () => {
+    const { listing, scope, form } = get();
+    if (!listing || !scope) return false;
+    const steps = form.intent === "SALE" ? [1, 2, 3] : [1, 2, 3];
+    for (const step of steps) {
       const errors = validateStep(form, step);
       if (Object.keys(errors).length > 0) {
         set({ errors, saveError: "Fix the highlighted fields before saving" });
@@ -271,22 +343,39 @@ export const useListingEditorStore = create<EditorState>((set, get) => ({
       }
     }
     set({ saving: true, saveError: null });
+    const property = {
+      name: form.name.trim(),
+      propertyType: form.propertyType,
+      addressLine: form.addressLine.trim(),
+      areaLabel: form.areaLabel.trim(),
+      cityLabel: form.cityLabel.trim(),
+      location: locationFrom(form),
+    };
     try {
-      const details = listingDetailsFrom(form);
-      const updated = await container.updateListingUseCase.execute(organizationId, listing.id, {
-        listing: listing.state === "DRAFT" ? details : { ...details, kind: listing.kind },
-        property: {
-          name: form.name.trim(),
-          propertyType: form.propertyType,
-          addressLine: form.addressLine.trim(),
-          areaLabel: form.areaLabel.trim(),
-          cityLabel: form.cityLabel.trim(),
-        },
-      });
+      let updated: OwnerListing;
+      let terms = get().terms;
+      if (listing.intent === "SALE") {
+        updated = await container.updateSaleListingUseCase.execute(scope, listing.id, {
+          listing: saleDetailsFrom(form),
+          property,
+        });
+        if (canSeeTerms(scope, listing) && canEditListing(scope, listing)) {
+          terms = await container.saveSaleTermsUseCase.execute(scope, listing.id, saleTermsFrom(form));
+        }
+      } else {
+        const organizationId = ownerOrganization(scope);
+        if (!organizationId) throw new Error("Only the owner can edit rental details");
+        const details = listingDetailsFrom(form);
+        updated = await container.updateListingUseCase.execute(organizationId, listing.id, {
+          listing: listing.state === "DRAFT" || !listing.kind ? details : { ...details, kind: listing.kind },
+          property,
+        });
+      }
       set({
         saving: false,
-        listing: updated,
-        form: formFromListing(updated),
+        listing: { ...updated, permissions: listing.permissions, organizationId: listing.organizationId },
+        terms,
+        form: formFromListing(updated, terms),
         savedAt: Date.now(),
         publishProblems: updated.publishProblems ?? [],
       });
@@ -297,9 +386,9 @@ export const useListingEditorStore = create<EditorState>((set, get) => ({
     }
   },
 
-  addPhotos: async (organizationId, files) => {
-    const listing = get().listing;
-    if (!listing) return;
+  addPhotos: async (files) => {
+    const { listing, scope } = get();
+    if (!listing || !scope) return;
     set({ photoError: null });
     let count = listing.media.length + get().uploads.length;
     const accepted: UploadItem[] = [];
@@ -322,20 +411,18 @@ export const useListingEditorStore = create<EditorState>((set, get) => ({
     }
     set((state) => ({ uploads: [...state.uploads, ...accepted] }));
     await Promise.all(
-      accepted.map((item, index) =>
-        uploadOne(organizationId, listing.id, item, listing.media.length + index, set, get),
-      ),
+      accepted.map((item, index) => uploadOne(scope, listing, item, listing.media.length + index, set, get)),
     );
   },
 
-  retryUpload: async (organizationId, key) => {
-    const listing = get().listing;
+  retryUpload: async (key) => {
+    const { listing, scope } = get();
     const item = get().uploads.find((u) => u.key === key);
-    if (!listing || !item) return;
+    if (!listing || !scope || !item) return;
     set((state) => ({
       uploads: state.uploads.map((u) => (u.key === key ? { ...u, status: "uploading", progress: 0, error: null } : u)),
     }));
-    await uploadOne(organizationId, listing.id, { ...item, status: "uploading" }, listing.media.length, set, get);
+    await uploadOne(scope, listing, { ...item, status: "uploading" }, listing.media.length, set, get);
   },
 
   dismissUpload: (key) =>
@@ -345,35 +432,39 @@ export const useListingEditorStore = create<EditorState>((set, get) => ({
       return { uploads: state.uploads.filter((u) => u.key !== key) };
     }),
 
-  removePhoto: async (organizationId, photoId) => {
-    const listing = get().listing;
-    if (!listing) return;
+  removePhoto: async (photoId) => {
+    const { listing, scope } = get();
+    if (!listing || !scope) return;
+    if (listing.state === "PUBLISHED" && listing.media.length <= 1) {
+      set({ photoError: "A published listing needs at least one photo. Add another before removing this one." });
+      return;
+    }
     set({ photoBusyId: photoId, photoError: null });
     try {
-      await container.removeListingPhotoUseCase.execute(organizationId, listing.id, photoId);
-      await get().load(organizationId, listing.id);
+      await container.removePartnerPhotoUseCase.execute(scope, listing.id, photoId);
+      await get().load(scope, listing.id);
       set({ photoBusyId: null });
     } catch (error) {
       set({ photoBusyId: null, photoError: messageOf(error, "Could not remove that photo") });
     }
   },
 
-  makeCover: async (organizationId, photoId) => {
-    const listing = get().listing;
-    if (!listing) return;
+  makeCover: async (photoId) => {
+    const { listing, scope } = get();
+    if (!listing || !scope) return;
     const ids = [photoId, ...listing.media.map((m) => m.id).filter((id) => id !== photoId)];
     set({ photoBusyId: photoId, photoError: null });
     try {
-      const updated = await container.reorderListingPhotosUseCase.execute(organizationId, listing.id, ids);
+      const updated = await container.reorderPartnerPhotosUseCase.execute(scope, listing.id, ids);
       set({ listing: { ...listing, media: updated.media, photos: updated.photos }, photoBusyId: null });
     } catch (error) {
       set({ photoBusyId: null, photoError: messageOf(error, "Could not change the cover photo") });
     }
   },
 
-  movePhoto: async (organizationId, photoId, direction) => {
-    const listing = get().listing;
-    if (!listing) return;
+  movePhoto: async (photoId, direction) => {
+    const { listing, scope } = get();
+    if (!listing || !scope) return;
     const ids = listing.media.map((m) => m.id);
     const index = ids.indexOf(photoId);
     const target = index + direction;
@@ -381,25 +472,69 @@ export const useListingEditorStore = create<EditorState>((set, get) => ({
     [ids[index], ids[target]] = [ids[target]!, ids[index]!];
     set({ photoBusyId: photoId, photoError: null });
     try {
-      const updated = await container.reorderListingPhotosUseCase.execute(organizationId, listing.id, ids);
+      const updated = await container.reorderPartnerPhotosUseCase.execute(scope, listing.id, ids);
       set({ listing: { ...listing, media: updated.media, photos: updated.photos }, photoBusyId: null });
     } catch (error) {
       set({ photoBusyId: null, photoError: messageOf(error, "Could not reorder photos") });
     }
   },
 
-  loadCalendar: async (organizationId, from) => {
-    const listing = get().listing;
-    if (!listing) return;
+  setPlanLabel: (planLabel) => set({ planLabel, planError: null }),
+
+  addFloorPlan: async (file) => {
+    const { listing, scope, planLabel } = get();
+    if (!listing || !scope) return;
+    const problem = floorPlanProblem(file, listing.floorPlans.length, planLabel);
+    if (problem) {
+      set({ planError: problem });
+      return;
+    }
+    set({ planProgress: 0, planError: null });
+    try {
+      const plan = await container.uploadFloorPlanUseCase.execute(
+        scope,
+        organizationOf(scope, listing),
+        listing.id,
+        file,
+        planLabel,
+        listing.floorPlans.length,
+        (fraction) => set({ planProgress: fraction }),
+      );
+      set((state) => ({
+        planProgress: null,
+        planLabel: "",
+        listing: state.listing ? { ...state.listing, floorPlans: [...state.listing.floorPlans, plan] } : state.listing,
+      }));
+    } catch (error) {
+      set({ planProgress: null, planError: messageOf(error, "Could not upload the floor plan") });
+    }
+  },
+
+  removeFloorPlan: async (planId) => {
+    const { listing, scope } = get();
+    if (!listing || !scope) return;
+    set({ planBusyId: planId, planError: null });
+    try {
+      await container.removeFloorPlanUseCase.execute(scope, listing.id, planId);
+      set((state) => ({
+        planBusyId: null,
+        listing: state.listing
+          ? { ...state.listing, floorPlans: state.listing.floorPlans.filter((p) => p.id !== planId) }
+          : state.listing,
+      }));
+    } catch (error) {
+      set({ planBusyId: null, planError: messageOf(error, "Could not remove the floor plan") });
+    }
+  },
+
+  loadCalendar: async (from) => {
+    const { listing, scope } = get();
+    const organizationId = ownerOrganization(scope);
+    if (!listing || !organizationId) return;
     const start = from ?? get().calendarFrom;
     set({ calendarLoading: true, calendarError: null, calendarFrom: start });
     try {
-      const calendar = await container.loadListingCalendarUseCase.execute(
-        organizationId,
-        listing.id,
-        start,
-        addDays(start, 62),
-      );
+      const calendar = await container.loadListingCalendarUseCase.execute(organizationId, listing.id, start, addDays(start, 62));
       set({ nights: calendar.nights, blocks: calendar.blocks, calendarLoading: false });
     } catch (error) {
       set({ calendarLoading: false, calendarError: messageOf(error, "Could not load availability") });
@@ -408,34 +543,37 @@ export const useListingEditorStore = create<EditorState>((set, get) => ({
 
   setBlockField: (key, value) => set({ [key]: value } as Partial<EditorState>),
 
-  addBlock: async (organizationId) => {
-    const listing = get().listing;
-    if (!listing) return;
-    const { blockStart, blockEnd, blockNote } = get();
+  addBlock: async () => {
+    const { listing, scope, blockStart, blockEnd, blockNote } = get();
+    const organizationId = ownerOrganization(scope);
+    if (!listing || !organizationId) return;
     set({ blockBusy: true, calendarError: null });
     try {
       await container.blockDatesUseCase.execute(organizationId, listing.id, blockStart, blockEnd, blockNote.trim() || null);
       set({ blockBusy: false, blockStart: "", blockEnd: "", blockNote: "" });
-      await get().loadCalendar(organizationId);
+      await get().loadCalendar();
     } catch (error) {
       set({ blockBusy: false, calendarError: messageOf(error, "Could not block those dates") });
     }
   },
 
-  removeBlock: async (organizationId, blockId) => {
+  removeBlock: async (blockId) => {
+    const organizationId = ownerOrganization(get().scope);
+    if (!organizationId) return;
     set({ blockBusy: true, calendarError: null });
     try {
       await container.unblockDatesUseCase.execute(organizationId, blockId);
       set({ blockBusy: false });
-      await get().loadCalendar(organizationId);
+      await get().loadCalendar();
     } catch (error) {
       set({ blockBusy: false, calendarError: messageOf(error, "Could not reopen those dates") });
     }
   },
 
-  changeState: async (organizationId, action) => {
-    const listing = get().listing;
-    if (!listing) return null;
+  changeState: async (action) => {
+    const { listing, scope } = get();
+    const organizationId = ownerOrganization(scope);
+    if (!listing || !organizationId) return null;
     set({ publishing: true, publishError: null });
     try {
       const updated = await container.changeListingStateUseCase.execute(organizationId, listing.id, action);

@@ -1,15 +1,12 @@
 import type { OwnerRepositoryPort } from "../../ports/owner-repository.port";
-import type { PhotoStoragePort } from "../../ports/photo-storage.port";
 import type {
   CreatePropertyListingInput,
   ListingAction,
   ListingCalendar,
-  ListingPhoto,
   OwnerListing,
   UpdateListingInput,
   AvailabilityBlock,
 } from "../../../domain/listings/listing";
-import { photoProblem } from "../../../domain/listings/listing";
 
 const requireOrganization = (organizationId: string) => {
   if (!organizationId) throw new Error("Organization ID is required");
@@ -20,14 +17,6 @@ export class LoadListingsUseCase {
   async execute(organizationId: string): Promise<readonly OwnerListing[]> {
     requireOrganization(organizationId);
     return this.repository.getListings(organizationId);
-  }
-}
-
-export class LoadListingUseCase {
-  constructor(private readonly repository: OwnerRepositoryPort) {}
-  async execute(organizationId: string, listingId: string): Promise<OwnerListing> {
-    requireOrganization(organizationId);
-    return this.repository.getListing(organizationId, listingId);
   }
 }
 
@@ -55,51 +44,6 @@ export class ChangeListingStateUseCase {
   async execute(organizationId: string, listingId: string, action: ListingAction): Promise<OwnerListing> {
     requireOrganization(organizationId);
     return this.repository.changeListingState(organizationId, listingId, action);
-  }
-}
-
-export class UploadListingPhotoUseCase {
-  constructor(
-    private readonly repository: OwnerRepositoryPort,
-    private readonly storage: PhotoStoragePort,
-  ) {}
-  async execute(
-    organizationId: string,
-    listingId: string,
-    file: File,
-    currentCount: number,
-    onProgress: (fraction: number) => void,
-  ): Promise<ListingPhoto> {
-    requireOrganization(organizationId);
-    const problem = photoProblem(file, currentCount);
-    if (problem) throw new Error(problem);
-    const uploaded = await this.storage.upload(organizationId, listingId, file, onProgress);
-    try {
-      return await this.repository.registerPhoto(organizationId, listingId, uploaded.storagePath);
-    } catch (error) {
-      await this.storage.remove(uploaded.storagePath).catch(() => undefined);
-      throw error;
-    }
-  }
-}
-
-export class RemoveListingPhotoUseCase {
-  constructor(
-    private readonly repository: OwnerRepositoryPort,
-    private readonly storage: PhotoStoragePort,
-  ) {}
-  async execute(organizationId: string, listingId: string, photoId: string): Promise<void> {
-    requireOrganization(organizationId);
-    const removed = await this.repository.removePhoto(organizationId, listingId, photoId);
-    if (removed.storagePath) await this.storage.remove(removed.storagePath);
-  }
-}
-
-export class ReorderListingPhotosUseCase {
-  constructor(private readonly repository: OwnerRepositoryPort) {}
-  async execute(organizationId: string, listingId: string, photoIds: readonly string[]): Promise<OwnerListing> {
-    requireOrganization(organizationId);
-    return this.repository.reorderPhotos(organizationId, listingId, photoIds);
   }
 }
 

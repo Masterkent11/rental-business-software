@@ -211,7 +211,7 @@ class _PropertySearchScreenState extends ConsumerState<PropertySearchScreen> {
                                 enabledBorder: InputBorder.none,
                                 focusedBorder: InputBorder.none,
                                 contentPadding: EdgeInsets.zero,
-                                hintText: 'Search location / Cebu City',
+                                hintText: 'City, area or landmark (optional)',
                                 hintStyle: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w400,

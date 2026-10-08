@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { SearchListingsController } from './controllers/search-listings.controller.ts';
 import { ViewListingController } from './controllers/view-listing.controller.ts';
 import { OwnerListingsController } from './controllers/owner-listings.controller.ts';
+import { OwnerSaleListingsController } from './controllers/owner-sale-listings.controller.ts';
+import { AgentListingsController } from './controllers/agent-listings.controller.ts';
+import { LocationsController } from './controllers/locations.controller.ts';
 import {
   ADD_AVAILABILITY_BLOCK,
   CREATE_LISTING,
@@ -21,9 +24,26 @@ import {
   SET_LISTING_STATE,
   UPDATE_LISTING,
   VIEW_LISTING,
+  CREATE_SALE_LISTING,
+  UPDATE_SALE_LISTING,
+  GET_SALE_TERMS,
+  SAVE_SALE_TERMS,
+  REGISTER_FLOOR_PLAN,
+  REMOVE_FLOOR_PLAN,
+  LIST_AREAS,
+  GET_PARTNER_LISTING,
 } from './listing.tokens.ts';
 import { OCCUPANCY_REPOSITORY } from '@/modules/bookings/booking.tokens.ts';
-import { BOOKING_REPOSITORY, LISTING_MEDIA_STORAGE } from '@/modules/shared/shared.tokens.ts';
+import { BOOKING_REPOSITORY, LISTING_GATE, LISTING_MEDIA_STORAGE } from '@/modules/shared/shared.tokens.ts';
+import type { ListingGate } from '@/application/identity/partner-access.rules.ts';
+import { createSaleListing } from '@/application/listings/create-sale-listing/create-sale-listing.use-case.ts';
+import { updateSaleListing } from '@/application/listings/update-sale-listing/update-sale-listing.use-case.ts';
+import { getSaleTerms } from '@/application/listings/get-sale-terms/get-sale-terms.use-case.ts';
+import { saveSaleTerms } from '@/application/listings/save-sale-terms/save-sale-terms.use-case.ts';
+import { registerFloorPlan } from '@/application/listings/register-floor-plan/register-floor-plan.use-case.ts';
+import { removeFloorPlan } from '@/application/listings/remove-floor-plan/remove-floor-plan.use-case.ts';
+import { listAreas } from '@/application/listings/list-areas/list-areas.use-case.ts';
+import { getPartnerListing } from '@/application/listings/get-partner-listing/get-partner-listing.use-case.ts';
 import { postgresListingRepository } from '@/infrastructure/postgres/repositories/postgres-listing.repository.ts';
 import { postgresOccupancyRepository } from '@/infrastructure/postgres/repositories/postgres-occupancy.repository.ts';
 import { searchListings } from '@/application/listings/search-listings/search-listings.use-case.ts';
@@ -51,7 +71,14 @@ import type { BookingRepository } from '@/application/ports/repositories/booking
 import type { ListingMediaStorage } from '@/application/ports/storage/listing-media.port.ts';
 
 @Module({
-  controllers: [SearchListingsController, ViewListingController, OwnerListingsController],
+  controllers: [
+    SearchListingsController,
+    ViewListingController,
+    OwnerListingsController,
+    OwnerSaleListingsController,
+    AgentListingsController,
+    LocationsController,
+  ],
   providers: [
     { provide: LISTING_REPOSITORY, useFactory: (): ListingRepository => postgresListingRepository() },
     { provide: OCCUPANCY_REPOSITORY, useFactory: (): OccupancyRepository => postgresOccupancyRepository() },
@@ -108,18 +135,60 @@ import type { ListingMediaStorage } from '@/application/ports/storage/listing-me
     },
     {
       provide: REGISTER_LISTING_PHOTO,
-      inject: [LISTING_REPOSITORY, LISTING_MEDIA_STORAGE],
-      useFactory: (repo: ListingRepository, media: ListingMediaStorage) => registerListingPhoto(repo, media),
+      inject: [LISTING_REPOSITORY, LISTING_MEDIA_STORAGE, LISTING_GATE],
+      useFactory: (repo: ListingRepository, media: ListingMediaStorage, gate: ListingGate) =>
+        registerListingPhoto(repo, media, gate),
     },
     {
       provide: REMOVE_LISTING_PHOTO,
-      inject: [LISTING_REPOSITORY],
-      useFactory: (repo: ListingRepository) => removeListingPhoto(repo),
+      inject: [LISTING_REPOSITORY, LISTING_GATE],
+      useFactory: (repo: ListingRepository, gate: ListingGate) => removeListingPhoto(repo, gate),
     },
     {
       provide: REORDER_LISTING_PHOTOS,
+      inject: [LISTING_REPOSITORY, LISTING_GATE],
+      useFactory: (repo: ListingRepository, gate: ListingGate) => reorderListingPhotos(repo, gate),
+    },
+    {
+      provide: CREATE_SALE_LISTING,
       inject: [LISTING_REPOSITORY],
-      useFactory: (repo: ListingRepository) => reorderListingPhotos(repo),
+      useFactory: (repo: ListingRepository) => createSaleListing(repo),
+    },
+    {
+      provide: UPDATE_SALE_LISTING,
+      inject: [LISTING_REPOSITORY, LISTING_GATE],
+      useFactory: (repo: ListingRepository, gate: ListingGate) => updateSaleListing(repo, gate),
+    },
+    {
+      provide: GET_SALE_TERMS,
+      inject: [LISTING_REPOSITORY, LISTING_GATE],
+      useFactory: (repo: ListingRepository, gate: ListingGate) => getSaleTerms(repo, gate),
+    },
+    {
+      provide: SAVE_SALE_TERMS,
+      inject: [LISTING_REPOSITORY, LISTING_GATE],
+      useFactory: (repo: ListingRepository, gate: ListingGate) => saveSaleTerms(repo, gate),
+    },
+    {
+      provide: REGISTER_FLOOR_PLAN,
+      inject: [LISTING_REPOSITORY, LISTING_MEDIA_STORAGE, LISTING_GATE],
+      useFactory: (repo: ListingRepository, media: ListingMediaStorage, gate: ListingGate) =>
+        registerFloorPlan(repo, media, gate),
+    },
+    {
+      provide: REMOVE_FLOOR_PLAN,
+      inject: [LISTING_REPOSITORY, LISTING_GATE],
+      useFactory: (repo: ListingRepository, gate: ListingGate) => removeFloorPlan(repo, gate),
+    },
+    {
+      provide: LIST_AREAS,
+      inject: [LISTING_REPOSITORY],
+      useFactory: (repo: ListingRepository) => listAreas(repo),
+    },
+    {
+      provide: GET_PARTNER_LISTING,
+      inject: [LISTING_REPOSITORY, LISTING_GATE],
+      useFactory: (repo: ListingRepository, gate: ListingGate) => getPartnerListing(repo, gate),
     },
     {
       provide: SET_LISTING_STATE,

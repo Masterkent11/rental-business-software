@@ -40,10 +40,13 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
     if (detailAsync.isLoading && detail == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    if (detail == null) {
+    final nightly = detail?.card.isSale == false ? detail?.card.priceCentavos : null;
+    if (detail == null || nightly == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Select dates')),
-        body: const Center(child: Text('This place is no longer available.')),
+        body: Center(
+          child: Text(detail == null ? 'This place is no longer available.' : 'This property can’t be booked by the night.'),
+        ),
       );
     }
 
@@ -92,7 +95,7 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
         children: [
           Text(card.title, style: theme.textTheme.titleMedium),
           Text(
-            '${Money.perNight(card.priceCentavos)} · minimum $minStay nights',
+            '${Money.perNight(nightly)} · minimum $minStay nights',
             style: theme.textTheme.bodySmall,
           ),
           const SizedBox(height: Tokens.s20),

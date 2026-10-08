@@ -1,5 +1,6 @@
 import type {
   Listing,
+  ListingFloorPlan,
   ListingKind,
   ListingPage,
   ListingPhoto,
@@ -7,11 +8,19 @@ import type {
   ListingState,
   PropertyType,
   ResourceType,
+  SaleStatus,
 } from '@/domain/listings/listing.ts';
+import type { LocationPrivacy } from '@/domain/shared/geo.ts';
 import type { Centavos } from '@/domain/shared/money.ts';
 import type { PublicScope } from '@/domain/shared/organization-scope.ts';
 
 export type RentalMode = 'LONG_TERM' | 'SHORT_TERM' | 'HYBRID';
+
+export interface PropertyLocationInput {
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly privacy: LocationPrivacy;
+}
 
 export interface CreateListingInput {
   readonly organizationId: string;
@@ -54,6 +63,55 @@ export interface PropertyDetails {
   readonly addressLine: string;
   readonly areaLabel: string;
   readonly cityLabel: string;
+  readonly location?: PropertyLocationInput | null;
+}
+
+export interface SaleListingDetails {
+  readonly title: string;
+  readonly description: string;
+  readonly amenities: readonly string[];
+  readonly saleStatus: SaleStatus;
+  readonly bedrooms: number;
+  readonly bathrooms: number;
+  readonly floorAreaSqm: number | null;
+  readonly lotAreaSqm: number | null;
+  readonly parkingSlots: number;
+  readonly availableFrom: string | null;
+}
+
+export interface SaleTermsInput {
+  readonly askingPriceInternalCentavos: number | null;
+  readonly priceNegotiable: boolean;
+  readonly commercialNotes: string;
+}
+
+export interface SaleTerms extends SaleTermsInput {
+  readonly listingId: string;
+  readonly updatedAt: Date | null;
+}
+
+export interface CreateSaleListingInput {
+  readonly organizationId: string;
+  readonly property: PropertyDetails;
+  readonly listing: SaleListingDetails;
+  readonly saleTerms: SaleTermsInput | null;
+  readonly updatedBy: string;
+}
+
+export interface UpdateSaleListingInput {
+  readonly organizationId: string;
+  readonly listingId: string;
+  readonly listing: Partial<SaleListingDetails>;
+  readonly property?: Partial<PropertyDetails>;
+}
+
+export interface AreaSummary {
+  readonly cityLabel: string;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly listingCount: number;
+  readonly rentCount: number;
+  readonly saleCount: number;
 }
 
 export interface CreatePropertyListingInput {
@@ -139,4 +197,26 @@ export interface ListingRepository {
   listResources(organizationId: string): Promise<readonly OrganizationResource[]>;
   listProperties(organizationId: string): Promise<readonly OwnerProperty[]>;
   stayPricing(listingId: string): Promise<StayPricingSource | null>;
+  createSaleListing(input: CreateSaleListingInput): Promise<Listing>;
+  updateSaleListing(input: UpdateSaleListingInput): Promise<Listing | null>;
+  saleTerms(organizationId: string, listingId: string): Promise<SaleTerms | null>;
+  saveSaleTerms(
+    organizationId: string,
+    listingId: string,
+    terms: SaleTermsInput,
+    updatedBy: string,
+  ): Promise<SaleTerms>;
+  areas(): Promise<readonly AreaSummary[]>;
+  addFloorPlan(
+    organizationId: string,
+    listingId: string,
+    media: NewListingPhoto,
+    label: string,
+  ): Promise<ListingFloorPlan>;
+  removeFloorPlan(
+    organizationId: string,
+    listingId: string,
+    floorPlanId: string,
+  ): Promise<{ readonly storagePath: string | null } | null>;
+  findRepresented(agentUserId: string, listingId: string): Promise<Listing | null>;
 }

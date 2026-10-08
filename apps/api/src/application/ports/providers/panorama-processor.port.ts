@@ -6,6 +6,7 @@ export interface PanoramaTile {
 }
 
 export interface ProcessedPanorama {
+  readonly archive: Buffer;
   readonly preview: Buffer;
   readonly thumbnail: Buffer;
   readonly tiles: readonly PanoramaTile[];

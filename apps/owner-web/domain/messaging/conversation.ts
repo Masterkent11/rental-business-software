@@ -1,4 +1,6 @@
-export type SenderRole = "CUSTOMER" | "OWNER";
+export type SenderRole = "CUSTOMER" | "OWNER" | "AGENT";
+
+export const isPartnerRole = (role: SenderRole | null) => role === "OWNER" || role === "AGENT";
 
 export interface Conversation {
   readonly id: string;
@@ -6,6 +8,8 @@ export interface Conversation {
   readonly listingTitle: string;
   readonly listingPhoto: string | null;
   readonly customerName: string;
+  readonly listingIntent: "RENT" | "SALE";
+  readonly agentName: string | null;
   readonly bookingId: string | null;
   readonly bookingStartsOn: string | null;
   readonly bookingEndsOn: string | null;
@@ -54,3 +58,9 @@ export function upsertConversation(
 }
 
 export const MAX_MESSAGE_LENGTH = 4000;
+
+export function senderLabel(role: SenderRole, conversation: Pick<Conversation, "customerName" | "agentName">, viewer: "OWNER" | "AGENT"): string {
+  if (role === "CUSTOMER") return conversation.customerName;
+  if (role === viewer) return "You";
+  return role === "AGENT" ? (conversation.agentName ?? "Agent") : "Owner";
+}

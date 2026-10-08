@@ -1,4 +1,4 @@
-import type { Scene, TourState } from './tour-state.ts';
+import type { Scene, TourProvider, TourState } from './tour-state.ts';
 
 export * from './tour-state.ts';
 export * from './tour-rules.ts';
@@ -11,4 +11,6 @@ export interface Tour {
   readonly state: TourState;
   readonly entrySceneId: string | null;
   readonly scenes: readonly Scene[];
+  readonly provider?: TourProvider;
+  readonly externalModelId?: string | null;
 }

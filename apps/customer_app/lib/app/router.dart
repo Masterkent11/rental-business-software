@@ -3,6 +3,10 @@ import 'package:go_router/go_router.dart';
 
 import '../design/components.dart';
 import '../features/account/account_screen.dart';
+import '../features/activity/activity_screen.dart';
+import '../features/agents/agent_profile_screen.dart';
+import '../features/inquiry/inquiry_screen.dart';
+import '../features/viewing/schedule_viewing_screen.dart';
 import '../features/application/applications_screen.dart';
 import '../features/application/apply_screen.dart';
 import '../features/auth/auth_screen.dart';
@@ -39,6 +43,10 @@ abstract final class Routes {
   static String tour(String id) => '${listing(id)}/tour';
   static String book(String id) => '${listing(id)}/book';
   static String apply(String id) => '${listing(id)}/apply';
+  static String inquire(String id) => '${listing(id)}/inquire';
+  static String viewing(String id) => '${listing(id)}/viewing';
+  static String agent(String id) => '/agents/$id';
+  static const activity = '/activity';
   static String booking(String id, {bool confirmed = false}) =>
       '$bookings/$id${confirmed ? '?confirmed=1' : ''}';
   static String conversation(String id) => '$messages/$id';
@@ -149,6 +157,19 @@ GoRouter buildRouter() {
                         parentNavigatorKey: _rootNavigatorKey,
                         builder: (context, state) => ApplyScreen(listingId: state.pathParameters['id']!),
                       ),
+                      GoRoute(
+                        path: 'inquire',
+                        parentNavigatorKey: _rootNavigatorKey,
+                        builder: (context, state) => InquiryScreen(listingId: state.pathParameters['id']!),
+                      ),
+                      GoRoute(
+                        path: 'viewing',
+                        parentNavigatorKey: _rootNavigatorKey,
+                        builder: (context, state) => ScheduleViewingScreen(
+                          listingId: state.pathParameters['id']!,
+                          rescheduleId: state.uri.queryParameters['reschedule'],
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -231,6 +252,16 @@ GoRouter buildRouter() {
         path: Routes.notifications,
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/agents/:id',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => AgentProfileScreen(agentId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: Routes.activity,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ActivityScreen(),
       ),
       GoRoute(
         path: Routes.applications,

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { container } from "../infrastructure/composition/owner-web-container";
-import type { OrganizationMembership, UserProfile } from "../domain/session/session";
+import type { ActiveSession, OrganizationMembership, UserProfile } from "../domain/session/session";
+import { scopeOf, type AgentSummary, type PartnerScope, type Workspace } from "../domain/workspace/workspace";
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated" | "error";
 
@@ -9,6 +10,10 @@ interface SessionState {
   user: UserProfile | null;
   activeOrganizationId: string | null;
   memberships: readonly OrganizationMembership[];
+  workspaces: readonly Workspace[];
+  activeWorkspace: Workspace | null;
+  scope: PartnerScope | null;
+  agent: AgentSummary | null;
   error: string | null;
   signInEmail: string;
   signInPassword: string;
@@ -20,6 +25,8 @@ interface SessionState {
   initialize: () => Promise<void>;
   signOut: () => Promise<void>;
   setActiveOrganizationId: (orgId: string) => void;
+  setWorkspace: (key: string) => void;
+  reload: () => Promise<void>;
   setSignInEmail: (email: string) => void;
   setSignInPassword: (password: string) => void;
   toggleShowPassword: () => void;
@@ -30,11 +37,32 @@ interface SessionState {
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const useSessionStore = create<SessionState>((set, get) => ({
-  status: "loading",
+function stateFor(session: ActiveSession, preferredKey: string | null = session.activeWorkspaceKey) {
+  const activeWorkspace = session.workspaces.find((w) => w.key === preferredKey) ?? null;
+  return {
+    user: session.user,
+    memberships: session.memberships,
+    workspaces: session.workspaces,
+    agent: session.agent,
+    activeWorkspace,
+    scope: activeWorkspace ? scopeOf(activeWorkspace) : null,
+    activeOrganizationId: activeWorkspace?.kind === "OWNER" ? activeWorkspace.organizationId : null,
+  };
+}
+
+const signedOut = {
   user: null,
   activeOrganizationId: null,
   memberships: [],
+  workspaces: [],
+  activeWorkspace: null,
+  scope: null,
+  agent: null,
+};
+
+export const useSessionStore = create<SessionState>((set, get) => ({
+  status: "loading",
+  ...signedOut,
   error: null,
   signInEmail: "",
   signInPassword: "",
@@ -54,14 +82,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     try {
       const session = await container.getCurrentSessionUseCase.execute();
       if (session) {
-        set({
-          status: "authenticated",
-          user: session.user,
-          activeOrganizationId: session.activeOrganizationId,
-          memberships: session.memberships,
-        });
+        set({ status: "authenticated", ...stateFor(session) });
       } else {
-        set({ status: "unauthenticated", user: null, activeOrganizationId: null, memberships: [] });
+        set({ status: "unauthenticated", ...signedOut });
       }
     } catch (error) {
       set({
@@ -87,9 +110,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       const session = await container.signInUseCase.execute(email, password);
       set({
         status: "authenticated",
-        user: session.user,
-        activeOrganizationId: session.activeOrganizationId,
-        memberships: session.memberships,
+        ...stateFor(session),
         signInBusy: false,
         signInEmail: "",
         signInPassword: "",
@@ -109,9 +130,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     } finally {
       set({
         status: "unauthenticated",
-        user: null,
-        activeOrganizationId: null,
-        memberships: [],
+        ...signedOut,
         error: null,
         signInPassword: "",
         signInProblem: null,
@@ -121,8 +140,25 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   setActiveOrganizationId: (orgId) => {
-    if (!get().memberships.some((m) => m.organizationId === orgId)) return;
-    container.switchOrganizationUseCase.execute(orgId);
-    set({ activeOrganizationId: orgId });
+    get().setWorkspace(`owner:${orgId}`);
+  },
+
+  setWorkspace: (key) => {
+    const workspace = get().workspaces.find((w) => w.key === key);
+    if (!workspace) return;
+    container.switchWorkspaceUseCase.execute(key);
+    set({
+      activeWorkspace: workspace,
+      scope: scopeOf(workspace),
+      activeOrganizationId: workspace.kind === "OWNER" ? workspace.organizationId : null,
+      mobileDrawerOpen: false,
+    });
+  },
+
+  reload: async () => {
+    const preferred = get().activeWorkspace?.key ?? null;
+    const session = await container.refreshSessionUseCase.execute();
+    const keep = session.workspaces.some((w) => w.key === preferred) ? preferred : session.activeWorkspaceKey;
+    set({ status: "authenticated", ...stateFor(session, keep) });
   },
 }));

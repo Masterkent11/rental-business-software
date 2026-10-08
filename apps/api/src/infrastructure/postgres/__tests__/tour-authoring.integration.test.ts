@@ -53,6 +53,13 @@ const memoryMediaStorage = (): MediaStorage & { written: string[] } => {
     async createReadUrl(path: string): Promise<string> {
       return `https://storage.test/${path}`;
     },
+    async removePrefix(prefix: string): Promise<number> {
+      const before = written.length;
+      for (let i = written.length - 1; i >= 0; i -= 1) {
+        if (written[i]!.startsWith(`${prefix}/`)) written.splice(i, 1);
+      }
+      return before - written.length;
+    },
   };
 };
 
@@ -197,6 +204,7 @@ suite('tour authoring against real PostgreSQL', { timeout: 60_000 }, () => {
       await addOwnerHotspot(tours)({
         principal,
         organizationId: VILLA_ORG,
+        tourId,
         sceneId: bunk.id,
         targetSceneId: second.id,
         yaw: 30,
@@ -252,6 +260,7 @@ suite('tour authoring against real PostgreSQL', { timeout: 60_000 }, () => {
       await addOwnerHotspot(tours)({
         principal,
         organizationId: VILLA_ORG,
+        tourId,
         sceneId: entry.id,
         targetSceneId: third.id,
         yaw: 90,

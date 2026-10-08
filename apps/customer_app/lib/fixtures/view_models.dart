@@ -20,6 +20,47 @@ enum ResourceType {
   final String plural;
 }
 
+enum ListingIntent { rent, sale }
+
+enum LocationPrecision { exact, approximate }
+
+@immutable
+class MapPoint {
+  const MapPoint({required this.latitude, required this.longitude, required this.precision});
+
+  final double latitude;
+  final double longitude;
+  final LocationPrecision precision;
+}
+
+@immutable
+class FloorPlanView {
+  const FloorPlanView({required this.id, required this.url, required this.label});
+
+  final String id;
+  final String url;
+  final String label;
+}
+
+@immutable
+class RepresentativeView {
+  const RepresentativeView({
+    required this.agentId,
+    required this.displayName,
+    required this.headline,
+    required this.photoUrl,
+    required this.verified,
+  });
+
+  final String agentId;
+  final String displayName;
+  final String headline;
+  final String? photoUrl;
+  final bool verified;
+}
+
+const String kPriceOnInquiry = 'Price available on inquiry';
+
 enum HotspotKind { navigation, info, image, video }
 
 @immutable
@@ -94,6 +135,14 @@ class ListingCardView {
     this.cleaningFeeCentavos = 0,
     this.propertyType,
     this.minStayNights,
+    this.intent = ListingIntent.rent,
+    this.saleStatus,
+    this.lotAreaSqm,
+    this.parkingSlots = 0,
+    this.distanceKm,
+    this.location,
+    this.representative,
+    this.tourProvider,
   });
 
   final String id;
@@ -104,7 +153,7 @@ class ListingCardView {
   final String cityLabel;
   final ListingKind kind;
   final ResourceType resourceType;
-  final int priceCentavos;
+  final int? priceCentavos;
   final String availabilityLabel;
   final bool isAvailable;
   final bool hasTour;
@@ -123,17 +172,45 @@ class ListingCardView {
   final int cleaningFeeCentavos;
   final String? propertyType;
   final int? minStayNights;
+  final ListingIntent intent;
+  final String? saleStatus;
+  final int? lotAreaSqm;
+  final int parkingSlots;
+  final double? distanceKm;
+  final MapPoint? location;
+  final RepresentativeView? representative;
+  final String? tourProvider;
 
-  String get location => '$areaLabel, $cityLabel';
+  bool get isSale => intent == ListingIntent.sale;
+
+  bool get hasListedPrice => !isSale && priceCentavos != null;
+
+  String get place => '$areaLabel, $cityLabel';
 
   String get typeLabel => switch (propertyType) {
     'APARTMENT' => 'Apartment',
     'CONDO' => 'Condo',
-    'HOUSE' => 'House',
+    'HOUSE' => isSale ? 'House & Lot' : 'House',
+    'TOWNHOUSE' => 'Townhouse',
+    'LOT' => 'Lot',
+    'COMMERCIAL' => 'Commercial',
     'ROOM' => 'Room',
     'BOARDING_HOUSE' => 'Boarding house',
     _ => resourceType.label,
   };
+
+  String get saleStatusLabel => switch (saleStatus) {
+    'PRE_SELLING' => 'Pre-selling',
+    'UNDER_CONSTRUCTION' => 'Under construction',
+    _ => 'Ready for occupancy',
+  };
+
+  String? get distanceLabel {
+    final km = distanceKm;
+    if (km == null) return null;
+    if (km < 1) return '${(km * 1000).round()} m away';
+    return '${km < 10 ? km.toStringAsFixed(1) : km.round()} km away';
+  }
 }
 
 @immutable
@@ -150,6 +227,7 @@ class ListingDetailView {
     this.sharedFacilities = const [],
     this.minimumStayNights,
     this.blockedRanges = const [],
+    this.floorPlans = const [],
   });
 
   final ListingCardView card;
@@ -167,6 +245,8 @@ class ListingDetailView {
   final int? minimumStayNights;
 
   final List<({DateTime from, DateTime to})> blockedRanges;
+
+  final List<FloorPlanView> floorPlans;
 }
 
 enum BookingStatus {

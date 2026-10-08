@@ -6,14 +6,15 @@ import type { MediaStorage, StoredObject } from '@/application/ports/storage/med
 import type { TourRepository } from '@/application/ports/repositories/tour-repository.port.ts';
 import type { Scene } from '@/domain/tours/tour.ts';
 import type { Principal } from '@/domain/identity/identity.ts';
-import { assertMayAuthorTours } from '@/application/identity/application-authorization.rules.ts';
+import { ownerTourGate, type TourGate } from '@/application/identity/partner-access.rules.ts';
 
 export interface AddOwnerSceneInput {
   readonly principal: Principal;
-  readonly organizationId: string;
+  readonly organizationId: string | null;
   readonly tourId: string;
   readonly label: string;
   readonly panorama: Buffer;
+  readonly accessToken?: string | null;
 }
 
 export const addOwnerSceneWithPanorama =
@@ -21,17 +22,24 @@ export const addOwnerSceneWithPanorama =
     tours: TourRepository,
     processor: PanoramaProcessor,
     storage: MediaStorage,
+    gate: TourGate = ownerTourGate,
   ) =>
   async (input: AddOwnerSceneInput): Promise<Scene> => {
-    assertMayAuthorTours(input.principal, input.organizationId);
-
-    const scene = await tours.addScene({
+    const { organizationId } = await gate({
+      principal: input.principal,
       organizationId: input.organizationId,
       tourId: input.tourId,
-      label: input.label,
+    });
+    const credentials = input.accessToken ? { accessToken: input.accessToken } : undefined;
+    const label = input.label.replace(/\s+/g, ' ').trim().slice(0, 60) || 'Room';
+
+    const scene = await tours.addScene({
+      organizationId,
+      tourId: input.tourId,
+      label,
     });
 
-    const prefix = `${input.organizationId}/${input.tourId}/${scene.id}`;
+    const prefix = `${organizationId}/${input.tourId}/${scene.id}`;
 
     try {
       const processed = await processor.process(input.panorama);
@@ -39,7 +47,7 @@ export const addOwnerSceneWithPanorama =
       const objects: StoredObject[] = [
         {
           path: `${prefix}/source`,
-          body: input.panorama,
+          body: processed.archive,
           contentType: 'image/jpeg',
         },
         {
@@ -59,10 +67,10 @@ export const addOwnerSceneWithPanorama =
         })),
       ];
 
-      await storage.put(objects);
+      await storage.put(objects, credentials);
 
       const ready = await tours.markSceneReady({
-        organizationId: input.organizationId,
+        organizationId,
         sceneId: scene.id,
         paths: {
           sourcePath: `${prefix}/source`,
@@ -76,7 +84,7 @@ export const addOwnerSceneWithPanorama =
       });
 
       await tours.refreshTourState({
-        organizationId: input.organizationId,
+        organizationId,
         tourId: input.tourId,
       });
 
@@ -88,13 +96,13 @@ export const addOwnerSceneWithPanorama =
           : 'Processing failed. Try uploading the photo again.';
 
       const failed = await tours.markSceneFailed({
-        organizationId: input.organizationId,
+        organizationId,
         sceneId: scene.id,
         reason,
       });
 
       await tours.refreshTourState({
-        organizationId: input.organizationId,
+        organizationId,
         tourId: input.tourId,
       });
 

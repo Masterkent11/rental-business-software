@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/listing_repository.dart';
 import '../../../fixtures/view_models.dart';
+import '../../location/location_controller.dart';
 import '../domain/lease_duration.dart';
 import '../domain/property_search_criteria.dart';
 import '../domain/property_type.dart';
@@ -85,7 +86,7 @@ final propertyResultsProvider = AsyncNotifierProvider.autoDispose
 class PropertySearchFormState {
   const PropertySearchFormState({
     required this.propertyType,
-    this.location = 'Cebu City',
+    this.location = '',
     this.mode = RentalMode.shortStay,
     this.checkIn,
     this.checkOut,
@@ -147,7 +148,7 @@ class PropertySearchFormState {
       if (error != null) return null;
       return ShortStaySearchCriteria(
         propertyType: propertyType,
-        location: location.trim().isEmpty ? 'Cebu City' : location.trim(),
+        location: location.trim(),
         checkIn: checkIn!,
         checkOut: checkOut!,
         guests: guests,
@@ -161,7 +162,7 @@ class PropertySearchFormState {
       if (error != null) return null;
       return MonthlySearchCriteria(
         propertyType: propertyType,
-        location: location.trim().isEmpty ? 'Cebu City' : location.trim(),
+        location: location.trim(),
         moveInDate: moveInDate!,
         leaseDuration: leaseDuration,
         occupants: occupants,
@@ -172,9 +173,10 @@ class PropertySearchFormState {
 
 class PropertySearchFormController
     extends StateNotifier<PropertySearchFormState> {
-  PropertySearchFormController(PropertyType initialType)
+  PropertySearchFormController(PropertyType initialType, {String initialLocation = ''})
       : super(PropertySearchFormState(
           propertyType: initialType,
+          location: initialLocation,
           checkIn: DateTime.now().add(const Duration(days: 7)),
           checkOut: DateTime.now().add(const Duration(days: 9)),
           moveInDate: DateTime.now().add(const Duration(days: 14)),
@@ -245,5 +247,8 @@ class PropertySearchFormController
 
 final propertySearchFormProvider = StateNotifierProvider.autoDispose
     .family<PropertySearchFormController, PropertySearchFormState, PropertyType>(
-  (ref, type) => PropertySearchFormController(type),
+  (ref, type) {
+    final place = ref.read(locationProvider).place;
+    return PropertySearchFormController(type, initialLocation: place is AreaPlace ? place.area.cityLabel : '');
+  },
 );

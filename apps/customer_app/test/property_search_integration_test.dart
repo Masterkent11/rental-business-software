@@ -181,7 +181,7 @@ void main() {
       await tester.tap(searchCta);
       await tester.pumpAndSettle();
 
-      expect(find.text('Apartments in Cebu City'), findsOneWidget);
+      expect(find.text('Apartments to rent'), findsOneWidget);
       expect(find.textContaining('place'), findsOneWidget);
 
       final firstListing = find.byType(ListingCard).first;
@@ -232,7 +232,7 @@ void main() {
       await tester.tap(searchCta);
       await tester.pumpAndSettle();
 
-      expect(find.text('Condos in Cebu City'), findsOneWidget);
+      expect(find.text('Condos to rent'), findsOneWidget);
       expect(find.textContaining('place'), findsOneWidget);
     },
   );

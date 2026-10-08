@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { container } from "../infrastructure/composition/owner-web-container";
 import type { RealtimeStatus } from "../application/ports/realtime.port";
+import type { PartnerScope } from "../domain/workspace/workspace";
 import {
   mergeMessages,
   type ChatMessage,
@@ -9,7 +10,7 @@ import {
 } from "../domain/messaging/conversation";
 
 interface MessagesState {
-  organizationId: string | null;
+  scope: PartnerScope | null;
   conversations: readonly Conversation[];
   unreadTotal: number;
   loading: boolean;
@@ -27,7 +28,7 @@ interface MessagesState {
   lastIncoming: Message | null;
   unsubscribe: (() => void) | null;
 
-  start: (organizationId: string) => Promise<void>;
+  start: (scope: PartnerScope) => Promise<void>;
   stop: () => void;
   refresh: () => Promise<void>;
   open: (conversationId: string) => Promise<void>;
@@ -39,10 +40,15 @@ interface MessagesState {
   receive: (message: Message) => void;
 }
 
+const sameScope = (a: PartnerScope | null, b: PartnerScope) =>
+  a !== null &&
+  a.kind === b.kind &&
+  (a.kind === "OWNER" ? a.organizationId === (b as { organizationId: string }).organizationId : a.agentId === (b as { agentId: string }).agentId);
+
 const messageOf = (error: unknown, fallback: string) => (error instanceof Error ? error.message : fallback);
 
 export const useMessagesStore = create<MessagesState>((set, get) => ({
-  organizationId: null,
+  scope: null,
   conversations: [],
   unreadTotal: 0,
   loading: false,
@@ -60,12 +66,12 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
   lastIncoming: null,
   unsubscribe: null,
 
-  start: async (organizationId) => {
-    if (get().organizationId === organizationId && get().unsubscribe) return;
+  start: async (scope) => {
+    if (sameScope(get().scope, scope) && get().unsubscribe) return;
     get().stop();
-    set({ organizationId, conversations: [], unreadTotal: 0, loaded: false, activeId: null, thread: [] });
+    set({ scope, conversations: [], unreadTotal: 0, loaded: false, activeId: null, thread: [] });
     const unsubscribe = container.watchMessagesUseCase.execute(
-      organizationId,
+      scope,
       (message) => get().receive(message),
       (status) => {
         const previous = get().realtime;
@@ -79,19 +85,19 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
 
   stop: () => {
     get().unsubscribe?.();
-    set({ unsubscribe: null, organizationId: null, realtime: "connecting" });
+    set({ unsubscribe: null, scope: null, realtime: "connecting" });
   },
 
   refresh: async () => {
-    const organizationId = get().organizationId;
-    if (!organizationId) return;
+    const scope = get().scope;
+    if (!scope) return;
     set({ loading: !get().loaded, error: null });
     try {
-      const result = await container.loadConversationsUseCase.execute(organizationId);
+      const result = await container.loadConversationsUseCase.execute(scope);
       set({ conversations: result.conversations, unreadTotal: result.unreadTotal, loading: false, loaded: true });
       const activeId = get().activeId;
       if (activeId) {
-        const thread = await container.loadThreadUseCase.execute(organizationId, activeId);
+        const thread = await container.loadThreadUseCase.execute(scope, activeId);
         set((state) => ({ thread: mergeMessages(state.thread, thread.messages), activeConversation: thread.conversation }));
       }
     } catch (error) {
@@ -100,8 +106,8 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
   },
 
   open: async (conversationId) => {
-    const organizationId = get().organizationId;
-    if (!organizationId) return;
+    const scope = get().scope;
+    if (!scope) return;
     const known = get().conversations.find((c) => c.id === conversationId) ?? null;
     set({
       activeId: conversationId,
@@ -113,7 +119,7 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
       composer: "",
     });
     try {
-      const page = await container.loadThreadUseCase.execute(organizationId, conversationId);
+      const page = await container.loadThreadUseCase.execute(scope, conversationId);
       if (get().activeId !== conversationId) return;
       set((state) => ({
         thread: mergeMessages(state.thread, page.messages),
@@ -121,7 +127,7 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
         hasMore: page.hasMore,
         threadLoading: false,
       }));
-      await container.markConversationReadUseCase.execute(organizationId, conversationId);
+      await container.markConversationReadUseCase.execute(scope, conversationId);
       set((state) => ({
         conversations: state.conversations.map((c) => (c.id === conversationId ? { ...c, unreadCount: 0 } : c)),
         unreadTotal: Math.max(0, state.unreadTotal - (known?.unreadCount ?? 0)),
@@ -134,11 +140,11 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
   close: () => set({ activeId: null, activeConversation: null, thread: [], composer: "" }),
 
   loadOlder: async () => {
-    const { organizationId, activeId, thread, hasMore } = get();
-    if (!organizationId || !activeId || !hasMore || thread.length === 0) return;
+    const { scope, activeId, thread, hasMore } = get();
+    if (!scope || !activeId || !hasMore || thread.length === 0) return;
     set({ loadingOlder: true });
     try {
-      const page = await container.loadThreadUseCase.execute(organizationId, activeId, thread[0]!.createdAt);
+      const page = await container.loadThreadUseCase.execute(scope, activeId, thread[0]!.createdAt);
       set((state) => ({ thread: mergeMessages(state.thread, page.messages), hasMore: page.hasMore, loadingOlder: false }));
     } catch (error) {
       set({ loadingOlder: false, threadError: messageOf(error, "Could not load earlier messages") });
@@ -148,14 +154,14 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
   setComposer: (composer) => set({ composer }),
 
   send: async () => {
-    const { organizationId, activeId, composer } = get();
+    const { scope, activeId, composer } = get();
     const body = composer.trim();
-    if (!organizationId || !activeId || !body) return;
+    if (!scope || !activeId || !body) return;
     const clientId = crypto.randomUUID();
     const optimistic: ChatMessage = {
       id: `local-${clientId}`,
       conversationId: activeId,
-      senderRole: "OWNER",
+      senderRole: scope.kind === "AGENT" ? "AGENT" : "OWNER",
       body,
       clientId,
       createdAt: new Date().toISOString(),
@@ -163,7 +169,7 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
     };
     set((state) => ({ composer: "", thread: [...state.thread, optimistic] }));
     try {
-      const saved = await container.sendMessageUseCase.execute(organizationId, activeId, body, clientId);
+      const saved = await container.sendMessageUseCase.execute(scope, activeId, body, clientId);
       get().receive(saved);
     } catch {
       set((state) => ({
@@ -173,14 +179,14 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
   },
 
   retry: async (clientId) => {
-    const { organizationId, activeId } = get();
+    const { scope, activeId } = get();
     const failed = get().thread.find((m) => m.clientId === clientId);
-    if (!organizationId || !activeId || !failed) return;
+    if (!scope || !activeId || !failed) return;
     set((state) => ({
       thread: state.thread.map((m) => (m.clientId === clientId ? { ...m, delivery: "sending" } : m)),
     }));
     try {
-      const saved = await container.sendMessageUseCase.execute(organizationId, activeId, failed.body, clientId);
+      const saved = await container.sendMessageUseCase.execute(scope, activeId, failed.body, clientId);
       get().receive(saved);
     } catch {
       set((state) => ({
@@ -213,8 +219,8 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
       conversations: [updated, ...current.conversations.filter((c) => c.id !== updated.id)],
       unreadTotal: current.unreadTotal + (countsAsUnread ? 1 : 0),
     }));
-    if (isActive && message.senderRole === "CUSTOMER" && state.organizationId) {
-      void container.markConversationReadUseCase.execute(state.organizationId, message.conversationId);
+    if (isActive && message.senderRole === "CUSTOMER" && state.scope) {
+      void container.markConversationReadUseCase.execute(state.scope, message.conversationId);
     }
   },
 }));

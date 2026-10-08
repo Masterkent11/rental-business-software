@@ -1,6 +1,7 @@
 import type { RealtimePort, RealtimeStatus, Unsubscribe } from "../../application/ports/realtime.port";
 import type { Message, SenderRole } from "../../domain/messaging/conversation";
 import type { AppNotification, NotificationKind } from "../../domain/notifications/notification";
+import type { PartnerScope } from "../../domain/workspace/workspace";
 import { supabaseBrowserClient } from "../supabase/browser-client";
 
 interface MessageRow {
@@ -23,85 +24,82 @@ interface NotificationRow {
   created_at: string;
 }
 
+type Channel = ReturnType<ReturnType<typeof supabaseBrowserClient>["channel"]>;
+
+function connect(channel: Channel, onStatus?: (status: RealtimeStatus) => void): Unsubscribe {
+  const client = supabaseBrowserClient();
+  let cancelled = false;
+  onStatus?.("connecting");
+  void client.auth.getSession().then(({ data }) => {
+    if (cancelled) return;
+    if (data.session) client.realtime.setAuth(data.session.access_token);
+    channel.subscribe((status) => {
+      if (cancelled) return;
+      if (status === "SUBSCRIBED") onStatus?.("live");
+      else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") onStatus?.("offline");
+    });
+  });
+  return () => {
+    cancelled = true;
+    void client.removeChannel(channel);
+  };
+}
+
+const scopeKey = (scope: PartnerScope) => (scope.kind === "OWNER" ? `org:${scope.organizationId}` : `agent:${scope.agentId}`);
+
 export class SupabaseRealtimeAdapter implements RealtimePort {
-  watchOrganizationMessages(
-    organizationId: string,
+  watchMessages(
+    scope: PartnerScope,
     onMessage: (message: Message) => void,
     onStatus: (status: RealtimeStatus) => void,
   ): Unsubscribe {
-    const client = supabaseBrowserClient();
-    let cancelled = false;
-    onStatus("connecting");
-
-    const channel = client
-      .channel(`org-messages:${organizationId}:${crypto.randomUUID()}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages", filter: `organization_id=eq.${organizationId}` },
-        (payload) => {
-          const row = payload.new as MessageRow;
-          onMessage({
-            id: row.id,
-            conversationId: row.conversation_id,
-            senderRole: row.sender_role,
-            body: row.body,
-            clientId: row.client_id,
-            createdAt: new Date(row.created_at).toISOString(),
-          });
-        },
-      );
-
-    void client.auth.getSession().then(({ data }) => {
-      if (cancelled) return;
-      if (data.session) client.realtime.setAuth(data.session.access_token);
-      channel.subscribe((status) => {
-        if (cancelled) return;
-        if (status === "SUBSCRIBED") onStatus("live");
-        else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") onStatus("offline");
+    const filter = scope.kind === "OWNER" ? { filter: `organization_id=eq.${scope.organizationId}` } : {};
+    const channel = supabaseBrowserClient()
+      .channel(`messages:${scopeKey(scope)}:${crypto.randomUUID()}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", ...filter }, (payload) => {
+        const row = payload.new as MessageRow;
+        onMessage({
+          id: row.id,
+          conversationId: row.conversation_id,
+          senderRole: row.sender_role,
+          body: row.body,
+          clientId: row.client_id,
+          createdAt: new Date(row.created_at).toISOString(),
+        });
       });
-    });
-
-    return () => {
-      cancelled = true;
-      void client.removeChannel(channel);
-    };
+    return connect(channel, onStatus);
   }
 
-  watchOrganizationNotifications(
-    organizationId: string,
+  watchNotifications(
+    scope: PartnerScope,
+    userId: string,
     onNotification: (notification: AppNotification) => void,
   ): Unsubscribe {
-    const client = supabaseBrowserClient();
-    let cancelled = false;
-    const channel = client
-      .channel(`org-notifications:${organizationId}:${crypto.randomUUID()}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `organization_id=eq.${organizationId}` },
-        (payload) => {
-          const row = payload.new as NotificationRow;
-          if (row.user_id) return;
-          onNotification({
-            id: row.id,
-            kind: row.kind,
-            title: row.title,
-            body: row.body,
-            link: row.link,
-            readAt: row.read_at,
-            createdAt: new Date(row.created_at).toISOString(),
-          });
-        },
-      );
+    const filter = scope.kind === "OWNER" ? `organization_id=eq.${scope.organizationId}` : `user_id=eq.${userId}`;
+    const channel = supabaseBrowserClient()
+      .channel(`notifications:${scopeKey(scope)}:${crypto.randomUUID()}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter }, (payload) => {
+        const row = payload.new as NotificationRow;
+        if (scope.kind === "OWNER" && row.user_id) return;
+        onNotification({
+          id: row.id,
+          kind: row.kind,
+          title: row.title,
+          body: row.body,
+          link: row.link,
+          readAt: row.read_at,
+          createdAt: new Date(row.created_at).toISOString(),
+        });
+      });
+    return connect(channel);
+  }
 
-    void client.auth.getSession().then(({ data }) => {
-      if (cancelled) return;
-      if (data.session) client.realtime.setAuth(data.session.access_token);
-      channel.subscribe();
-    });
-
-    return () => {
-      cancelled = true;
-      void client.removeChannel(channel);
-    };
+  watchActivity(scope: PartnerScope, onChange: (table: "inquiries" | "viewings") => void): Unsubscribe {
+    const filter = scope.kind === "OWNER" ? `organization_id=eq.${scope.organizationId}` : `agent_id=eq.${scope.agentId}`;
+    const channel = supabaseBrowserClient()
+      .channel(`activity:${scopeKey(scope)}:${crypto.randomUUID()}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "inquiries", filter }, () => onChange("inquiries"))
+      .on("postgres_changes", { event: "*", schema: "public", table: "viewings", filter }, () => onChange("viewings"));
+    return connect(channel);
   }
 }

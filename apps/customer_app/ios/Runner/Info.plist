@@ -31,6 +31,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used only while you browse, to show homes and properties near you. It is not saved.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Allow access to the local development server during testing.</string>
 	<key>UIApplicationSceneManifest</key>

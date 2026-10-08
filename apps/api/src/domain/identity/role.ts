@@ -8,6 +8,7 @@ export const CAPABILITIES = [
   'OWNER',
   'STAFF',
   'PLATFORM_ADMIN',
+  'AGENT',
 ] as const;
 
 export type Capability = (typeof CAPABILITIES)[number];
