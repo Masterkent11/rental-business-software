@@ -370,7 +370,7 @@ export function OwnerShell({ children }: { children: React.ReactNode }) {
       <Link href={workspaceHome(workspace)} className="focusable flex items-center gap-2.5 rounded-xl px-1 py-1" aria-label="Partner Portal home">
         <BrandMark className="size-9" />
         <div>
-          <p className="text-[14px] font-bold tracking-tight">Rental Platform</p>
+          <p className="text-[14px] font-bold tracking-tight">Westayplace</p>
           <p className="text-[11.5px] text-muted">Partner Portal</p>
         </div>
       </Link>

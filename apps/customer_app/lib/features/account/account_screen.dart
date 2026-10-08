@@ -166,7 +166,7 @@ class AccountScreen extends ConsumerWidget {
           ],
           Padding(
             padding: const EdgeInsets.all(Tokens.gutter),
-            child: Text('Rental Platform · v0.1.0', style: theme.textTheme.bodySmall, textAlign: TextAlign.center),
+            child: Text('Westayplace · v0.1.0', style: theme.textTheme.bodySmall, textAlign: TextAlign.center),
           ),
         ],
       ),

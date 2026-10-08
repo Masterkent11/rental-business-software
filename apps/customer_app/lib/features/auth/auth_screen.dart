@@ -168,7 +168,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 alignment: Alignment.centerLeft,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(14),
-                  child: Image.asset('assets/brand/mark.png', width: 52, height: 52, semanticLabel: 'Rental Platform'),
+                  child: Image.asset('assets/brand/mark.png', width: 52, height: 52, semanticLabel: 'Westayplace'),
                 ),
               ),
               const SizedBox(height: Tokens.s24),

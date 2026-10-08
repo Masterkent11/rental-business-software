@@ -257,7 +257,7 @@ class _SplashScreenState extends State<SplashScreen>
             child: Transform.translate(
               offset: Offset(0, titleTranslate),
               child: const Text(
-                'Find a place',
+                'Westayplace',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'SF Pro Display',

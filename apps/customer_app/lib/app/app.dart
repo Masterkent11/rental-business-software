@@ -117,7 +117,7 @@ class _CustomerAppState extends ConsumerState<CustomerApp> {
     final bootstrapState = ref.watch(appBootstrapStateProvider);
 
     return MaterialApp.router(
-      title: 'Rental Platform',
+      title: 'Westayplace',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),

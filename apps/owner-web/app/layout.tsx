@@ -10,9 +10,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rental Platform Partner Portal",
+  title: "Westayplace Partner Portal",
   description:
     "Owner and agent workspaces for listings, inquiries, viewings and virtual tours.",
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 /**

@@ -25,10 +25,10 @@ void main() {
       expect(find.byType(SplashScreen), findsOneWidget);
     });
 
-    testWidgets('2. Find a place renders', (tester) async {
+    testWidgets('2. Westayplace renders', (tester) async {
       await tester.pumpWidget(buildApp());
       await tester.pump(const Duration(milliseconds: 600));
-      expect(find.text('Find a place'), findsOneWidget);
+      expect(find.text('Westayplace'), findsOneWidget);
     });
 
     testWidgets('3. CEBU CITY renders', (tester) async {
