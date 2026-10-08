@@ -10,7 +10,10 @@ import '../../data/ids.dart';
 import '../../data/listing_repository.dart';
 import '../../data/marketplace_repository.dart';
 import '../../data/messaging_repository.dart';
+import '../../design/app_image.dart';
 import '../../design/tokens.dart';
+import '../../fixtures/view_models.dart';
+import '../listing/listing_price.dart';
 
 const Duration kManilaOffset = Duration(hours: 8);
 
@@ -105,7 +108,7 @@ class _ScheduleViewingScreenState extends ConsumerState<ScheduleViewingScreen> {
                   message: error is ApiException ? error.message : 'We could not load viewing times.',
                   onRetry: () => ref.invalidate(viewingSlotsProvider(widget.listingId)),
                 ),
-              AsyncData(:final value) => _picker(value, card?.title ?? '', card?.place ?? ''),
+              AsyncData(:final value) => _picker(value, card),
               _ => const Center(child: CircularProgressIndicator()),
             },
       bottomNavigationBar: _done != null
@@ -132,7 +135,7 @@ class _ScheduleViewingScreenState extends ConsumerState<ScheduleViewingScreen> {
     );
   }
 
-  Widget _picker(List<ViewingDay> days, String title, String place) {
+  Widget _picker(List<ViewingDay> days, ListingCardView? card) {
     final theme = Theme.of(context);
     final open = days.where((d) => d.hasOpenSlot).toList();
     if (open.isEmpty) {
@@ -145,9 +148,8 @@ class _ScheduleViewingScreenState extends ConsumerState<ScheduleViewingScreen> {
       physics: Tokens.scroll,
       padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s8, Tokens.gutter, Tokens.s32),
       children: [
-        if (title.isNotEmpty) ...[
-          Text(title, style: theme.textTheme.titleMedium?.copyWith(color: Tokens.primaryNavy)),
-          Text(place, style: const TextStyle(color: Tokens.muted)),
+        if (card != null) ...[
+          _PropertySummaryCard(card: card),
           const SizedBox(height: Tokens.s20),
         ],
         Text('Select a date', style: theme.textTheme.titleLarge),
@@ -323,6 +325,85 @@ class _Retry extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PropertySummaryCard extends StatelessWidget {
+  const _PropertySummaryCard({required this.card});
+
+  final ListingCardView card;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(Tokens.s12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(Tokens.rMd),
+        border: Border.all(color: Tokens.hairline),
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(Tokens.rSm),
+            child: SizedBox(
+              width: 72,
+              height: 72,
+              child: AppImage(
+                url: card.photos.isEmpty ? '' : card.photos.first,
+                fallbackIcon: Icons.home_work_outlined,
+                cacheWidth: 144,
+              ),
+            ),
+          ),
+          const SizedBox(width: Tokens.s12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  card.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Tokens.primaryNavy,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  card.place,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 12.5, color: Tokens.muted),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    if (card.isSale) ...[
+                      const Icon(
+                        Icons.lock_outline,
+                        size: 13,
+                        color: Tokens.primaryNavy,
+                      ),
+                      const SizedBox(width: 3),
+                    ],
+                    Text(
+                      card.isSale ? kPriceOnInquiry : listingPriceLabel(card),
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: Tokens.primaryNavy,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

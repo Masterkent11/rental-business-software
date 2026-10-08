@@ -10,7 +10,8 @@ const List<String> kSuggestedInquiryQuestions = [
   'Is this available?',
   'Can I schedule a viewing?',
   'Can you share more details?',
-  'Are there similar properties?',
+  'Can you share the pricing details privately?',
+  'Are there other similar properties?',
 ];
 
 enum InquiryProgress { sent, inProgress, closed }

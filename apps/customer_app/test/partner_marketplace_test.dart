@@ -226,12 +226,35 @@ void main() {
   });
 
   group('Tours', () {
-    test('only my.matterport.com embeds are accepted', () {
-      expect(matterportEmbed('https://my.matterport.com/show/?m=SxQL3iGyoDo&play=1'), isNotNull);
-      expect(matterportEmbed('https://evil.example/show/?m=SxQL3iGyoDo'), isNull);
-      expect(matterportEmbed('http://my.matterport.com/show/?m=SxQL3iGyoDo'), isNull);
-      expect(matterportEmbed('https://my.matterport.com/show/?m=bad!'), isNull);
-      expect(matterportEmbed(null), isNull);
+    test('platform tour resolves entry scene and scenes', () {
+      const scene1 = TourSceneApiView(
+        id: 's1',
+        label: 'Living room',
+        position: 0,
+        previewUrl: 'https://example.test/1.jpg',
+        thumbnailUrl: null,
+        tileUrlTemplate: null,
+        tileLevels: 0,
+        hotspots: [],
+      );
+      const scene2 = TourSceneApiView(
+        id: 's2',
+        label: 'Kitchen',
+        position: 1,
+        previewUrl: 'https://example.test/2.jpg',
+        thumbnailUrl: null,
+        tileUrlTemplate: null,
+        tileLevels: 0,
+        hotspots: [],
+      );
+      const tour = TourView(
+        id: 't1',
+        resourceId: 'r1',
+        entrySceneId: 's1',
+        scenes: [scene1, scene2],
+      );
+      expect(tour.entryScene?.id, 's1');
+      expect(tour.sceneById('s2')?.label, 'Kitchen');
     });
 
     test('the starting view uses the saved heading, with upward pitch looking up', () {
@@ -294,9 +317,9 @@ void main() {
 
       await tester.tap(find.text('Can I schedule a viewing?'));
       await tester.pump();
-      await tester.ensureVisible(find.text('Send inquiry'));
+      await tester.drag(find.byType(ListView).first, const Offset(0, -300));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Send inquiry'));
+      await tester.tap(find.text('Send Inquiry'));
       await tester.pumpAndSettle();
 
       expect(find.text('Inquiry sent'), findsOneWidget);

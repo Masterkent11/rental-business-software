@@ -497,24 +497,45 @@ class _LocationPrompt extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          Icon(problem == null ? Icons.near_me_outlined : Icons.location_off_outlined, color: Tokens.primaryNavy),
+          Icon(
+            problem == null
+                ? Icons.near_me_outlined
+                : Icons.location_off_outlined,
+            color: Tokens.primaryNavy,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              problem ?? 'See homes and properties around you.',
+              problem != null
+                  ? 'We couldn’t get your location.'
+                  : 'See homes and properties around you.',
               style: const TextStyle(fontSize: 13, color: Tokens.primaryNavy),
             ),
           ),
           const SizedBox(width: 8),
           if (state.locating)
-            const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
           else if (problem == null)
             TextButton(
-              onPressed: ref.read(locationProvider.notifier).useCurrentLocation,
+              onPressed:
+                  ref.read(locationProvider.notifier).useCurrentLocation,
               child: const Text('Use location'),
             )
-          else
-            TextButton(onPressed: () => showLocationSheet(context), child: const Text('Choose area')),
+          else ...[
+            TextButton(
+              onPressed: () => showLocationSheet(context),
+              child: const Text('Choose area'),
+            ),
+            TextButton(
+              onPressed:
+                  ref.read(locationProvider.notifier).useCurrentLocation,
+              child: const Text('Try again'),
+            ),
+          ],
         ],
       ),
     );

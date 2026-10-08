@@ -1,6 +1,6 @@
 import type { TourRepository } from '@/application/ports/repositories/tour-repository.port.ts';
 import type { MediaStorage } from '@/application/ports/storage/media-storage.port.ts';
-import { isWalkable, matterportEmbedUrl, type Scene, type TourProvider } from '@/domain/tours/tour.ts';
+import { isWalkable, type Scene, type TourProvider } from '@/domain/tours/tour.ts';
 
 export interface ViewSceneResult {
   readonly id: string;
@@ -37,18 +37,6 @@ export const getResourceTour =
   async (resourceId: string): Promise<ViewTourResult | null> => {
     const tour = await tours.publishedForResource(resourceId);
     if (!tour) return null;
-
-    if (tour.provider === 'MATTERPORT') {
-      if (!tour.externalModelId) return null;
-      return {
-        id: tour.id,
-        resourceId: tour.resourceId,
-        provider: 'MATTERPORT',
-        embedUrl: matterportEmbedUrl(tour.externalModelId),
-        entrySceneId: null,
-        scenes: [],
-      };
-    }
 
     const walkable = tour.scenes.filter(isWalkable);
     if (walkable.length === 0) return null;

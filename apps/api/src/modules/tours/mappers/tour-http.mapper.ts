@@ -1,5 +1,4 @@
 import type { Scene, Tour } from '@/domain/tours/tour.ts';
-import { matterportEmbedUrl } from '@/domain/tours/tour.ts';
 import type { SceneMediaUrls } from '@/application/tours/get-owner-tour/get-owner-tour.use-case.ts';
 import type { TourOverview } from '@/application/ports/repositories/tour-repository.port.ts';
 
@@ -36,7 +35,7 @@ export function toTourHttpResponse(tour: Tour, media?: Readonly<Record<string, S
     state: tour.state,
     provider,
     externalModelId: tour.externalModelId ?? null,
-    embedUrl: provider === 'MATTERPORT' && tour.externalModelId ? matterportEmbedUrl(tour.externalModelId) : null,
+    embedUrl: null,
     entrySceneId: tour.entrySceneId,
     scenes: tour.scenes.map((scene) => toSceneHttpResponse(scene, media?.[scene.id])),
   };

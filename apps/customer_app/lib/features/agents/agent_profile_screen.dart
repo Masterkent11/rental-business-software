@@ -107,6 +107,39 @@ class _Profile extends StatelessWidget {
             _Stat(value: agent.areasServed.isEmpty ? '—' : '${agent.areasServed.length}', label: 'Areas served'),
           ],
         ),
+        if (agent.listings.isNotEmpty) ...[
+          const SizedBox(height: Tokens.s16),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () => context.push(Routes.startConversation(listingId: agent.listings.first.id)),
+                  icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                  label: const Text('Message Agent'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Tokens.primaryNavy,
+                    minimumSize: const Size.fromHeight(48),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.rSm)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: Tokens.s8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push(Routes.viewing(agent.listings.first.id)),
+                  icon: const Icon(Icons.event_available_outlined, size: 18),
+                  label: const Text('Schedule Viewing'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Tokens.primaryNavy,
+                    minimumSize: const Size.fromHeight(48),
+                    side: const BorderSide(color: Tokens.primaryNavy),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.rSm)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
         if (response != null) ...[
           const SizedBox(height: Tokens.s12),
           Row(

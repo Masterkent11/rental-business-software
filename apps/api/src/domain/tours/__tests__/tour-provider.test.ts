@@ -1,14 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   InvalidSceneViewError,
-  InvalidTourProviderError,
   SceneRemovalBlockedError,
   TourNotPublishableError,
   assertInitialView,
   assertPublishable,
   assertSceneRemovable,
-  matterportEmbedUrl,
-  parseMatterportModelId,
   type Scene,
 } from '@/domain/tours/tour.ts';
 
@@ -27,28 +24,17 @@ const scene = (id: string, targetSceneId: string | null = null): Scene => ({
     : [],
 });
 
-describe('matterport tours', () => {
-  it('accepts a bare model id or a my.matterport.com share link only', () => {
-    expect(parseMatterportModelId('SxQL3iGyoDo')).toBe('SxQL3iGyoDo');
-    expect(parseMatterportModelId('https://my.matterport.com/show/?m=SxQL3iGyoDo&play=1')).toBe('SxQL3iGyoDo');
-    expect(() => parseMatterportModelId('https://evil.example/show/?m=SxQL3iGyoDo')).toThrow(InvalidTourProviderError);
-    expect(() => parseMatterportModelId('http://my.matterport.com/show/?m=SxQL3iGyoDo')).toThrow(InvalidTourProviderError);
-    expect(() => parseMatterportModelId('https://my.matterport.com/show/?m=<script>')).toThrow(InvalidTourProviderError);
-  });
-
-  it('builds the embed url on the server', () => {
-    expect(matterportEmbedUrl('SxQL3iGyoDo')).toMatch(/^https:\/\/my\.matterport\.com\/show\/\?m=SxQL3iGyoDo&/);
-  });
-
-  it('is publishable once it has a model, without rooms', () => {
-    expect(() => assertPublishable({ entrySceneId: null, scenes: [], provider: 'MATTERPORT', externalModelId: 'SxQL3iGyoDo' })).not.toThrow();
-    expect(() => assertPublishable({ entrySceneId: null, scenes: [], provider: 'MATTERPORT', externalModelId: null })).toThrow(
+describe('platform tours', () => {
+  it('requires at least one room and a designated entry scene to publish', () => {
+    expect(() => assertPublishable({ entrySceneId: 'a', scenes: [scene('a')] })).not.toThrow();
+    expect(() => assertPublishable({ entrySceneId: null, scenes: [scene('a')] })).toThrow(
+      TourNotPublishableError,
+    );
+    expect(() => assertPublishable({ entrySceneId: 'a', scenes: [] })).toThrow(
       TourNotPublishableError,
     );
   });
-});
 
-describe('platform tours', () => {
   it('validates the starting view', () => {
     expect(() => assertInitialView({ yaw: 0, pitch: 0, fov: 75 })).not.toThrow();
     expect(() => assertInitialView({ yaw: 0, pitch: 89, fov: 75 })).toThrow(InvalidSceneViewError);

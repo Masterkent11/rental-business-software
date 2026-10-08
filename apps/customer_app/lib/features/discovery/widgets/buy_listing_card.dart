@@ -22,6 +22,7 @@ class BuyListingCard extends ConsumerWidget {
       if (listing.baths > 0) '${listing.baths} ba',
       if (listing.sqm != null) '${listing.sqm} m²',
       if (listing.sqm == null && listing.lotAreaSqm != null) '${listing.lotAreaSqm} m² lot',
+      if (listing.parkingSlots > 0) '${listing.parkingSlots} prk',
     ];
     return Semantics(
       button: true,
@@ -121,38 +122,81 @@ class BuyListingCard extends ConsumerWidget {
                       Text(facts.join('  ·  '), style: const TextStyle(fontSize: 12.5, color: Tokens.primaryNavy)),
                     ],
                     const SizedBox(height: 8),
-                    Row(
+                    const Row(
                       children: [
-                        const Icon(Icons.lock_outline, size: 14, color: Tokens.primaryNavy),
-                        const SizedBox(width: 4),
-                        const Expanded(
+                        Icon(Icons.lock_outline, size: 14, color: Tokens.primaryNavy),
+                        SizedBox(width: 4),
+                        Expanded(
                           child: Text(
                             kPriceOnInquiry,
                             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Tokens.primaryNavy),
                           ),
                         ),
-                        if (listing.representative != null)
-                          Flexible(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    listing.representative!.displayName,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 12, color: Tokens.muted),
-                                  ),
-                                ),
-                                if (listing.representative!.verified) ...[
-                                  const SizedBox(width: 3),
-                                  const Icon(Icons.verified, size: 13, color: Tokens.primaryBlue),
-                                ],
-                              ],
-                            ),
-                          ),
                       ],
                     ),
+                    if (listing.representative != null) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Tokens.softBlue.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(Tokens.rSm),
+                        ),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 13,
+                              backgroundColor: Tokens.softBlue,
+                              foregroundImage: listing.representative!.photoUrl == null
+                                  ? null
+                                  : NetworkImage(listing.representative!.photoUrl!),
+                              child: Text(
+                                listing.representative!.displayName.isNotEmpty
+                                    ? listing.representative!.displayName[0].toUpperCase()
+                                    : 'A',
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Tokens.primaryNavy),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          listing.representative!.displayName,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                            color: Tokens.primaryNavy,
+                                          ),
+                                        ),
+                                      ),
+                                      if (listing.representative!.verified) ...[
+                                        const SizedBox(width: 3),
+                                        const Icon(Icons.verified, size: 12, color: Tokens.primaryBlue),
+                                      ],
+                                    ],
+                                  ),
+                                  Text(
+                                    listing.representative!.headline.isNotEmpty
+                                        ? listing.representative!.headline
+                                        : 'Real Estate Agent',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 11, color: Tokens.muted),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

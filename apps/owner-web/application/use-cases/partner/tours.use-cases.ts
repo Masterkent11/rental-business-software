@@ -2,12 +2,10 @@ import type { PartnerRepositoryPort } from "../../ports/partner-repository.port"
 import type { FileReaderPort } from "../../ports/file-reader.port";
 import type { PartnerScope } from "../../../domain/workspace/workspace";
 import {
-  parseMatterportInput,
   panoramaProblem,
   panoramaShapeProblem,
   type StudioTour,
   type TourOverview,
-  type TourProvider,
   type TourScene,
 } from "../../../domain/tours/tour";
 
@@ -34,11 +32,8 @@ export class LoadTourUseCase {
 
 export class ConfigureTourProviderUseCase {
   constructor(private readonly repository: PartnerRepositoryPort) {}
-  execute(scope: PartnerScope, tourId: string, provider: TourProvider, matterport: string): Promise<void> {
-    if (provider === "MATTERPORT" && !parseMatterportInput(matterport)) {
-      throw new Error("Paste a my.matterport.com share link or the model ID");
-    }
-    return this.repository.configureTourProvider(scope, tourId, provider, provider === "MATTERPORT" ? matterport.trim() : null);
+  execute(scope: PartnerScope, tourId: string): Promise<void> {
+    return this.repository.configureTourProvider(scope, tourId, "PLATFORM", null);
   }
 }
 

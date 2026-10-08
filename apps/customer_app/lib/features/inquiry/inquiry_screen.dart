@@ -120,12 +120,60 @@ class _InquiryScreenState extends ConsumerState<InquiryScreen> {
 
   Widget _form(ListingCardView card) {
     final theme = Theme.of(context);
-    final partner = card.representative?.displayName;
     return ListView(
       physics: Tokens.scroll,
       padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s8, Tokens.gutter, Tokens.s40),
       children: [
         _ListingSummary(card: card),
+        const SizedBox(height: Tokens.s16),
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(Tokens.rSm),
+            border: Border.all(color: Tokens.hairline),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Tokens.primaryNavy,
+                    borderRadius: BorderRadius.circular(Tokens.rSm - 2),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'Inquire',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: InkWell(
+                  onTap: () => context.pushReplacement(Routes.viewing(widget.listingId)),
+                  borderRadius: BorderRadius.circular(Tokens.rSm - 2),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      'Schedule Viewing',
+                      style: TextStyle(
+                        color: Tokens.muted,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
         const SizedBox(height: Tokens.s24),
         Text('What would you like to know?', style: theme.textTheme.titleLarge),
         const SizedBox(height: Tokens.s12),
@@ -161,7 +209,7 @@ class _InquiryScreenState extends ConsumerState<InquiryScreen> {
           textCapitalization: TextCapitalization.sentences,
           decoration: InputDecoration(
             labelText: 'Message (optional)',
-            hintText: partner == null ? 'Add anything the owner should know' : 'Add anything $partner should know',
+            hintText: 'Hi! I’m interested in this property. Please share more details.',
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(Tokens.rSm)),
@@ -219,7 +267,7 @@ class _InquiryScreenState extends ConsumerState<InquiryScreen> {
           ),
           child: _sending
               ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white))
-              : const Text('Send inquiry'),
+              : const Text('Send Inquiry'),
         ),
         const SizedBox(height: Tokens.s12),
         const Text(

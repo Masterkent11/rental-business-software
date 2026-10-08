@@ -395,7 +395,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 600));
 
-    expect(find.text('Virtual Tour'), findsOneWidget);
+    expect(find.text('360° Virtual Tour'), findsOneWidget);
     expect(find.text('Living room'), findsWidgets);
     expect(find.text('1/5'), findsOneWidget);
 

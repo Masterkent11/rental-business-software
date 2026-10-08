@@ -25,7 +25,7 @@ import { Badge, Btn, Card, ConfirmDialog, EmptyState, ErrorState, Field, InlineE
 import { Photo } from "@/components/owner/photo";
 import { PanoramaViewer } from "@/components/owner/panorama-viewer";
 import { cn } from "@/lib/utils";
-import { TOUR_STATE_LABEL, screenFromDirection, type TourHotspot, type TourProvider, type TourScene } from "@/domain/tours/tour";
+import { TOUR_STATE_LABEL, screenFromDirection, type TourHotspot, type TourScene } from "@/domain/tours/tour";
 import { useSessionStore } from "@/stores/use-session-store";
 import { useTourStudioStore } from "@/stores/use-tour-studio-store";
 
@@ -275,7 +275,8 @@ function HotspotList({ scene, scenes }: { scene: TourScene; scenes: readonly Tou
 }
 
 function SceneSettings({ scene, scenes, entryId }: { scene: TourScene; scenes: readonly TourScene[]; entryId: string | null }) {
-  const { renameDraft, busy, setRenameDraft, renameScene, setEntry, moveScene, askRemoveScene } = useTourStudioStore();
+  const replaceInput = useRef<HTMLInputElement>(null);
+  const { renameDraft, busy, uploading, setRenameDraft, renameScene, setEntry, moveScene, askRemoveScene, replaceScene } = useTourStudioStore();
   const index = scenes.findIndex((s) => s.id === scene.id);
   return (
     <Card className="flex flex-col gap-4 p-4">
@@ -294,9 +295,24 @@ function SceneSettings({ scene, scenes, entryId }: { scene: TourScene; scenes: r
           Rename
         </Btn>
       </form>
+      <input
+        ref={replaceInput}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="sr-only"
+        aria-label="Replace 360° photo"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = "";
+          if (file) void replaceScene(file);
+        }}
+      />
       <div className="flex flex-wrap gap-1.5">
         <Btn size="sm" variant="outline" disabled={scene.id === entryId || busy || scene.state !== "READY"} onClick={() => void setEntry(scene.id)}>
           <Flag className="size-3.5" aria-hidden /> {scene.id === entryId ? "Tour starts here" : "Start tour here"}
+        </Btn>
+        <Btn size="sm" variant="outline" busy={uploading} disabled={busy || scene.state !== "READY"} onClick={() => replaceInput.current?.click()}>
+          <Upload className="size-3.5" aria-hidden /> Replace photo
         </Btn>
         <Btn size="sm" variant="ghost" disabled={index <= 0 || busy} onClick={() => void moveScene(scene.id, -1)} aria-label="Move room earlier">
           <ArrowUp className="size-3.5" aria-hidden />
@@ -321,7 +337,7 @@ function UploadRoom() {
   return (
     <Card className="p-4">
       <p className="text-[13.5px] font-semibold">Add a room</p>
-      <p className="mt-1 text-[12px] text-muted">Upload an equirectangular 360° photo (2:1, at least 2048 px wide, JPEG or PNG, up to 30 MB).</p>
+      <p className="mt-1 text-[12px] text-muted">Upload an equirectangular 360° photo (2:1, at least 2048 px wide, JPEG, PNG, or WebP, up to 30 MB).</p>
       <div className="mt-3 flex items-end gap-2">
         <Field label="Room name" htmlFor="newRoom" className="flex-1">
           <TextInput id="newRoom" value={uploadLabel} onChange={(e) => setUploadLabel(e.target.value)} placeholder="Living room" maxLength={60} />
@@ -329,7 +345,7 @@ function UploadRoom() {
         <input
           ref={input}
           type="file"
-          accept="image/jpeg,image/png"
+          accept="image/jpeg,image/png,image/webp"
           className="sr-only"
           aria-label="Choose 360° photo"
           onChange={(event) => {
@@ -345,49 +361,6 @@ function UploadRoom() {
       <div className="mt-3">
         <InlineError message={uploadError} />
       </div>
-    </Card>
-  );
-}
-
-function ProviderCard({ provider, embedUrl }: { provider: TourProvider; embedUrl: string | null }) {
-  const { providerChoice, matterportInput, busy, setProviderChoice, setMatterportInput, saveProvider } = useTourStudioStore();
-  const changed = providerChoice !== provider || (providerChoice === "MATTERPORT" && matterportInput.trim() !== "");
-  return (
-    <Card className="p-4">
-      <p className="mb-3 text-[13.5px] font-semibold">Tour type</p>
-      <SegmentedTabs<TourProvider>
-        label="Tour type"
-        value={providerChoice}
-        onChange={setProviderChoice}
-        options={[
-          { value: "PLATFORM", label: "360° photos" },
-          { value: "MATTERPORT", label: "Matterport" },
-        ]}
-      />
-      <form
-        noValidate
-        className="mt-3 flex flex-col gap-3"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void saveProvider();
-        }}
-      >
-        {providerChoice === "MATTERPORT" ? (
-          <Field label="Matterport share link or model ID" htmlFor="matterport" hint="Only my.matterport.com links are accepted">
-            <TextInput id="matterport" value={matterportInput} onChange={(e) => setMatterportInput(e.target.value)} placeholder="https://my.matterport.com/show/?m=SxQL3iGyoDo" maxLength={200} />
-          </Field>
-        ) : (
-          <p className="text-[12.5px] text-muted">Rooms you upload here are processed into fast tiles for the mobile app.</p>
-        )}
-        <div>
-          <Btn type="submit" size="sm" variant="outline" busy={busy} disabled={!changed}>
-            Save tour type
-          </Btn>
-        </div>
-      </form>
-      {provider === "MATTERPORT" && embedUrl ? (
-        <iframe title="Matterport preview" src={embedUrl} className="mt-4 aspect-video w-full rounded-xl border border-border" allow="xr-spatial-tracking; fullscreen" allowFullScreen />
-      ) : null}
     </Card>
   );
 }
@@ -441,7 +414,7 @@ function Studio({ backPath, backLabel }: { backPath: string; backLabel: string }
       <LinkBtn href={backPath} variant="ghost" size="sm" className="-ml-2 mb-3">
         <ArrowLeft className="size-4" aria-hidden /> {backLabel}
       </LinkBtn>
-      <TopBar title="Virtual tour studio" caption={tour.provider === "MATTERPORT" ? "Linked to a Matterport model." : `${tour.scenes.length} room${tour.scenes.length === 1 ? "" : "s"}`}>
+      <TopBar title="Virtual tour studio" caption={`${tour.scenes.length} room${tour.scenes.length === 1 ? "" : "s"}`}>
         <Badge tone={live ? "ok" : tour.state === "FAILED" ? "bad" : "pending"}>{TOUR_STATE_LABEL[tour.state]}</Badge>
         {live ? (
           <Btn variant="outline" busy={busy} onClick={() => void unpublish()}>
@@ -461,15 +434,7 @@ function Studio({ backPath, backLabel }: { backPath: string; backLabel: string }
 
       <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
         <div className="flex min-w-0 flex-col gap-4">
-          {tour.provider === "MATTERPORT" ? (
-            tour.embedUrl ? (
-              <iframe title="Matterport tour" src={tour.embedUrl} className="aspect-video w-full rounded-2xl border border-border" allow="xr-spatial-tracking; fullscreen" allowFullScreen />
-            ) : (
-              <Card>
-                <EmptyState title="No Matterport model linked" body="Paste the share link from your Matterport account in Tour type." />
-              </Card>
-            )
-          ) : scene ? (
+          {scene ? (
             <>
               <Viewer scene={scene} scenes={tour.scenes} editable />
               <RoomStrip scenes={tour.scenes} entryId={tour.entrySceneId} />
@@ -481,22 +446,17 @@ function Studio({ backPath, backLabel }: { backPath: string; backLabel: string }
           )}
         </div>
         <aside className="flex flex-col gap-4">
-          <ProviderCard provider={tour.provider} embedUrl={tour.embedUrl} />
-          {tour.provider === "PLATFORM" ? (
+          {scene ? (
             <>
-              {scene ? (
-                <>
-                  <DraftForm scenes={tour.scenes} sceneId={scene.id} />
-                  <SceneSettings scene={scene} scenes={tour.scenes} entryId={tour.entrySceneId} />
-                  <div>
-                    <SectionHeading title="Hotspots in this room" />
-                    <HotspotList scene={scene} scenes={tour.scenes} />
-                  </div>
-                </>
-              ) : null}
-              <UploadRoom />
+              <DraftForm scenes={tour.scenes} sceneId={scene.id} />
+              <SceneSettings scene={scene} scenes={tour.scenes} entryId={tour.entrySceneId} />
+              <div>
+                <SectionHeading title="Hotspots in this room" />
+                <HotspotList scene={scene} scenes={tour.scenes} />
+              </div>
             </>
           ) : null}
+          <UploadRoom />
         </aside>
       </div>
       <ConfirmDialog

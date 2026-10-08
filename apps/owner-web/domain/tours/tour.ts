@@ -65,15 +65,16 @@ export const TOUR_STATE_LABEL: Record<TourState | "NONE", string> = {
 export const MAX_PANORAMA_BYTES = 30 * 1024 * 1024;
 
 export function panoramaProblem(file: { type: string; size: number }): string | null {
-  if (!["image/jpeg", "image/png"].includes(file.type)) return "Upload a JPEG or PNG 360° photo.";
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return "Upload a JPEG, PNG, or WebP 360° photo.";
   if (file.size > MAX_PANORAMA_BYTES) return "360° photos must be smaller than 30 MB.";
   return null;
 }
 
 export function panoramaShapeProblem(width: number, height: number): string | null {
   if (width <= 0 || height <= 0) return "We could not read that image.";
+  if (width <= height) return "This image doesn’t appear to be a 360° panorama. Upload an equirectangular image close to a 2:1 aspect ratio.";
   const ratio = width / height;
-  if (Math.abs(ratio - 2) > 0.04) return "A 360° photo is twice as wide as it is tall. This looks like a regular photo.";
+  if (Math.abs(ratio - 2) > 0.08) return "This image doesn’t appear to be a 360° panorama. Upload an equirectangular image close to a 2:1 aspect ratio.";
   if (width < 2048) return "This photo is too small to look sharp. Use one at least 2048 pixels wide.";
   return null;
 }
@@ -142,17 +143,4 @@ export function screenFromDirection(input: {
   const ny = dot(point, up) / depth / tanHalf;
   if (Math.abs(nx) > 1.1 || Math.abs(ny) > 1.1) return null;
   return { x: ((nx + 1) / 2) * input.width, y: ((1 - ny) / 2) * input.height };
-}
-
-export function parseMatterportInput(raw: string): string | null {
-  const value = raw.trim();
-  if (/^[A-Za-z0-9]{8,24}$/.test(value)) return value;
-  try {
-    const url = new URL(value);
-    if (url.protocol !== "https:" || url.hostname !== "my.matterport.com" || url.pathname !== "/show/") return null;
-    const model = url.searchParams.get("m") ?? "";
-    return /^[A-Za-z0-9]{8,24}$/.test(model) ? model : null;
-  } catch {
-    return null;
-  }
 }

@@ -65,6 +65,14 @@ class _SaleListingViewState extends ConsumerState<SaleListingView> {
     final theme = Theme.of(context);
     final card = _card;
     final openInquiry = ref.watch(openInquiryProvider(card.id)).valueOrNull;
+    final availableTabs = [
+      SaleTab.overview,
+      SaleTab.photos,
+      if (card.hasTour) SaleTab.tour,
+      if (widget.detail.floorPlans.isNotEmpty) SaleTab.floorPlan,
+      SaleTab.map,
+    ];
+    final activeTab = availableTabs.contains(_tab) ? _tab : SaleTab.overview;
 
     return Scaffold(
       backgroundColor: Tokens.canvas,
@@ -117,11 +125,18 @@ class _SaleListingViewState extends ConsumerState<SaleListingView> {
               ),
             ),
           ),
-          SliverPersistentHeader(pinned: true, delegate: _TabsHeader(selected: _tab, onSelect: (t) => setState(() => _tab = t))),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _TabsHeader(
+              tabs: availableTabs,
+              selected: activeTab,
+              onSelect: (t) => setState(() => _tab = t),
+            ),
+          ),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s20, Tokens.gutter, 140),
             sliver: SliverToBoxAdapter(
-              child: switch (_tab) {
+              child: switch (activeTab) {
                 SaleTab.overview => _Overview(
                     detail: widget.detail,
                     openInquiry: openInquiry,
@@ -294,8 +309,9 @@ class _PriceOnInquiry extends StatelessWidget {
 }
 
 class _TabsHeader extends SliverPersistentHeaderDelegate {
-  _TabsHeader({required this.selected, required this.onSelect});
+  _TabsHeader({required this.tabs, required this.selected, required this.onSelect});
 
+  final List<SaleTab> tabs;
   final SaleTab selected;
   final ValueChanged<SaleTab> onSelect;
 
@@ -316,7 +332,7 @@ class _TabsHeader extends SliverPersistentHeaderDelegate {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: Tokens.gutter - 6),
               children: [
-                for (final tab in SaleTab.values)
+                for (final tab in tabs)
                   Semantics(
                     selected: tab == selected,
                     button: true,
@@ -416,6 +432,60 @@ class _Overview extends StatelessWidget {
                 ),
             ],
           ),
+        if (card.hasTour) ...[
+          const SizedBox(height: Tokens.s16),
+          Material(
+            color: Tokens.primaryNavy,
+            borderRadius: BorderRadius.circular(Tokens.rMd),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(Tokens.rMd),
+              onTap: () => context.push(Routes.tour(card.id)),
+              child: Padding(
+                padding: const EdgeInsets.all(Tokens.s16),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.threed_rotation,
+                      color: Colors.white,
+                      size: 26,
+                    ),
+                    const SizedBox(width: Tokens.s16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Walk through it',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            card.sceneCount > 0
+                                ? '${card.sceneCount} room${card.sceneCount == 1 ? '' : 's'} to walk through'
+                                : 'Explore with 360° virtual tour',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.75),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.white70,
+                      size: 16,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: Tokens.s20),
         if (openInquiry != null)
           _InquiryNotice(inquiry: openInquiry!, onOpen: onOpenInquiry)
@@ -633,7 +703,6 @@ class _TourTab extends StatelessWidget {
     if (!card.hasTour) {
       return const _TabEmpty(icon: Icons.threed_rotation, title: 'No virtual tour yet', message: 'Ask the agent for a viewing, or check back later.');
     }
-    final matterport = card.tourProvider == 'MATTERPORT';
     return GestureDetector(
       onTap: () => context.push(Routes.tour(card.id)),
       child: ClipRRect(
@@ -652,7 +721,7 @@ class _TourTab extends StatelessWidget {
                     const Icon(Icons.threed_rotation, color: Colors.white, size: 44),
                     const SizedBox(height: Tokens.s8),
                     Text(
-                      matterport ? 'Open 3D tour' : 'Walk through ${card.sceneCount} room${card.sceneCount == 1 ? '' : 's'}',
+                      card.sceneCount > 0 ? 'Walk through ${card.sceneCount} room${card.sceneCount == 1 ? '' : 's'}' : 'Walk through it',
                       style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 4),

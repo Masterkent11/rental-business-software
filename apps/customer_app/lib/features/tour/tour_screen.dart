@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../data/listing_repository.dart';
 import '../../data/tour_repository.dart';
@@ -28,8 +27,8 @@ class _TourScreenState extends ConsumerState<TourScreen> {
   PanoramaSource? _source;
   PanoramaCamera _camera = const PanoramaCamera();
   bool _hasLooked = false;
-
   bool _walking = false;
+  bool _fullscreen = false;
 
   @override
   void dispose() {
@@ -96,8 +95,6 @@ class _TourScreenState extends ConsumerState<TourScreen> {
       error: (_, __) => const _TourUnavailable(),
       data: (tour) {
         if (tour == null) return const _NoTour();
-        final matterport = tour.matterportUrl;
-        if (matterport != null) return MatterportTour(url: matterport);
 
         final entry = tour.entryScene;
         if (entry == null) return const _NoTour();
@@ -151,75 +148,82 @@ class _TourScreenState extends ConsumerState<TourScreen> {
                 child: SafeArea(
                   bottom: false,
                   child: _TourNav(
-                    title: 'Virtual Tour',
+                    title: '360° Virtual Tour',
                     onClose: () => Navigator.of(context).maybePop(),
+                    currentRoom: scene.label,
+                    onRoomTap: () => _showScenePicker(context, tour, scene),
+                    isFullscreen: _fullscreen,
+                    onFullscreenToggle: () =>
+                        setState(() => _fullscreen = !_fullscreen),
                   ),
                 ),
               ),
 
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      Tokens.gutter,
-                      0,
-                      Tokens.gutter,
-                      Tokens.s20,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (!_hasLooked) const _DragHint(),
-                        const SizedBox(height: Tokens.s16),
-                        if (tour.scenes.length > 1) ...[
-                          SizedBox(
-                            height: 64,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              physics: Tokens.scroll,
-                              itemCount: tour.scenes.length,
-                              separatorBuilder: (_, __) => const SizedBox(width: Tokens.s8),
-                              itemBuilder: (context, i) => _RoomChip(
-                                scene: tour.scenes[i],
-                                selected: tour.scenes[i].id == scene.id,
-                                onTap: () {
-                                  if (tour.scenes[i].id == scene.id) return;
-                                  if (!tour.scenes[i].isWalkable) {
-                                    _sayUnavailable(context);
-                                    return;
-                                  }
-                                  HapticFeedback.selectionClick();
-                                  _open(tour.scenes[i]);
-                                },
+              if (!_fullscreen)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        Tokens.gutter,
+                        0,
+                        Tokens.gutter,
+                        Tokens.s20,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (!_hasLooked) const _DragHint(),
+                          const SizedBox(height: Tokens.s16),
+                          if (tour.scenes.length > 1) ...[
+                            SizedBox(
+                              height: 64,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                physics: Tokens.scroll,
+                                itemCount: tour.scenes.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(width: Tokens.s8),
+                                itemBuilder: (context, i) => _RoomChip(
+                                  scene: tour.scenes[i],
+                                  selected: tour.scenes[i].id == scene.id,
+                                  onTap: () {
+                                    if (tour.scenes[i].id == scene.id) return;
+                                    if (!tour.scenes[i].isWalkable) {
+                                      _sayUnavailable(context);
+                                      return;
+                                    }
+                                    HapticFeedback.selectionClick();
+                                    _open(tour.scenes[i]);
+                                  },
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: Tokens.s12),
-                        ],
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Flexible(
-                              child: _RoomLabel(
-                                label: scene.label,
-                                position: '${index + 1}/${tour.scenes.length}',
-                                onTap: () =>
-                                    _showScenePicker(context, tour, scene),
-                              ),
-                            ),
-                            const SizedBox(width: Tokens.s8),
-                            if (card != null) _NextStep(card: card),
+                            const SizedBox(height: Tokens.s12),
                           ],
-                        ),
-                      ],
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                child: _RoomLabel(
+                                  label: scene.label,
+                                  position: '${index + 1}/${tour.scenes.length}',
+                                  onTap: () =>
+                                      _showScenePicker(context, tour, scene),
+                                ),
+                              ),
+                              const SizedBox(width: Tokens.s8),
+                              if (card != null) _NextStep(card: card),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         );
@@ -498,36 +502,95 @@ class _HotspotState extends State<_Hotspot>
 }
 
 class _TourNav extends StatelessWidget {
-  const _TourNav({required this.title, required this.onClose});
+  const _TourNav({
+    required this.title,
+    required this.onClose,
+    this.currentRoom,
+    this.onRoomTap,
+    this.isFullscreen = false,
+    this.onFullscreenToggle,
+  });
 
   final String title;
   final VoidCallback onClose;
+  final String? currentRoom;
+  final VoidCallback? onRoomTap;
+  final bool isFullscreen;
+  final VoidCallback? onFullscreenToggle;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 56,
-      child: Stack(
-        alignment: Alignment.center,
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Tokens.s16,
+        vertical: Tokens.s8,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
+          Glass.circle(
+            onTap: onClose,
+            child: const Icon(
+              Icons.arrow_back_ios_new,
+              size: 16,
               color: Colors.white,
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.2,
             ),
           ),
-          Positioned(
-            left: Tokens.s16,
-            child: Glass.circle(
-              onTap: onClose,
-              child: const Icon(
-                Icons.arrow_back_ios_new,
-                size: 16,
-                color: Colors.white,
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2,
+                ),
               ),
+              if (currentRoom != null) ...[
+                const SizedBox(height: Tokens.s4),
+                GestureDetector(
+                  onTap: onRoomTap,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      borderRadius: const BorderRadius.all(Tokens.rPill),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          currentRoom!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: Tokens.s4),
+                        const Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          Glass.circle(
+            onTap: onFullscreenToggle,
+            child: Icon(
+              isFullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
+              size: 20,
+              color: Colors.white,
             ),
           ),
         ],
@@ -694,97 +757,7 @@ class _RoomChip extends StatelessWidget {
   }
 }
 
-class MatterportTour extends StatefulWidget {
-  const MatterportTour({required this.url, super.key});
 
-  final Uri url;
-
-  @override
-  State<MatterportTour> createState() => _MatterportTourState();
-}
-
-class _MatterportTourState extends State<MatterportTour> {
-  late final WebViewController _controller;
-  bool _loading = true;
-  bool _failed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.black)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onNavigationRequest: (request) {
-            final uri = Uri.tryParse(request.url);
-            final allowed = uri != null && uri.scheme == 'https' && (uri.host == 'my.matterport.com' || uri.host.endsWith('.matterport.com'));
-            return allowed ? NavigationDecision.navigate : NavigationDecision.prevent;
-          },
-          onPageFinished: (_) {
-            if (mounted) setState(() => _loading = false);
-          },
-          onWebResourceError: (error) {
-            if (error.isForMainFrame ?? true) {
-              if (mounted) setState(() => _failed = true);
-            }
-          },
-        ),
-      )
-      ..loadRequest(widget.url);
-  }
-
-  void _retry() {
-    setState(() {
-      _failed = false;
-      _loading = true;
-    });
-    _controller.loadRequest(widget.url);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (!_failed) WebViewWidget(controller: _controller),
-          if (_loading && !_failed) const _TourLoading(),
-          if (_failed)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(Tokens.s32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.cloud_off_outlined, color: Colors.white70, size: 36),
-                    const SizedBox(height: Tokens.s12),
-                    const Text(
-                      'The 3D tour could not load. Check your connection and try again.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    const SizedBox(height: Tokens.s16),
-                    FilledButton(onPressed: _retry, child: const Text('Try again')),
-                  ],
-                ),
-              ),
-            ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              bottom: false,
-              child: _TourNav(title: '3D Tour', onClose: () => Navigator.of(context).maybePop()),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _SceneThumb extends StatelessWidget {
   const _SceneThumb({

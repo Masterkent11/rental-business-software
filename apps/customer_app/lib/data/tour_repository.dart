@@ -78,16 +78,10 @@ class TourView {
     required this.resourceId,
     required this.entrySceneId,
     required this.scenes,
-    this.matterportUrl,
   });
 
   final String id;
   final String resourceId;
-
-  final Uri? matterportUrl;
-
-  bool get isMatterport => matterportUrl != null;
-
   final String entrySceneId;
   final List<TourSceneApiView> scenes;
 
@@ -110,18 +104,6 @@ class TourRepository {
   Future<TourView?> forResource(String resourceId) async {
     try {
       final json = await _api.getJson('/resources/$resourceId/tour');
-
-      if (json['provider'] == 'MATTERPORT') {
-        final embed = matterportEmbed(json['embedUrl'] as String?);
-        if (embed == null) return null;
-        return TourView(
-          id: json['id'] as String,
-          resourceId: json['resourceId'] as String? ?? resourceId,
-          entrySceneId: '',
-          scenes: const [],
-          matterportUrl: embed,
-        );
-      }
 
       final scenes = (json['scenes'] as List<dynamic>? ?? const [])
           .whereType<Map<String, dynamic>>()
@@ -171,15 +153,6 @@ class TourRepository {
           .toList(growable: false),
     );
   }
-}
-
-Uri? matterportEmbed(String? raw) {
-  if (raw == null) return null;
-  final uri = Uri.tryParse(raw);
-  if (uri == null || uri.scheme != 'https' || uri.host != 'my.matterport.com' || uri.path != '/show/') return null;
-  final model = uri.queryParameters['m'] ?? '';
-  if (!RegExp(r'^[A-Za-z0-9]{8,24}$').hasMatch(model)) return null;
-  return uri;
 }
 
 final panoramaImageLoaderProvider = Provider<PanoramaImageLoader?>(

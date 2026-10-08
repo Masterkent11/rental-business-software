@@ -20,7 +20,7 @@ export default function ToursPage() {
 
   return (
     <Page>
-      <TopBar title="Virtual tours" caption="Build 360° walkthroughs room by room, or link a Matterport model. Customers open them from the listing." />
+      <TopBar title="Virtual tours" caption="Build 360° walkthroughs room by room. Customers open them from the listing." />
       <Card>
         {!overviewLoaded ? (
           <SkeletonRows rows={4} />
@@ -39,7 +39,7 @@ export default function ToursPage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[14px] font-semibold">{item.listingTitle}</p>
                     <p className="text-[12.5px] text-muted">
-                      {item.listingIntent === "SALE" ? "For sale" : "For rent"} · {item.provider === "MATTERPORT" ? "Matterport" : `${item.sceneCount} room${item.sceneCount === 1 ? "" : "s"}`}
+                      {item.listingIntent === "SALE" ? "For sale" : "For rent"} · {`${item.sceneCount} room${item.sceneCount === 1 ? "" : "s"}`}
                     </p>
                   </div>
                   <Badge tone={item.state === "PUBLISHED" ? "ok" : item.state === "NONE" ? "neutral" : item.state === "FAILED" ? "bad" : "pending"}>{TOUR_STATE_LABEL[item.state]}</Badge>

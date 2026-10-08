@@ -13,11 +13,18 @@ import '../../fixtures/view_models.dart';
 import '../discovery/widgets/listing_card.dart';
 import '../listing/listing_price.dart';
 
-class SavedScreen extends ConsumerWidget {
+class SavedScreen extends ConsumerStatefulWidget {
   const SavedScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SavedScreen> createState() => _SavedScreenState();
+}
+
+class _SavedScreenState extends ConsumerState<SavedScreen> {
+  int _tab = 0;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final savedAsync = ref.watch(savedListingsProvider);
     final saved = savedAsync.valueOrNull ?? const <ListingCardView>[];
@@ -37,8 +44,16 @@ class SavedScreen extends ConsumerWidget {
             hasScrollBody: false,
             child: Center(child: CircularProgressIndicator()),
           )
+        : _tab == 1
+        ? const SliverFillRemaining(
+            hasScrollBody: false,
+            child: _EmptySavedSearches(),
+          )
         : saved.isEmpty
-        ? const SliverFillRemaining(hasScrollBody: false, child: _EmptySaved())
+        ? const SliverFillRemaining(
+            hasScrollBody: false,
+            child: _EmptySaved(),
+          )
         : null;
 
     return Scaffold(
@@ -59,11 +74,23 @@ class SavedScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Saved', style: theme.textTheme.displaySmall),
-                    if (saved.isNotEmpty)
-                      Text(
-                        '${saved.length} shortlisted',
-                        style: theme.textTheme.bodySmall,
-                      ),
+                    const SizedBox(height: Tokens.s12),
+                    Row(
+                      children: [
+                        _SavedTabChip(
+                          label: 'Properties',
+                          count: saved.length,
+                          selected: _tab == 0,
+                          onTap: () => setState(() => _tab = 0),
+                        ),
+                        const SizedBox(width: Tokens.s8),
+                        _SavedTabChip(
+                          label: 'Searches',
+                          selected: _tab == 1,
+                          onTap: () => setState(() => _tab = 1),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -87,7 +114,7 @@ class SavedScreen extends ConsumerWidget {
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(
                 Tokens.gutter,
-                Tokens.s32,
+                Tokens.s16,
                 Tokens.gutter,
                 Tokens.s40,
               ),
@@ -257,6 +284,104 @@ class _EmptySaved extends StatelessWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptySavedSearches extends StatelessWidget {
+  const _EmptySavedSearches();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(Tokens.s32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.saved_search_outlined,
+              size: 44,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: Tokens.s16),
+            Text('No saved searches yet', style: theme.textTheme.headlineSmall),
+            const SizedBox(height: Tokens.s8),
+            Text(
+              'Save your searches to get notified when new matching properties are listed.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SavedTabChip extends StatelessWidget {
+  const _SavedTabChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.count,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final int? count;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: selected ? Tokens.primaryNavy : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: selected ? Tokens.primaryNavy : Tokens.hairline,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: selected ? Colors.white : Tokens.primaryNavy,
+              ),
+            ),
+            if (count != null && count! > 0) ...[
+              const SizedBox(width: 5),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? Colors.white.withValues(alpha: 0.25)
+                      : Tokens.softBlue,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '$count',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: selected ? Colors.white : Tokens.primaryBlue,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

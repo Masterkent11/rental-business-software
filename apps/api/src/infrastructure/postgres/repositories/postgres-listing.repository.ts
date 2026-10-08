@@ -133,8 +133,8 @@ const toListing = (row: Row): Listing => {
     cleaningFeeCentavos: centavos(Number(row.cleaning_fee_centavos)),
     state: row.state as ListingState,
     hasTour: row.tour_state === 'PUBLISHED',
-    sceneCount: row.tour_state === 'PUBLISHED' && row.tour_provider !== 'MATTERPORT' ? (row.scene_count ?? 0) : 0,
-    tourProvider: row.tour_state === 'PUBLISHED' ? (row.tour_provider as 'PLATFORM' | 'MATTERPORT') : null,
+    sceneCount: row.tour_state === 'PUBLISHED' ? (row.scene_count ?? 0) : 0,
+    tourProvider: row.tour_state === 'PUBLISHED' ? 'PLATFORM' : null,
     photos: media.map((m) => m.url),
     media: media.map<ListingPhoto>((m) => ({
       id: m.id,

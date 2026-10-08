@@ -4,7 +4,7 @@ import { chooseWorkspace, pathBelongsTo, scopeOf, workspaceHome, workspacesFor }
 import { isActivePath, navigationFor } from "../domain/workspace/navigation.ts";
 import { groupByStatus, nextStatuses } from "../domain/inquiries/inquiry.ts";
 import { actionsFor, dayKey } from "../domain/viewings/viewing.ts";
-import { directionFromScreen, panoramaShapeProblem, parseMatterportInput, screenFromDirection } from "../domain/tours/tour.ts";
+import { directionFromScreen, panoramaProblem, panoramaShapeProblem, screenFromDirection } from "../domain/tours/tour.ts";
 import { emptyForm, locationFrom, saleTermsFrom, stepsFor, validateStep } from "../domain/listings/listing-form.ts";
 import { canRequestVerification, validateAgentForm, emptyAgentForm } from "../domain/agents/agent.ts";
 
@@ -81,15 +81,15 @@ test("Tour studio: a clicked point maps to a direction that projects back to the
   assert.ok(Math.abs(centre.pitch + 10) < 1e-6);
 });
 
-test("Tour studio: only my.matterport.com links and model IDs are accepted, and panoramas must be 2:1", () => {
-  assert.equal(parseMatterportInput("https://my.matterport.com/show/?m=SxQL3iGyoDo"), "SxQL3iGyoDo");
-  assert.equal(parseMatterportInput("SxQL3iGyoDo"), "SxQL3iGyoDo");
-  assert.equal(parseMatterportInput("https://evil.example/show/?m=SxQL3iGyoDo"), null);
-  assert.equal(parseMatterportInput("http://my.matterport.com/show/?m=SxQL3iGyoDo"), null);
-  assert.equal(parseMatterportInput("javascript:alert(1)"), null);
+test("Tour studio: panoramas must be 2:1 equirectangular JPEG, PNG, or WebP under 30MB", () => {
+  assert.equal(panoramaProblem({ type: "image/jpeg", size: 10 * 1024 * 1024 }), null);
+  assert.equal(panoramaProblem({ type: "image/webp", size: 10 * 1024 * 1024 }), null);
+  assert.ok(panoramaProblem({ type: "image/gif", size: 1024 }));
+  assert.ok(panoramaProblem({ type: "image/jpeg", size: 35 * 1024 * 1024 }));
   assert.equal(panoramaShapeProblem(4096, 2048), null);
   assert.ok(panoramaShapeProblem(4000, 3000));
   assert.ok(panoramaShapeProblem(1024, 512));
+  assert.ok(panoramaShapeProblem(2000, 3000));
 });
 
 test("Sale wizard: location is required, internal price is optional and never negative", () => {

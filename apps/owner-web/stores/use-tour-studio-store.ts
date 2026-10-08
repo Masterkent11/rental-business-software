@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { container } from "../infrastructure/composition/owner-web-container";
 import type { PartnerScope } from "../domain/workspace/workspace";
-import type { StudioTour, TourHotspot, TourOverview, TourProvider } from "../domain/tours/tour";
+import type { StudioTour, TourHotspot, TourOverview } from "../domain/tours/tour";
 
 export interface CameraView {
   yaw: number;
@@ -35,8 +35,6 @@ interface TourStudioState {
   uploadLabel: string;
   uploading: boolean;
   uploadError: string | null;
-  providerChoice: TourProvider;
-  matterportInput: string;
   busy: boolean;
   error: string | null;
   notice: string | null;
@@ -76,9 +74,7 @@ interface TourStudioState {
   removeScene: () => Promise<void>;
   setUploadLabel: (value: string) => void;
   addScene: (file: File) => Promise<void>;
-  setProviderChoice: (provider: TourProvider) => void;
-  setMatterportInput: (value: string) => void;
-  saveProvider: () => Promise<void>;
+  replaceScene: (file: File) => Promise<void>;
   publish: () => Promise<void>;
   unpublish: () => Promise<void>;
 }
@@ -131,8 +127,6 @@ export const useTourStudioStore = create<TourStudioState>((set, get) => {
     uploadLabel: "",
     uploading: false,
     uploadError: null,
-    providerChoice: "PLATFORM",
-    matterportInput: "",
     busy: false,
     error: null,
     notice: null,
@@ -170,8 +164,6 @@ export const useTourStudioStore = create<TourStudioState>((set, get) => {
           sceneId,
           camera: cameraFor(tour, sceneId),
           renameDraft: tour.scenes.find((s) => s.id === sceneId)?.label ?? "",
-          providerChoice: tour.provider,
-          matterportInput: tour.externalModelId ?? "",
         });
         schedulePoll();
       } catch (error) {
@@ -339,16 +331,36 @@ export const useTourStudioStore = create<TourStudioState>((set, get) => {
       }
     },
 
-    setProviderChoice: (providerChoice) => set({ providerChoice, error: null }),
-    setMatterportInput: (matterportInput) => set({ matterportInput, error: null }),
-
-    saveProvider: async () => {
-      const { scope, tour, providerChoice, matterportInput } = get();
-      await run(
-        () => container.configureTourProviderUseCase.execute(scope!, tour!.id, providerChoice, matterportInput),
-        "Could not save the tour type",
-        providerChoice === "MATTERPORT" ? "Matterport model linked" : "Using platform 360° rooms",
-      );
+    replaceScene: async (file: File) => {
+      const { scope, tour, sceneId } = get();
+      if (!scope || !tour || !sceneId) return;
+      const current = tour.scenes.find((s) => s.id === sceneId);
+      if (!current) return;
+      set({ uploading: true, uploadError: null, notice: null });
+      try {
+        const newScene = await container.addTourSceneUseCase.execute(scope, tour.id, current.label, file);
+        const wasEntry = tour.entrySceneId === current.id;
+        if (wasEntry) {
+          await container.editTourUseCase.setEntry(scope, tour.id, newScene.id);
+        }
+        for (const h of current.hotspots) {
+          try {
+            await container.editTourUseCase.addHotspot(scope, tour.id, newScene.id, {
+              kind: h.kind,
+              yaw: h.yaw,
+              pitch: h.pitch,
+              label: h.label,
+              targetSceneId: h.targetSceneId,
+            });
+          } catch {}
+        }
+        await container.editTourUseCase.removeScene(scope, tour.id, current.id);
+        set({ uploading: false, notice: "Room 360° photo replaced" });
+        await get().refresh();
+        get().selectScene(newScene.id);
+      } catch (error) {
+        set({ uploading: false, uploadError: messageOf(error, "Could not replace the 360° photo") });
+      }
     },
 
     publish: async () => {
