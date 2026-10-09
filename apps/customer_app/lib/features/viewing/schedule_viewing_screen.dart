@@ -12,6 +12,7 @@ import '../../data/marketplace_repository.dart';
 import '../../data/messaging_repository.dart';
 import '../../design/app_image.dart';
 import '../../design/tokens.dart';
+import '../legal/policy_agreement_note.dart';
 import '../../fixtures/view_models.dart';
 import '../listing/listing_price.dart';
 
@@ -65,7 +66,8 @@ class _ScheduleViewingScreenState extends ConsumerState<ScheduleViewingScreen> {
     try {
       final viewing = _rescheduling
           ? await repository.rescheduleViewing(widget.rescheduleId!, slot)
-          : await repository.requestViewing(listingId: widget.listingId, startsAt: slot, note: _note.text, clientRef: _clientRef);
+          : await repository.requestViewing(
+              listingId: widget.listingId, startsAt: slot, note: _note.text, clientRef: _clientRef);
       HapticFeedback.mediumImpact();
       ref.invalidate(myViewingsProvider);
       ref.invalidate(viewingSlotsProvider(widget.listingId));
@@ -79,7 +81,8 @@ class _ScheduleViewingScreenState extends ConsumerState<ScheduleViewingScreen> {
       if (mounted) {
         setState(() => _error = switch (error.code) {
               'SLOT_TAKEN' => 'Someone just booked that time. Please pick another slot.',
-              'ALREADY_REQUESTED' => 'You already have a viewing requested for this property. Check Inquiries & viewings in your profile.',
+              'ALREADY_REQUESTED' =>
+                'You already have a viewing requested for this property. Check Inquiries & viewings in your profile.',
               _ => error.message,
             });
       }
@@ -99,7 +102,8 @@ class _ScheduleViewingScreenState extends ConsumerState<ScheduleViewingScreen> {
       appBar: AppBar(
         backgroundColor: Tokens.canvas,
         title: Text(_rescheduling ? 'Choose a new time' : 'Schedule a viewing'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 18), onPressed: () => Navigator.of(context).maybePop()),
+        leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 18), onPressed: () => Navigator.of(context).maybePop()),
       ),
       body: _done != null
           ? _Confirmed(viewing: _done!, rescheduled: _rescheduling)
@@ -125,7 +129,10 @@ class _ScheduleViewingScreenState extends ConsumerState<ScheduleViewingScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.rSm)),
                   ),
                   child: _sending
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white))
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white))
                       : Text(_slot == null
                           ? 'Pick a time'
                           : '${_rescheduling ? 'Request' : 'Request viewing'} · ${dayChipWeekday(_day!)} ${slotTimeLabel(_slot!)}'),
@@ -139,7 +146,8 @@ class _ScheduleViewingScreenState extends ConsumerState<ScheduleViewingScreen> {
     final theme = Theme.of(context);
     final open = days.where((d) => d.hasOpenSlot).toList();
     if (open.isEmpty) {
-      return const _Retry(message: 'No viewing times are open in the next three weeks. Message the agent or owner to arrange one.');
+      return const _Retry(
+          message: 'No viewing times are open in the next three weeks. Message the agent or owner to arrange one.');
     }
     final day = open.firstWhere((d) => d.date == _day, orElse: () => open.first);
     _day ??= day.date;
@@ -185,11 +193,15 @@ class _ScheduleViewingScreenState extends ConsumerState<ScheduleViewingScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(dayChipWeekday(item.date), style: TextStyle(fontSize: 12, color: selected ? Colors.white70 : Tokens.muted)),
+                        Text(dayChipWeekday(item.date),
+                            style: TextStyle(fontSize: 12, color: selected ? Colors.white70 : Tokens.muted)),
                         const SizedBox(height: 2),
                         Text(
                           dayChipNumber(item.date),
-                          style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: selected ? Colors.white : Tokens.primaryNavy),
+                          style: TextStyle(
+                              fontSize: 19,
+                              fontWeight: FontWeight.w700,
+                              color: selected ? Colors.white : Tokens.primaryNavy),
                         ),
                       ],
                     ),
@@ -249,6 +261,10 @@ class _ScheduleViewingScreenState extends ConsumerState<ScheduleViewingScreen> {
               fillColor: Colors.white,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(Tokens.rSm)),
             ),
+          ),
+          const PolicyAgreementNote(
+            prefix: 'Viewing requests follow our ',
+            links: [('Booking & cancellation policy', 'booking-policy'), ('Terms', 'terms')],
           ),
         ],
         if (_error != null) ...[

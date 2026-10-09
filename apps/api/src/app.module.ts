@@ -12,6 +12,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { AgentsModule } from './modules/agents/agents.module.ts';
 import { InquiriesModule } from './modules/inquiries/inquiries.module.ts';
 import { ViewingsModule } from './modules/viewings/viewings.module.ts';
+import { DiscoveryModule } from './modules/discovery/discovery.module.ts';
+import { ContentModule } from './modules/content/content.module.ts';
 import { IdentityModule } from './modules/shared/identity.module.ts';
 import { PlatformModule } from './modules/shared/platform.module.ts';
 import { PresentationExceptionFilter } from './modules/shared/http-exception.filter.ts';
@@ -40,6 +42,8 @@ class HealthController {
     AgentsModule,
     InquiriesModule,
     ViewingsModule,
+    DiscoveryModule,
+    ContentModule,
   ],
   controllers: [HealthController],
   providers: [

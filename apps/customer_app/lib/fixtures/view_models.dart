@@ -143,6 +143,8 @@ class ListingCardView {
     this.location,
     this.representative,
     this.tourProvider,
+    this.furnishing,
+    this.petsAllowed,
   });
 
   final String id;
@@ -180,6 +182,15 @@ class ListingCardView {
   final MapPoint? location;
   final RepresentativeView? representative;
   final String? tourProvider;
+  final String? furnishing;
+  final bool? petsAllowed;
+
+  String? get furnishingLabel => switch (furnishing) {
+        'FURNISHED' => 'Furnished',
+        'SEMI_FURNISHED' => 'Semi-furnished',
+        'UNFURNISHED' => 'Unfurnished',
+        _ => null,
+      };
 
   bool get isSale => intent == ListingIntent.sale;
 
@@ -188,22 +199,22 @@ class ListingCardView {
   String get place => '$areaLabel, $cityLabel';
 
   String get typeLabel => switch (propertyType) {
-    'APARTMENT' => 'Apartment',
-    'CONDO' => 'Condo',
-    'HOUSE' => isSale ? 'House & Lot' : 'House',
-    'TOWNHOUSE' => 'Townhouse',
-    'LOT' => 'Lot',
-    'COMMERCIAL' => 'Commercial',
-    'ROOM' => 'Room',
-    'BOARDING_HOUSE' => 'Boarding house',
-    _ => resourceType.label,
-  };
+        'APARTMENT' => 'Apartment',
+        'CONDO' => 'Condo',
+        'HOUSE' => isSale ? 'House & Lot' : 'House',
+        'TOWNHOUSE' => 'Townhouse',
+        'LOT' => 'Lot',
+        'COMMERCIAL' => 'Commercial',
+        'ROOM' => 'Room',
+        'BOARDING_HOUSE' => 'Boarding house',
+        _ => resourceType.label,
+      };
 
   String get saleStatusLabel => switch (saleStatus) {
-    'PRE_SELLING' => 'Pre-selling',
-    'UNDER_CONSTRUCTION' => 'Under construction',
-    _ => 'Ready for occupancy',
-  };
+        'PRE_SELLING' => 'Pre-selling',
+        'UNDER_CONSTRUCTION' => 'Under construction',
+        _ => 'Ready for occupancy',
+      };
 
   String? get distanceLabel {
     final km = distanceKm;

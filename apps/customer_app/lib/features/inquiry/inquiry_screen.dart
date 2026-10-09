@@ -11,6 +11,7 @@ import '../../data/marketplace_repository.dart';
 import '../../data/messaging_repository.dart';
 import '../../design/app_image.dart';
 import '../../design/tokens.dart';
+import '../legal/policy_agreement_note.dart';
 import '../../fixtures/view_models.dart';
 
 int? parseBudgetCentavos(String raw) {
@@ -100,7 +101,8 @@ class _InquiryScreenState extends ConsumerState<InquiryScreen> {
       appBar: AppBar(
         title: const Text('Inquire'),
         backgroundColor: Tokens.canvas,
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 18), onPressed: () => Navigator.of(context).maybePop()),
+        leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 18), onPressed: () => Navigator.of(context).maybePop()),
       ),
       body: switch ((detail, existing)) {
         (AsyncError(), _) => _Problem(
@@ -266,7 +268,8 @@ class _InquiryScreenState extends ConsumerState<InquiryScreen> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.rSm)),
           ),
           child: _sending
-              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white))
+              ? const SizedBox(
+                  width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.2, color: Colors.white))
               : const Text('Send Inquiry'),
         ),
         const SizedBox(height: Tokens.s12),
@@ -274,6 +277,10 @@ class _InquiryScreenState extends ConsumerState<InquiryScreen> {
           'Your inquiry starts a private conversation. Pricing and terms are shared there.',
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 12.5, color: Tokens.muted),
+        ),
+        const PolicyAgreementNote(
+          prefix: 'Inquiries follow our ',
+          links: [('Terms', 'terms'), ('Community Guidelines', 'community-guidelines')],
         ),
       ],
     );
@@ -301,7 +308,10 @@ class _ListingSummary extends StatelessWidget {
             child: SizedBox(
               width: 72,
               height: 72,
-              child: AppImage(url: card.photos.isEmpty ? '' : card.photos.first, fallbackIcon: Icons.home_work_outlined, cacheWidth: 144),
+              child: AppImage(
+                  url: card.photos.isEmpty ? '' : card.photos.first,
+                  fallbackIcon: Icons.home_work_outlined,
+                  cacheWidth: 144),
             ),
           ),
           const SizedBox(width: Tokens.s12),
@@ -309,11 +319,18 @@ class _ListingSummary extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(card.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
+                Text(card.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
                 const SizedBox(height: 2),
-                Text(card.place, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12.5, color: Tokens.muted)),
+                Text(card.place,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12.5, color: Tokens.muted)),
                 const SizedBox(height: 4),
-                Text(card.isSale ? kPriceOnInquiry : card.typeLabel, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Tokens.primaryNavy)),
+                Text(card.isSale ? kPriceOnInquiry : card.typeLabel,
+                    style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Tokens.primaryNavy)),
               ],
             ),
           ),

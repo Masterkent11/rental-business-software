@@ -9,8 +9,7 @@ import '../../../data/tour_repository.dart';
 enum PanoramaQuality { none, preview, tiles }
 
 class PanoramaSource extends ChangeNotifier {
-  PanoramaSource({required this.scene, ImageLoader? loader})
-    : _load = loader ?? _defaultLoader;
+  PanoramaSource({required this.scene, ImageLoader? loader}) : _load = loader ?? _defaultLoader;
 
   final TourSceneApiView scene;
   final ImageLoader _load;

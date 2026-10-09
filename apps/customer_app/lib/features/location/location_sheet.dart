@@ -42,7 +42,7 @@ class _LocationSheet extends ConsumerWidget {
             Text('Where are you looking?', style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 4),
             const Text(
-              'Your location is used only while you browse and is never saved.',
+              'Your device location is used only while you browse. It is not saved to your account.',
               style: TextStyle(fontSize: 12.5, color: Tokens.muted),
             ),
             const SizedBox(height: Tokens.s16),
@@ -50,14 +50,17 @@ class _LocationSheet extends ConsumerWidget {
               icon: Icons.my_location,
               label: 'Use my current location',
               selected: place is NearMePlace,
-              trailing: state.locating ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : null,
+              trailing: state.locating
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  : null,
               onTap: state.locating ? null : useLocation,
             ),
             if (state.problemMessage != null)
               Container(
                 margin: const EdgeInsets.only(top: Tokens.s8),
                 padding: const EdgeInsets.all(Tokens.s12),
-                decoration: BoxDecoration(color: const Color(0xFFFFF4E5), borderRadius: BorderRadius.circular(Tokens.rSm)),
+                decoration:
+                    BoxDecoration(color: const Color(0xFFFFF4E5), borderRadius: BorderRadius.circular(Tokens.rSm)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -77,7 +80,8 @@ class _LocationSheet extends ConsumerWidget {
               },
             ),
             const SizedBox(height: Tokens.s16),
-            const Text('AREAS WITH LISTINGS', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Tokens.muted, letterSpacing: 0.6)),
+            const Text('AREAS WITH LISTINGS',
+                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Tokens.muted, letterSpacing: 0.6)),
             const SizedBox(height: Tokens.s8),
             ...switch (areas) {
               AsyncError() => [
@@ -88,21 +92,25 @@ class _LocationSheet extends ConsumerWidget {
                     ],
                   ),
                 ],
-              AsyncData(:final value) when value.isEmpty => [const Text('No areas have listings yet.', style: TextStyle(color: Tokens.muted))],
+              AsyncData(:final value) when value.isEmpty => [
+                  const Text('No areas have listings yet.', style: TextStyle(color: Tokens.muted))
+                ],
               AsyncData(:final value) => [
                   for (final area in value)
                     _Option(
                       icon: Icons.location_city_outlined,
                       label: area.cityLabel,
                       caption: _counts(area),
-                      selected: place is AreaPlace && place.area.cityLabel == area.cityLabel,
+                      selected: place is AreaPlace && place.cityLabel == area.cityLabel,
                       onTap: () {
-                        controller.chooseArea(area);
+                        controller.chooseCity(area.cityLabel);
                         Navigator.of(context).pop();
                       },
                     ),
                 ],
-              _ => [const Padding(padding: EdgeInsets.all(Tokens.s16), child: Center(child: CircularProgressIndicator()))],
+              _ => [
+                  const Padding(padding: EdgeInsets.all(Tokens.s16), child: Center(child: CircularProgressIndicator()))
+                ],
             },
           ],
         ),
@@ -138,7 +146,8 @@ class _Option extends StatelessWidget {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 4),
       leading: Icon(icon, color: Tokens.primaryNavy),
-      title: Text(label, style: TextStyle(fontWeight: selected ? FontWeight.w700 : FontWeight.w500, color: Tokens.primaryNavy)),
+      title: Text(label,
+          style: TextStyle(fontWeight: selected ? FontWeight.w700 : FontWeight.w500, color: Tokens.primaryNavy)),
       subtitle: caption == null || caption!.isEmpty ? null : Text(caption!),
       trailing: trailing ?? (selected ? const Icon(Icons.check, color: Tokens.primaryNavy) : null),
       onTap: onTap,

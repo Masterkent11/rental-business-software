@@ -116,7 +116,9 @@ class ViewingView {
   final String partnerNote;
 
   bool get isActive =>
-      status == ViewingStatus.requested || status == ViewingStatus.confirmed || status == ViewingStatus.rescheduleRequested;
+      status == ViewingStatus.requested ||
+      status == ViewingStatus.confirmed ||
+      status == ViewingStatus.rescheduleRequested;
 
   String get statusLabel => switch (status) {
         ViewingStatus.requested => 'Waiting for confirmation',

@@ -11,6 +11,7 @@ import '../../../design/osm_map.dart';
 import '../../../design/tokens.dart';
 import '../../../fixtures/view_models.dart';
 import '../../auth/auth_guard.dart';
+import '../widgets/listing_attributes.dart';
 
 enum SaleTab {
   overview('Overview'),
@@ -94,7 +95,9 @@ class _SaleListingViewState extends ConsumerState<SaleListingView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(card.title, style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
+                  Text(card.title,
+                      style: theme.textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
                   const SizedBox(height: 4),
                   Row(
                     children: [
@@ -111,7 +114,7 @@ class _SaleListingViewState extends ConsumerState<SaleListingView> {
                   const SizedBox(height: Tokens.s12),
                   const _PriceOnInquiry(),
                   const SizedBox(height: Tokens.s16),
-                  _PropertyAttributesRow(card: card),
+                  ListingAttributeStrip(card: card),
                 ],
               ),
             ),
@@ -132,7 +135,9 @@ class _SaleListingViewState extends ConsumerState<SaleListingView> {
                     detail: widget.detail,
                     openInquiry: openInquiry,
                     onScheduleViewing: _scheduleViewing,
-                    onOpenInquiry: openInquiry == null ? null : () => context.push(Routes.conversation(openInquiry.conversationId)),
+                    onOpenInquiry: openInquiry == null
+                        ? null
+                        : () => context.push(Routes.conversation(openInquiry.conversationId)),
                   ),
                 SaleTab.photos => _PhotosTab(photos: card.photos),
                 SaleTab.tour => _TourTab(card: card),
@@ -309,81 +314,6 @@ class _PriceOnInquiry extends StatelessWidget {
   }
 }
 
-class _PropertyAttributesRow extends StatelessWidget {
-  const _PropertyAttributesRow({required this.card});
-
-  final ListingCardView card;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: Tokens.s12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(Tokens.rSm),
-        border: Border.all(color: Tokens.hairline),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _AttributeCol(
-              icon: Icons.bed_outlined,
-              label: '${card.beds} Beds',
-            ),
-          ),
-          Container(width: 1, height: 32, color: Tokens.hairline),
-          Expanded(
-            child: _AttributeCol(
-              icon: Icons.bathtub_outlined,
-              label: '${card.baths} Baths',
-            ),
-          ),
-          Container(width: 1, height: 32, color: Tokens.hairline),
-          Expanded(
-            child: _AttributeCol(
-              icon: Icons.aspect_ratio,
-              label: '${card.sqm ?? card.lotAreaSqm ?? 0} sqm',
-            ),
-          ),
-          Container(width: 1, height: 32, color: Tokens.hairline),
-          Expanded(
-            child: _AttributeCol(
-              icon: Icons.directions_car_outlined,
-              label: '${card.parkingSlots > 0 ? card.parkingSlots : 1} Garage',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AttributeCol extends StatelessWidget {
-  const _AttributeCol({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 20, color: Tokens.primaryNavy),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w600,
-            color: Tokens.primaryNavy,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _TabsHeader extends SliverPersistentHeaderDelegate {
   _TabsHeader({required this.tabs, required this.selected, required this.onSelect});
 
@@ -435,7 +365,8 @@ class _TabsHeader extends SliverPersistentHeaderDelegate {
                               duration: Tokens.quick,
                               height: 2.5,
                               width: tab == selected ? 28 : 0,
-                              decoration: BoxDecoration(color: Tokens.primaryNavy, borderRadius: BorderRadius.circular(2)),
+                              decoration:
+                                  BoxDecoration(color: Tokens.primaryNavy, borderRadius: BorderRadius.circular(2)),
                             ),
                           ],
                         ),
@@ -690,7 +621,8 @@ class _PartnerCard extends StatelessWidget {
     final name = agent?.displayName ?? (ownerName.isEmpty ? 'Property owner' : ownerName);
     final subtitle = agent == null ? 'Owner' : (agent.headline.isEmpty ? 'Real estate agent' : agent.headline);
     final verified = agent?.verified ?? ownerVerified;
-    final initials = name.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).take(2).map((w) => w[0].toUpperCase()).join();
+    final initials =
+        name.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).take(2).map((w) => w[0].toUpperCase()).join();
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(Tokens.rMd),
@@ -719,7 +651,11 @@ class _PartnerCard extends StatelessWidget {
                     Row(
                       children: [
                         Flexible(
-                          child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5, color: Tokens.primaryNavy)),
+                          child: Text(name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w700, fontSize: 15.5, color: Tokens.primaryNavy)),
                         ),
                         if (verified) ...[
                           const SizedBox(width: 4),
@@ -728,7 +664,10 @@ class _PartnerCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12.5, color: Tokens.muted)),
+                    Text(subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12.5, color: Tokens.muted)),
                   ],
                 ),
               ),
@@ -749,13 +688,17 @@ class _PhotosTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (photos.isEmpty) {
-      return const _TabEmpty(icon: Icons.photo_library_outlined, title: 'No photos yet', message: 'The agent or owner has not added photos.');
+      return const _TabEmpty(
+          icon: Icons.photo_library_outlined,
+          title: 'No photos yet',
+          message: 'The agent or owner has not added photos.');
     }
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: photos.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 8, crossAxisSpacing: 8, childAspectRatio: 4 / 3),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2, mainAxisSpacing: 8, crossAxisSpacing: 8, childAspectRatio: 4 / 3),
       itemBuilder: (context, i) => GestureDetector(
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(fullscreenDialog: true, builder: (_) => _PhotoViewer(photos: photos, initial: i)),
@@ -786,7 +729,8 @@ class _PhotoViewer extends StatelessWidget {
         itemCount: photos.length,
         itemBuilder: (context, i) => InteractiveViewer(
           maxScale: 5,
-          child: Center(child: AppImage(url: photos[i], fallbackIcon: Icons.photo_outlined, seed: i, fit: BoxFit.contain)),
+          child:
+              Center(child: AppImage(url: photos[i], fallbackIcon: Icons.photo_outlined, seed: i, fit: BoxFit.contain)),
         ),
       ),
     );
@@ -801,7 +745,10 @@ class _TourTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!card.hasTour) {
-      return const _TabEmpty(icon: Icons.threed_rotation, title: 'No virtual tour yet', message: 'Ask the agent for a viewing, or check back later.');
+      return const _TabEmpty(
+          icon: Icons.threed_rotation,
+          title: 'No virtual tour yet',
+          message: 'Ask the agent for a viewing, or check back later.');
     }
     return GestureDetector(
       onTap: () => context.push(Routes.tour(card.id)),
@@ -821,11 +768,14 @@ class _TourTab extends StatelessWidget {
                     const Icon(Icons.threed_rotation, color: Colors.white, size: 44),
                     const SizedBox(height: Tokens.s8),
                     Text(
-                      card.sceneCount > 0 ? 'Walk through ${card.sceneCount} room${card.sceneCount == 1 ? '' : 's'}' : 'Walk through it',
+                      card.sceneCount > 0
+                          ? 'Walk through ${card.sceneCount} room${card.sceneCount == 1 ? '' : 's'}'
+                          : 'Walk through it',
                       style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 4),
-                    const Text('Drag to look around · tap doors to move', style: TextStyle(color: Colors.white70, fontSize: 12.5)),
+                    const Text('Drag to look around · tap doors to move',
+                        style: TextStyle(color: Colors.white70, fontSize: 12.5)),
                   ],
                 ),
               ),
@@ -845,7 +795,10 @@ class _FloorPlanTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (plans.isEmpty) {
-      return const _TabEmpty(icon: Icons.grid_view_outlined, title: 'No floor plan yet', message: 'Ask the agent to share the floor plan in your inquiry.');
+      return const _TabEmpty(
+          icon: Icons.grid_view_outlined,
+          title: 'No floor plan yet',
+          message: 'Ask the agent to share the floor plan in your inquiry.');
     }
     return Column(
       children: [
@@ -856,7 +809,8 @@ class _FloorPlanTab extends StatelessWidget {
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   fullscreenDialog: true,
-                  builder: (_) => _PhotoViewer(photos: [for (final p in plans) p.url], initial: i, title: 'Floor plans'),
+                  builder: (_) =>
+                      _PhotoViewer(photos: [for (final p in plans) p.url], initial: i, title: 'Floor plans'),
                 ),
               ),
               child: Container(
@@ -872,14 +826,17 @@ class _FloorPlanTab extends StatelessWidget {
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(Tokens.rMd)),
                       child: AspectRatio(
                         aspectRatio: 4 / 3,
-                        child: AppImage(url: plans[i].url, fallbackIcon: Icons.grid_view_outlined, seed: i, fit: BoxFit.contain),
+                        child: AppImage(
+                            url: plans[i].url, fallbackIcon: Icons.grid_view_outlined, seed: i, fit: BoxFit.contain),
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(Tokens.s12),
                       child: Row(
                         children: [
-                          Expanded(child: Text(plans[i].label, style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.primaryNavy))),
+                          Expanded(
+                              child: Text(plans[i].label,
+                                  style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.primaryNavy))),
                           const Icon(Icons.zoom_in, color: Tokens.muted, size: 20),
                         ],
                       ),
@@ -903,7 +860,10 @@ class _MapTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final location = card.location;
     if (location == null) {
-      return const _TabEmpty(icon: Icons.map_outlined, title: 'Location not shared yet', message: 'The agent can share directions when you schedule a viewing.');
+      return const _TabEmpty(
+          icon: Icons.map_outlined,
+          title: 'Location not shared yet',
+          message: 'The agent can share directions when you schedule a viewing.');
     }
     final approximate = location.precision == LocationPrecision.approximate;
     return Column(

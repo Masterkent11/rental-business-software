@@ -39,21 +39,21 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
             ),
           )
         : savedAsync.isLoading
-        ? const SliverFillRemaining(
-            hasScrollBody: false,
-            child: Center(child: CircularProgressIndicator()),
-          )
-        : _tab == 1
-        ? const SliverFillRemaining(
-            hasScrollBody: false,
-            child: _EmptySavedSearches(),
-          )
-        : saved.isEmpty
-        ? const SliverFillRemaining(
-            hasScrollBody: false,
-            child: _EmptySaved(),
-          )
-        : null;
+            ? const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(child: CircularProgressIndicator()),
+              )
+            : _tab == 1
+                ? const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _EmptySavedSearches(),
+                  )
+                : saved.isEmpty
+                    ? const SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: _EmptySaved(),
+                      )
+                    : null;
 
     return Scaffold(
       backgroundColor: Tokens.canvas,
@@ -156,8 +156,7 @@ class _SavedScreenState extends ConsumerState<SavedScreen> {
               ),
               sliver: SliverList.separated(
                 itemCount: saved.length,
-                separatorBuilder: (_, __) =>
-                    const SizedBox(height: Tokens.s16),
+                separatorBuilder: (_, __) => const SizedBox(height: Tokens.s16),
                 itemBuilder: (context, i) => Reveal(
                   order: i.clamp(0, 3),
                   child: _SavedListingCard(
@@ -183,9 +182,7 @@ class _CompareCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final cheapest = listings
-        .map((l) => l.moveInCost!.totalCentavos)
-        .reduce((a, b) => a < b ? a : b);
+    final cheapest = listings.map((l) => l.moveInCost!.totalCentavos).reduce((a, b) => a < b ? a : b);
 
     return Container(
       padding: const EdgeInsets.all(Tokens.s20),
@@ -226,9 +223,7 @@ class _CompareCard extends StatelessWidget {
                     Text(
                       Money.peso(listing.moveInCost!.totalCentavos),
                       style: theme.textTheme.titleMedium?.copyWith(
-                        color: listing.moveInCost!.totalCentavos == cheapest
-                            ? Tokens.accent
-                            : null,
+                        color: listing.moveInCost!.totalCentavos == cheapest ? Tokens.accent : null,
                       ),
                     ),
                     if (listing.moveInCost!.totalCentavos == cheapest)
@@ -493,4 +488,3 @@ class _SavedListingCard extends StatelessWidget {
     );
   }
 }
-

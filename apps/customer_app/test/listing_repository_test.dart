@@ -2,7 +2,8 @@ import 'dart:convert';
 
 import 'package:customer_app/data/api_client.dart';
 import 'package:customer_app/data/listing_repository.dart';
-import 'package:customer_app/features/discovery/discovery_controller.dart';
+import 'package:customer_app/features/explore/domain/explore_query.dart';
+import 'package:customer_app/features/explore/domain/listing_category.dart';
 import 'package:customer_app/fixtures/view_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -56,7 +57,7 @@ void main() {
       'limit': 20,
       'offset': 0,
     });
-    final results = await repo.search(const DiscoveryFilters());
+    final results = await repo.search(const ExploreQuery());
 
     expect(results.items, hasLength(1));
     expect(results.total, 1);
@@ -81,18 +82,18 @@ void main() {
       }, onRequest: (uri) => seen = uri);
 
       await repo.search(
-        const DiscoveryFilters(
-          query: 'Apas',
-          kind: ListingKind.shortTerm,
-          type: ResourceType.unit,
-          maxCentavos: 200000,
-          tourOnly: true,
+        const ExploreQuery(
+          text: 'Apas',
+          rentMode: RentMode.shortStay,
+          category: ListingCategory.apartment,
+          maxPriceCentavos: 200000,
+          quickFilters: {QuickFilter.virtualTour},
         ),
       );
 
       expect(seen!.queryParameters['q'], 'Apas');
       expect(seen!.queryParameters['kind'], 'SHORT_TERM');
-      expect(seen!.queryParameters['type'], 'UNIT');
+      expect(seen!.queryParameters['propertyType'], 'APARTMENT');
       expect(seen!.queryParameters['maxPrice'], '200000');
       expect(seen!.queryParameters['hasTour'], 'true');
     },
@@ -106,7 +107,7 @@ void main() {
       'offset': 0,
     }, onRequest: (uri) => seen = uri);
 
-    await repo.search(const DiscoveryFilters());
+    await repo.search(const ExploreQuery());
 
     expect(seen!.queryParameters.containsKey('q'), isFalse);
     expect(seen!.queryParameters.containsKey('kind'), isFalse);
@@ -133,9 +134,24 @@ void main() {
       'offset': 0,
     });
 
-    final card = (await repo.search(const DiscoveryFilters())).items.single;
+    final card = (await repo.search(const ExploreQuery())).items.single;
     expect(card.areaLabel, 'Brgy. Osmeña');
     expect(card.title, 'Malingin · Cebu');
+  });
+
+  test('maps furnishing and pet policy for rentals but not for sales', () {
+    final rental =
+        ListingRepository.toCard({..._item, 'intent': 'RENT', 'furnishing': 'SEMI_FURNISHED', 'petsAllowed': true});
+    expect(rental.furnishingLabel, 'Semi-furnished');
+    expect(rental.petsAllowed, isTrue);
+
+    final sale = ListingRepository.toCard({..._item, 'intent': 'SALE', 'furnishing': 'FURNISHED', 'petsAllowed': true});
+    expect(sale.furnishingLabel, 'Furnished');
+    expect(sale.petsAllowed, isNull);
+
+    final unknown = ListingRepository.toCard(_item);
+    expect(unknown.furnishingLabel, isNull);
+    expect(unknown.petsAllowed, isNull);
   });
 
   test('a 404 is absence, not an error to show the customer', () async {
@@ -148,7 +164,7 @@ void main() {
   test('a server error surfaces as a typed failure, not a crash', () async {
     final repo = repositoryReturning({'title': 'Boom'}, status: 500);
     expect(
-      () => repo.search(const DiscoveryFilters()),
+      () => repo.search(const ExploreQuery()),
       throwsA(isA<ApiException>()),
     );
   });
@@ -162,7 +178,7 @@ void main() {
       );
 
       await expectLater(
-        () => repo.search(const DiscoveryFilters()),
+        () => repo.search(const ExploreQuery()),
         throwsA(
           isA<ApiException>().having((e) => e.isNetwork, 'isNetwork', isTrue),
         ),

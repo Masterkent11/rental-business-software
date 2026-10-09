@@ -26,9 +26,9 @@ class Glass extends StatelessWidget {
     this.border = true,
     double size = Tokens.tap,
     super.key,
-  }) : padding = EdgeInsets.zero,
-       radius = size / 2,
-       _size = size;
+  })  : padding = EdgeInsets.zero,
+        radius = size / 2,
+        _size = size;
 
   final Widget child;
   final EdgeInsets padding;
@@ -56,9 +56,7 @@ class Glass extends StatelessWidget {
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(radius),
-            border: border
-                ? Border.all(color: Colors.white.withValues(alpha: 0.14), width: 0.5)
-                : null,
+            border: border ? Border.all(color: Colors.white.withValues(alpha: 0.14), width: 0.5) : null,
           ),
           child: child,
         ),
@@ -103,5 +101,92 @@ class PhotoScrim extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+abstract final class GlassStyle {
+  static const Color _rim = Color(0x1F17243D);
+
+  static const LinearGradient fill = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFFFFFFF), Color(0xFFF4F6FA), Color(0xFFE7EBF2)],
+    stops: [0, 0.55, 1],
+  );
+
+  static const LinearGradient sheen = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0x8CFFFFFF), Color(0x00FFFFFF)],
+    stops: [0, 0.48],
+  );
+
+  static const List<BoxShadow> shadow = [
+    BoxShadow(color: Color(0x1A17243D), blurRadius: 18, offset: Offset(0, 8)),
+    BoxShadow(color: Color(0x0A17243D), blurRadius: 3, offset: Offset(0, 1)),
+  ];
+
+  static BoxDecoration surface({double radius = Tokens.rControl, bool circle = false}) => BoxDecoration(
+        shape: circle ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius: circle ? null : BorderRadius.circular(radius),
+        gradient: fill,
+        border: Border.all(color: _rim, width: 0.8),
+        boxShadow: shadow,
+      );
+
+  static BoxDecoration highlight({double radius = Tokens.rControl, bool circle = false}) => BoxDecoration(
+        shape: circle ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius: circle ? null : BorderRadius.circular(radius),
+        gradient: sheen,
+      );
+}
+
+class LiquidGlass extends StatelessWidget {
+  const LiquidGlass({
+    required this.child,
+    this.width,
+    this.height,
+    this.padding = EdgeInsets.zero,
+    this.radius = Tokens.rControl,
+    this.blur = false,
+    super.key,
+  }) : circle = false;
+
+  const LiquidGlass.circle({
+    required this.child,
+    double size = Tokens.tap,
+    this.padding = EdgeInsets.zero,
+    this.blur = false,
+    super.key,
+  })  : width = size,
+        height = size,
+        radius = size / 2,
+        circle = true;
+
+  final Widget child;
+  final double? width;
+  final double? height;
+  final EdgeInsets padding;
+  final double radius;
+  final bool circle;
+  final bool blur;
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = Container(
+      width: width,
+      height: height,
+      padding: padding,
+      alignment: Alignment.center,
+      decoration: GlassStyle.surface(radius: radius, circle: circle),
+      foregroundDecoration: GlassStyle.highlight(radius: radius, circle: circle),
+      child: child,
+    );
+    if (!blur) return surface;
+    final clipped = BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: Tokens.blurSigma, sigmaY: Tokens.blurSigma),
+      child: surface,
+    );
+    return circle ? ClipOval(child: clipped) : ClipRRect(borderRadius: BorderRadius.circular(radius), child: clipped);
   }
 }

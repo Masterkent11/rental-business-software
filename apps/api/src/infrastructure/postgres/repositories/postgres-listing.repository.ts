@@ -16,6 +16,7 @@ import type {
   UpdateSaleListingInput,
 } from '@/application/ports/repositories/listing-repository.port.ts';
 import type {
+  Furnishing,
   Listing,
   ListingFloorPlan,
   ListingIntent,
@@ -30,7 +31,8 @@ import type {
 import { centavos } from '@/domain/shared/money.ts';
 import { boundingBox, roundDistanceKm, type LocationPrivacy } from '@/domain/shared/geo.ts';
 import type { OrganizationId } from '@/domain/shared/organization-scope.ts';
-import { sql, withScope, withUser } from '@/infrastructure/postgres/db.ts';
+import { escapeLike, sql, withScope, withUser } from '@/infrastructure/postgres/db.ts';
+
 
 interface MediaRow {
   id: string;
@@ -97,6 +99,8 @@ interface Row {
   floor_plans: MediaRow[] | null;
   representative: RepresentativeRow | null;
   tour_provider: string | null;
+  furnishing: string | null;
+  pets_allowed: boolean | null;
   distance_km?: number | null;
   total_count?: string;
 }
@@ -162,6 +166,8 @@ const toListing = (row: Row): Listing => {
     saleStatus: row.sale_status as SaleStatus | null,
     lotAreaSqm: row.lot_area_sqm,
     parkingSlots: row.parking_slots,
+    furnishing: row.furnishing as Furnishing | null,
+    petsAllowed: row.pets_allowed,
     location:
       row.latitude !== null && row.longitude !== null
         ? { latitude: row.latitude, longitude: row.longitude, privacy: row.location_privacy as LocationPrivacy }
@@ -196,7 +202,7 @@ const toListing = (row: Row): Listing => {
 const SELECT = sql`
   select
     l.id, l.organization_id, l.resource_id, l.intent, l.kind, l.title, l.description,
-    l.sale_status, l.lot_area_sqm, l.parking_slots,
+    l.sale_status, l.lot_area_sqm, l.parking_slots, l.furnishing, l.pets_allowed,
     p.latitude, p.longitude, p.location_privacy,
     case when p.latitude is null then null
          when p.location_privacy = 'EXACT' then p.latitude
@@ -371,7 +377,9 @@ async function upsertSaleTerms(
 export const postgresListingRepository = (): ListingRepository => ({
   async search(_scope, query: ListingQuery) {
     return withScope(null, async (tx) => {
-      const text = query.text ? `%${query.text}%` : null;
+      const text = query.text ? `%${escapeLike(query.text)}%` : null;
+      const area = query.area ? `%${escapeLike(query.area)}%` : null;
+      const amenity = query.amenity ? `%${escapeLike(query.amenity)}%` : null;
       const city = query.city ? query.city : null;
       const near = query.near ?? null;
       const box = near ? boundingBox(near, near.radiusKm) : null;
@@ -407,6 +415,12 @@ export const postgresListingRepository = (): ListingRepository => ({
             ${query.hasTour ? tx`and t.state = 'PUBLISHED'` : tx``}
             ${query.guests !== undefined ? tx`and l.intent = 'RENT' and l.max_occupants >= ${query.guests}` : tx``}
             ${query.bedrooms !== undefined ? tx`and l.bedrooms >= ${query.bedrooms}` : tx``}
+            ${query.bathrooms !== undefined ? tx`and l.bathrooms >= ${query.bathrooms}` : tx``}
+            ${query.minFloorAreaSqm !== undefined ? tx`and l.floor_area_sqm >= ${query.minFloorAreaSqm}` : tx``}
+            ${query.furnished ? tx`and l.furnishing in ('FURNISHED', 'SEMI_FURNISHED')` : tx``}
+            ${query.petsAllowed ? tx`and l.pets_allowed` : tx``}
+            ${area ? tx`and p.area_label ilike ${area}` : tx``}
+            ${amenity ? tx`and exists (select 1 from unnest(l.amenities) as amenity(label) where amenity.label ilike ${amenity})` : tx``}
             ${priceFiltered ? tx`and l.intent = 'RENT'` : tx``}
             ${
               query.minPriceCentavos !== undefined
@@ -536,13 +550,13 @@ export const postgresListingRepository = (): ListingRepository => ({
           organization_id, resource_id, kind, title, description, price_centavos,
           amenities, house_rules, terms, min_stay_nights, advance_months, deposit_months,
           max_occupants, bedrooms, bathrooms, floor_area_sqm, cleaning_fee_centavos,
-          available_from, state
+          available_from, furnishing, pets_allowed, state
         ) values (
           ${input.organizationId}, ${resource!.id}, ${l.kind}, ${l.title.trim()}, ${l.description.trim()},
           ${l.priceCentavos}, ${textArray(tx, l.amenities)}, ${textArray(tx, l.houseRules)},
           ${textArray(tx, l.terms)}, ${l.minStayNights}, ${l.advanceMonths}, ${l.depositMonths},
           ${l.maxOccupants}, ${l.bedrooms}, ${l.bathrooms}, ${l.floorAreaSqm}, ${l.cleaningFeeCentavos},
-          ${l.availableFrom}, 'DRAFT'
+          ${l.availableFrom}, ${l.furnishing ?? null}, ${l.petsAllowed ?? null}, 'DRAFT'
         )
         returning id
       `;
@@ -575,6 +589,8 @@ export const postgresListingRepository = (): ListingRepository => ({
           floor_area_sqm = ${l.floorAreaSqm !== undefined ? l.floorAreaSqm : tx`floor_area_sqm`},
           cleaning_fee_centavos = coalesce(${l.cleaningFeeCentavos ?? null}, cleaning_fee_centavos),
           available_from = ${l.availableFrom !== undefined ? l.availableFrom : tx`available_from`},
+          furnishing = ${l.furnishing !== undefined ? l.furnishing : tx`furnishing`},
+          pets_allowed = ${l.petsAllowed !== undefined ? l.petsAllowed : tx`pets_allowed`},
           updated_at = now()
         where id = ${input.listingId} and organization_id = ${input.organizationId}
       `;
@@ -796,12 +812,12 @@ export const postgresListingRepository = (): ListingRepository => ({
           organization_id, resource_id, intent, kind, title, description, price_centavos,
           amenities, house_rules, terms, min_stay_nights, advance_months, deposit_months,
           max_occupants, bedrooms, bathrooms, floor_area_sqm, cleaning_fee_centavos,
-          available_from, sale_status, lot_area_sqm, parking_slots, state
+          available_from, sale_status, lot_area_sqm, parking_slots, furnishing, state
         ) values (
           ${input.organizationId}, ${resource!.id}, 'SALE', null, ${l.title.trim()}, ${l.description.trim()}, 0,
           ${textArray(tx, l.amenities)}, ${textArray(tx, [])}, ${textArray(tx, [])}, null, 0, 0,
           1, ${l.bedrooms}, ${l.bathrooms}, ${l.floorAreaSqm}, 0,
-          ${l.availableFrom}, ${l.saleStatus}, ${l.lotAreaSqm}, ${l.parkingSlots}, 'DRAFT'
+          ${l.availableFrom}, ${l.saleStatus}, ${l.lotAreaSqm}, ${l.parkingSlots}, ${l.furnishing ?? null}, 'DRAFT'
         )
         returning id
       `;
@@ -830,6 +846,7 @@ export const postgresListingRepository = (): ListingRepository => ({
           lot_area_sqm = ${l.lotAreaSqm !== undefined ? l.lotAreaSqm : tx`lot_area_sqm`},
           parking_slots = coalesce(${l.parkingSlots ?? null}, parking_slots),
           available_from = ${l.availableFrom !== undefined ? l.availableFrom : tx`available_from`},
+          furnishing = ${l.furnishing !== undefined ? l.furnishing : tx`furnishing`},
           updated_at = now()
         where id = ${input.listingId} and organization_id = ${input.organizationId} and intent = 'SALE'
       `;

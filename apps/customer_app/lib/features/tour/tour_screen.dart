@@ -134,10 +134,7 @@ class _TourScreenState extends ConsumerState<TourScreen> {
                   },
                   onInfo: (note) => _showNote(context, note),
                 ),
-
-              if (source == null || !source.hasPixels)
-                _TourLoading(label: _walking ? scene.label : null),
-
+              if (source == null || !source.hasPixels) _TourLoading(label: _walking ? scene.label : null),
               Positioned(
                 top: 0,
                 left: 0,
@@ -148,17 +145,13 @@ class _TourScreenState extends ConsumerState<TourScreen> {
                     title: '360° Virtual Tour',
                     onClose: () => Navigator.of(context).maybePop(),
                     currentRoom: scene.label,
-                    counter: tour.scenes.isEmpty
-                        ? null
-                        : '${tour.scenes.indexOf(scene) + 1}/${tour.scenes.length}',
+                    counter: tour.scenes.isEmpty ? null : '${tour.scenes.indexOf(scene) + 1}/${tour.scenes.length}',
                     onRoomTap: () => _showScenePicker(context, tour, scene),
                     isFullscreen: _fullscreen,
-                    onFullscreenToggle: () =>
-                        setState(() => _fullscreen = !_fullscreen),
+                    onFullscreenToggle: () => setState(() => _fullscreen = !_fullscreen),
                   ),
                 ),
               ),
-
               Positioned(
                 right: Tokens.gutter,
                 bottom: _fullscreen || tour.scenes.length <= 1 ? Tokens.s24 : 110,
@@ -171,7 +164,6 @@ class _TourScreenState extends ConsumerState<TourScreen> {
                   ),
                 ),
               ),
-
               if (!_fullscreen)
                 Positioned(
                   left: 0,
@@ -288,8 +280,7 @@ class _TourScreenState extends ConsumerState<TourScreen> {
                   scrollDirection: Axis.horizontal,
                   physics: Tokens.scroll,
                   itemCount: tour.scenes.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(width: Tokens.s12),
+                  separatorBuilder: (_, __) => const SizedBox(width: Tokens.s12),
                   itemBuilder: (context, i) => _SceneThumb(
                     scene: tour.scenes[i],
                     selected: tour.scenes[i].id == current.id,
@@ -343,9 +334,7 @@ class _PanoramaLayer extends StatelessWidget {
               onCameraChanged: onCamera,
               onInteractionStart: onInteraction,
             ),
-
             const IgnorePointer(child: PhotoScrim(top: 0.42, bottom: 0.5)),
-
             for (final hotspot in scene.hotspots) _positioned(hotspot, size),
           ],
         );
@@ -393,8 +382,7 @@ class _Hotspot extends StatefulWidget {
   State<_Hotspot> createState() => _HotspotState();
 }
 
-class _HotspotState extends State<_Hotspot>
-    with SingleTickerProviderStateMixin {
+class _HotspotState extends State<_Hotspot> with SingleTickerProviderStateMixin {
   late final AnimationController _pulse;
 
   @override
@@ -682,8 +670,6 @@ class _RoomChip extends StatelessWidget {
   }
 }
 
-
-
 class _SceneThumb extends StatelessWidget {
   const _SceneThumb({
     required this.scene,
@@ -711,9 +697,7 @@ class _SceneThumb extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(Tokens.rSm),
                 border: Border.all(
-                  color: selected
-                      ? theme.colorScheme.primary
-                      : Colors.transparent,
+                  color: selected ? theme.colorScheme.primary : Colors.transparent,
                   width: 2,
                 ),
               ),
@@ -731,9 +715,7 @@ class _SceneThumb extends StatelessWidget {
               scene.label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: selected
-                  ? theme.textTheme.labelMedium
-                  : theme.textTheme.bodySmall,
+              style: selected ? theme.textTheme.labelMedium : theme.textTheme.bodySmall,
             ),
           ],
         ),
@@ -749,8 +731,7 @@ class _DragHint extends StatefulWidget {
   State<_DragHint> createState() => _DragHintState();
 }
 
-class _DragHintState extends State<_DragHint>
-    with SingleTickerProviderStateMixin {
+class _DragHintState extends State<_DragHint> with SingleTickerProviderStateMixin {
   late final AnimationController _c;
 
   @override
@@ -829,8 +810,7 @@ class _TourLoading extends StatelessWidget {
               const SizedBox(height: Tokens.s16),
               Text(
                 label!,
-                style: Theme.of(context).textTheme.titleMedium
-                    ?.copyWith(color: Colors.white),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
               ),
             ],
           ],
@@ -858,8 +838,7 @@ class _TourUnavailable extends StatelessWidget {
           child: Text(
             'The tour could not be loaded. Check your connection and try again.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium
-                ?.copyWith(color: Colors.white70),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
           ),
         ),
       ),
@@ -896,8 +875,8 @@ class _NoTour extends StatelessWidget {
                 'The photos are all this owner has published so far.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
               ),
             ],
           ),

@@ -106,8 +106,7 @@ class ConversationView {
         isSale: json['listingIntent'] == 'SALE',
         bookingId: json['bookingId'] as String?,
         bookingStartsOn: json['bookingStartsOn'] as String?,
-        lastMessageAt:
-            json['lastMessageAt'] == null ? null : DateTime.parse(json['lastMessageAt'] as String),
+        lastMessageAt: json['lastMessageAt'] == null ? null : DateTime.parse(json['lastMessageAt'] as String),
         lastMessagePreview: json['lastMessagePreview'] as String? ?? '',
         lastSenderRole: json['lastSenderRole'] == null ? null : senderRoleFrom(json['lastSenderRole']),
         unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
@@ -305,10 +304,7 @@ class InboxController extends AsyncNotifier<InboxState> {
     final userId = ref.watch(currentUserIdProvider);
     if (userId == null) return const InboxState(conversations: [], unreadTotal: 0);
     _subscription?.cancel();
-    _subscription = ref
-        .watch(realtimeGatewayProvider)
-        .conversationChangesFor(userId)
-        .listen((_) => refreshQuietly());
+    _subscription = ref.watch(realtimeGatewayProvider).conversationChangesFor(userId).listen((_) => refreshQuietly());
     ref.onDispose(() => _subscription?.cancel());
     final result = await ref.watch(messagingRepositoryProvider).mine();
     return InboxState(conversations: result.conversations, unreadTotal: result.unreadTotal);
@@ -396,9 +392,7 @@ class ThreadController extends AutoDisposeFamilyAsyncNotifier<ThreadState, Strin
     if (current == null || !current.hasMore || current.loadingOlder || current.messages.isEmpty) return;
     state = AsyncData(current.copyWith(loadingOlder: true));
     try {
-      final page = await ref
-          .read(messagingRepositoryProvider)
-          .thread(arg, before: current.messages.first.createdAt);
+      final page = await ref.read(messagingRepositoryProvider).thread(arg, before: current.messages.first.createdAt);
       state = AsyncData(current.copyWith(
         messages: mergeMessages(current.messages, page.messages),
         hasMore: page.hasMore,

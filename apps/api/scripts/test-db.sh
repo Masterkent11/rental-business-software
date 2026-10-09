@@ -28,6 +28,7 @@ case "${1:-up}" in
     psql -q -v ON_ERROR_STOP=1 -h 127.0.0.1 -p "$PORT" -U postgres -d "$DB" -f "$ROOT/supabase/seed-tours.sql" >/dev/null
     if [ "${WITH_DEMO:-0}" = "1" ]; then
       psql -q -v ON_ERROR_STOP=1 -h 127.0.0.1 -p "$PORT" -U postgres -d "$DB" -f "$ROOT/supabase/demo/seed-demo.sql" >/dev/null
+      psql -q -v ON_ERROR_STOP=1 -h 127.0.0.1 -p "$PORT" -U postgres -d "$DB" -f "$ROOT/supabase/demo/seed-discovery.sql" >/dev/null
     fi
     echo "DATABASE_URL=postgresql://rental_app:rental_app@127.0.0.1:$PORT/$DB"
     echo "TEST_ADMIN_DATABASE_URL=postgresql://postgres@127.0.0.1:$PORT/$DB"

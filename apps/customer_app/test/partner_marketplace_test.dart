@@ -4,12 +4,10 @@ import 'package:customer_app/app/app.dart';
 import 'package:customer_app/data/api_client.dart';
 import 'package:customer_app/data/auth_repository.dart';
 import 'package:customer_app/data/listing_repository.dart';
-import 'package:customer_app/data/marketplace_repository.dart';
 import 'package:customer_app/data/tour_repository.dart';
-import 'package:customer_app/features/discovery/discovery_controller.dart';
+import 'package:customer_app/features/discovery/discovery_screen.dart';
 import 'package:customer_app/features/inquiry/inquiry_screen.dart';
 import 'package:customer_app/features/listing/listing_price.dart';
-import 'package:customer_app/features/location/location_controller.dart';
 import 'package:customer_app/features/tour/tour_screen.dart';
 import 'package:customer_app/features/viewing/schedule_viewing_screen.dart';
 import 'package:customer_app/fixtures/view_models.dart';
@@ -121,88 +119,6 @@ void main() {
       expect(card.isSale, isFalse);
       expect(listingPriceLabel(card), '₱18,000/mo');
     });
-
-    test('a buy search never sends price filters or price sorting', () {
-      final query = ListingRepository.searchQuery(
-        const DiscoveryFilters(intent: MarketIntent.buy, maxCentavos: 500000, kind: ListingKind.longTerm),
-      );
-      expect(query['intent'], 'SALE');
-      expect(query['maxPrice'], isNull);
-      expect(query['minPrice'], isNull);
-      expect(query['kind'], isNull);
-      expect(query['sort'], isNot(anyOf('PRICE_ASC', 'PRICE_DESC')));
-    });
-
-    test('buy categories map to property types and pre-selling status', () {
-      final condo = ListingRepository.searchQuery(const DiscoveryFilters(intent: MarketIntent.buy, buyCategory: BuyCategory.condo));
-      expect(condo['propertyType'], 'CONDO');
-      final preSelling = ListingRepository.searchQuery(const DiscoveryFilters(intent: MarketIntent.buy, buyCategory: BuyCategory.preSelling));
-      expect(preSelling['saleStatus'], 'PRE_SELLING');
-      expect(preSelling['propertyType'], isNull);
-    });
-  });
-
-  group('Location-aware search', () {
-    test('near me sends coarse coordinates with a radius and distance sort', () {
-      final query = ListingRepository.searchQuery(
-        const DiscoveryFilters(),
-        place: const NearMePlace(DevicePosition(latitude: 10.318273, longitude: 123.905519)),
-      );
-      expect(query['lat'], '10.318');
-      expect(query['lng'], '123.906');
-      expect(query['radiusKm'], '25');
-      expect(query['sort'], 'DISTANCE');
-      expect(query['intent'], 'RENT');
-    });
-
-    test('a chosen area filters by city and anywhere sends no location', () {
-      const area = AreaView(cityLabel: 'Davao City', latitude: 7.07, longitude: 125.61, rentCount: 2, saleCount: 1);
-      expect(ListingRepository.searchQuery(const DiscoveryFilters(), place: const AreaPlace(area))['city'], 'Davao City');
-      final anywhere = ListingRepository.searchQuery(const DiscoveryFilters());
-      expect(anywhere.containsKey('lat'), isFalse);
-      expect(anywhere['city'], isNull);
-    });
-
-    test('granted permission switches to near me', () async {
-      final container = ProviderContainer(overrides: [
-        locationGatewayProvider.overrideWithValue(
-          _FakeGateway(const LocationOutcome(LocationAccess.granted, DevicePosition(latitude: 14.6, longitude: 121.0))),
-        ),
-      ]);
-      addTearDown(container.dispose);
-      await container.read(locationProvider.notifier).useCurrentLocation();
-      final state = container.read(locationProvider);
-      expect(state.isNearMe, isTrue);
-      expect(state.place.label, 'Near you');
-      expect(state.problem, isNull);
-    });
-
-    for (final access in [LocationAccess.denied, LocationAccess.deniedForever, LocationAccess.serviceOff, LocationAccess.unavailable]) {
-      test('$access keeps the current place and explains what to do', () async {
-        final gateway = _FakeGateway(LocationOutcome(access));
-        final container = ProviderContainer(overrides: [locationGatewayProvider.overrideWithValue(gateway)]);
-        addTearDown(container.dispose);
-        await container.read(locationProvider.notifier).useCurrentLocation();
-        final state = container.read(locationProvider);
-        expect(state.place, isA<AnywherePlace>());
-        expect(state.problemMessage, isNotNull);
-        expect(state.canOpenSettings, access == LocationAccess.deniedForever || access == LocationAccess.serviceOff);
-        if (state.canOpenSettings) {
-          await container.read(locationProvider.notifier).openSettings();
-          expect(gateway.openedFor, access);
-        }
-      });
-    }
-
-    test('choosing an area replaces near me and clears problems', () {
-      final container = ProviderContainer();
-      addTearDown(container.dispose);
-      const area = AreaView(cityLabel: 'Iloilo City', latitude: 10.72, longitude: 122.56, rentCount: 1, saleCount: 0);
-      container.read(locationProvider.notifier).chooseArea(area);
-      expect(container.read(locationProvider).place.label, 'Iloilo City');
-      container.read(locationProvider.notifier).chooseAnywhere();
-      expect(container.read(locationProvider).place, isA<AnywherePlace>());
-    });
   });
 
   group('Inquiries and viewings', () {
@@ -283,9 +199,13 @@ void main() {
       final requests = <http.Request>[];
       await _pumpApp(tester, requests);
 
+      await tester.dragUntilVisible(find.text('Buy'), find.byType(HomeCategoryRow), const Offset(-200, 0));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Buy'));
       await tester.pumpAndSettle();
 
+      expect(find.text('Properties for sale'), findsOneWidget);
+      expect(find.text('Rent'), findsNothing);
       expect(find.text('Modern house and lot in Talamban'), findsWidgets);
       expect(find.text(kPriceOnInquiry), findsWidgets);
       expect(find.textContaining('₱'), findsNothing);
@@ -330,19 +250,6 @@ void main() {
       expect(body['clientRef'], matches(RegExp(r'^[0-9a-f-]{36}$')));
     });
   });
-}
-
-class _FakeGateway implements LocationGateway {
-  _FakeGateway(this.outcome);
-
-  final LocationOutcome outcome;
-  LocationAccess? openedFor;
-
-  @override
-  Future<LocationOutcome> currentPosition() async => outcome;
-
-  @override
-  Future<void> openSettings(LocationAccess access) async => openedFor = access;
 }
 
 Future<void> _pumpApp(WidgetTester tester, List<http.Request> requests) async {

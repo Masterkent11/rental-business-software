@@ -39,7 +39,7 @@ class OsmMap extends StatelessWidget {
   final double height;
 
   static const double _tile = 256;
-  static const Map<String, String> _headers = {'User-Agent': 'RentalPlatformCustomerApp/0.1'};
+  static const Map<String, String> _headers = {'User-Agent': 'WestayplaceCustomerApp/0.1'};
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +106,8 @@ class OsmMap extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                     color: Colors.white.withValues(alpha: 0.8),
-                    child: const Text('© OpenStreetMap contributors', style: TextStyle(fontSize: 9.5, color: Colors.black87)),
+                    child: const Text('© OpenStreetMap contributors',
+                        style: TextStyle(fontSize: 9.5, color: Colors.black87)),
                   ),
                 ),
               ],

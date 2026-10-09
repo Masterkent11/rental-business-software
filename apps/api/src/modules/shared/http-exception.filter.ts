@@ -107,6 +107,11 @@ import {
   TourNotFoundError as DomainTourNotFoundError,
 } from '@/domain/tours/tour.ts';
 import { InvalidLocationError } from '@/domain/shared/geo.ts';
+import {
+  ContentNotFoundError,
+  InvalidSupportRequestError,
+  OutdatedPolicyVersionError,
+} from '@/domain/content/content.ts';
 
 type Rule = readonly [
   readonly (abstract new (...args: never[]) => Error)[],
@@ -136,6 +141,7 @@ const RULES: readonly Rule[] = [
       InquiryNotFoundError,
       ViewingNotFoundError,
       DomainTourNotFoundError,
+      ContentNotFoundError,
     ],
     HttpStatus.NOT_FOUND,
     'NOT_FOUND',
@@ -143,6 +149,7 @@ const RULES: readonly Rule[] = [
   ],
   [[OccupancyConflictError, BlockConflictError], HttpStatus.CONFLICT, 'DATES_UNAVAILABLE', null],
   [[ViewingSlotTakenError], HttpStatus.CONFLICT, 'SLOT_TAKEN', null],
+  [[OutdatedPolicyVersionError], HttpStatus.CONFLICT, 'POLICY_OUTDATED', null],
   [[ViewingAlreadyRequestedError], HttpStatus.CONFLICT, 'ALREADY_REQUESTED', null],
   [[ListingAlreadyRepresentedError], HttpStatus.CONFLICT, 'ALREADY_REPRESENTED', null],
   [[RepresentationForbiddenError], HttpStatus.FORBIDDEN, 'FORBIDDEN', null],
@@ -198,6 +205,7 @@ const RULES: readonly Rule[] = [
       InvalidTourProviderError,
       InvalidSceneViewError,
       InvalidLocationError,
+      InvalidSupportRequestError,
     ],
     HttpStatus.BAD_REQUEST,
     'INVALID_REQUEST',

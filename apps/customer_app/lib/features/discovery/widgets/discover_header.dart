@@ -7,6 +7,7 @@ import '../../../app/router.dart';
 import '../../../data/auth_repository.dart';
 import '../../../data/notification_repository.dart';
 import '../../../design/tokens.dart';
+import '../../../design/typography.dart';
 import '../../location/location_controller.dart';
 import '../../location/location_sheet.dart';
 
@@ -19,49 +20,55 @@ class DiscoverHeader extends ConsumerWidget {
     final location = locationState.locating ? 'Locating…' : locationState.place.label;
     final signedIn = ref.watch(isSignedInProvider);
     final hasUnreadNotifications = signedIn && ref.watch(unreadNotificationsProvider) > 0;
+    final city = locationState.cityContext;
+    final supporting = city == null ? 'Homes, condos and more to rent or buy.' : 'Homes, condos and more in $city.';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                HapticFeedback.selectionClick();
-                showLocationSheet(context);
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    locationState.isNearMe ? Icons.near_me_outlined : Icons.location_on_outlined,
-                    size: 19,
-                    color: Tokens.primaryNavy,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    location,
-                    style: const TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w700,
-                      color: Tokens.primaryNavy,
-                      letterSpacing: -0.2,
+            Expanded(
+              child: Semantics(
+                button: true,
+                label: 'Location: $location. Change location',
+                excludeSemantics: true,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    showLocationSheet(context);
+                  },
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: Tokens.tap),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          locationState.isNearMe ? Icons.near_me_outlined : Icons.location_on_outlined,
+                          size: Tokens.controlIcon,
+                          color: Tokens.primaryNavy,
+                        ),
+                        const SizedBox(width: Tokens.s4),
+                        Flexible(
+                          child: Text(
+                            location,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppText.cardTitle.copyWith(fontSize: 15),
+                          ),
+                        ),
+                        const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Tokens.primaryNavy),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 2),
-                  const Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    size: 18,
-                    color: Tokens.primaryNavy,
-                  ),
-                ],
+                ),
               ),
             ),
             Semantics(
               button: true,
-              label: 'Notifications',
+              label: hasUnreadNotifications ? 'Notifications, unread' : 'Notifications',
+              excludeSemantics: true,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () {
@@ -69,27 +76,20 @@ class DiscoverHeader extends ConsumerWidget {
                   context.push(Routes.notifications);
                 },
                 child: SizedBox(
-                  width: 32,
-                  height: 32,
+                  width: Tokens.tap,
+                  height: Tokens.tap,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      const Icon(
-                        Icons.notifications_none_rounded,
-                        size: 23,
-                        color: Tokens.primaryNavy,
-                      ),
+                      const Icon(Icons.notifications_none_rounded, size: Tokens.navIcon, color: Tokens.primaryNavy),
                       if (hasUnreadNotifications)
                         Positioned(
-                          top: 4,
-                          right: 4,
+                          top: 10,
+                          right: 10,
                           child: Container(
-                            width: 7,
-                            height: 7,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFEF4444),
-                              shape: BoxShape.circle,
-                            ),
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(color: Tokens.taken, shape: BoxShape.circle),
                           ),
                         ),
                     ],
@@ -99,27 +99,10 @@ class DiscoverHeader extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 14),
-        const Text(
-          'Find your next place',
-          style: TextStyle(
-            fontSize: 27,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.7,
-            color: Tokens.primaryNavy,
-            height: 1.15,
-          ),
-        ),
-        const SizedBox(height: 4),
-        const Text(
-          'Homes, stays and properties near you.',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w400,
-            color: Tokens.muted,
-            height: 1.3,
-          ),
-        ),
+        const SizedBox(height: Tokens.s12),
+        const Text('Find your\nnext place', style: AppText.hero),
+        const SizedBox(height: Tokens.s6),
+        Text(supporting, style: AppText.supporting),
       ],
     );
   }

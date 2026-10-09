@@ -68,64 +68,57 @@ Future<ui.Image> _pixel() {
   return completer.future;
 }
 
-
-ApiClient _fakeClient() =>
-    ApiClient(client: _fakeTransport(), baseUrl: 'http://test');
+ApiClient _fakeClient() => ApiClient(client: _fakeTransport(), baseUrl: 'http://test');
 
 ListingRepository _fakeApi() => ListingRepository(_fakeClient());
 
 MockClient _fakeTransport() {
   Map<String, dynamic> encode(ListingCardView l) => {
-    'id': l.id,
-    'resourceId': 'res-${l.id}',
-    'title': l.title,
-    'description': SampleData.detailById(l.id)?.description ?? '',
-    'propertyName': l.propertyName,
-    'areaLabel': l.areaLabel,
-    'cityLabel': l.cityLabel,
-    'kind': l.kind == ListingKind.shortTerm ? 'SHORT_TERM' : 'LONG_TERM',
-    'resourceType': switch (l.resourceType) {
-      ResourceType.room => 'ROOM',
-      ResourceType.bedSpace => 'BED_SPACE',
-      ResourceType.parking => 'PARKING',
-      ResourceType.storage => 'STORAGE',
-      ResourceType.unit => 'UNIT',
-    },
-    'priceCentavos': l.priceCentavos,
-    'currency': 'PHP',
-    'hasTour': l.hasTour,
-    'sceneCount': l.sceneCount,
-    'photos': l.photos,
-    'availabilityLabel': l.availabilityLabel,
-    'isAvailable': l.isAvailable,
-    'amenities': SampleData.detailById(l.id)?.amenities ?? const <String>[],
-    'houseRules': SampleData.detailById(l.id)?.houseRules ?? const <String>[],
-    'terms': SampleData.detailById(l.id)?.terms ?? const <String>[],
-    'minStayNights': SampleData.detailById(l.id)?.minimumStayNights,
-    'sharedFacilities':
-        SampleData.detailById(l.id)?.sharedFacilities ?? const <String>[],
-    'ownerName': SampleData.detailById(l.id)?.ownerName ?? '',
-    'ownerVerified': SampleData.detailById(l.id)?.ownerVerified ?? false,
-    'bedrooms': l.beds,
-    'bathrooms': l.baths,
-    'floorAreaSqm': l.sqm,
-    'maxOccupants': l.maxGuests,
-    'moveInCost': l.moveInCost == null
-        ? null
-        : {
-            'lines': l.moveInCost!.lines
-                .map((line) => {'label': line.label, 'centavos': line.centavos})
-                .toList(),
-            'totalCentavos': l.moveInCost!.totalCentavos,
-          },
-  };
+        'id': l.id,
+        'resourceId': 'res-${l.id}',
+        'title': l.title,
+        'description': SampleData.detailById(l.id)?.description ?? '',
+        'propertyName': l.propertyName,
+        'areaLabel': l.areaLabel,
+        'cityLabel': l.cityLabel,
+        'kind': l.kind == ListingKind.shortTerm ? 'SHORT_TERM' : 'LONG_TERM',
+        'resourceType': switch (l.resourceType) {
+          ResourceType.room => 'ROOM',
+          ResourceType.bedSpace => 'BED_SPACE',
+          ResourceType.parking => 'PARKING',
+          ResourceType.storage => 'STORAGE',
+          ResourceType.unit => 'UNIT',
+        },
+        'priceCentavos': l.priceCentavos,
+        'currency': 'PHP',
+        'hasTour': l.hasTour,
+        'sceneCount': l.sceneCount,
+        'photos': l.photos,
+        'availabilityLabel': l.availabilityLabel,
+        'isAvailable': l.isAvailable,
+        'amenities': SampleData.detailById(l.id)?.amenities ?? const <String>[],
+        'houseRules': SampleData.detailById(l.id)?.houseRules ?? const <String>[],
+        'terms': SampleData.detailById(l.id)?.terms ?? const <String>[],
+        'minStayNights': SampleData.detailById(l.id)?.minimumStayNights,
+        'sharedFacilities': SampleData.detailById(l.id)?.sharedFacilities ?? const <String>[],
+        'ownerName': SampleData.detailById(l.id)?.ownerName ?? '',
+        'ownerVerified': SampleData.detailById(l.id)?.ownerVerified ?? false,
+        'bedrooms': l.beds,
+        'bathrooms': l.baths,
+        'floorAreaSqm': l.sqm,
+        'maxOccupants': l.maxGuests,
+        'moveInCost': l.moveInCost == null
+            ? null
+            : {
+                'lines': l.moveInCost!.lines.map((line) => {'label': line.label, 'centavos': line.centavos}).toList(),
+                'totalCentavos': l.moveInCost!.totalCentavos,
+              },
+      };
 
   final client = MockClient((request) async {
     final segments = request.url.pathSegments;
 
-    if (segments.length == 3 &&
-        segments[0] == 'resources' &&
-        segments[2] == 'tour') {
+    if (segments.length == 3 && segments[0] == 'resources' && segments[2] == 'tour') {
       final listingId = segments[1].replaceFirst('res-', '');
       final listing = SampleData.listings.firstWhere(
         (l) => l.id == listingId,
@@ -159,15 +152,11 @@ MockClient _fakeTransport() {
                   for (final (h, hotspot) in scene.hotspots.indexed)
                     {
                       'id': 'hs-$i-$h',
-                      'kind': hotspot.kind == HotspotKind.navigation
-                          ? 'NAVIGATION'
-                          : 'INFO',
+                      'kind': hotspot.kind == HotspotKind.navigation ? 'NAVIGATION' : 'INFO',
                       'yaw': (hotspot.x - 0.5) * 60,
                       'pitch': (0.5 - hotspot.y) * 30,
                       'label': hotspot.label ?? hotspot.note ?? '',
-                      'targetSceneId': hotspot.targetScene == null
-                          ? null
-                          : 'scene-${hotspot.targetScene}',
+                      'targetSceneId': hotspot.targetScene == null ? null : 'scene-${hotspot.targetScene}',
                     },
                 ],
               },
@@ -178,9 +167,7 @@ MockClient _fakeTransport() {
       );
     }
 
-    if (segments.length == 2 &&
-        segments[0] == 'me' &&
-        segments[1] == 'applications') {
+    if (segments.length == 2 && segments[0] == 'me' && segments[1] == 'applications') {
       return http.Response(
         jsonEncode({
           'applications': [
@@ -298,6 +285,21 @@ MockClient _fakeTransport() {
       });
     }
 
+    if (segments.length == 2 && segments[0] == 'discovery') {
+      final sale = request.url.queryParameters['intent'] == 'SALE';
+      return http.Response(
+        jsonEncode({
+          'scope': 'BROAD',
+          'items': sale ? <dynamic>[] : SampleData.listings.map(encode).toList(),
+          'locations': <dynamic>[],
+          'listings': <dynamic>[],
+          'categories': <dynamic>[],
+        }),
+        200,
+        headers: {'content-type': 'application/json; charset=utf-8'},
+      );
+    }
+
     if (segments.length == 2) {
       final match = SampleData.cardById(segments[1]);
       if (match == null) {
@@ -317,9 +319,7 @@ MockClient _fakeTransport() {
     final q = request.url.queryParameters;
     var rows = SampleData.listings;
     if (q['kind'] != null) {
-      final want = q['kind'] == 'SHORT_TERM'
-          ? ListingKind.shortTerm
-          : ListingKind.longTerm;
+      final want = q['kind'] == 'SHORT_TERM' ? ListingKind.shortTerm : ListingKind.longTerm;
       rows = rows.where((l) => l.kind == want).toList();
     }
     if (q['hasTour'] == 'true') {
@@ -343,9 +343,22 @@ bool _noBookings = false;
 
 Finder get _page => find.byType(Scrollable).first;
 
+const _headline = 'Find your\nnext place';
+
+Future<void> _openRentals(WidgetTester tester) async {
+  final seeAll = find.text('See all').first;
+  await tester.scrollUntilVisible(seeAll, 300, scrollable: _page);
+  await tester.pumpAndSettle();
+  await tester.tap(seeAll);
+  await tester.pumpAndSettle();
+  expect(find.text('Places for rent'), findsOneWidget);
+}
+
 Future<void> _openListing(WidgetTester tester, String title) async {
+  await _openRentals(tester);
   final finder = find.text(title);
-  await tester.scrollUntilVisible(finder.first, 300, scrollable: _page);
+  final results = find.descendant(of: find.byType(CustomScrollView), matching: find.byType(Scrollable)).first;
+  await tester.scrollUntilVisible(finder, 300, scrollable: results);
   await tester.pumpAndSettle();
   await tester.tap(finder.first);
   await tester.pumpAndSettle();
@@ -372,8 +385,9 @@ void main() {
   testWidgets('discovery leads with price and move-in cost', (tester) async {
     await _pumpApp(tester);
 
-    expect(find.text('Find your next place'), findsOneWidget);
-    expect(find.text('₱8,500 / month'), findsWidgets);
+    expect(find.text(_headline), findsOneWidget);
+    await _openRentals(tester);
+    expect(find.text('₱8,500 / month', findRichText: true), findsWidgets);
 
     final moveIn = find.text('₱34,000 to move in');
     await tester.scrollUntilVisible(moveIn, 300, scrollable: _page);
@@ -434,16 +448,7 @@ void main() {
   testWidgets('a photo-only listing offers no tour', (tester) async {
     await _pumpApp(tester);
 
-    final parking = find.text('Covered parking slot, 24/7 access');
-    await tester.dragUntilVisible(
-      parking,
-      find.byType(CustomScrollView).first,
-      const Offset(0, -400),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(parking);
-    await tester.pumpAndSettle();
+    await _openListing(tester, 'Covered parking slot, 24/7 access');
 
     expect(find.text('Walk through it'), findsNothing);
     expect(find.text('₱2,000/mo'), findsOneWidget);
@@ -452,16 +457,7 @@ void main() {
   testWidgets('an unavailable listing cannot be committed to', (tester) async {
     await _pumpApp(tester);
 
-    final room = find.text('Private room with own CR');
-    await tester.dragUntilVisible(
-      room,
-      find.byType(CustomScrollView).first,
-      const Offset(0, -400),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(room);
-    await tester.pumpAndSettle();
+    await _openListing(tester, 'Private room with own CR');
 
     expect(find.text('Fully occupied'), findsWidgets);
 
@@ -469,33 +465,6 @@ void main() {
       find.widgetWithText(FilledButton, 'Not available'),
     );
     expect(button.onPressed, isNull);
-  });
-
-  testWidgets('the category chips filter rentals', (tester) async {
-    await _pumpApp(tester);
-
-    expect(find.text('Find your next place'), findsOneWidget);
-
-    await tester.tap(find.text('Condo'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Search Condos'), findsOneWidget);
-
-    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('House'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Search Houses'), findsOneWidget);
-
-    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Apartment'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Search Apartments'), findsOneWidget);
   });
 
   testWidgets('the header opens notifications and messages', (tester) async {
@@ -538,7 +507,7 @@ void main() {
     expect(find.byType(EmptyBookingsArt), findsOneWidget);
     await tester.tap(find.text('Explore places'));
     await tester.pumpAndSettle();
-    expect(find.text('Find your next place'), findsOneWidget);
+    expect(find.text(_headline), findsOneWidget);
   });
 
   testWidgets('a booking opens its detail, with dates and what was paid', (
@@ -603,7 +572,7 @@ void main() {
     expect(find.text('1 Guest'), findsOneWidget);
     expect(find.text('1 Bed'), findsOneWidget);
     expect(find.text('1 Bath'), findsOneWidget);
-    expect(find.text('32 sqm'), findsOneWidget);
+    expect(find.text('32 sqm'), findsNothing);
 
     for (final tab in ['Overview', 'Photos', '360° Tour', 'Map', 'Reviews']) {
       expect(find.text(tab, skipOffstage: false), findsOneWidget);

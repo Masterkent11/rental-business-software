@@ -36,14 +36,11 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
     setState(() => _submitting = true);
 
     try {
-      await ref
-          .read(applicationRepositoryProvider)
-          .submit(
+      await ref.read(applicationRepositoryProvider).submit(
             resourceId: card.resourceId,
             desiredMoveIn: _moveIn,
             desiredTermMonths: 12,
-            message:
-                '$_occupants ${_occupants == 1 ? "person" : "people"} '
+            message: '$_occupants ${_occupants == 1 ? "person" : "people"} '
                 'expected to live here.',
           );
       ref.invalidate(applicationsProvider);
@@ -60,8 +57,7 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
       );
     } on ApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(error.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -233,9 +229,7 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : Text(
-                      _ready
-                          ? 'Submit application'
-                          : 'Attach at least one document',
+                      _ready ? 'Submit application' : 'Attach at least one document',
                     ),
             ),
           ),
@@ -250,8 +244,7 @@ class _FieldLabel extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) =>
-      Text(text, style: Theme.of(context).textTheme.titleMedium);
+  Widget build(BuildContext context) => Text(text, style: Theme.of(context).textTheme.titleMedium);
 }
 
 class _DateField extends StatelessWidget {
@@ -362,9 +355,7 @@ class _RoundButton extends StatelessWidget {
         child: Icon(
           icon,
           size: 18,
-          color: enabled
-              ? theme.colorScheme.onSurface
-              : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+          color: enabled ? theme.colorScheme.onSurface : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
         ),
       ),
     );
@@ -396,14 +387,10 @@ class _DocumentRow extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(Tokens.s16),
           decoration: BoxDecoration(
-            color: attached
-                ? Tokens.available.withValues(alpha: 0.07)
-                : Colors.transparent,
+            color: attached ? Tokens.available.withValues(alpha: 0.07) : Colors.transparent,
             borderRadius: BorderRadius.circular(Tokens.rMd),
             border: Border.all(
-              color: attached
-                  ? Tokens.available.withValues(alpha: 0.35)
-                  : theme.colorScheme.outlineVariant,
+              color: attached ? Tokens.available.withValues(alpha: 0.35) : theme.colorScheme.outlineVariant,
             ),
           ),
           child: Row(
@@ -411,18 +398,14 @@ class _DocumentRow extends StatelessWidget {
               Icon(
                 attached ? Icons.check_circle : Icons.photo_camera_outlined,
                 size: 20,
-                color: attached
-                    ? Tokens.available
-                    : theme.colorScheme.onSurfaceVariant,
+                color: attached ? Tokens.available : theme.colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: Tokens.s12),
               Expanded(child: Text(label, style: theme.textTheme.bodyLarge)),
               Text(
                 attached ? 'Attached' : 'Add photo',
                 style: theme.textTheme.labelMedium?.copyWith(
-                  color: attached
-                      ? Tokens.available
-                      : theme.colorScheme.onSurfaceVariant,
+                  color: attached ? Tokens.available : theme.colorScheme.onSurfaceVariant,
                 ),
               ),
             ],

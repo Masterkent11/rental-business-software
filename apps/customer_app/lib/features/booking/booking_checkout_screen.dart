@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 
 import '../../app/router.dart';
 import '../../data/api_client.dart';
+import '../../data/content_repository.dart';
+import '../legal/policy_agreement_note.dart';
 import '../../data/availability_repository.dart';
 import '../../data/booking_repository.dart';
 import '../../data/ids.dart';
@@ -67,6 +69,15 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
         idempotencyKey: _idempotencyKey,
       );
       bookingId = hold.id;
+      final policies = await Future.wait([
+        ref.read(contentPageProvider('booking-policy').future),
+        ref.read(contentPageProvider('terms').future),
+      ]);
+      await ref.read(contentRepositoryProvider).accept(
+        [for (final page in policies) PolicyReference(slug: page.slug, version: page.version)],
+        AcceptanceContext.booking,
+        relatedId: hold.id,
+      );
       if (!mounted) return;
       setState(() => _step = _Step.paying);
       final intent = await repo.startPaymentIntent(hold.id);
@@ -96,9 +107,7 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
       ref.invalidate(myBookingsProvider);
       setState(() {
         _step = _Step.review;
-        _error = bookingId == null
-            ? error.message
-            : '${error.message} You can finish payment from My Bookings.';
+        _error = bookingId == null ? error.message : '${error.message} You can finish payment from My Bookings.';
       });
     }
   }
@@ -141,7 +150,8 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(detail.card.title, style: theme.textTheme.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
+                          Text(detail.card.title,
+                              style: theme.textTheme.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
                           const SizedBox(height: 2),
                           Text(detail.card.place, style: theme.textTheme.bodySmall),
                         ],
@@ -175,7 +185,12 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
               if (_error != null) _Notice(icon: Icons.error_outline, text: _error!, error: true),
               const _Notice(
                 icon: Icons.verified_user_outlined,
-                text: 'Demo payment: this environment uses a payment sandbox. No real money moves. Prices are calculated by the server.',
+                text:
+                    'Demo payment: this environment uses a payment sandbox. No real money moves. Prices are calculated by the server.',
+              ),
+              const PolicyAgreementNote(
+                prefix: 'By confirming, you agree to the ',
+                links: [('Booking, Cancellation & Refund Policy', 'booking-policy'), ('Terms', 'terms')],
               ),
             ],
           ),
@@ -217,7 +232,9 @@ class _Row extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
-          Expanded(child: Text(label, style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant))),
+          Expanded(
+              child:
+                  Text(label, style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant))),
           Text(value, style: theme.textTheme.bodyLarge),
         ],
       ),

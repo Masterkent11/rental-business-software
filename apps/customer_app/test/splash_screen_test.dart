@@ -74,8 +74,7 @@ void main() {
       expect(fullBox.widthFactor, closeTo(1.0, 0.001));
     });
 
-    testWidgets('7. Orbit progress advances from Point A to Point B',
-        (tester) async {
+    testWidgets('7. Orbit progress advances from Point A to Point B', (tester) async {
       await tester.pumpWidget(buildApp());
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -132,8 +131,7 @@ void main() {
       expect(doneCount, equals(1));
     });
 
-    testWidgets('11. Disposing splash before completion does not throw',
-        (tester) async {
+    testWidgets('11. Disposing splash before completion does not throw', (tester) async {
       int doneCount = 0;
       await tester.pumpWidget(buildApp(onDone: () => doneCount++));
       await tester.pump(const Duration(milliseconds: 500));
@@ -145,8 +143,7 @@ void main() {
       expect(find.text('Done'), findsOneWidget);
     });
 
-    testWidgets('12. No overflow on small phone screen (iPhone SE 375x667)',
-        (tester) async {
+    testWidgets('12. No overflow on small phone screen (iPhone SE 375x667)', (tester) async {
       await tester.pumpWidget(
         buildApp(size: const Size(375, 667)),
       );
@@ -154,8 +151,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('13. Reduced-motion path completes and invokes onDone',
-        (tester) async {
+    testWidgets('13. Reduced-motion path completes and invokes onDone', (tester) async {
       int doneCount = 0;
       await tester.pumpWidget(
         buildApp(

@@ -38,16 +38,15 @@ class AvailabilityRepository {
   }
 
   static NightStatus _status(String? raw) => switch (raw) {
-    'HELD' => NightStatus.held,
-    'BOOKED' => NightStatus.booked,
-    'LEASED' => NightStatus.leased,
-    'BLOCKED' => NightStatus.blocked,
-    _ when raw != 'OPEN' && raw != null => NightStatus.blocked,
-    _ => NightStatus.open,
-  };
+        'HELD' => NightStatus.held,
+        'BOOKED' => NightStatus.booked,
+        'LEASED' => NightStatus.leased,
+        'BLOCKED' => NightStatus.blocked,
+        _ when raw != 'OPEN' && raw != null => NightStatus.blocked,
+        _ => NightStatus.open,
+      };
 
-  static String _iso(DateTime day) =>
-      '${day.year.toString().padLeft(4, '0')}-'
+  static String _iso(DateTime day) => '${day.year.toString().padLeft(4, '0')}-'
       '${day.month.toString().padLeft(2, '0')}-'
       '${day.day.toString().padLeft(2, '0')}';
 }
@@ -58,13 +57,10 @@ final availabilityRepositoryProvider = Provider<AvailabilityRepository>(
 
 typedef AvailabilityRequest = ({String resourceId, DateTime from, DateTime to});
 
-final availabilityProvider =
-    FutureProvider.family<List<NightView>, AvailabilityRequest>(
-      (ref, request) => ref
-          .watch(availabilityRepositoryProvider)
-          .nights(
-            resourceId: request.resourceId,
-            from: request.from,
-            to: request.to,
-          ),
-    );
+final availabilityProvider = FutureProvider.family<List<NightView>, AvailabilityRequest>(
+  (ref, request) => ref.watch(availabilityRepositoryProvider).nights(
+        resourceId: request.resourceId,
+        from: request.from,
+        to: request.to,
+      ),
+);

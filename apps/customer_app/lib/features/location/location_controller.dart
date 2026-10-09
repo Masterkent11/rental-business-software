@@ -5,7 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../../data/marketplace_repository.dart';
+import '../../app/clock.dart';
+import '../../data/api_client.dart';
+import '../../data/discovery_repository.dart';
+import '../../data/preferences_store.dart';
 
 enum LocationAccess { granted, denied, deniedForever, serviceOff, unavailable }
 
@@ -26,12 +29,26 @@ class LocationOutcome {
 }
 
 abstract interface class LocationGateway {
+  Future<bool> hasPermission();
   Future<LocationOutcome> currentPosition();
   Future<void> openSettings(LocationAccess access);
 }
 
 class GeolocatorLocationGateway implements LocationGateway {
   const GeolocatorLocationGateway();
+
+  @override
+  Future<bool> hasPermission() async {
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) return false;
+      final permission = await Geolocator.checkPermission();
+      return permission == LocationPermission.always || permission == LocationPermission.whileInUse;
+    } on MissingPluginException {
+      return false;
+    } on PlatformException {
+      return false;
+    }
+  }
 
   @override
   Future<LocationOutcome> currentPosition() async {
@@ -86,24 +103,50 @@ final class AnywherePlace extends SearchPlace {
 
   @override
   String get label => 'Anywhere';
+
+  @override
+  bool operator ==(Object other) => other is AnywherePlace;
+
+  @override
+  int get hashCode => 0;
 }
 
 final class NearMePlace extends SearchPlace {
-  const NearMePlace(this.position);
+  const NearMePlace(this.position, {required this.capturedAt, this.cityLabel});
 
   final DevicePosition position;
+  final DateTime capturedAt;
+  final String? cityLabel;
 
   @override
-  String get label => 'Near you';
+  String get label => cityLabel == null ? 'Near you' : 'Near you · $cityLabel';
+
+  NearMePlace withCity(String? city) => NearMePlace(position, capturedAt: capturedAt, cityLabel: city);
+
+  @override
+  bool operator ==(Object other) =>
+      other is NearMePlace &&
+      other.position.latitude == position.latitude &&
+      other.position.longitude == position.longitude &&
+      other.cityLabel == cityLabel;
+
+  @override
+  int get hashCode => Object.hash(position.latitude, position.longitude, cityLabel);
 }
 
 final class AreaPlace extends SearchPlace {
-  const AreaPlace(this.area);
+  const AreaPlace(this.cityLabel);
 
-  final AreaView area;
+  final String cityLabel;
 
   @override
-  String get label => area.cityLabel;
+  String get label => cityLabel;
+
+  @override
+  bool operator ==(Object other) => other is AreaPlace && other.cityLabel == cityLabel;
+
+  @override
+  int get hashCode => cityLabel.hashCode;
 }
 
 @immutable
@@ -120,36 +163,98 @@ class LocationState {
 
   bool get isNearMe => place is NearMePlace;
 
+  bool get isSpecified => place is! AnywherePlace;
+
   String? get problemMessage => switch (problem) {
-        LocationAccess.denied => 'Location permission was declined. Choose an area instead, or allow location to see places near you.',
-        LocationAccess.deniedForever => 'Location is turned off for this app. Turn it on in Settings, or choose an area.',
-        LocationAccess.serviceOff => 'Location services are off on this device. Turn them on, or choose an area.',
-        LocationAccess.unavailable => 'We could not get your location right now. Choose an area or try again.',
+        LocationAccess.denied => 'Location permission was declined. Choose an area instead.',
+        LocationAccess.deniedForever => 'Location is off for Westayplace. Turn it on in Settings, or choose an area.',
+        LocationAccess.serviceOff => 'Location services are off. Turn them on, or choose an area.',
+        LocationAccess.unavailable => 'We couldn’t get your location. Choose an area or try again.',
         _ => null,
       };
 
   bool get canOpenSettings => problem == LocationAccess.deniedForever || problem == LocationAccess.serviceOff;
+
+  String get discoveryTitle => switch (place) {
+        NearMePlace(:final cityLabel) => cityLabel == null ? 'Explore near you' : 'Explore $cityLabel',
+        AreaPlace(:final cityLabel) => 'Explore $cityLabel',
+        AnywherePlace() => 'Explore places',
+      };
+
+  String? get cityContext => switch (place) {
+        NearMePlace(:final cityLabel) => cityLabel,
+        AreaPlace(:final cityLabel) => cityLabel,
+        AnywherePlace() => null,
+      };
 }
 
-class LocationController extends Notifier<LocationState> {
-  @override
-  LocationState build() => const LocationState();
+const String kPreferredCityKey = 'discovery.preferred_city';
+const Duration kLocationFreshness = Duration(minutes: 15);
 
-  Future<void> useCurrentLocation() async {
-    if (state.locating) return;
-    state = LocationState(place: state.place, locating: true);
-    final outcome = await ref.read(locationGatewayProvider).currentPosition();
-    final position = outcome.position;
-    if (outcome.access == LocationAccess.granted && position != null) {
-      state = LocationState(place: NearMePlace(position));
-    } else {
-      state = LocationState(place: state.place, problem: outcome.access);
+class LocationController extends Notifier<LocationState> {
+  int _generation = 0;
+
+  @override
+  LocationState build() {
+    Future.microtask(_restore);
+    return const LocationState();
+  }
+
+  Future<void> _restore() async {
+    final generation = _generation;
+    final preferred = await ref.read(preferencesStoreProvider).read(kPreferredCityKey);
+    if (generation != _generation) return;
+    if (preferred != null && preferred.isNotEmpty) {
+      state = LocationState(place: AreaPlace(preferred));
+      return;
+    }
+    if (await ref.read(locationGatewayProvider).hasPermission() && generation == _generation) {
+      await useCurrentLocation();
     }
   }
 
-  void chooseArea(AreaView area) => state = LocationState(place: AreaPlace(area));
+  Future<void> useCurrentLocation() async {
+    if (state.locating) return;
+    final generation = ++_generation;
+    state = LocationState(place: state.place, locating: true);
+    final outcome = await ref.read(locationGatewayProvider).currentPosition();
+    if (generation != _generation) return;
+    final position = outcome.position;
+    if (outcome.access != LocationAccess.granted || position == null) {
+      state = LocationState(place: state.place, problem: outcome.access);
+      return;
+    }
+    await ref.read(preferencesStoreProvider).remove(kPreferredCityKey);
+    final near = NearMePlace(position, capturedAt: ref.read(clockProvider)());
+    state = LocationState(place: near);
+    try {
+      final city = await ref.read(discoveryRepositoryProvider).resolveCity(position);
+      if (generation == _generation && state.place is NearMePlace) {
+        state = LocationState(place: near.withCity(city));
+      }
+    } on ApiException {
+      return;
+    }
+  }
 
-  void chooseAnywhere() => state = const LocationState();
+  Future<void> refreshIfStale() async {
+    final place = state.place;
+    if (place is NearMePlace && ref.read(clockProvider)().difference(place.capturedAt) > kLocationFreshness) {
+      await useCurrentLocation();
+    }
+  }
+
+  Future<void> chooseCity(String cityLabel) async {
+    _generation++;
+    state = LocationState(place: AreaPlace(cityLabel));
+    await ref.read(preferencesStoreProvider).write(kPreferredCityKey, cityLabel);
+  }
+
+  Future<void> chooseAnywhere() async {
+    _generation++;
+    state = const LocationState();
+    await ref.read(preferencesStoreProvider).remove(kPreferredCityKey);
+  }
 
   void dismissProblem() => state = LocationState(place: state.place);
 

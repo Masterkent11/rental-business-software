@@ -13,6 +13,7 @@ import '../../data/notification_repository.dart';
 import '../../design/components.dart';
 import '../../design/tokens.dart';
 import '../saved/saved_controller.dart';
+import '../../data/offline_cache.dart';
 
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
@@ -50,6 +51,7 @@ class AccountScreen extends ConsumerWidget {
     );
     if (confirmed != true) return;
     await ref.read(authRepositoryProvider).signOut();
+    await ref.read(offlineCacheProvider).clear();
     ref
       ..invalidate(myBookingsProvider)
       ..invalidate(inboxProvider)
@@ -122,12 +124,14 @@ class AccountScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(value.displayName.isEmpty ? 'Your profile' : value.displayName, style: theme.textTheme.headlineSmall),
+                            Text(value.displayName.isEmpty ? 'Your profile' : value.displayName,
+                                style: theme.textTheme.headlineSmall),
                             if (value.email != null) Text(value.email!, style: theme.textTheme.bodySmall),
                           ],
                         ),
                       ),
-                      TextButton(onPressed: () => _editName(context, ref, value.displayName), child: const Text('Edit')),
+                      TextButton(
+                          onPressed: () => _editName(context, ref, value.displayName), child: const Text('Edit')),
                     ],
                   ),
                 AsyncError(:final error) => ErrorState(
@@ -145,8 +149,12 @@ class AccountScreen extends ConsumerWidget {
             ),
           const SizedBox(height: Tokens.s24),
           SettingsRow(icon: Icons.event_note_outlined, label: 'My bookings', onTap: () => context.go(Routes.bookings)),
-          SettingsRow(icon: Icons.event_available_outlined, label: 'Inquiries & viewings', onTap: () => context.push(Routes.activity)),
-          SettingsRow(icon: Icons.description_outlined, label: 'Applications', onTap: () => context.push(Routes.applications)),
+          SettingsRow(
+              icon: Icons.event_available_outlined,
+              label: 'Inquiries & viewings',
+              onTap: () => context.push(Routes.activity)),
+          SettingsRow(
+              icon: Icons.description_outlined, label: 'Applications', onTap: () => context.push(Routes.applications)),
           SettingsRow(icon: Icons.favorite_border, label: 'Saved places', onTap: () => context.go(Routes.saved)),
           SettingsRow(
             icon: Icons.chat_bubble_outline,
@@ -159,6 +167,22 @@ class AccountScreen extends ConsumerWidget {
             label: 'Notifications',
             trailing: CountBadge(count: unreadNotifications),
             onTap: () => context.push(Routes.notifications),
+          ),
+          const Divider(height: Tokens.s32),
+          SettingsRow(
+              icon: Icons.help_outline_rounded, label: 'Help & Support', onTap: () => context.push(Routes.help)),
+          SettingsRow(
+              icon: Icons.gavel_outlined,
+              label: 'Terms & Conditions',
+              onTap: () => context.push(Routes.legal('terms'))),
+          SettingsRow(
+              icon: Icons.privacy_tip_outlined,
+              label: 'Privacy Policy',
+              onTap: () => context.push(Routes.legal('privacy'))),
+          SettingsRow(
+            icon: Icons.receipt_long_outlined,
+            label: 'Booking & cancellation policy',
+            onTap: () => context.push(Routes.legal('booking-policy')),
           ),
           if (signedIn) ...[
             const Divider(height: Tokens.s32),

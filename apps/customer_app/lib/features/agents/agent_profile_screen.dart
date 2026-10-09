@@ -7,7 +7,6 @@ import '../../app/router.dart';
 import '../../data/api_client.dart';
 import '../../data/marketplace_repository.dart';
 import '../../design/tokens.dart';
-import '../discovery/widgets/buy_listing_card.dart';
 import '../discovery/widgets/listing_card.dart';
 
 String? responseSummary(AgentProfileView agent) {
@@ -38,7 +37,8 @@ class AgentProfileScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Tokens.canvas,
         title: const Text('Agent'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 18), onPressed: () => Navigator.of(context).maybePop()),
+        leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, size: 18), onPressed: () => Navigator.of(context).maybePop()),
       ),
       body: switch (async) {
         AsyncError(:final error) => _Message(
@@ -61,7 +61,13 @@ class _Profile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final initials = agent.displayName.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).take(2).map((w) => w[0].toUpperCase()).join();
+    final initials = agent.displayName
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty)
+        .take(2)
+        .map((w) => w[0].toUpperCase())
+        .join();
     final response = responseSummary(agent);
     return ListView(
       physics: Tokens.scroll,
@@ -72,14 +78,18 @@ class _Profile extends StatelessWidget {
             radius: 46,
             backgroundColor: Tokens.softBlue,
             foregroundImage: agent.photoUrl == null ? null : NetworkImage(agent.photoUrl!),
-            child: Text(initials, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
+            child: Text(initials,
+                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
           ),
         ),
         const SizedBox(height: Tokens.s12),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Flexible(child: Text(agent.displayName, textAlign: TextAlign.center, style: theme.textTheme.headlineSmall?.copyWith(color: Tokens.primaryNavy))),
+            Flexible(
+                child: Text(agent.displayName,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineSmall?.copyWith(color: Tokens.primaryNavy))),
             if (agent.verified) ...[
               const SizedBox(width: 6),
               const Icon(Icons.verified, color: Tokens.primaryBlue, size: 22, semanticLabel: 'Verified agent'),
@@ -93,7 +103,10 @@ class _Profile extends StatelessWidget {
         const SizedBox(height: Tokens.s8),
         Text(
           [
-            if (agent.verified) 'Verified${agent.licenseAuthority == null ? '' : ' by ${agent.licenseAuthority}'}' else 'Not yet verified',
+            if (agent.verified)
+              'Verified${agent.licenseAuthority == null ? '' : ' by ${agent.licenseAuthority}'}'
+            else
+              'Not yet verified',
             'Member since ${DateFormat('MMMM yyyy').format(agent.memberSince)}',
           ].join(' · '),
           textAlign: TextAlign.center,
@@ -102,7 +115,9 @@ class _Profile extends StatelessWidget {
         const SizedBox(height: Tokens.s20),
         Row(
           children: [
-            _Stat(value: '${agent.activeListings}', label: agent.activeListings == 1 ? 'Active listing' : 'Active listings'),
+            _Stat(
+                value: '${agent.activeListings}',
+                label: agent.activeListings == 1 ? 'Active listing' : 'Active listings'),
             const SizedBox(width: Tokens.s8),
             _Stat(value: agent.areasServed.isEmpty ? '—' : '${agent.areasServed.length}', label: 'Areas served'),
           ],
@@ -191,9 +206,7 @@ class _Profile extends StatelessWidget {
           for (final listing in agent.listings)
             Padding(
               padding: const EdgeInsets.only(bottom: Tokens.s16),
-              child: listing.isSale
-                  ? BuyListingCard(listing: listing, onTap: () => context.push(Routes.listing(listing.id)))
-                  : ListingCard(listing: listing, onTap: () => context.push(Routes.listing(listing.id))),
+              child: ListingCard(listing: listing, onTap: () => context.push(Routes.listing(listing.id))),
             ),
       ],
     );

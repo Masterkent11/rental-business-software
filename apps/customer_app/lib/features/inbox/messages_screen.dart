@@ -37,7 +37,8 @@ class MessagesScreen extends ConsumerWidget {
               title: 'Talk to owners',
               message: 'Sign in to ask owners about a place or your booking. Replies arrive here instantly.',
               actionLabel: 'Sign in',
-              onAction: () => context.push(Routes.auth(from: Routes.messages, reason: 'Sign in to see your conversations.')),
+              onAction: () =>
+                  context.push(Routes.auth(from: Routes.messages, reason: 'Sign in to see your conversations.')),
             )
           : switch (inbox) {
               AsyncError(:final error) => ErrorState(
@@ -55,7 +56,8 @@ class MessagesScreen extends ConsumerWidget {
                     physics: Tokens.scroll,
                     padding: const EdgeInsets.only(bottom: Tokens.s64),
                     itemCount: value.conversations.length,
-                    separatorBuilder: (_, __) => Divider(height: 1, indent: 88, color: theme.colorScheme.outlineVariant),
+                    separatorBuilder: (_, __) =>
+                        Divider(height: 1, indent: 88, color: theme.colorScheme.outlineVariant),
                     itemBuilder: (context, i) {
                       final c = value.conversations[i];
                       final unread = c.unreadCount > 0;
@@ -95,7 +97,8 @@ class MessagesScreen extends ConsumerWidget {
                                         Text(conversationTime(c.lastMessageAt), style: theme.textTheme.bodySmall),
                                       ],
                                     ),
-                                    Text(c.listingTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
+                                    Text(c.listingTitle,
+                                        maxLines: 1, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
                                     const SizedBox(height: 2),
                                     Row(
                                       children: [
@@ -107,7 +110,9 @@ class MessagesScreen extends ConsumerWidget {
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: theme.textTheme.bodyMedium?.copyWith(
-                                              color: unread ? theme.colorScheme.onSurface : theme.colorScheme.onSurfaceVariant,
+                                              color: unread
+                                                  ? theme.colorScheme.onSurface
+                                                  : theme.colorScheme.onSurfaceVariant,
                                               fontWeight: unread ? FontWeight.w600 : FontWeight.w400,
                                             ),
                                           ),

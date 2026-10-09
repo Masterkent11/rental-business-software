@@ -31,8 +31,7 @@ class AppImage extends StatelessWidget {
         if (progress == null) return child;
         return _Fallback(icon: fallbackIcon, seed: seed, dim: true);
       },
-      errorBuilder: (context, error, stack) =>
-          _Fallback(icon: fallbackIcon, seed: seed),
+      errorBuilder: (context, error, stack) => _Fallback(icon: fallbackIcon, seed: seed),
       frameBuilder: (context, child, frame, wasSync) {
         if (wasSync) return child;
         return AnimatedOpacity(
@@ -78,8 +77,8 @@ class _Fallback extends StatelessWidget {
         child: Icon(
           icon,
           size: 34,
-          color: (isDark ? Colors.white : Tokens.ink).withValues(alpha: 
-            dim ? 0.14 : 0.26,
+          color: (isDark ? Colors.white : Tokens.ink).withValues(
+            alpha: dim ? 0.14 : 0.26,
           ),
         ),
       ),

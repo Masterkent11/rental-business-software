@@ -2,6 +2,7 @@ import type { Centavos } from '@/domain/shared/money.ts';
 import type { OrganizationId } from '@/domain/shared/organization-scope.ts';
 import type { Coordinates, LocationPrivacy } from '@/domain/shared/geo.ts';
 import type {
+  Furnishing,
   ListingIntent,
   ListingKind,
   ListingSort,
@@ -86,6 +87,8 @@ export interface Listing {
   readonly floorPlans?: readonly ListingFloorPlan[];
   readonly representative?: ListingRepresentative | null;
   readonly tourProvider?: 'PLATFORM' | 'MATTERPORT' | null;
+  readonly furnishing?: Furnishing | null;
+  readonly petsAllowed?: boolean | null;
 }
 
 export interface NearQuery extends Coordinates {
@@ -106,6 +109,12 @@ export interface ListingQuery {
   readonly maxPriceCentavos?: Centavos;
   readonly guests?: number;
   readonly bedrooms?: number;
+  readonly bathrooms?: number;
+  readonly minFloorAreaSqm?: number;
+  readonly furnished?: boolean;
+  readonly petsAllowed?: boolean;
+  readonly amenity?: string;
+  readonly area?: string;
   readonly hasTour?: boolean;
   readonly availableFrom?: string;
   readonly availableTo?: string;

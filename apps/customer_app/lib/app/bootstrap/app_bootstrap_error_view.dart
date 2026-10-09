@@ -15,9 +15,7 @@ class AppBootstrapErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final errorMessage = error != null
-        ? error.toString()
-        : 'An unexpected error occurred during startup.';
+    final errorMessage = error != null ? error.toString() : 'An unexpected error occurred during startup.';
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,

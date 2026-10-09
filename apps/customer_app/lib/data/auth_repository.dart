@@ -62,7 +62,10 @@ String friendlyAuthMessage(Object error) {
   if (raw.contains('rate limit') || raw.contains('too many')) {
     return 'Too many attempts. Wait a minute and try again.';
   }
-  if (raw.contains('socket') || raw.contains('network') || raw.contains('failed host lookup') || raw.contains('clientexception')) {
+  if (raw.contains('socket') ||
+      raw.contains('network') ||
+      raw.contains('failed host lookup') ||
+      raw.contains('clientexception')) {
     return 'Can’t reach the server. Check your connection and try again.';
   }
   return 'Something went wrong. Please try again.';
@@ -115,9 +118,7 @@ class SupabaseAuthGateway implements AuthGateway {
           'An account with this email already exists. Try signing in.',
         );
       }
-      return response.session != null
-          ? SignUpOutcome.signedIn
-          : SignUpOutcome.confirmEmail;
+      return response.session != null ? SignUpOutcome.signedIn : SignUpOutcome.confirmEmail;
     } on AuthFailure {
       rethrow;
     } catch (error) {
@@ -171,8 +172,7 @@ class UnavailableAuthGateway implements AuthGateway {
       throw const AuthFailure(_message);
 
   @override
-  Future<void> sendPasswordReset(String email) async =>
-      throw const AuthFailure(_message);
+  Future<void> sendPasswordReset(String email) async => throw const AuthFailure(_message);
 
   @override
   Future<void> signOut() async {}

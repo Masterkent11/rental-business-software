@@ -1,4 +1,5 @@
 import type {
+  Furnishing,
   Listing,
   ListingFloorPlan,
   ListingKind,
@@ -55,6 +56,8 @@ export interface ListingDetails {
   readonly floorAreaSqm: number | null;
   readonly cleaningFeeCentavos: Centavos;
   readonly availableFrom: string | null;
+  readonly furnishing?: Furnishing | null | undefined;
+  readonly petsAllowed?: boolean | null | undefined;
 }
 
 export interface PropertyDetails {
@@ -77,6 +80,7 @@ export interface SaleListingDetails {
   readonly lotAreaSqm: number | null;
   readonly parkingSlots: number;
   readonly availableFrom: string | null;
+  readonly furnishing?: Furnishing | null | undefined;
 }
 
 export interface SaleTermsInput {

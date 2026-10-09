@@ -66,10 +66,7 @@ class PropertyCard extends ConsumerWidget {
                       behavior: HitTestBehavior.opaque,
                       onTap: () {
                         HapticFeedback.selectionClick();
-                        ref
-                            .read(savedIdsProvider.notifier)
-                            .toggle(listing.id)
-                            .catchError((_) {});
+                        ref.read(savedIdsProvider.notifier).toggle(listing.id).catchError((_) {});
                       },
                       child: Container(
                         width: 26,
@@ -88,9 +85,7 @@ class PropertyCard extends ConsumerWidget {
                         child: Icon(
                           saved ? Icons.favorite : Icons.favorite_border,
                           size: 14,
-                          color: saved
-                              ? const Color(0xFFE53935)
-                              : Tokens.primaryNavy,
+                          color: saved ? const Color(0xFFE53935) : Tokens.primaryNavy,
                         ),
                       ),
                     ),

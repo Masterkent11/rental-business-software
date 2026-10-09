@@ -22,8 +22,7 @@ class Animated360Indicator extends StatefulWidget {
   State<Animated360Indicator> createState() => _Animated360IndicatorState();
 }
 
-class _Animated360IndicatorState extends State<Animated360Indicator>
-    with SingleTickerProviderStateMixin {
+class _Animated360IndicatorState extends State<Animated360Indicator> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override
@@ -240,8 +239,7 @@ class _MotionArrowsPainter extends CustomPainter {
       height: yRadius * 2,
     );
 
-    final leftPath = Path()
-      ..addArc(leftRect, math.pi * 0.78, math.pi * 0.52);
+    final leftPath = Path()..addArc(leftRect, math.pi * 0.78, math.pi * 0.52);
 
     canvas.drawPath(leftPath, glowPaint);
     canvas.drawPath(leftPath, paint);
@@ -257,8 +255,7 @@ class _MotionArrowsPainter extends CustomPainter {
       paint,
     );
 
-    final rightPath = Path()
-      ..addArc(leftRect, -math.pi * 0.22, math.pi * 0.52);
+    final rightPath = Path()..addArc(leftRect, -math.pi * 0.22, math.pi * 0.52);
 
     canvas.drawPath(rightPath, glowPaint);
     canvas.drawPath(rightPath, paint);
@@ -306,8 +303,6 @@ class _MotionArrowsPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _MotionArrowsPainter oldDelegate) {
-    return oldDelegate.pulse != pulse ||
-        oldDelegate.radius != radius ||
-        oldDelegate.strokeWidth != strokeWidth;
+    return oldDelegate.pulse != pulse || oldDelegate.radius != radius || oldDelegate.strokeWidth != strokeWidth;
   }
 }

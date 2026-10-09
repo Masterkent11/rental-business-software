@@ -17,6 +17,8 @@ export const createListingSchema = z.object({
   depositMonths: z.number().int().nonnegative().default(0),
 });
 
+const furnishingSchema = z.enum(['FURNISHED', 'SEMI_FURNISHED', 'UNFURNISHED']);
+
 const listingDetailsShape = {
   kind: z.enum(['LONG_TERM', 'SHORT_TERM']),
   title: z.string().trim().min(3).max(120),
@@ -34,6 +36,8 @@ const listingDetailsShape = {
   floorAreaSqm: z.number().int().positive().max(100_000).nullable(),
   cleaningFeeCentavos: z.number().int().min(0).max(10_000_000),
   availableFrom: isoDay.nullable(),
+  furnishing: furnishingSchema.nullable().optional(),
+  petsAllowed: z.boolean().nullable().optional(),
 };
 
 const locationSchema = z.object({
@@ -62,6 +66,7 @@ const saleListingShape = {
   lotAreaSqm: z.number().int().positive().max(10_000_000).nullable(),
   parkingSlots: z.number().int().min(0).max(50),
   availableFrom: isoDay.nullable(),
+  furnishing: furnishingSchema.nullable().optional(),
 };
 
 export const saleTermsSchema = z.object({

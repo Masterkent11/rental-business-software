@@ -52,7 +52,8 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
         appBar: AppBar(title: const Text('Inquiries & viewings')),
         body: Center(
           child: FilledButton(
-            onPressed: () => context.push(Routes.auth(from: Routes.activity, reason: 'Sign in to see your inquiries and viewings.')),
+            onPressed: () =>
+                context.push(Routes.auth(from: Routes.activity, reason: 'Sign in to see your inquiries and viewings.')),
             child: const Text('Sign in'),
           ),
         ),
@@ -93,7 +94,8 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                       viewing: value[i],
                       busy: _busyId == value[i].id,
                       onCancel: () => _cancel(value[i]),
-                      onReschedule: () => context.push('${Routes.viewing(value[i].listingId)}?reschedule=${value[i].id}'),
+                      onReschedule: () =>
+                          context.push('${Routes.viewing(value[i].listingId)}?reschedule=${value[i].id}'),
                       onMessage: () => context.push(Routes.conversation(value[i].conversationId)),
                     ),
                   ),
@@ -136,7 +138,10 @@ class _Thumb extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ClipRRect(
         borderRadius: BorderRadius.circular(Tokens.rSm),
-        child: SizedBox(width: 60, height: 60, child: AppImage(url: url ?? '', fallbackIcon: Icons.home_work_outlined, cacheWidth: 120)),
+        child: SizedBox(
+            width: 60,
+            height: 60,
+            child: AppImage(url: url ?? '', fallbackIcon: Icons.home_work_outlined, cacheWidth: 120)),
       );
 }
 
@@ -165,7 +170,10 @@ class _ViewingTile extends StatelessWidget {
     };
     return Container(
       padding: const EdgeInsets.all(Tokens.s12),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(Tokens.rMd), border: Border.all(color: Tokens.hairline)),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(Tokens.rMd),
+          border: Border.all(color: Tokens.hairline)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -177,9 +185,13 @@ class _ViewingTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(viewing.listingTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
+                    Text(viewing.listingTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
                     Text(when, style: const TextStyle(fontSize: 13)),
-                    Text(viewing.statusLabel, style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: color)),
+                    Text(viewing.statusLabel,
+                        style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: color)),
                   ],
                 ),
               ),
@@ -187,7 +199,8 @@ class _ViewingTile extends StatelessWidget {
           ),
           if (viewing.partnerNote.isNotEmpty) ...[
             const SizedBox(height: Tokens.s8),
-            Text('${viewing.partnerName}: ${viewing.partnerNote}', style: const TextStyle(fontSize: 12.5, color: Tokens.muted)),
+            Text('${viewing.partnerName}: ${viewing.partnerNote}',
+                style: const TextStyle(fontSize: 12.5, color: Tokens.muted)),
           ],
           const SizedBox(height: Tokens.s8),
           Wrap(
@@ -199,7 +212,9 @@ class _ViewingTile extends StatelessWidget {
                 TextButton(
                   onPressed: busy ? null : onCancel,
                   style: TextButton.styleFrom(foregroundColor: Tokens.taken),
-                  child: busy ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Cancel'),
+                  child: busy
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Cancel'),
                 ),
             ],
           ),
@@ -225,7 +240,8 @@ class _InquiryTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(Tokens.rMd),
         child: Container(
           padding: const EdgeInsets.all(Tokens.s12),
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(Tokens.rMd), border: Border.all(color: Tokens.hairline)),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(Tokens.rMd), border: Border.all(color: Tokens.hairline)),
           child: Row(
             children: [
               _Thumb(url: inquiry.listingPhoto),
@@ -234,9 +250,14 @@ class _InquiryTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(inquiry.listingTitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
-                    Text('${inquiry.partnerName} · ${DateFormat('MMM d').format(inquiry.createdAt)}', style: const TextStyle(fontSize: 12.5, color: Tokens.muted)),
-                    Text(inquiry.progressLabel, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Tokens.primaryNavy)),
+                    Text(inquiry.listingTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
+                    Text('${inquiry.partnerName} · ${DateFormat('MMM d').format(inquiry.createdAt)}',
+                        style: const TextStyle(fontSize: 12.5, color: Tokens.muted)),
+                    Text(inquiry.progressLabel,
+                        style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Tokens.primaryNavy)),
                   ],
                 ),
               ),
@@ -284,7 +305,8 @@ class _Failed extends StatelessWidget {
       children: [
         const Icon(Icons.cloud_off_outlined, size: 40, color: Tokens.muted),
         const SizedBox(height: Tokens.s12),
-        Text(error is ApiException ? (error as ApiException).message : 'Something went wrong.', textAlign: TextAlign.center),
+        Text(error is ApiException ? (error as ApiException).message : 'Something went wrong.',
+            textAlign: TextAlign.center),
         const SizedBox(height: Tokens.s16),
         Center(child: FilledButton(onPressed: onRetry, child: const Text('Try again'))),
       ],

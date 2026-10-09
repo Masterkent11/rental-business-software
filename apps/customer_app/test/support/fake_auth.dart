@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:customer_app/data/auth_repository.dart';
 
 class FakeAuth implements AuthGateway {
-  FakeAuth({String? token, this.userId = 'user-test', this.email = 'guest@example.test'})
-      : _token = token;
+  FakeAuth({String? token, this.userId = 'user-test', this.email = 'guest@example.test'}) : _token = token;
 
   factory FakeAuth.signedIn() => FakeAuth(token: 'test-token');
 

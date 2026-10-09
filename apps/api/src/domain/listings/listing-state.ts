@@ -51,4 +51,8 @@ export const SALE_PROPERTY_TYPES: readonly PropertyType[] = ['HOUSE', 'CONDO', '
 
 export type ListingSort = 'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC' | 'DISTANCE';
 
+export type Furnishing = 'FURNISHED' | 'SEMI_FURNISHED' | 'UNFURNISHED';
+
+export const FURNISHING_VALUES: readonly Furnishing[] = ['FURNISHED', 'SEMI_FURNISHED', 'UNFURNISHED'];
+
 export type ListingLifecycleAction = 'PUBLISH' | 'UNPUBLISH' | 'ARCHIVE';

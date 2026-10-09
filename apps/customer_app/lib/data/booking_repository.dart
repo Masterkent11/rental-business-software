@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'api_client.dart';
 import 'auth_repository.dart';
+import 'listing_query.dart';
 import 'listing_repository.dart';
 
 class BookingHoldView {
@@ -90,9 +91,7 @@ class BookingSummaryView {
   bool get isPaid => paidCentavos > 0;
 
   bool get isActive =>
-      bucket == BookingBucket.upcoming ||
-      bucket == BookingBucket.current ||
-      bucket == BookingBucket.pendingPayment;
+      bucket == BookingBucket.upcoming || bucket == BookingBucket.current || bucket == BookingBucket.pendingPayment;
 
   static BookingSummaryView fromJson(Map<String, dynamic> json) => BookingSummaryView(
         id: json['id'] as String,
@@ -117,8 +116,7 @@ class BookingSummaryView {
         statusLabel: json['statusLabel'] as String? ?? '',
         paidCentavos: (json['paidCentavos'] as num?)?.toInt() ?? 0,
         paidAt: json['paidAt'] == null ? null : DateTime.parse(json['paidAt'] as String),
-        holdExpiresAt:
-            json['holdExpiresAt'] == null ? null : DateTime.parse(json['holdExpiresAt'] as String),
+        holdExpiresAt: json['holdExpiresAt'] == null ? null : DateTime.parse(json['holdExpiresAt'] as String),
         conversationId: json['conversationId'] as String?,
       );
 }

@@ -59,16 +59,12 @@ class TourSceneApiView {
   final double initialPitch;
   final double initialFov;
 
-  bool get isWalkable =>
-      previewUrl != null || (tileUrlTemplate != null && tileLevels > 0);
+  bool get isWalkable => previewUrl != null || (tileUrlTemplate != null && tileLevels > 0);
 
   String? tileUrl({required int level, required int x, required int y}) {
     final template = tileUrlTemplate;
     if (template == null) return null;
-    return template
-        .replaceFirst('{level}', '$level')
-        .replaceFirst('{x}', '$x')
-        .replaceFirst('{y}', '$y');
+    return template.replaceFirst('{level}', '$level').replaceFirst('{x}', '$x').replaceFirst('{y}', '$y');
   }
 }
 
@@ -92,8 +88,7 @@ class TourView {
     return null;
   }
 
-  TourSceneApiView? get entryScene =>
-      sceneById(entrySceneId) ?? scenes.firstOrNull;
+  TourSceneApiView? get entryScene => sceneById(entrySceneId) ?? scenes.firstOrNull;
 }
 
 class TourRepository {
@@ -166,6 +161,5 @@ final tourRepositoryProvider = Provider<TourRepository>(
 );
 
 final tourProvider = FutureProvider.family<TourView?, String>(
-  (ref, resourceId) =>
-      ref.watch(tourRepositoryProvider).forResource(resourceId),
+  (ref, resourceId) => ref.watch(tourRepositoryProvider).forResource(resourceId),
 );

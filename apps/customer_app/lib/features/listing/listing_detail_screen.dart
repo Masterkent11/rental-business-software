@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
 import '../../data/api_client.dart';
+import '../../data/auth_repository.dart';
+import '../../data/discovery_repository.dart';
 import '../../data/listing_repository.dart';
 import '../../design/app_image.dart';
 import '../../design/glass.dart';
@@ -18,6 +20,7 @@ import 'sale/sale_listing_screen.dart';
 import 'widgets/animated_360_indicator.dart';
 import 'widgets/move_in_cost_card.dart';
 import '../tour/tour_intro_screen.dart';
+import 'widgets/listing_attributes.dart';
 
 enum RentalTab {
   overview('Overview'),
@@ -38,8 +41,7 @@ class ListingDetailScreen extends ConsumerStatefulWidget {
   final bool saveOnOpen;
 
   @override
-  ConsumerState<ListingDetailScreen> createState() =>
-      _ListingDetailScreenState();
+  ConsumerState<ListingDetailScreen> createState() => _ListingDetailScreenState();
 }
 
 class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
@@ -49,12 +51,22 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _recordView());
     if (widget.saveOnOpen) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted || ref.read(isSavedProvider(widget.listingId))) return;
         await ref.read(savedIdsProvider.future);
         if (mounted && !ref.read(isSavedProvider(widget.listingId))) _toggleSave(widget.listingId);
       });
+    }
+  }
+
+  Future<void> _recordView() async {
+    if (!mounted || !ref.read(isSignedInProvider)) return;
+    try {
+      await ref.read(discoveryRepositoryProvider).recordView(widget.listingId);
+    } on ApiException {
+      return;
     }
   }
 
@@ -113,9 +125,9 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     return switch (async) {
       AsyncData(value: null) => const _NotFound(),
       AsyncError(:final error) => _DetailFailed(
-        error: error,
-        onRetry: () => ref.invalidate(listingDetailProvider(widget.listingId)),
-      ),
+          error: error,
+          onRetry: () => ref.invalidate(listingDetailProvider(widget.listingId)),
+        ),
       AsyncData(:final value) => _buildDetail(context, value!),
       _ => const _DetailLoading(),
     };
@@ -200,7 +212,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: Tokens.s16),
-                  _RentalAttributesRow(card: card),
+                  ListingAttributeStrip(card: card),
                 ],
               ),
             ),
@@ -281,8 +293,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
             caption: 'For a bed space this is the whole question, so it is spelled out.',
             child: Column(
               children: [
-                for (final item in detail.sharedFacilities)
-                  _Bullet(item, icon: Icons.group_outlined),
+                for (final item in detail.sharedFacilities) _Bullet(item, icon: Icons.group_outlined),
               ],
             ),
           ),
@@ -313,8 +324,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
           title: 'House rules',
           child: Column(
             children: [
-              for (final rule in detail.houseRules)
-                _Bullet(rule, icon: Icons.remove),
+              for (final rule in detail.houseRules) _Bullet(rule, icon: Icons.remove),
             ],
           ),
         ),
@@ -416,12 +426,14 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(Tokens.rMd)),
                     child: AspectRatio(
                       aspectRatio: 4 / 3,
-                      child: AppImage(url: plans[i].url, fallbackIcon: Icons.grid_view_outlined, seed: i, fit: BoxFit.contain),
+                      child: AppImage(
+                          url: plans[i].url, fallbackIcon: Icons.grid_view_outlined, seed: i, fit: BoxFit.contain),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(Tokens.s12),
-                    child: Text(plans[i].label, style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
+                    child: Text(plans[i].label,
+                        style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
                   ),
                 ],
               ),
@@ -931,81 +943,6 @@ class _OwnerCard extends StatelessWidget {
   }
 }
 
-class _RentalAttributesRow extends StatelessWidget {
-  const _RentalAttributesRow({required this.card});
-
-  final ListingCardView card;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: Tokens.s12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(Tokens.rSm),
-        border: Border.all(color: Tokens.hairline),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _RentalAttrCol(
-              icon: Icons.people_outline,
-              label: '${card.maxGuests} ${card.maxGuests == 1 ? "Guest" : "Guests"}',
-            ),
-          ),
-          Container(width: 1, height: 32, color: Tokens.hairline),
-          Expanded(
-            child: _RentalAttrCol(
-              icon: Icons.bed_outlined,
-              label: '${card.beds} ${card.beds == 1 ? "Bed" : "Beds"}',
-            ),
-          ),
-          Container(width: 1, height: 32, color: Tokens.hairline),
-          Expanded(
-            child: _RentalAttrCol(
-              icon: Icons.bathtub_outlined,
-              label: '${card.baths} ${card.baths == 1 ? "Bath" : "Baths"}',
-            ),
-          ),
-          Container(width: 1, height: 32, color: Tokens.hairline),
-          Expanded(
-            child: _RentalAttrCol(
-              icon: Icons.crop_square_outlined,
-              label: '${card.sqm ?? 32} sqm',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RentalAttrCol extends StatelessWidget {
-  const _RentalAttrCol({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 20, color: Tokens.primaryNavy),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12.5,
-            fontWeight: FontWeight.w600,
-            color: Tokens.primaryNavy,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _RentalTabsHeader extends SliverPersistentHeaderDelegate {
   _RentalTabsHeader({required this.tabs, required this.selected, required this.onSelect});
 
@@ -1121,9 +1058,7 @@ class _RentalActionBar extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.rSm)),
                   ),
                   child: Text(
-                    card.isAvailable
-                        ? (isLongTerm ? 'Apply to rent' : 'Book Now')
-                        : 'Not available',
+                    card.isAvailable ? (isLongTerm ? 'Apply to rent' : 'Book Now') : 'Not available',
                   ),
                 ),
               ),
@@ -1196,9 +1131,9 @@ class _SectionGap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: Tokens.s32),
-    child: Divider(color: Theme.of(context).colorScheme.outlineVariant),
-  );
+        padding: const EdgeInsets.symmetric(vertical: Tokens.s32),
+        child: Divider(color: Theme.of(context).colorScheme.outlineVariant),
+      );
 }
 
 class _Bullet extends StatelessWidget {
@@ -1274,8 +1209,8 @@ class _NotFound extends StatelessWidget {
                 'It may have been let to someone else while you were looking.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
               ),
             ],
           ),
@@ -1340,9 +1275,8 @@ class _DetailFailed extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final message = error is ApiException
-        ? (error as ApiException).message
-        : 'Something went wrong loading this place.';
+    final message =
+        error is ApiException ? (error as ApiException).message : 'Something went wrong loading this place.';
 
     return Scaffold(
       appBar: AppBar(),
@@ -1442,8 +1376,7 @@ class _ReviewItem extends StatelessWidget {
             ),
             Row(
               children: [
-                for (int i = 0; i < rating; i++)
-                  const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF59E0B)),
+                for (int i = 0; i < rating; i++) const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF59E0B)),
               ],
             ),
           ],

@@ -183,9 +183,7 @@ class _Progress extends StatelessWidget {
       ApplicationStatus.underReview => 1,
       _ => 2,
     };
-    final bad =
-        status == ApplicationStatus.rejected ||
-        status == ApplicationStatus.expired;
+    final bad = status == ApplicationStatus.rejected || status == ApplicationStatus.expired;
     final doneColor = bad ? Tokens.taken : Tokens.available;
 
     const labels = ['Submitted', 'Under review', 'Decided'];
@@ -202,23 +200,17 @@ class _Progress extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: i <= reached ? doneColor : Colors.transparent,
                   border: Border.all(
-                    color: i <= reached
-                        ? doneColor
-                        : theme.colorScheme.outlineVariant,
+                    color: i <= reached ? doneColor : theme.colorScheme.outlineVariant,
                     width: 1.5,
                   ),
                 ),
-                child: i <= reached
-                    ? const Icon(Icons.check, size: 10, color: Colors.white)
-                    : null,
+                child: i <= reached ? const Icon(Icons.check, size: 10, color: Colors.white) : null,
               ),
               if (i < 2)
                 Expanded(
                   child: Container(
                     height: 1.5,
-                    color: i < reached
-                        ? doneColor
-                        : theme.colorScheme.outlineVariant,
+                    color: i < reached ? doneColor : theme.colorScheme.outlineVariant,
                   ),
                 ),
             ],
@@ -269,9 +261,7 @@ class _Outcome extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              app.status == ApplicationStatus.submitted
-                  ? 'Sent to the owner'
-                  : 'The owner is reviewing this',
+              app.status == ApplicationStatus.submitted ? 'Sent to the owner' : 'The owner is reviewing this',
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: Tokens.s4),
@@ -353,7 +343,7 @@ class _Outcome extends StatelessWidget {
             Text(
               app.holdExpiresAt != null
                   ? 'The place went back on the market, and any reservation fee '
-                        'was forfeited.'
+                      'was forfeited.'
                   : 'The place went back on the market. You can apply again.',
               style: theme.textTheme.bodyMedium,
             ),
@@ -368,9 +358,7 @@ class _Outcome extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              app.status == ApplicationStatus.rejected
-                  ? 'Not this time'
-                  : 'The hold expired',
+              app.status == ApplicationStatus.rejected ? 'Not this time' : 'The hold expired',
               style: theme.textTheme.titleMedium?.copyWith(color: Tokens.taken),
             ),
             if (app.reason != null) ...[

@@ -15,7 +15,7 @@ abstract final class Tokens {
   static const double s56 = 56;
   static const double s64 = 64;
 
-  static const double gutter = 20;
+  static const double gutter = 16;
 
   static const double section = 44;
 
@@ -28,6 +28,39 @@ abstract final class Tokens {
   static const Radius rPill = Radius.circular(999);
 
   static const double tap = 44;
+
+  static const double searchFieldHeight = 48;
+  static const double filterButtonSize = 48;
+  static const double segmentedHeight = 44;
+  static const double compactButtonHeight = 40;
+  static const double primaryButtonHeight = 52;
+  static const double secondaryButtonHeight = 48;
+  static const double chipHeight = 34;
+  static const double navIcon = 24;
+  static const double categoryIcon = 26;
+  static const double controlIcon = 20;
+  static const double categoryTileWidth = 68;
+  static const double categoryTileHeight = 92;
+  static const double rControl = 14;
+  static const double rCard = 18;
+  static const double fieldHeight = 60;
+  static const double badgeSize = 36;
+  static const double iconSm = 16;
+  static const double iconMd = 18;
+  static const double avatarSm = 28;
+  static const double avatarOverlap = 22;
+  static const double pageIndicatorDot = 6;
+  static const double pageIndicatorActive = 18;
+  static const double paginationPrefetchExtent = 600;
+  static const double spinnerSm = 18;
+  static const double spinner = 22;
+  static const double skeletonCardHeight = 200;
+  static const double skeletonLineLong = 220;
+  static const double skeletonLineShort = 140;
+  static const double popularAreaHeight = 132;
+  static const double popularAreaImageHeight = 80;
+  static const double heroAspectRatio = 16 / 9;
+  static const double editorialAspectRatio = 2;
 
   static const Color primaryNavy = Color(0xFF17243D);
   static const Color primaryBlue = Color(0xFF2563EB);

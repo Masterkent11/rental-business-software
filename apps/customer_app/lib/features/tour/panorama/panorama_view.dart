@@ -20,8 +20,7 @@ class PanoramaCamera {
 
   static const double _maxPitch = math.pi / 2 - 0.01;
 
-  PanoramaCamera copyWith({double? yaw, double? pitch, double? fov}) =>
-      PanoramaCamera(
+  PanoramaCamera copyWith({double? yaw, double? pitch, double? fov}) => PanoramaCamera(
         yaw: _wrap(yaw ?? this.yaw),
         pitch: (pitch ?? this.pitch).clamp(-_maxPitch, _maxPitch),
         fov: (fov ?? this.fov).clamp(minFov, maxFov),

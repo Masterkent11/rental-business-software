@@ -63,6 +63,8 @@ export const toListingHttpResponse = (listing: Listing) => ({
   photos: listing.photos,
   floorPlans: (listing.floorPlans ?? []).map((plan) => ({ id: plan.id, url: plan.url, label: plan.label })),
   saleStatus: listing.saleStatus ?? null,
+  furnishing: listing.furnishing ?? null,
+  petsAllowed: listing.intent === 'SALE' ? null : (listing.petsAllowed ?? null),
   lotAreaSqm: listing.lotAreaSqm ?? null,
   parkingSlots: listing.parkingSlots ?? 0,
   location: listing.publicLocation

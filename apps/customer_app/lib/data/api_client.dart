@@ -39,17 +39,16 @@ class ApiException implements Exception {
   bool get datesUnavailable => code == 'DATES_UNAVAILABLE';
 
   @override
-  String toString() =>
-      'ApiException($statusCode): $message${cause == null ? "" : " <- $cause"}';
+  String toString() => 'ApiException($statusCode): $message${cause == null ? "" : " <- $cause"}';
 }
 
 const Duration kRequestTimeout = Duration(seconds: 20);
 
 class ApiClient {
   ApiClient({http.Client? client, String? baseUrl, TokenSource? tokenSource})
-    : _client = client ?? http.Client(),
-      _baseUrl = baseUrl ?? _defaultBaseUrl(),
-      _tokenSource = tokenSource;
+      : _client = client ?? http.Client(),
+        _baseUrl = baseUrl ?? _defaultBaseUrl(),
+        _tokenSource = tokenSource;
 
   final http.Client _client;
   final String _baseUrl;
@@ -72,18 +71,14 @@ class ApiClient {
   }) async {
     final cleaned = <String, String>{
       for (final entry in query.entries)
-        if (entry.value != null && entry.value!.isNotEmpty)
-          entry.key: entry.value!,
+        if (entry.value != null && entry.value!.isNotEmpty) entry.key: entry.value!,
     };
 
-    final uri = Uri.parse('$_baseUrl$path')
-        .replace(queryParameters: cleaned.isEmpty ? null : cleaned);
+    final uri = Uri.parse('$_baseUrl$path').replace(queryParameters: cleaned.isEmpty ? null : cleaned);
 
     late final http.Response response;
     try {
-      response = await _client
-          .get(uri, headers: _headers())
-          .timeout(kRequestTimeout);
+      response = await _client.get(uri, headers: _headers()).timeout(kRequestTimeout);
     } catch (error) {
       throw ApiException(
         'Could not reach the server. Check your connection and try again.',
