@@ -108,3 +108,9 @@ class ExploreResults extends AutoDisposeFamilyAsyncNotifier<ExploreResultsState,
 
 final exploreResultsProvider =
     AsyncNotifierProvider.autoDispose.family<ExploreResults, ExploreResultsState, ExploreQuery>(ExploreResults.new);
+
+final exploreMatchCountProvider = FutureProvider.autoDispose.family<int, ExploreQuery>((ref, query) async {
+  final place = ref.watch(locationProvider.select((s) => s.place));
+  final page = await ref.watch(listingRepositoryProvider).search(query, place: place, limit: 1);
+  return page.total;
+});

@@ -5,16 +5,19 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router.dart';
 import '../../../../design/controls.dart';
 import '../../../../design/tokens.dart';
-import '../../../../design/typography.dart';
 import '../../../location/location_controller.dart';
 import '../../application/explore_controller.dart';
+import '../../application/explore_results.dart';
 import '../../application/search_suggestions.dart';
 import '../../domain/explore_query.dart';
 import '../../domain/listing_category.dart';
-import 'listing_results_scroll_view.dart';
+import 'listing_results_sliver.dart';
+import 'listing_search_header.dart';
+import 'price_sheet.dart';
 import 'results_count_bar.dart';
-import 'search_summary_chip.dart';
 import 'search_suggestions_panel.dart';
+import 'search_summary_chip.dart';
+import 'sort_sheet.dart';
 
 class ListingSearchScaffold extends ConsumerStatefulWidget {
   const ListingSearchScaffold({
@@ -46,6 +49,7 @@ class ListingSearchScaffold extends ConsumerStatefulWidget {
 
 class _ListingSearchScaffoldState extends ConsumerState<ListingSearchScaffold> {
   final _searchFocus = FocusNode();
+  final _scroll = ScrollController();
   late final TextEditingController _search;
   bool _searching = false;
 
@@ -58,6 +62,7 @@ class _ListingSearchScaffoldState extends ConsumerState<ListingSearchScaffold> {
     _searchFocus.addListener(() {
       if (mounted) setState(() => _searching = _searchFocus.hasFocus);
     });
+    _scroll.addListener(_maybeLoadMore);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref.read(locationProvider.notifier).refreshIfStale();
@@ -67,9 +72,20 @@ class _ListingSearchScaffoldState extends ConsumerState<ListingSearchScaffold> {
 
   @override
   void dispose() {
+    _scroll
+      ..removeListener(_maybeLoadMore)
+      ..dispose();
     _search.dispose();
     _searchFocus.dispose();
     super.dispose();
+  }
+
+  void _maybeLoadMore() {
+    if (!mounted || !_scroll.hasClients) return;
+    final position = _scroll.position;
+    if (position.pixels >= position.maxScrollExtent - Tokens.paginationPrefetchExtent) {
+      ref.read(exploreResultsProvider(widget.seed).notifier).loadMore();
+    }
   }
 
   void _submit(String value) {
@@ -85,6 +101,18 @@ class _ListingSearchScaffoldState extends ConsumerState<ListingSearchScaffold> {
     setState(() {});
   }
 
+  void _handleBack() {
+    if (_searching) {
+      _searchFocus.unfocus();
+      return;
+    }
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      Navigator.of(context).maybePop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final query = ref.watch(exploreQueryProvider(widget.seed));
@@ -92,122 +120,130 @@ class _ListingSearchScaffoldState extends ConsumerState<ListingSearchScaffold> {
       backgroundColor: Tokens.canvas,
       body: SafeArea(
         bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(Tokens.s4, Tokens.s4, Tokens.gutter, 0),
-              child: Row(
-                children: [
-                  if (context.canPop())
-                    AppIconButton(icon: Icons.arrow_back_rounded, semanticLabel: 'Back', onPressed: () => context.pop())
-                  else
-                    const SizedBox(width: Tokens.s12),
-                  Expanded(
-                    child: Text(
-                      widget.titleFor(query),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppText.sectionTitle,
-                    ),
-                  ),
-                ],
+        child: RefreshIndicator(
+          color: Tokens.primaryNavy,
+          onRefresh: () => ref.read(exploreResultsProvider(widget.seed).notifier).refresh(),
+          child: CustomScrollView(
+            controller: _scroll,
+            physics: Tokens.scroll,
+            slivers: [
+              SliverToBoxAdapter(
+                child: ListingPageTitle(title: widget.titleFor(query)),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s8, Tokens.gutter, 0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: AppSearchField(
-                      hint: widget.searchHint,
-                      controller: _search,
-                      focusNode: _searchFocus,
-                      onChanged: (_) => setState(() {}),
-                      onSubmitted: _submit,
-                      onClear: _clearSearch,
-                    ),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: ListingSearchHeaderDelegate(
+                  onBack: _handleBack,
+                  search: AppSearchField(
+                    hint: widget.searchHint,
+                    controller: _search,
+                    focusNode: _searchFocus,
+                    onChanged: (_) => setState(() {}),
+                    onSubmitted: _submit,
+                    onClear: _clearSearch,
                   ),
-                  const SizedBox(width: Tokens.s8),
-                  AppFilterButton(activeCount: query.filterCount, onPressed: () => widget.onOpenFilters(context)),
-                ],
-              ),
-            ),
-            Expanded(
-              child: _searching
-                  ? SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s12, Tokens.gutter, Tokens.s24),
-                      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                      child: SearchSuggestionsPanel(
-                        text: _search.text,
-                        intent: query.intent,
-                        onRecent: (value) {
-                          _search.text = value;
-                          _submit(value);
-                        },
-                        onLocation: (suggestion) {
-                          ref.read(locationProvider.notifier).chooseCity(suggestion.cityLabel);
-                          _controller.setArea(suggestion.areaLabel);
-                          _clearSearch();
-                          _searchFocus.unfocus();
-                        },
-                        onListing: (suggestion) {
-                          _searchFocus.unfocus();
-                          context.push(Routes.listing(suggestion.id));
-                        },
-                        onCategory: (category) {
-                          _clearSearch();
-                          _searchFocus.unfocus();
-                          _controller.setCategory(category);
-                        },
+                  controls: ListingQuickControls(
+                    controls: [
+                      ListingQuickControl(
+                        id: 'filter',
+                        label: 'Filter',
+                        leading: const Icon(Icons.tune_rounded),
+                        active: query.filterCount > 0,
+                        onTap: () => widget.onOpenFilters(context),
                       ),
-                    )
-                  : ListingResultsScrollView(
-                      seed: widget.seed,
-                      pluralNoun: widget.pluralNoun,
-                      leading: [
-                        SliverToBoxAdapter(
-                          child: _CategoryChips(
-                            intent: query.intent,
-                            selected: query.category,
-                            onSelected: _controller.setCategory,
-                          ),
-                        ),
-                        if (widget.summary != null)
-                          SliverPadding(
-                            padding: const EdgeInsets.fromLTRB(Tokens.gutter, 0, Tokens.gutter, Tokens.s4),
-                            sliver: SliverToBoxAdapter(child: widget.summary),
-                          ),
-                        if (query.area != null)
-                          SliverPadding(
-                            padding: const EdgeInsets.fromLTRB(Tokens.gutter, 0, Tokens.gutter, Tokens.s4),
-                            sliver: SliverToBoxAdapter(
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: SearchSummaryChip(
-                                  icon: Icons.location_on_outlined,
-                                  label: query.area!,
-                                  onClear: () => _controller.setArea(null),
-                                ),
-                              ),
-                            ),
-                          ),
-                        SliverToBoxAdapter(
-                          child: ResultsCountBar(
-                            seed: widget.seed,
-                            singularNoun: widget.singularNoun,
-                            pluralNoun: widget.pluralNoun,
-                          ),
-                        ),
-                        if (widget.notice != null)
-                          SliverPadding(
-                            padding: const EdgeInsets.fromLTRB(Tokens.gutter, 0, Tokens.gutter, Tokens.s12),
-                            sliver: SliverToBoxAdapter(child: widget.notice),
-                          ),
-                      ],
+                      ListingQuickControl(
+                        id: 'price',
+                        label: 'Price',
+                        leading: query.isBuy ? const Icon(Icons.sell_outlined) : const PesoGlyph(),
+                        active: query.maxPriceCentavos != null,
+                        onTap: () => showPriceSheet(context, widget.seed),
+                      ),
+                      ListingQuickControl(
+                        id: 'sort',
+                        label: query.sort == ExploreSort.recommended ? 'Sort' : query.sort.label,
+                        leading: const Icon(Icons.swap_vert_rounded),
+                        active: query.sort != ExploreSort.recommended,
+                        onTap: () => showSortSheet(context, widget.seed),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (_searching)
+                SliverFillRemaining(
+                  hasScrollBody: true,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s12, Tokens.gutter, Tokens.s24),
+                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                    child: SearchSuggestionsPanel(
+                      text: _search.text,
+                      intent: query.intent,
+                      onRecent: (value) {
+                        _search.text = value;
+                        _submit(value);
+                      },
+                      onLocation: (suggestion) {
+                        ref.read(locationProvider.notifier).chooseCity(suggestion.cityLabel);
+                        _controller.setArea(suggestion.areaLabel);
+                        _clearSearch();
+                        _searchFocus.unfocus();
+                      },
+                      onListing: (suggestion) {
+                        _searchFocus.unfocus();
+                        context.push(Routes.listing(suggestion.id));
+                      },
+                      onCategory: (category) {
+                        _clearSearch();
+                        _searchFocus.unfocus();
+                        _controller.setCategory(category);
+                      },
                     ),
-            ),
-          ],
+                  ),
+                )
+              else ...[
+                SliverToBoxAdapter(
+                  child: _CategoryChips(
+                    intent: query.intent,
+                    selected: query.category,
+                    onSelected: _controller.setCategory,
+                  ),
+                ),
+                if (widget.summary != null)
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(Tokens.gutter, 0, Tokens.gutter, Tokens.s4),
+                    sliver: SliverToBoxAdapter(child: widget.summary),
+                  ),
+                if (query.area != null)
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(Tokens.gutter, 0, Tokens.gutter, Tokens.s4),
+                    sliver: SliverToBoxAdapter(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: SearchSummaryChip(
+                          icon: Icons.location_on_outlined,
+                          label: query.area!,
+                          onClear: () => _controller.setArea(null),
+                        ),
+                      ),
+                    ),
+                  ),
+                SliverToBoxAdapter(
+                  child: ResultsCountBar(
+                    seed: widget.seed,
+                    singularNoun: widget.singularNoun,
+                    pluralNoun: widget.pluralNoun,
+                    showSort: false,
+                  ),
+                ),
+                if (widget.notice != null)
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(Tokens.gutter, 0, Tokens.gutter, Tokens.s12),
+                    sliver: SliverToBoxAdapter(child: widget.notice),
+                  ),
+                ListingResultsSliver(seed: widget.seed, pluralNoun: widget.pluralNoun),
+              ],
+            ],
+          ),
         ),
       ),
     );

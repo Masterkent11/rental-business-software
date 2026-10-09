@@ -16,6 +16,12 @@ const outputSql = path.join(repoRoot, 'supabase', 'demo', 'generated-demo-media.
 const SUPABASE_URL = (process.env.SUPABASE_URL ?? '').replace(/\/$/, '');
 const PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY ?? '';
 const APPLY = process.argv.includes('--apply');
+const ONLY = new Set(
+  (process.argv.find((arg) => arg.startsWith('--only='))?.slice('--only='.length) ?? '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean),
+);
 const DEMO_ORG = 'd0000000-0000-4000-8000-000000000001';
 const REALTY = 'd0000000-0000-4000-8000-000000000002';
 
@@ -233,6 +239,17 @@ const LISTINGS: readonly DemoListing[] = [
     ],
   },
   {
+    listingId: 'd3000000-0000-4000-8000-000000000023',
+    tourId: null,
+    scenes: [],
+    photos: [
+      { pano: 'lebombo', yaw: 10 },
+      { pano: 'veranda', yaw: 15 },
+      { pano: 'lythwood_room', yaw: 190 },
+      { pano: 'lebombo', yaw: 190 },
+    ],
+  },
+  {
     org: REALTY,
     listingId: 'd3000000-0000-4000-8000-000000000014',
     tourId: 'd4000000-0000-4000-8000-000000000014',
@@ -266,18 +283,33 @@ async function ensurePanorama(name: string): Promise<Buffer> {
   return fs.readFileSync(file);
 }
 
-async function signIn(org: string): Promise<string> {
+type OrgSession = { access: string; refresh: string; expiresAt: number };
+
+async function signIn(org: string): Promise<OrgSession> {
   const credentials = CREDENTIALS[org]!;
   const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
     method: 'POST',
     headers: { apikey: PUBLISHABLE_KEY, 'content-type': 'application/json' },
     body: JSON.stringify({ email: credentials.email, password: credentials.password }),
   });
-  const body = (await response.json()) as { access_token?: string; error_description?: string; msg?: string };
-  if (!response.ok || !body.access_token) {
+  const body = (await response.json()) as { access_token?: string; refresh_token?: string; expires_in?: number; error_description?: string; msg?: string };
+  if (!response.ok || !body.access_token || !body.refresh_token) {
     throw new Error(`Demo owner sign-in failed: ${body.error_description ?? body.msg ?? response.status}. Run supabase/demo/seed-demo.sql first.`);
   }
-  return body.access_token;
+  return { access: body.access_token, refresh: body.refresh_token, expiresAt: Date.now() + (body.expires_in ?? 3600) * 1000 };
+}
+
+async function refreshSession(session: OrgSession): Promise<OrgSession> {
+  const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+    method: 'POST',
+    headers: { apikey: PUBLISHABLE_KEY, 'content-type': 'application/json' },
+    body: JSON.stringify({ refresh_token: session.refresh }),
+  });
+  const body = (await response.json()) as { access_token?: string; refresh_token?: string; expires_in?: number; error_description?: string; msg?: string };
+  if (!response.ok || !body.access_token || !body.refresh_token) {
+    throw new Error(`Token refresh failed: ${body.error_description ?? body.msg ?? response.status}`);
+  }
+  return { access: body.access_token, refresh: body.refresh_token, expiresAt: Date.now() + (body.expires_in ?? 3600) * 1000 };
 }
 
 async function upload(token: string, bucket: string, objectPath: string, body: Buffer, contentType: string) {
@@ -309,16 +341,22 @@ const q = (value: string | number | null) =>
 const publicUrl = (bucket: string, objectPath: string) => `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${objectPath}`;
 
 async function main() {
-  const tokens = new Map<string, string>();
+  const sessions = new Map<string, OrgSession>();
   const tokenFor = async (org: string) => {
-    if (!tokens.has(org)) tokens.set(org, await signIn(org));
-    return tokens.get(org)!;
+    let session = sessions.get(org);
+    if (!session) {
+      session = await signIn(org);
+    } else if (Date.now() > session.expiresAt - 5 * 60 * 1000) {
+      session = await refreshSession(session);
+    }
+    sessions.set(org, session);
+    return session.access;
   };
   const processor = sharpPanoramaProcessor();
   const statements: string[] = ['begin;'];
   const equirects = new Map<string, Awaited<ReturnType<typeof loadEquirect>>>();
 
-  for (const listing of LISTINGS) {
+  for (const listing of LISTINGS.filter((entry) => ONLY.size === 0 || ONLY.has(entry.listingId))) {
     const ORG = listing.org ?? DEMO_ORG;
     const token = await tokenFor(ORG);
     console.log(`Listing ${listing.listingId}`);
@@ -375,7 +413,7 @@ async function main() {
       await inBatches(objects, 8, (object) => upload(token, 'tour-media', object.path, object.body, object.type));
 
       statements.push(
-        `insert into tour_scenes (id, organization_id, tour_id, label, position, state, source_path, preview_path, thumbnail_path, tile_prefix, tile_levels, width_px, height_px, processed_at, initial_yaw) values (${q(scene.id)}, ${q(ORG)}, ${q(listing.tourId)}, ${q(scene.label)}, ${position}, 'READY', ${q(`${prefix}/source`)}, ${q(`${prefix}/preview.webp`)}, ${q(`${prefix}/thumb.webp`)}, ${q(`${prefix}/tiles`)}, ${processed.levels}, ${processed.widthPx}, ${processed.heightPx}, now(), ${scene.startYaw ?? 0});`,
+        `insert into tour_scenes (id, organization_id, tour_id, label, position, state, source_path, preview_path, thumbnail_path, tile_prefix, tile_levels, width_px, height_px, processed_at, initial_yaw) values (${q(scene.id)}, ${q(ORG)}, ${q(listing.tourId)}, ${q(scene.label)}, ${position}, 'READY', ${q(`${prefix}/source`)}, ${q(`${prefix}/preview.webp`)}, ${q(`${prefix}/thumb.webp`)}, ${q(`${prefix}/tiles`)}, ${processed.levels}, ${processed.widthPx}, ${processed.heightPx}, now(), ${((((scene.startYaw ?? 0) + 180) % 360) + 360) % 360 - 180});`,
       );
     }
 

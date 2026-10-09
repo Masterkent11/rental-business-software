@@ -22,6 +22,16 @@ class PropertyCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    assert(() {
+      debugPrint(
+        'HOME IMAGE DEBUG: '
+        'id=${listing.id} '
+        'title=${listing.title} '
+        'photos=${listing.photos.length} '
+        'url=${listing.photos.isEmpty ? "EMPTY" : listing.photos.first}',
+      );
+      return true;
+    }());
     final saved = ref.watch(isSavedProvider(listing.id));
 
     return GestureDetector(

@@ -17,7 +17,11 @@ class ExploreController extends AutoDisposeFamilyNotifier<ExploreQuery, ExploreQ
     state = state.copyWith(category: category, clearCategory: category == null);
   }
 
-  void setText(String text) => state = state.copyWith(text: text.trim());
+  void setText(String text) {
+    final next = text.trim();
+    if (next == state.text) return;
+    state = state.copyWith(text: next);
+  }
 
   void setArea(String? area) => state = state.copyWith(area: area, clearArea: area == null);
 

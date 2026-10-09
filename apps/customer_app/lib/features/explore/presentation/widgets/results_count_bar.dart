@@ -12,11 +12,18 @@ import '../../domain/explore_query.dart';
 import 'sort_sheet.dart';
 
 class ResultsCountBar extends ConsumerWidget {
-  const ResultsCountBar({required this.seed, required this.singularNoun, required this.pluralNoun, super.key});
+  const ResultsCountBar({
+    required this.seed,
+    required this.singularNoun,
+    required this.pluralNoun,
+    this.showSort = true,
+    super.key,
+  });
 
   final ExploreQuery seed;
   final String singularNoun;
   final String pluralNoun;
+  final bool showSort;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -64,16 +71,17 @@ class ResultsCountBar extends ConsumerWidget {
               ),
             ),
           ),
-          TextButton.icon(
-            onPressed: () => showSortSheet(context, seed),
-            style: TextButton.styleFrom(
-              foregroundColor: Tokens.primaryNavy,
-              minimumSize: const Size(Tokens.tap, Tokens.tap),
-              textStyle: AppText.chip,
+          if (showSort)
+            TextButton.icon(
+              onPressed: () => showSortSheet(context, seed),
+              style: TextButton.styleFrom(
+                foregroundColor: Tokens.primaryNavy,
+                minimumSize: const Size(Tokens.tap, Tokens.tap),
+                textStyle: AppText.chip,
+              ),
+              icon: const Icon(Icons.swap_vert_rounded, size: Tokens.iconMd),
+              label: Text(sort == ExploreSort.recommended ? 'Sort' : sort.label),
             ),
-            icon: const Icon(Icons.swap_vert_rounded, size: Tokens.iconMd),
-            label: Text(sort == ExploreSort.recommended ? 'Sort' : sort.label),
-          ),
         ],
       ),
     );

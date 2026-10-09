@@ -22,7 +22,7 @@ class BuySearchScreen extends StatelessWidget {
     return ListingSearchScaffold(
       seed: seed,
       titleFor: titleFor,
-      searchHint: 'Search area, project or property',
+      searchHint: 'Search area, landmark or property',
       singularNoun: 'property',
       pluralNoun: 'properties',
       focusSearch: focusSearch,

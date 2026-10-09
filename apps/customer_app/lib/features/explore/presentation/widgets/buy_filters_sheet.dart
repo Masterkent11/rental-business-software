@@ -5,13 +5,13 @@ import '../../../../design/controls.dart';
 import '../../../../design/tokens.dart';
 import '../../../../design/typography.dart';
 import '../../application/explore_controller.dart';
+import '../../application/explore_results.dart';
 import '../../domain/explore_query.dart';
 import '../../domain/listing_category.dart';
 import 'filter_sheet_frame.dart';
 
-Future<void> showBuyFiltersSheet(BuildContext context, ExploreQuery seed) => showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
+Future<void> showBuyFiltersSheet(BuildContext context, ExploreQuery seed) => showListingSheet<void>(
+      context,
       builder: (_) => _BuyFiltersSheet(seed: seed),
     );
 
@@ -38,6 +38,18 @@ class _BuyFiltersSheetState extends ConsumerState<_BuyFiltersSheet> {
     _features = {...query.quickFilters};
   }
 
+  ExploreQuery _draftQuery(ExploreQuery current) {
+    return ExploreQuery(
+      intent: current.intent,
+      category: current.category,
+      text: current.text,
+      area: current.area,
+      sort: current.sort,
+      buy: _buy,
+      quickFilters: _features,
+    );
+  }
+
   void _apply() {
     final current = ref.read(exploreQueryProvider(widget.seed));
     ref.read(exploreQueryProvider(widget.seed).notifier).replace(
@@ -56,15 +68,21 @@ class _BuyFiltersSheetState extends ConsumerState<_BuyFiltersSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final current = ref.watch(exploreQueryProvider(widget.seed));
+    final draft = _draftQuery(current);
+    final count = ref.watch(exploreMatchCountProvider(draft)).valueOrNull;
+    final applyLabel = count != null ? 'Show $count properties' : 'Show results';
     return FilterSheetFrame(
+      title: 'Filters',
       onReset: () => setState(() {
         _buy = const BuyRefinement();
         _features = {};
       }),
       onApply: _apply,
+      applyLabel: applyLabel,
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: Tokens.s20),
+          padding: const EdgeInsets.only(bottom: Tokens.s16),
           child: AppMinimumPicker(
             label: 'Bedrooms',
             value: _buy.minBedrooms,
@@ -78,7 +96,7 @@ class _BuyFiltersSheetState extends ConsumerState<_BuyFiltersSheet> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(bottom: Tokens.s20),
+          padding: const EdgeInsets.only(bottom: Tokens.s16),
           child: AppMinimumPicker(
             label: 'Bathrooms',
             value: _buy.minBathrooms,
@@ -93,6 +111,7 @@ class _BuyFiltersSheetState extends ConsumerState<_BuyFiltersSheet> {
         ),
         FilterSection(
           title: 'Floor area',
+          subtitle: 'Minimum floor area in square meters.',
           child: FilterChoiceWrap<int?>(
             options: _floorAreas,
             labelFor: (area) => area == null ? 'Any' : '$area m²+',
@@ -108,27 +127,32 @@ class _BuyFiltersSheetState extends ConsumerState<_BuyFiltersSheet> {
         ),
         FilterSection(
           title: 'Features',
-          child: FilterChoiceWrap<QuickFilter>(
+          subtitle: 'Select the features you need.',
+          child: FilterFeatureGrid<QuickFilter>(
             options: QuickFilter.forIntent(MarketIntent.buy),
             labelFor: (filter) => filter.label,
+            iconFor: (filter) => filter.icon,
             isSelected: _features.contains,
             onTap: (filter) => setState(() {
               if (!_features.remove(filter)) _features.add(filter);
             }),
           ),
         ),
-        const Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(Icons.lock_outline, size: Tokens.iconSm, color: Tokens.muted),
-            SizedBox(width: Tokens.s6),
-            Expanded(
-              child: Text(
-                'Sale prices are shared privately by the agent or owner when you inquire, so there is no price filter.',
-                style: AppText.caption,
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: Tokens.s8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.lock_outline, size: Tokens.iconSm, color: Tokens.muted),
+              SizedBox(width: Tokens.s6),
+              Expanded(
+                child: Text(
+                  'Sale prices are shared privately by the agent or owner when you inquire, so there is no price filter.',
+                  style: AppText.caption,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );

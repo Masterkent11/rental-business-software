@@ -12,6 +12,7 @@ import '../../../design/tokens.dart';
 import '../../../fixtures/view_models.dart';
 import '../../auth/auth_guard.dart';
 import '../widgets/listing_attributes.dart';
+import '../widgets/tour_callout_card.dart';
 
 enum SaleTab {
   overview('Overview'),
@@ -407,7 +408,7 @@ class _Overview extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (card.hasTour) ...[
-          _ExploreTourPromoCard(card: card),
+          TourCalloutCard(card: card),
           const SizedBox(height: Tokens.s20),
         ],
         const SizedBox(height: Tokens.s20),
@@ -463,112 +464,6 @@ class _Overview extends StatelessWidget {
   }
 }
 
-class _ExploreTourPromoCard extends StatelessWidget {
-  const _ExploreTourPromoCard({required this.card});
-
-  final ListingCardView card;
-
-  @override
-  Widget build(BuildContext context) {
-    final photo = card.photos.isNotEmpty ? card.photos.first : '';
-    return Container(
-      height: 180,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(Tokens.rMd),
-        color: Tokens.primaryNavy,
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (photo.isNotEmpty)
-            AppImage(url: photo, fallbackIcon: Icons.threed_rotation, seed: 1)
-          else
-            Container(color: Tokens.primaryNavy),
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.1),
-                  Colors.black.withValues(alpha: 0.75),
-                ],
-              ),
-            ),
-          ),
-          Center(
-            child: Material(
-              color: Colors.white,
-              shape: const CircleBorder(),
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: () => context.push(Routes.tour(card.id)),
-                child: const Padding(
-                  padding: EdgeInsets.all(14),
-                  child: Icon(Icons.play_arrow, size: 28, color: Tokens.primaryNavy),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: Tokens.s16,
-            right: Tokens.s16,
-            bottom: Tokens.s12,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Explore in 360°',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Take a virtual tour of this property',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.85),
-                          fontSize: 12.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Material(
-                  color: Colors.white,
-                  shape: const CircleBorder(),
-                  child: InkWell(
-                    customBorder: const CircleBorder(),
-                    onTap: () => context.push(Routes.tour(card.id)),
-                    child: const Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Icon(Icons.arrow_forward, size: 18, color: Tokens.primaryNavy),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Positioned.fill(
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => context.push(Routes.tour(card.id)),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _InquiryNotice extends StatelessWidget {
   const _InquiryNotice({required this.inquiry, required this.onOpen});
@@ -750,39 +645,34 @@ class _TourTab extends StatelessWidget {
           title: 'No virtual tour yet',
           message: 'Ask the agent for a viewing, or check back later.');
     }
-    return GestureDetector(
-      onTap: () => context.push(Routes.tour(card.id)),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(Tokens.rMd),
-        child: AspectRatio(
-          aspectRatio: 16 / 10,
-          child: Stack(
-            fit: StackFit.expand,
+    return Column(
+      children: [
+        TourCalloutCard(
+          card: card,
+          onTap: () => context.push(Routes.tour(card.id)),
+        ),
+        const SizedBox(height: Tokens.s16),
+        Container(
+          padding: const EdgeInsets.all(Tokens.s16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(Tokens.rMd),
+            border: Border.all(color: Tokens.hairline),
+          ),
+          child: Row(
             children: [
-              AppImage(url: card.photos.isEmpty ? '' : card.photos.first, fallbackIcon: Icons.threed_rotation, seed: 7),
-              const ColoredBox(color: Color(0x66000000)),
-              Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.threed_rotation, color: Colors.white, size: 44),
-                    const SizedBox(height: Tokens.s8),
-                    Text(
-                      card.sceneCount > 0
-                          ? 'Walk through ${card.sceneCount} room${card.sceneCount == 1 ? '' : 's'}'
-                          : 'Walk through it',
-                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text('Drag to look around · tap doors to move',
-                        style: TextStyle(color: Colors.white70, fontSize: 12.5)),
-                  ],
+              const Icon(Icons.info_outline, color: Tokens.primaryNavy, size: 20),
+              const SizedBox(width: Tokens.s12),
+              Expanded(
+                child: Text(
+                  'Explore all ${card.sceneCount > 0 ? card.sceneCount : 1} rooms in high resolution 360° panoramic views.',
+                  style: const TextStyle(fontSize: 13, color: Tokens.muted),
                 ),
               ),
             ],
           ),
         ),
-      ),
+      ],
     );
   }
 }

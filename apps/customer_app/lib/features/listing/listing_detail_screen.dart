@@ -17,7 +17,7 @@ import '../auth/auth_guard.dart';
 import '../saved/saved_controller.dart';
 import 'listing_price.dart';
 import 'sale/sale_listing_screen.dart';
-import 'widgets/animated_360_indicator.dart';
+import 'widgets/tour_callout_card.dart';
 import 'widgets/move_in_cost_card.dart';
 import '../tour/tour_intro_screen.dart';
 import 'widgets/listing_attributes.dart';
@@ -256,7 +256,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (card.hasTour) ...[
-          _TourCallout(
+          TourCalloutCard(
             card: card,
             onTap: () => _openTour(card),
           ),
@@ -371,7 +371,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
   Widget _buildTour(ListingCardView card) {
     return Column(
       children: [
-        _TourCallout(
+        TourCalloutCard(
           card: card,
           onTap: () => context.push(Routes.tour(card.id)),
         ),
@@ -715,116 +715,6 @@ class _AvailabilityRow extends StatelessWidget {
   }
 }
 
-class _TourCallout extends StatelessWidget {
-  const _TourCallout({required this.card, required this.onTap});
-
-  final ListingCardView card;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final photo = card.photos.isNotEmpty ? card.photos.first : '';
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 175,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(Tokens.rMd),
-          color: Tokens.primaryNavy,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (photo.isNotEmpty)
-              AppImage(url: photo, fallbackIcon: Icons.threed_rotation, seed: 1)
-            else
-              Container(color: Tokens.primaryNavy),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.15),
-                    Colors.black.withValues(alpha: 0.78),
-                  ],
-                  stops: const [0.0, 1.0],
-                ),
-              ),
-            ),
-            Center(
-              child: Animated360Indicator(
-                phoneWidth: 32,
-                phoneHeight: 54,
-                arrowRadius: 36,
-                previewUrl: photo,
-              ),
-            ),
-            Positioned(
-              left: Tokens.s16,
-              right: Tokens.s16,
-              bottom: Tokens.s12,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'Explore in 360°',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.2,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Move your phone or drag to look around',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.85),
-                            fontSize: 12.5,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 80,
-                          height: 14,
-                          child: Text(
-                            'Walk through it',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Colors.transparent,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 18,
-                      color: Tokens.primaryNavy,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _CheckDatesButton extends StatelessWidget {
   const _CheckDatesButton({required this.onTap});

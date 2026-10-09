@@ -9,15 +9,15 @@ import '../../../../design/quantity_stepper.dart';
 import '../../../../design/tokens.dart';
 import '../../../../design/typography.dart';
 import '../../application/explore_controller.dart';
+import '../../application/explore_results.dart';
 import '../../domain/explore_query.dart';
 import '../../domain/listing_category.dart';
 import '../../domain/stay_search_policy.dart';
 import '../../domain/stay_validation.dart';
 import 'filter_sheet_frame.dart';
 
-Future<void> showRentFiltersSheet(BuildContext context, ExploreQuery seed) => showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
+Future<void> showRentFiltersSheet(BuildContext context, ExploreQuery seed) => showListingSheet<void>(
+      context,
       builder: (_) => _RentFiltersSheet(seed: seed),
     );
 
@@ -107,6 +107,28 @@ class _RentFiltersSheetState extends ConsumerState<_RentFiltersSheet> {
         _error = null;
       });
 
+  ExploreQuery _draftQuery(ExploreQuery current) {
+    final dates = _dates;
+    final moveIn = _moveIn;
+    StaySearch? stay;
+    if (_mode == RentMode.shortStay && dates != null) {
+      stay = ShortStaySearch(checkIn: dates.start, checkOut: dates.end, guests: _guests);
+    } else if (_mode == RentMode.monthly && moveIn != null) {
+      stay = MonthlySearch(moveIn: moveIn, occupants: _occupants);
+    }
+    return ExploreQuery(
+      intent: current.intent,
+      category: current.category,
+      text: current.text,
+      area: current.area,
+      sort: current.sort,
+      rentMode: _mode,
+      stay: stay,
+      maxPriceCentavos: _maxPrice,
+      quickFilters: _features,
+    );
+  }
+
   void _apply() {
     final now = ref.read(clockProvider)();
     final dates = _dates;
@@ -142,13 +164,20 @@ class _RentFiltersSheetState extends ConsumerState<_RentFiltersSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final current = ref.watch(exploreQueryProvider(widget.seed));
+    final draft = _draftQuery(current);
+    final count = ref.watch(exploreMatchCountProvider(draft)).valueOrNull;
+    final applyLabel = count != null ? 'Show $count properties' : 'Show results';
     return FilterSheetFrame(
+      title: 'Filters',
       onReset: _reset,
       onApply: _apply,
+      applyLabel: applyLabel,
       children: [
         FilterSection(
           title: 'Type of stay',
-          child: FilterChoiceWrap<RentMode?>(
+          subtitle: 'Choose how you plan to stay.',
+          child: FilterOptionRow<RentMode?>(
             options: const [null, RentMode.shortStay, RentMode.monthly],
             labelFor: (mode) => mode?.label ?? 'Any',
             isSelected: (mode) => mode == _mode,
@@ -219,6 +248,7 @@ class _RentFiltersSheetState extends ConsumerState<_RentFiltersSheet> {
           ),
         FilterSection(
           title: 'Budget',
+          subtitle: 'Select your preferred budget.',
           child: FilterChoiceWrap<int?>(
             options: _budgets,
             labelFor: (budget) => budget == null ? 'Any' : 'Under ${Money.peso(budget)}',
@@ -228,9 +258,12 @@ class _RentFiltersSheetState extends ConsumerState<_RentFiltersSheet> {
         ),
         FilterSection(
           title: 'Features',
-          child: FilterChoiceWrap<QuickFilter>(
+          subtitle: 'Select the features you need.',
+          divider: false,
+          child: FilterFeatureGrid<QuickFilter>(
             options: QuickFilter.forIntent(MarketIntent.rent),
             labelFor: (filter) => filter.label,
+            iconFor: (filter) => filter.icon,
             isSelected: _features.contains,
             onTap: (filter) => setState(() {
               if (!_features.remove(filter)) _features.add(filter);

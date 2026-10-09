@@ -21,24 +21,35 @@ class AppImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (url.isEmpty || !url.startsWith('http')) {
+      return _Fallback(icon: fallbackIcon, seed: seed);
+    }
     final ratio = MediaQuery.maybeDevicePixelRatioOf(context) ?? 2;
     return Image.network(
       url,
       fit: fit,
       cacheWidth: cacheWidth == null ? null : (cacheWidth! * ratio / 2).round(),
       gaplessPlayback: true,
-      loadingBuilder: (context, child, progress) {
-        if (progress == null) return child;
-        return _Fallback(icon: fallbackIcon, seed: seed, dim: true);
+      errorBuilder: (context, error, stack) {
+        assert(() {
+          debugPrint('APP_IMAGE ERROR: url=$url error=$error');
+          return true;
+        }());
+        return _Fallback(icon: fallbackIcon, seed: seed);
       },
-      errorBuilder: (context, error, stack) => _Fallback(icon: fallbackIcon, seed: seed),
       frameBuilder: (context, child, frame, wasSync) {
         if (wasSync) return child;
-        return AnimatedOpacity(
-          opacity: frame == null ? 0 : 1,
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOut,
-          child: child,
+        return Stack(
+          fit: StackFit.passthrough,
+          children: [
+            if (frame == null) _Fallback(icon: fallbackIcon, seed: seed, dim: true),
+            AnimatedOpacity(
+              opacity: frame == null ? 0 : 1,
+              duration: const Duration(milliseconds: 240),
+              curve: Curves.easeOut,
+              child: child,
+            ),
+          ],
         );
       },
     );
