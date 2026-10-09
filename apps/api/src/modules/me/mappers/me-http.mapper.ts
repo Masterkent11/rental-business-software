@@ -1,7 +1,7 @@
 import type { GetMeResult } from '@/application/me/get-me/get-me.types.ts';
 
 export function toMeHttpResponse(result: GetMeResult) {
-  const { principal, profile, organizations } = result;
+  const { principal, profile, organizations, agentProfile } = result;
   const displayName = profile?.displayName || principal.displayName;
   return {
     id: principal.userId,
@@ -27,5 +27,15 @@ export function toMeHttpResponse(result: GetMeResult) {
       capability: c.capability,
       organizationId: c.organizationId,
     })),
+    agentProfile: agentProfile
+      ? {
+          id: agentProfile.id,
+          displayName: agentProfile.displayName,
+          headline: agentProfile.headline,
+          photoUrl: agentProfile.photoUrl,
+          verificationState: agentProfile.verificationState,
+          verified: agentProfile.verificationState === 'VERIFIED',
+        }
+      : null,
   };
 }

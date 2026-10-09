@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { AGENT_REPOSITORY } from '@/modules/shared/shared.tokens.ts';
+import type { AgentRepository } from '@/application/ports/repositories/agent-repository.port.ts';
 import { GetMeController } from './controllers/get-me.controller.ts';
 import { GetMyStaysController } from './controllers/get-my-stays.controller.ts';
 import { SavedListingsController } from './controllers/saved-listings.controller.ts';
@@ -44,8 +46,8 @@ import type { UserRepository } from '@/application/ports/repositories/user-repos
     },
     {
       provide: GET_ME,
-      inject: [USER_REPOSITORY],
-      useFactory: (users: UserRepository) => getMe(users),
+      inject: [USER_REPOSITORY, AGENT_REPOSITORY],
+      useFactory: (users: UserRepository, agents: AgentRepository) => getMe(users, agents),
     },
     {
       provide: UPDATE_MY_PROFILE,

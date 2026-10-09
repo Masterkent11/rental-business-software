@@ -28,8 +28,7 @@ class AppBootstrap {
     })? initializeSupabase,
     void Function(AppBootstrapState)? onStateChanged,
   })  : _supabaseUrl = supabaseUrl ?? defaultSupabaseUrl,
-        _supabasePublishableKey =
-            supabasePublishableKey ?? defaultSupabasePublishableKey,
+        _supabasePublishableKey = supabasePublishableKey ?? defaultSupabasePublishableKey,
         _apiBaseUrl = apiBaseUrl ?? configuredApiBaseUrl,
         _release = release ?? kReleaseMode,
         _initializeSupabase = initializeSupabase ?? _defaultInitSupabase,
@@ -160,8 +159,7 @@ class AppBootstrapNotifier extends Notifier<AppBootstrapState> {
   }
 
   Future<AppBootstrapState> initialize([AppBootstrap? customBootstrap]) async {
-    final AppBootstrap bootstrap =
-        customBootstrap ?? ref.read(appBootstrapProvider);
+    final AppBootstrap bootstrap = customBootstrap ?? ref.read(appBootstrapProvider);
     state = const AppBootstrapState.loading();
     final result = await bootstrap.initialize();
     state = result;
@@ -169,8 +167,7 @@ class AppBootstrapNotifier extends Notifier<AppBootstrapState> {
   }
 
   Future<AppBootstrapState> retry([AppBootstrap? customBootstrap]) async {
-    final AppBootstrap bootstrap =
-        customBootstrap ?? ref.read(appBootstrapProvider);
+    final AppBootstrap bootstrap = customBootstrap ?? ref.read(appBootstrapProvider);
     state = const AppBootstrapState.loading();
     final result = await bootstrap.retry();
     state = result;
@@ -178,7 +175,6 @@ class AppBootstrapNotifier extends Notifier<AppBootstrapState> {
   }
 }
 
-final appBootstrapStateProvider =
-    NotifierProvider<AppBootstrapNotifier, AppBootstrapState>(
-      AppBootstrapNotifier.new,
-    );
+final appBootstrapStateProvider = NotifierProvider<AppBootstrapNotifier, AppBootstrapState>(
+  AppBootstrapNotifier.new,
+);

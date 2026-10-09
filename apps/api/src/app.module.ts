@@ -9,6 +9,11 @@ import { ToursModule } from './modules/tours/tours.module.ts';
 import { CollectionModule } from './modules/collection/collection.module.ts';
 import { MessagingModule } from './modules/messaging/messaging.module.ts';
 import { NotificationsModule } from './modules/notifications/notifications.module.ts';
+import { AgentsModule } from './modules/agents/agents.module.ts';
+import { InquiriesModule } from './modules/inquiries/inquiries.module.ts';
+import { ViewingsModule } from './modules/viewings/viewings.module.ts';
+import { DiscoveryModule } from './modules/discovery/discovery.module.ts';
+import { ContentModule } from './modules/content/content.module.ts';
 import { IdentityModule } from './modules/shared/identity.module.ts';
 import { PlatformModule } from './modules/shared/platform.module.ts';
 import { PresentationExceptionFilter } from './modules/shared/http-exception.filter.ts';
@@ -21,9 +26,6 @@ class HealthController {
   }
 }
 
-/**
- * The modular monolith root.
- */
 @Module({
   imports: [
     IdentityModule,
@@ -37,6 +39,11 @@ class HealthController {
     CollectionModule,
     MessagingModule,
     NotificationsModule,
+    AgentsModule,
+    InquiriesModule,
+    ViewingsModule,
+    DiscoveryModule,
+    ContentModule,
   ],
   controllers: [HealthController],
   providers: [

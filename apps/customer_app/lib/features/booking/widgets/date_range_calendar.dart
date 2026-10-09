@@ -84,17 +84,17 @@ class DateRangeLegend extends StatelessWidget {
   }
 
   Widget _dot(Color color, String label, BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Container(
-        width: 10,
-        height: 10,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      ),
-      const SizedBox(width: Tokens.s6),
-      Text(label, style: Theme.of(context).textTheme.bodySmall),
-    ],
-  );
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: Tokens.s6),
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      );
 }
 
 class _MonthGrid extends StatelessWidget {
@@ -159,11 +159,7 @@ class _MonthGrid extends StatelessWidget {
               final blocked = isBlocked(day);
               final isStart = checkIn != null && day == checkIn;
               final isEnd = checkOut != null && day == checkOut;
-              final inRange =
-                  checkIn != null &&
-                  checkOut != null &&
-                  day.isAfter(checkIn!) &&
-                  day.isBefore(checkOut!);
+              final inRange = checkIn != null && checkOut != null && day.isAfter(checkIn!) && day.isBefore(checkOut!);
 
               return _DayCell(
                 day: day,

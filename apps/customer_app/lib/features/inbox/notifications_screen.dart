@@ -93,7 +93,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                                 children: [
                                   Text(n.title, style: theme.textTheme.titleMedium),
                                   const SizedBox(height: 2),
-                                  Text(n.body, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                                  Text(n.body,
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                                   const SizedBox(height: 4),
                                   Text(conversationTime(n.createdAt), style: theme.textTheme.bodySmall),
                                 ],

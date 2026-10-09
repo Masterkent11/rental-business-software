@@ -94,6 +94,5 @@ class _SuitcasePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _SuitcasePainter old) =>
-      old.body != body || old.line != line || old.accent != accent;
+  bool shouldRepaint(covariant _SuitcasePainter old) => old.body != body || old.line != line || old.accent != accent;
 }

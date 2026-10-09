@@ -1,5 +1,6 @@
 import type {
   MediaStorage,
+  StorageCredentials,
   StoredObject,
 } from '@/application/ports/storage/media-storage.port.ts';
 
@@ -10,24 +11,46 @@ const CACHE_SECONDS = 31_536_000;
 export function supabaseMediaStorage(
   supabaseUrl = process.env.SUPABASE_URL ?? '',
   serviceKey = process.env.SUPABASE_SERVICE_KEY ?? '',
+  publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? '',
 ): MediaStorage {
   const base = supabaseUrl.replace(/\/$/, '');
 
-  const require = () => {
-    if (!base || !serviceKey) {
-      throw new Error(
-        'SUPABASE_URL and SUPABASE_SERVICE_KEY are required to store tour media',
-      );
+  const headersFor = (credentials?: StorageCredentials): Record<string, string> => {
+    if (!base) throw new Error('SUPABASE_URL is required to store tour media');
+    if (credentials) {
+      if (!publishableKey) {
+        throw new Error('SUPABASE_PUBLISHABLE_KEY is required to store tour media on behalf of a signed-in user');
+      }
+      return { apikey: publishableKey, authorization: `Bearer ${credentials.accessToken}` };
     }
+    if (!serviceKey) {
+      throw new Error('Tour media uploads need a signed-in user or SUPABASE_SERVICE_KEY');
+    }
+    return { apikey: serviceKey, authorization: `Bearer ${serviceKey}` };
+  };
+
+  const list = async (prefix: string, headers: Record<string, string>): Promise<string[]> => {
+    const response = await fetch(`${base}/storage/v1/object/list/${BUCKET}`, {
+      method: 'POST',
+      headers: { ...headers, 'content-type': 'application/json' },
+      body: JSON.stringify({ prefix, limit: 1000, offset: 0 }),
+    });
+    if (!response.ok) {
+      throw new Error(`Storage refused to list ${prefix} (${response.status}): ${await response.text()}`);
+    }
+    const entries = (await response.json()) as { name: string; id: string | null }[];
+    const files: string[] = [];
+    for (const entry of entries) {
+      const path = `${prefix}/${entry.name}`;
+      if (entry.id === null) files.push(...(await list(path, headers)));
+      else files.push(path);
+    }
+    return files;
   };
 
   return {
-    async put(objects: readonly StoredObject[]): Promise<void> {
-      require();
-
-      // Uploaded in small batches rather than all at once: a 32-tile level is
-      // 32 requests, and firing them together against one host is how a
-      // processing job becomes a thundering herd.
+    async put(objects: readonly StoredObject[], credentials?: StorageCredentials): Promise<void> {
+      const headers = headersFor(credentials);
       const batchSize = 8;
       for (let i = 0; i < objects.length; i += batchSize) {
         const batch = objects.slice(i, i + batchSize);
@@ -39,8 +62,7 @@ export function supabaseMediaStorage(
               {
                 method: 'POST',
                 headers: {
-                  apikey: serviceKey,
-                  authorization: `Bearer ${serviceKey}`,
+                  ...headers,
                   'content-type': object.contentType,
                   'cache-control': `max-age=${CACHE_SECONDS}`,
                   'x-upsert': 'true',
@@ -62,6 +84,22 @@ export function supabaseMediaStorage(
     async createReadUrl(path: string): Promise<string> {
       if (!base) throw new Error('SUPABASE_URL is required to read tour media');
       return `${base}/storage/v1/object/public/${BUCKET}/${path}`;
+    },
+
+    async removePrefix(prefix: string, credentials?: StorageCredentials): Promise<number> {
+      const headers = headersFor(credentials);
+      const files = await list(prefix.replace(/\/$/, ''), headers);
+      for (let i = 0; i < files.length; i += 100) {
+        const response = await fetch(`${base}/storage/v1/object/${BUCKET}`, {
+          method: 'DELETE',
+          headers: { ...headers, 'content-type': 'application/json' },
+          body: JSON.stringify({ prefixes: files.slice(i, i + 100) }),
+        });
+        if (!response.ok) {
+          throw new Error(`Storage refused to delete under ${prefix} (${response.status}): ${await response.text()}`);
+        }
+      }
+      return files.length;
     },
   };
 }

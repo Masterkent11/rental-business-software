@@ -36,14 +36,11 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
     setState(() => _submitting = true);
 
     try {
-      await ref
-          .read(applicationRepositoryProvider)
-          .submit(
+      await ref.read(applicationRepositoryProvider).submit(
             resourceId: card.resourceId,
             desiredMoveIn: _moveIn,
             desiredTermMonths: 12,
-            message:
-                '$_occupants ${_occupants == 1 ? "person" : "people"} '
+            message: '$_occupants ${_occupants == 1 ? "person" : "people"} '
                 'expected to live here.',
           );
       ref.invalidate(applicationsProvider);
@@ -60,8 +57,7 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
       );
     } on ApiException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(error.message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -75,10 +71,13 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
     if (detailAsync.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    if (detail == null) {
+    final monthly = detail?.card.isSale == false ? detail?.card.priceCentavos : null;
+    if (detail == null || monthly == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Apply to rent')),
-        body: const Center(child: Text('This place is no longer available.')),
+        body: Center(
+          child: Text(detail == null ? 'This place is no longer available.' : 'This property is not offered for rent.'),
+        ),
       );
     }
 
@@ -117,12 +116,12 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
                     children: [
                       Text(card.title, style: theme.textTheme.titleMedium),
                       const SizedBox(height: 2),
-                      Text(card.location, style: theme.textTheme.bodySmall),
+                      Text(card.place, style: theme.textTheme.bodySmall),
                     ],
                   ),
                 ),
                 Text(
-                  Money.perMonth(card.priceCentavos),
+                  Money.perMonth(monthly),
                   style: theme.textTheme.titleMedium,
                 ),
               ],
@@ -230,9 +229,7 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : Text(
-                      _ready
-                          ? 'Submit application'
-                          : 'Attach at least one document',
+                      _ready ? 'Submit application' : 'Attach at least one document',
                     ),
             ),
           ),
@@ -247,8 +244,7 @@ class _FieldLabel extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) =>
-      Text(text, style: Theme.of(context).textTheme.titleMedium);
+  Widget build(BuildContext context) => Text(text, style: Theme.of(context).textTheme.titleMedium);
 }
 
 class _DateField extends StatelessWidget {
@@ -359,9 +355,7 @@ class _RoundButton extends StatelessWidget {
         child: Icon(
           icon,
           size: 18,
-          color: enabled
-              ? theme.colorScheme.onSurface
-              : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+          color: enabled ? theme.colorScheme.onSurface : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
         ),
       ),
     );
@@ -393,14 +387,10 @@ class _DocumentRow extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(Tokens.s16),
           decoration: BoxDecoration(
-            color: attached
-                ? Tokens.available.withValues(alpha: 0.07)
-                : Colors.transparent,
+            color: attached ? Tokens.available.withValues(alpha: 0.07) : Colors.transparent,
             borderRadius: BorderRadius.circular(Tokens.rMd),
             border: Border.all(
-              color: attached
-                  ? Tokens.available.withValues(alpha: 0.35)
-                  : theme.colorScheme.outlineVariant,
+              color: attached ? Tokens.available.withValues(alpha: 0.35) : theme.colorScheme.outlineVariant,
             ),
           ),
           child: Row(
@@ -408,18 +398,14 @@ class _DocumentRow extends StatelessWidget {
               Icon(
                 attached ? Icons.check_circle : Icons.photo_camera_outlined,
                 size: 20,
-                color: attached
-                    ? Tokens.available
-                    : theme.colorScheme.onSurfaceVariant,
+                color: attached ? Tokens.available : theme.colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: Tokens.s12),
               Expanded(child: Text(label, style: theme.textTheme.bodyLarge)),
               Text(
                 attached ? 'Attached' : 'Add photo',
                 style: theme.textTheme.labelMedium?.copyWith(
-                  color: attached
-                      ? Tokens.available
-                      : theme.colorScheme.onSurfaceVariant,
+                  color: attached ? Tokens.available : theme.colorScheme.onSurfaceVariant,
                 ),
               ),
             ],

@@ -17,8 +17,7 @@ class AppBootstrapState {
   const AppBootstrapState.idle() : this(status: BootstrapStatus.idle);
   const AppBootstrapState.loading() : this(status: BootstrapStatus.loading);
   const AppBootstrapState.ready() : this(status: BootstrapStatus.ready);
-  const AppBootstrapState.error(Object error)
-      : this(status: BootstrapStatus.error, error: error);
+  const AppBootstrapState.error(Object error) : this(status: BootstrapStatus.error, error: error);
 
   final BootstrapStatus status;
   final Object? error;
@@ -32,10 +31,7 @@ class AppBootstrapState {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is AppBootstrapState &&
-          runtimeType == other.runtimeType &&
-          status == other.status &&
-          error == other.error;
+      other is AppBootstrapState && runtimeType == other.runtimeType && status == other.status && error == other.error;
 
   @override
   int get hashCode => Object.hash(status, error);

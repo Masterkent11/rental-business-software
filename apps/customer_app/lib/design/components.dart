@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'controls.dart';
 import 'tokens.dart';
+import 'typography.dart';
 
 class AppButton extends StatelessWidget {
   const AppButton({
@@ -50,7 +52,7 @@ class AppButton extends StatelessWidget {
         ? OutlinedButton(
             onPressed: action,
             style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(52),
+              minimumSize: const Size.fromHeight(Tokens.secondaryButtonHeight),
               foregroundColor: theme.colorScheme.onSurface,
               side: BorderSide(color: theme.colorScheme.outlineVariant),
               textStyle: theme.textTheme.labelLarge,
@@ -169,33 +171,20 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: Tokens.s32, vertical: Tokens.s40),
+        padding: const EdgeInsets.symmetric(horizontal: Tokens.s24, vertical: Tokens.s24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(Tokens.rLg),
-              ),
-              child: Icon(icon, size: 28, color: theme.colorScheme.onSurfaceVariant),
-            ),
-            const SizedBox(height: Tokens.s20),
-            Text(title, style: theme.textTheme.headlineSmall, textAlign: TextAlign.center),
-            const SizedBox(height: Tokens.s8),
-            Text(
-              message,
-              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              textAlign: TextAlign.center,
-            ),
+            Icon(icon, size: 34, color: Tokens.muted),
+            const SizedBox(height: Tokens.s12),
+            Text(title, style: AppText.cardTitle.copyWith(fontSize: 17), textAlign: TextAlign.center),
+            const SizedBox(height: Tokens.s6),
+            Text(message, style: AppText.supporting.copyWith(fontSize: 13.5), textAlign: TextAlign.center),
             if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: Tokens.s24),
-              AppButton(label: actionLabel!, onPressed: onAction, expand: false),
+              const SizedBox(height: Tokens.s16),
+              AppCompactButton(label: actionLabel!, onPressed: onAction),
             ],
           ],
         ),
@@ -302,13 +291,8 @@ class InitialsAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initials = name
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((w) => w.isNotEmpty)
-        .take(2)
-        .map((w) => w[0].toUpperCase())
-        .join();
+    final initials =
+        name.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).take(2).map((w) => w[0].toUpperCase()).join();
     return ExcludeSemantics(
       child: Container(
         width: size,

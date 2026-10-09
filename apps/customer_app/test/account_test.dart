@@ -13,7 +13,6 @@ import 'package:http/testing.dart';
 
 import 'support/fake_auth.dart';
 
-
 ProviderContainer containerWith({
   required AuthGateway auth,
   required MockClient client,
@@ -35,10 +34,10 @@ ProviderContainer containerWith({
 }
 
 http.Response _json(Object body, [int status = 200]) => http.Response(
-  jsonEncode(body),
-  status,
-  headers: {'content-type': 'application/json; charset=utf-8'},
-);
+      jsonEncode(body),
+      status,
+      headers: {'content-type': 'application/json; charset=utf-8'},
+    );
 
 void main() {
   test('sends the access token as a bearer header', () async {

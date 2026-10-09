@@ -87,9 +87,14 @@ export default function PropertiesPage() {
   return (
     <Page>
       <TopBar title="Properties" caption="Everything you list on the marketplace, in one place.">
-        <LinkBtn href="/properties/new">
-          <Plus className="size-4" aria-hidden /> New property
-        </LinkBtn>
+        <div className="flex flex-wrap gap-2">
+          <LinkBtn href="/properties/new?intent=sale" variant="outline">
+            <Plus className="size-4" aria-hidden /> Property for sale
+          </LinkBtn>
+          <LinkBtn href="/properties/new">
+            <Plus className="size-4" aria-hidden /> Rental
+          </LinkBtn>
+        </div>
       </TopBar>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -152,6 +157,7 @@ export default function PropertiesPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="truncate text-[14.5px] font-semibold">{listing.title}</p>
                       <Badge tone={stateTone(listing.state)}>{LISTING_STATE_LABEL[listing.state]}</Badge>
+                      {listing.intent === "SALE" ? <Badge tone="dark">For sale</Badge> : null}
                       {listing.hasTour ? (
                         <Badge tone="info">
                           <Rotate3d className="size-3" aria-hidden /> Tour
@@ -159,11 +165,18 @@ export default function PropertiesPage() {
                       ) : null}
                     </div>
                     <p className="mt-0.5 truncate text-[12.5px] text-muted">
-                      {propertyTypeLabel(listing.propertyType)} · {listing.propertyName} · {listing.areaLabel}, {listing.cityLabel}
+                      {propertyTypeLabel(listing.propertyType, listing.intent)} · {listing.propertyName} · {listing.areaLabel}, {listing.cityLabel}
                     </p>
                     <p className="mt-0.5 text-[12.5px] text-muted">
-                      <span className="tabular font-semibold text-foreground">{peso(listing.priceCentavos)}</span>
-                      {listing.kind === "SHORT_TERM" ? " / night" : " / month"} · {listing.photos.length} photo
+                      {listing.intent === "SALE" || listing.priceCentavos === null ? (
+                        <span className="font-semibold text-foreground">Price on inquiry</span>
+                      ) : (
+                        <>
+                          <span className="tabular font-semibold text-foreground">{peso(listing.priceCentavos)}</span>
+                          {listing.kind === "SHORT_TERM" ? " / night" : " / month"}
+                        </>
+                      )}{" "}
+                      · {listing.photos.length} photo
                       {listing.photos.length === 1 ? "" : "s"}
                     </p>
                   </div>

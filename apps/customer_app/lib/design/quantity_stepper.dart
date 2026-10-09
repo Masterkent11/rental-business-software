@@ -40,8 +40,7 @@ class QuantityStepper extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label, style: theme.textTheme.bodyLarge),
-                if (caption != null)
-                  Text(caption!, style: theme.textTheme.bodySmall),
+                if (caption != null) Text(caption!, style: theme.textTheme.bodySmall),
               ],
             ),
           ),
@@ -114,9 +113,8 @@ class _Round extends StatelessWidget {
               child: Icon(
                 icon,
                 size: 18,
-                color: enabled
-                    ? theme.colorScheme.onSurface
-                    : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.38),
+                color:
+                    enabled ? theme.colorScheme.onSurface : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.38),
               ),
             ),
           ),

@@ -17,21 +17,30 @@ export const ListingPhotoDtoSchema = z.object({
   position: z.number(),
 });
 
-export const OwnerListingDtoSchema = z.object({
+const propertyType = z.enum(["APARTMENT", "CONDO", "HOUSE", "ROOM", "BOARDING_HOUSE", "TOWNHOUSE", "LOT", "COMMERCIAL"]);
+
+export const PermissionsDtoSchema = z.object({
+  canEditListing: z.boolean(),
+  canManageTour: z.boolean(),
+  canViewCommercial: z.boolean(),
+});
+
+const OwnerListingBase = z.object({
   id: z.string(),
   resourceId: z.string(),
   propertyId: z.string().nullable().default(null),
+  intent: z.enum(["RENT", "SALE"]).default("RENT"),
   title: z.string(),
   description: z.string().default(""),
   propertyName: z.string().default(""),
-  propertyType: z.enum(["APARTMENT", "CONDO", "HOUSE", "ROOM", "BOARDING_HOUSE"]).nullable().default(null),
+  propertyType: propertyType.nullable().default(null),
   addressLine: z.string().default(""),
   areaLabel: z.string().default(""),
   cityLabel: z.string().default(""),
-  kind: z.enum(["LONG_TERM", "SHORT_TERM"]),
+  kind: z.enum(["LONG_TERM", "SHORT_TERM"]).nullable().default(null),
   resourceType: z.enum(["UNIT", "ROOM", "BED_SPACE", "PARKING", "STORAGE"]),
-  priceCentavos: z.number(),
-  cleaningFeeCentavos: z.number().default(0),
+  priceCentavos: z.number().nullable().default(null),
+  cleaningFeeCentavos: z.number().nullable().default(0).transform((v) => v ?? 0),
   state: listingState,
   hasTour: z.boolean().default(false),
   sceneCount: z.number().default(0),
@@ -52,7 +61,35 @@ export const OwnerListingDtoSchema = z.object({
   publishProblems: z.array(z.string()).nullable().default(null),
   updatedAt: z.string().nullable().default(null),
   publishedAt: z.string().nullable().default(null),
+  saleStatus: z.enum(["READY_FOR_OCCUPANCY", "PRE_SELLING", "UNDER_CONSTRUCTION"]).nullable().default(null),
+  lotAreaSqm: z.number().nullable().default(null),
+  parkingSlots: z.number().default(0),
+  exactLocation: z
+    .object({ latitude: z.number(), longitude: z.number(), privacy: z.enum(["EXACT", "APPROXIMATE"]) })
+    .nullable()
+    .default(null),
+  floorPlanMedia: z
+    .array(z.object({ id: z.string(), url: z.string(), label: z.string(), storagePath: z.string().nullable(), position: z.number() }))
+    .default([]),
+  representative: z
+    .object({
+      agentId: z.string(),
+      displayName: z.string(),
+      headline: z.string(),
+      photoUrl: z.string().nullable(),
+      verified: z.boolean(),
+    })
+    .nullable()
+    .default(null),
+  organizationId: z.string().nullable().default(null),
+  permissions: PermissionsDtoSchema.nullable().default(null),
 });
+
+export const OwnerListingDtoSchema = OwnerListingBase.transform(({ exactLocation, floorPlanMedia, ...rest }) => ({
+  ...rest,
+  location: exactLocation,
+  floorPlans: floorPlanMedia,
+}));
 
 export const CalendarDtoSchema = z.object({
   nights: z.array(
@@ -104,19 +141,21 @@ export const ConversationDtoSchema = z.object({
   listingTitle: z.string(),
   listingPhoto: z.string().nullable(),
   customerName: z.string(),
+  listingIntent: z.enum(["RENT", "SALE"]).default("RENT"),
+  agentName: z.string().nullable().default(null),
   bookingId: z.string().nullable(),
   bookingStartsOn: z.string().nullable(),
   bookingEndsOn: z.string().nullable(),
   lastMessageAt: z.string().nullable(),
   lastMessagePreview: z.string(),
-  lastSenderRole: z.enum(["CUSTOMER", "OWNER"]).nullable(),
+  lastSenderRole: z.enum(["CUSTOMER", "OWNER", "AGENT"]).nullable(),
   unreadCount: z.number(),
 });
 
 export const MessageDtoSchema = z.object({
   id: z.string(),
   conversationId: z.string(),
-  senderRole: z.enum(["CUSTOMER", "OWNER"]),
+  senderRole: z.enum(["CUSTOMER", "OWNER", "AGENT"]),
   body: z.string(),
   clientId: z.string(),
   createdAt: z.string(),
@@ -131,6 +170,12 @@ export const NotificationDtoSchema = z.object({
     "MESSAGE_RECEIVED",
     "APPLICATION_RECEIVED",
     "APPLICATION_DECIDED",
+    "INQUIRY_RECEIVED",
+    "INQUIRY_UPDATED",
+    "VIEWING_REQUESTED",
+    "VIEWING_UPDATED",
+    "REPRESENTATION_INVITED",
+    "REPRESENTATION_UPDATED",
   ]),
   title: z.string(),
   body: z.string(),
@@ -154,4 +199,14 @@ export const MeDtoSchema = z.object({
     )
     .default([]),
   capabilities: z.array(z.object({ capability: z.string(), organizationId: z.string().nullable() })).default([]),
+  agentProfile: z
+    .object({
+      id: z.string(),
+      displayName: z.string(),
+      headline: z.string(),
+      photoUrl: z.string().nullable(),
+      verificationState: z.enum(["UNVERIFIED", "PENDING", "VERIFIED", "REJECTED", "SUSPENDED"]),
+    })
+    .nullable()
+    .default(null),
 });

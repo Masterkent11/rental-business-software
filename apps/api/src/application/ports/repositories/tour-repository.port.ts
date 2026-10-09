@@ -1,4 +1,4 @@
-import type { Scene, Tour } from '@/domain/tours/tour.ts';
+import type { Scene, Tour, TourProvider, TourState } from '@/domain/tours/tour.ts';
 
 export class TourNotFoundError extends Error {}
 export class SceneNotFoundError extends Error {}
@@ -12,6 +12,20 @@ export interface ProcessedScenePaths {
   readonly tileLevels: number;
   readonly widthPx: number;
   readonly heightPx: number;
+}
+
+export interface TourOverview {
+  readonly tourId: string | null;
+  readonly resourceId: string;
+  readonly listingId: string;
+  readonly listingTitle: string;
+  readonly listingIntent: 'RENT' | 'SALE';
+  readonly listingState: string;
+  readonly listingPhoto: string | null;
+  readonly provider: TourProvider;
+  readonly state: TourState | 'NONE';
+  readonly sceneCount: number;
+  readonly thumbnailPath: string | null;
 }
 
 export interface TourRepository {
@@ -36,6 +50,7 @@ export interface TourRepository {
   }): Promise<Scene>;
   renameScene(input: {
     organizationId: string;
+    tourId: string;
     sceneId: string;
     label: string;
   }): Promise<Scene>;
@@ -51,6 +66,7 @@ export interface TourRepository {
   }): Promise<void>;
   addHotspot(input: {
     organizationId: string;
+    tourId: string;
     sceneId: string;
     kind: 'NAVIGATION' | 'INFO';
     yaw: number;
@@ -60,8 +76,39 @@ export interface TourRepository {
   }): Promise<string>;
   removeHotspot(input: {
     organizationId: string;
+    tourId: string;
     hotspotId: string;
   }): Promise<void>;
+  updateHotspot(input: {
+    organizationId: string;
+    tourId: string;
+    hotspotId: string;
+    yaw: number;
+    pitch: number;
+    label: string;
+    targetSceneId: string | null;
+  }): Promise<void>;
+  setSceneView(input: {
+    organizationId: string;
+    tourId: string;
+    sceneId: string;
+    yaw: number;
+    pitch: number;
+    fov: number;
+  }): Promise<void>;
+  removeScene(input: {
+    organizationId: string;
+    tourId: string;
+    sceneId: string;
+  }): Promise<{ readonly storagePrefix: string | null }>;
+  setProvider(input: {
+    organizationId: string;
+    tourId: string;
+    provider: TourProvider;
+    externalModelId: string | null;
+  }): Promise<void>;
+  overviewForOrganization(organizationId: string): Promise<readonly TourOverview[]>;
+  resourceForListing(organizationId: string, listingId: string): Promise<string | null>;
   setPublished(input: {
     organizationId: string;
     tourId: string;

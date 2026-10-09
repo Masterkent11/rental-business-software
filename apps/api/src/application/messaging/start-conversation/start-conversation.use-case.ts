@@ -29,10 +29,12 @@ export const startConversation =
       throw new ConversationNotAllowedError('This place is no longer listed');
     }
 
+    const agentId = context.listingPublished ? await messaging.activeAgentForListing(context.listingId) : null;
     return messaging.openForCustomer({
       organizationId: context.organizationId,
       listingId: context.listingId,
       customerId: input.principal.userId,
       occupancyId,
+      agentId,
     });
   };

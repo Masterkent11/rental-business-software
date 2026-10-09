@@ -38,6 +38,9 @@ class TourSceneApiView {
     required this.tileUrlTemplate,
     required this.tileLevels,
     required this.hotspots,
+    this.initialYaw = 0,
+    this.initialPitch = 0,
+    this.initialFov = 75,
   });
 
   final String id;
@@ -52,16 +55,16 @@ class TourSceneApiView {
 
   final List<TourHotspotView> hotspots;
 
-  bool get isWalkable =>
-      previewUrl != null || (tileUrlTemplate != null && tileLevels > 0);
+  final double initialYaw;
+  final double initialPitch;
+  final double initialFov;
+
+  bool get isWalkable => previewUrl != null || (tileUrlTemplate != null && tileLevels > 0);
 
   String? tileUrl({required int level, required int x, required int y}) {
     final template = tileUrlTemplate;
     if (template == null) return null;
-    return template
-        .replaceFirst('{level}', '$level')
-        .replaceFirst('{x}', '$x')
-        .replaceFirst('{y}', '$y');
+    return template.replaceFirst('{level}', '$level').replaceFirst('{x}', '$x').replaceFirst('{y}', '$y');
   }
 }
 
@@ -75,7 +78,6 @@ class TourView {
 
   final String id;
   final String resourceId;
-
   final String entrySceneId;
   final List<TourSceneApiView> scenes;
 
@@ -86,8 +88,7 @@ class TourView {
     return null;
   }
 
-  TourSceneApiView? get entryScene =>
-      sceneById(entrySceneId) ?? scenes.firstOrNull;
+  TourSceneApiView? get entryScene => sceneById(entrySceneId) ?? scenes.firstOrNull;
 }
 
 class TourRepository {
@@ -129,6 +130,9 @@ class TourRepository {
       thumbnailUrl: json['thumbnailUrl'] as String?,
       tileUrlTemplate: template == null ? null : '$baseUrl$template',
       tileLevels: (json['tileLevels'] as num?)?.toInt() ?? 0,
+      initialYaw: (json['initialYaw'] as num?)?.toDouble() ?? 0,
+      initialPitch: (json['initialPitch'] as num?)?.toDouble() ?? 0,
+      initialFov: (json['initialFov'] as num?)?.toDouble() ?? 75,
       hotspots: (json['hotspots'] as List<dynamic>? ?? const [])
           .whereType<Map<String, dynamic>>()
           .map(
@@ -157,6 +161,5 @@ final tourRepositoryProvider = Provider<TourRepository>(
 );
 
 final tourProvider = FutureProvider.family<TourView?, String>(
-  (ref, resourceId) =>
-      ref.watch(tourRepositoryProvider).forResource(resourceId),
+  (ref, resourceId) => ref.watch(tourRepositoryProvider).forResource(resourceId),
 );

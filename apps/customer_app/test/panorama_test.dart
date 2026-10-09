@@ -27,16 +27,17 @@ TourSceneApiView scene({
   String? previewUrl = 'https://example.test/preview.webp',
   int tileLevels = 3,
   String? template = '/tiles/s-1/{level}/{x}/{y}',
-}) => TourSceneApiView(
-  id: 's-1',
-  label: 'Living room',
-  position: 0,
-  previewUrl: previewUrl,
-  thumbnailUrl: null,
-  tileUrlTemplate: template,
-  tileLevels: tileLevels,
-  hotspots: const [],
-);
+}) =>
+    TourSceneApiView(
+      id: 's-1',
+      label: 'Living room',
+      position: 0,
+      previewUrl: previewUrl,
+      thumbnailUrl: null,
+      tileUrlTemplate: template,
+      tileLevels: tileLevels,
+      hotspots: const [],
+    );
 
 void main() {
   group('the camera', () {
@@ -140,7 +141,9 @@ void main() {
       addTearDown(source.dispose);
 
       unawaited(source.start());
-      await Future<void>.delayed(const Duration(milliseconds: 20));
+      for (var attempt = 0; attempt < 100 && !source.hasPixels; attempt++) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
 
       expect(source.hasPixels, isTrue);
       expect(source.quality, PanoramaQuality.preview);

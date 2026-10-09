@@ -8,22 +8,27 @@ import {
   type ListingPhoto,
 } from '@/domain/listings/listing.ts';
 import type { Principal } from '@/domain/identity/identity.ts';
-import { assertMayManageOrganization } from '@/application/identity/application-authorization.rules.ts';
+import { ownerListingGate, type ListingGate } from '@/application/identity/partner-access.rules.ts';
 
 export interface RegisterListingPhotoCommand {
   readonly principal: Principal;
-  readonly organizationId: string;
+  readonly organizationId: string | null;
   readonly listingId: string;
   readonly storagePath: string;
 }
 
 export const registerListingPhoto =
-  (listings: ListingRepository, media: ListingMediaStorage) =>
+  (listings: ListingRepository, media: ListingMediaStorage, gate: ListingGate = ownerListingGate) =>
   async (command: RegisterListingPhotoCommand): Promise<ListingPhoto> => {
-    assertMayManageOrganization(command.principal, command.organizationId);
-    assertPhotoPathBelongs(command.storagePath, command.organizationId, command.listingId);
+    const { organizationId } = await gate({
+      principal: command.principal,
+      organizationId: command.organizationId,
+      listingId: command.listingId,
+      permission: 'canEditListing',
+    });
+    assertPhotoPathBelongs(command.storagePath, organizationId, command.listingId);
 
-    const listing = await listings.findById(command.organizationId, command.listingId);
+    const listing = await listings.findById(organizationId, command.listingId);
     if (!listing) throw new ListingNotFoundError('Listing not found');
 
     const stored = await media.inspect(command.storagePath);
@@ -37,7 +42,7 @@ export const registerListingPhoto =
       currentCount: listing.photos.length,
     });
 
-    return listings.addPhoto(command.organizationId, command.listingId, {
+    return listings.addPhoto(organizationId, command.listingId, {
       storagePath: command.storagePath,
       url: media.publicUrl(command.storagePath),
       contentType: stored.contentType,

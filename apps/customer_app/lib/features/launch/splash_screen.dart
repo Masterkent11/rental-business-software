@@ -14,8 +14,7 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   static const Duration _totalDuration = Duration(milliseconds: 2700);
 
   late final AnimationController _controller = AnimationController(
@@ -88,8 +87,7 @@ class _SplashScreenState extends State<SplashScreen>
       const AssetImage('assets/images/splash/rental_splash_background.png'),
       context,
     );
-    final reduceMotion =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     if (reduceMotion && _controller.duration != const Duration(milliseconds: 300)) {
       _controller.duration = const Duration(milliseconds: 300);
       if (!_controller.isCompleted) {
@@ -113,8 +111,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.sizeOf(context);
-    final reduceMotion =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final reduceMotion = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -257,7 +254,7 @@ class _SplashScreenState extends State<SplashScreen>
             child: Transform.translate(
               offset: Offset(0, titleTranslate),
               child: const Text(
-                'Find a place',
+                'Westayplace',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'SF Pro Display',
@@ -422,12 +419,10 @@ class _OrbitHousePainter extends CustomPainter {
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.0);
     canvas.drawCircle(point, 6.8, outerGlowPaint);
 
-    final midGlowPaint = Paint()
-      ..color = glowColor.withValues(alpha: 0.50);
+    final midGlowPaint = Paint()..color = glowColor.withValues(alpha: 0.50);
     canvas.drawCircle(point, 3.8, midGlowPaint);
 
-    final corePaint = Paint()
-      ..color = const Color(0xFFFFFFFF);
+    final corePaint = Paint()..color = const Color(0xFFFFFFFF);
     canvas.drawCircle(point, 2.2, corePaint);
 
     _paintHouse(canvas, center, houseColor);

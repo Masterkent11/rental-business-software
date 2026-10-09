@@ -4,7 +4,13 @@ export type NotificationKind =
   | 'BOOKING_UPDATED'
   | 'MESSAGE_RECEIVED'
   | 'APPLICATION_RECEIVED'
-  | 'APPLICATION_DECIDED';
+  | 'APPLICATION_DECIDED'
+  | 'INQUIRY_RECEIVED'
+  | 'INQUIRY_UPDATED'
+  | 'VIEWING_REQUESTED'
+  | 'VIEWING_UPDATED'
+  | 'REPRESENTATION_INVITED'
+  | 'REPRESENTATION_UPDATED';
 
 export interface Notification {
   readonly id: string;

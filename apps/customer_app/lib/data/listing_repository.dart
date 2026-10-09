@@ -1,15 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../features/discovery/discovery_controller.dart';
-import '../features/property_search/application/property_search_repository.dart';
-import '../features/property_search/domain/property_search_criteria.dart';
-import '../features/property_search/domain/property_type.dart';
+import '../features/explore/domain/explore_query.dart';
+import '../features/location/location_controller.dart';
 import '../features/saved/saved_controller.dart';
 import '../fixtures/view_models.dart';
 import 'api_client.dart';
 import 'auth_repository.dart';
-
-const int kListingPageSize = 20;
+import 'listing_query.dart';
+import 'offline_cache.dart';
 
 class ListingPage {
   const ListingPage({required this.items, required this.total, required this.hasMore});
@@ -61,28 +61,55 @@ class StayQuote {
       );
 }
 
-String isoDay(DateTime day) =>
-    '${day.year.toString().padLeft(4, '0')}-'
-    '${day.month.toString().padLeft(2, '0')}-'
-    '${day.day.toString().padLeft(2, '0')}';
-
-class ListingRepository implements PropertySearchRepository {
-  ListingRepository(this._api);
+class ListingRepository {
+  ListingRepository(this._api, {OfflineCache? cache, this.cacheScope = 'guest'}) : _cache = cache;
 
   final ApiClient _api;
+  final OfflineCache? _cache;
+  final String cacheScope;
 
-  Future<ListingPage> search(DiscoveryFilters filters, {int offset = 0}) async {
+  Stream<ListingPage> watchSearch(
+    ExploreQuery query, {
+    SearchPlace place = const AnywherePlace(),
+    int limit = kListingPageSize,
+  }) {
+    final parameters = listingSearchParameters(query, place: place, limit: limit);
+    final cache = _cache;
+    if (cache == null) return Stream.fromFuture(search(query, place: place, limit: limit));
+    return cacheThenNetwork(
+      cache: cache,
+      key: cacheKey(cacheScope, '/listings', parameters),
+      fetch: () => _api.getJson('/listings', query: parameters),
+      decode: (body) => _page(body, 0),
+      persist: isPersistable(parameters),
+    );
+  }
+
+  Stream<ListingDetailView?> watchDetail(String id) {
+    final cache = _cache;
+    if (cache == null) return Stream.fromFuture(detail(id));
+    return cacheThenNetwork<ListingDetailView?>(
+      cache: cache,
+      key: cacheKey(cacheScope, '/listings/$id', const {}),
+      fetch: () => _api.getJson('/listings/$id'),
+      decode: _detail,
+    ).transform(
+      StreamTransformer<ListingDetailView?, ListingDetailView?>.fromHandlers(
+        handleError: (error, stackTrace, sink) =>
+            error is ApiException && error.isNotFound ? sink.add(null) : sink.addError(error, stackTrace),
+      ),
+    );
+  }
+
+  Future<ListingPage> search(
+    ExploreQuery query, {
+    SearchPlace place = const AnywherePlace(),
+    int offset = 0,
+    int limit = kListingPageSize,
+  }) async {
     final body = await _api.getJson(
       '/listings',
-      query: {
-        'q': filters.query.trim().isEmpty ? null : filters.query.trim(),
-        'kind': _kind(filters.kind),
-        'type': _type(filters.type),
-        'maxPrice': filters.maxCentavos?.toString(),
-        'hasTour': filters.tourOnly ? 'true' : null,
-        'limit': '$kListingPageSize',
-        'offset': '$offset',
-      },
+      query: listingSearchParameters(query, place: place, offset: offset, limit: limit),
     );
     return _page(body, offset);
   }
@@ -100,25 +127,39 @@ class ListingRepository implements PropertySearchRepository {
 
   Future<ListingDetailView?> detail(String id) async {
     try {
-      final body = await _api.getJson('/listings/$id');
-      final card = toCard(body);
-      return ListingDetailView(
-        card: card,
-        description: body['description'] as String? ?? '',
-        amenities: _strings(body['amenities']),
-        terms: _strings(body['terms']),
-        houseRules: _strings(body['houseRules']),
-        sharedFacilities: _strings(body['sharedFacilities']),
-        minimumStayNights: (body['minStayNights'] as num?)?.toInt(),
-        ownerName: body['ownerName'] as String? ?? '',
-        ownerVerified: body['ownerVerified'] as bool? ?? false,
-        scenes: const [],
-        blockedRanges: const [],
-      );
+      return _detail(await _api.getJson('/listings/$id'));
     } on ApiException catch (error) {
       if (error.isNotFound) return null;
       rethrow;
     }
+  }
+
+  static ListingDetailView _detail(Map<String, dynamic> body) {
+    final card = toCard(body);
+    return ListingDetailView(
+      card: card,
+      description: body['description'] as String? ?? '',
+      amenities: _strings(body['amenities']),
+      terms: _strings(body['terms']),
+      houseRules: _strings(body['houseRules']),
+      sharedFacilities: _strings(body['sharedFacilities']),
+      minimumStayNights: (body['minStayNights'] as num?)?.toInt(),
+      ownerName: body['ownerName'] as String? ?? '',
+      ownerVerified: body['ownerVerified'] as bool? ?? false,
+      scenes: const [],
+      blockedRanges: const [],
+      floorPlans: (body['floorPlans'] as List<dynamic>? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .where((plan) => (plan['url'] as String? ?? '').startsWith('http'))
+          .map(
+            (plan) => FloorPlanView(
+              id: plan['id'] as String? ?? '',
+              url: plan['url'] as String,
+              label: plan['label'] as String? ?? 'Floor plan',
+            ),
+          )
+          .toList(growable: false),
+    );
   }
 
   Future<StayQuote> quote({
@@ -138,38 +179,6 @@ class ListingRepository implements PropertySearchRepository {
     return StayQuote.fromJson(body);
   }
 
-  @override
-  Future<PropertySearchPage> searchProperties(
-    PropertySearchCriteria criteria, {
-    int offset = 0,
-    PropertyRefinements refinements = const PropertyRefinements(),
-  }) async {
-    final keyword = refinements.keyword.trim();
-    final queryText = keyword.isNotEmpty ? keyword : criteria.location.trim();
-    final query = <String, String?>{
-      'q': queryText.isEmpty ? null : queryText,
-      'propertyType': _propertyType(criteria.propertyType),
-      'sort': refinements.sort.apiValue,
-      'maxPrice': refinements.maxPriceCentavos?.toString(),
-      'bedrooms': refinements.minBedrooms?.toString(),
-      'limit': '$kListingPageSize',
-      'offset': '$offset',
-    };
-    switch (criteria) {
-      case ShortStaySearchCriteria():
-        query['kind'] = 'SHORT_TERM';
-        query['guests'] = '${criteria.guests}';
-        query['checkIn'] = isoDay(criteria.checkIn);
-        query['checkOut'] = isoDay(criteria.checkOut);
-      case MonthlySearchCriteria():
-        query['kind'] = 'LONG_TERM';
-        query['guests'] = '${criteria.occupants}';
-        query['moveIn'] = isoDay(criteria.moveInDate);
-    }
-    final page = _page(await _api.getJson('/listings', query: query), offset);
-    return PropertySearchPage(items: page.items, total: page.total, hasMore: page.hasMore);
-  }
-
   static ListingPage _page(Map<String, dynamic> body, int offset) {
     final items = _items(body);
     final total = (body['total'] as num?)?.toInt() ?? items.length;
@@ -180,19 +189,10 @@ class ListingRepository implements PropertySearchRepository {
     );
   }
 
-  static List<ListingCardView> _items(Map<String, dynamic> body) =>
-      (body['items'] as List<dynamic>? ?? const [])
-          .whereType<Map<String, dynamic>>()
-          .map(toCard)
-          .toList(growable: false);
-
-  static String _propertyType(PropertyType type) => switch (type) {
-        PropertyType.apartment => 'APARTMENT',
-        PropertyType.condo => 'CONDO',
-        PropertyType.house => 'HOUSE',
-        PropertyType.room => 'ROOM',
-        PropertyType.boardingHouse => 'BOARDING_HOUSE',
-      };
+  static List<ListingCardView> _items(Map<String, dynamic> body) => (body['items'] as List<dynamic>? ?? const [])
+      .whereType<Map<String, dynamic>>()
+      .map(toCard)
+      .toList(growable: false);
 
   static MoveInCostView? _moveInCost(Object? raw) {
     if (raw is! Map<String, dynamic>) return null;
@@ -212,25 +212,9 @@ class ListingRepository implements PropertySearchRepository {
     );
   }
 
-  static List<String> _strings(Object? raw) =>
-      (raw as List<dynamic>? ?? const []).whereType<String>().toList(
-            growable: false,
-          );
-
-  static String? _kind(ListingKind? kind) => switch (kind) {
-        ListingKind.longTerm => 'LONG_TERM',
-        ListingKind.shortTerm => 'SHORT_TERM',
-        null => null,
-      };
-
-  static String? _type(ResourceType? type) => switch (type) {
-        ResourceType.unit => 'UNIT',
-        ResourceType.room => 'ROOM',
-        ResourceType.bedSpace => 'BED_SPACE',
-        ResourceType.parking => 'PARKING',
-        ResourceType.storage => 'STORAGE',
-        null => null,
-      };
+  static List<String> _strings(Object? raw) => (raw as List<dynamic>? ?? const []).whereType<String>().toList(
+        growable: false,
+      );
 
   static ListingCardView toCard(Map<String, dynamic> json) {
     return ListingCardView(
@@ -248,7 +232,7 @@ class ListingRepository implements PropertySearchRepository {
         'STORAGE' => ResourceType.storage,
         _ => ResourceType.unit,
       },
-      priceCentavos: (json['priceCentavos'] as num).toInt(),
+      priceCentavos: json['intent'] == 'SALE' ? null : (json['priceCentavos'] as num?)?.toInt(),
       availabilityLabel: json['availabilityLabel'] as String? ?? '',
       isAvailable: json['isAvailable'] as bool? ?? true,
       hasTour: json['hasTour'] as bool? ?? false,
@@ -267,6 +251,42 @@ class ListingRepository implements PropertySearchRepository {
       propertyType: json['propertyType'] as String?,
       minStayNights: (json['minStayNights'] as num?)?.toInt(),
       isPopular: json['hasTour'] as bool? ?? false,
+      intent: json['intent'] == 'SALE' ? ListingIntent.sale : ListingIntent.rent,
+      saleStatus: json['saleStatus'] as String?,
+      lotAreaSqm: (json['lotAreaSqm'] as num?)?.toInt(),
+      parkingSlots: (json['parkingSlots'] as num?)?.toInt() ?? 0,
+      distanceKm: (json['distanceKm'] as num?)?.toDouble(),
+      location: _point(json['location']),
+      representative: _representative(json['representative']),
+      tourProvider: json['tourProvider'] as String?,
+      furnishing: json['furnishing'] as String?,
+      petsAllowed: json['intent'] == 'SALE' ? null : json['petsAllowed'] as bool?,
+    );
+  }
+
+  static MapPoint? _point(Object? raw) {
+    if (raw is! Map<String, dynamic>) return null;
+    final latitude = (raw['latitude'] as num?)?.toDouble();
+    final longitude = (raw['longitude'] as num?)?.toDouble();
+    if (latitude == null || longitude == null) return null;
+    return MapPoint(
+      latitude: latitude,
+      longitude: longitude,
+      precision: raw['precision'] == 'EXACT' ? LocationPrecision.exact : LocationPrecision.approximate,
+    );
+  }
+
+  static RepresentativeView? _representative(Object? raw) {
+    if (raw is! Map<String, dynamic>) return null;
+    final agentId = raw['agentId'] as String?;
+    if (agentId == null) return null;
+    final photo = raw['photoUrl'] as String?;
+    return RepresentativeView(
+      agentId: agentId,
+      displayName: raw['displayName'] as String? ?? 'Agent',
+      headline: raw['headline'] as String? ?? '',
+      photoUrl: photo != null && photo.startsWith('http') ? photo : null,
+      verified: raw['verified'] as bool? ?? false,
     );
   }
 }
@@ -286,12 +306,15 @@ final apiClientProvider = Provider<ApiClient>((ref) {
 });
 
 final listingRepositoryProvider = Provider<ListingRepository>(
-  (ref) => ListingRepository(ref.watch(apiClientProvider)),
+  (ref) => ListingRepository(
+    ref.watch(apiClientProvider),
+    cache: ref.watch(offlineCacheProvider),
+    cacheScope: ref.watch(currentUserIdProvider) ?? 'guest',
+  ),
 );
 
-final listingDetailProvider =
-    FutureProvider.autoDispose.family<ListingDetailView?, String>((ref, id) {
-  return ref.watch(listingRepositoryProvider).detail(id);
+final listingDetailProvider = StreamProvider.autoDispose.family<ListingDetailView?, String>((ref, id) {
+  return ref.watch(listingRepositoryProvider).watchDetail(id);
 });
 
 typedef QuoteRequest = ({String listingId, DateTime checkIn, DateTime checkOut, int guests});

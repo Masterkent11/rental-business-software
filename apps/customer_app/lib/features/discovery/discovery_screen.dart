@@ -3,460 +3,276 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
-import '../../data/api_client.dart';
+import '../../data/discovery_repository.dart';
+import '../../design/components.dart';
+import '../../design/controls.dart';
 import '../../design/motion.dart';
 import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
-import 'discovery_controller.dart';
-import 'filters_sheet.dart';
+import '../editorial/application/editorial_content.dart';
+import '../editorial/domain/editorial_card.dart';
+import '../editorial/presentation/editorial_carousel.dart';
+import '../editorial/presentation/editorial_routes.dart';
+import '../explore/application/discovery_feeds.dart';
+import '../explore/domain/explore_query.dart';
+import '../explore/domain/listing_category.dart';
+import '../location/location_controller.dart';
+import '../location/location_sheet.dart';
+import 'home_shortcut.dart';
 import 'widgets/discover_header.dart';
-import 'widgets/featured_card.dart';
-import 'widgets/listing_card.dart';
 import 'widgets/property_card.dart';
-import 'widgets/quick_category_chips.dart';
-import 'widgets/search_panel.dart';
-import 'widgets/section_header.dart';
 
-final selectedCategoryProvider = StateProvider<PropertyCategory>(
-  (ref) => PropertyCategory.apartment,
-);
-
-class DiscoveryScreen extends ConsumerStatefulWidget {
+class DiscoveryScreen extends ConsumerWidget {
   const DiscoveryScreen({super.key});
 
-  @override
-  ConsumerState<DiscoveryScreen> createState() => _DiscoveryScreenState();
-}
+  static const RecommendationKey _rentKey = (intent: MarketIntent.rent, category: null);
+  static const RecommendationKey _buyKey = (intent: MarketIntent.buy, category: null);
+  static const EditorialSlot _heroSlot = (placement: EditorialPlacement.home, category: null);
 
-class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen> {
-  final _controller = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(_maybeLoadMore);
+  Future<void> _refresh(WidgetRef ref) async {
+    ref
+      ..invalidate(recommendationsProvider)
+      ..invalidate(tourListingsProvider);
+    await Future.wait([
+      ref.read(recommendationsProvider(_rentKey).future).then((_) {}, onError: (_) {}),
+      ref.read(recommendationsProvider(_buyKey).future).then((_) {}, onError: (_) {}),
+    ]);
   }
 
   @override
-  void dispose() {
-    _controller.removeListener(_maybeLoadMore);
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _maybeLoadMore() {
-    if (!_controller.hasClients) return;
-    final position = _controller.position;
-    if (position.pixels >= position.maxScrollExtent - 600) {
-      ref.read(resultsProvider.notifier).loadMore();
-    }
-  }
-
-  Future<void> _refresh() async {
-    ref.invalidate(resultsProvider);
-    await ref.read(resultsProvider.future).catchError((_) => const DiscoveryFeedState(items: [], total: 0, hasMore: false));
-  }
-
-  void _onCategorySelected(PropertyCategory category) {
-    ref.read(selectedCategoryProvider.notifier).state = category;
-    context.push(Routes.propertySearch(category.toPropertyType()));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final filters = ref.watch(filtersProvider);
-    final results = ref.watch(resultsProvider);
-    final feed = results.valueOrNull;
-    final items = feed?.items ?? const <ListingCardView>[];
-    final selectedCategory = ref.watch(selectedCategoryProvider);
-
-    final featured = items.where((l) => l.isPopular || l.hasTour).toList();
-    final featuredListings =
-        featured.isNotEmpty ? featured : items.take(4).toList();
-
-    final nearYou = items
-        .where((l) =>
-            l.cityLabel.toLowerCase().contains('cebu') ||
-            l.areaLabel.isNotEmpty)
-        .toList();
-    final nearYouListings = nearYou.isNotEmpty ? nearYou : items;
-
-    final isSearching = filters.isFiltered || filters.query.isNotEmpty;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final location = ref.watch(locationProvider);
+    final rent = ref.watch(recommendationsProvider(_rentKey));
+    final buy = ref.watch(recommendationsProvider(_buyKey));
+    final bothFailed = rent.hasError && buy.hasError && !rent.hasValue && !buy.hasValue;
+    final agents = {
+      for (final listing in buy.valueOrNull?.items ?? const <ListingCardView>[])
+        if (listing.representative != null) listing.representative!.agentId: listing.representative!,
+    }.values.toList(growable: false);
 
     return Scaffold(
       backgroundColor: Tokens.canvas,
       body: RefreshIndicator(
-        onRefresh: _refresh,
+        onRefresh: () => _refresh(ref),
         color: Tokens.primaryNavy,
         child: CustomScrollView(
-        controller: _controller,
-        physics: const AlwaysScrollableScrollPhysics(parent: Tokens.scroll),
-        slivers: [
-          SliverSafeArea(
-            bottom: false,
-            sliver: SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  Tokens.gutter,
-                  Tokens.s12,
-                  Tokens.gutter,
-                  0,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Reveal(
-                      child: DiscoverHeader(),
-                    ),
-                    const SizedBox(height: 12),
-                    Reveal(
-                      order: 1,
-                      child: SearchPanel(
-                        onSearch: () => _controller.animateTo(
-                          340,
-                          duration: Tokens.slow,
-                          curve: Tokens.ease,
+          physics: Tokens.scroll,
+          slivers: [
+            SliverSafeArea(
+              bottom: false,
+              sliver: SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s8, Tokens.gutter, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Reveal(child: DiscoverHeader()),
+                      const SizedBox(height: Tokens.s16),
+                      Reveal(
+                        order: 1,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: AppSearchField(
+                                hint: 'Search area, landmark or property',
+                                readOnly: true,
+                                onTap: () => context.push(Routes.rent(search: true)),
+                              ),
+                            ),
+                            const SizedBox(width: Tokens.s8),
+                            AppFilterButton(onPressed: () => context.push(Routes.explore())),
+                          ],
                         ),
-                        onFilter: () => showFiltersSheet(context),
                       ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Reveal(
+                order: 2,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: Tokens.s16),
+                  child: HomeCategoryRow(
+                    onSelected: (shortcut) => context.push(
+                      shortcut.intent == MarketIntent.buy ? Routes.buy() : Routes.stays(category: shortcut.category),
                     ),
-                    const SizedBox(height: 12),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Reveal(
-              order: 2,
-              child: PropertyCategoryList(
-                selected: selectedCategory,
-                onSelected: _onCategorySelected,
-              ),
-            ),
-          ),
-          if (!isSearching) ...[
-            SliverToBoxAdapter(
-              child: SectionHeader(
-                title: 'Featured for You',
-                topPadding: 18,
-                bottomPadding: 8,
-                onAction: () => _controller.animateTo(
-                  400,
-                  duration: Tokens.slow,
-                  curve: Tokens.ease,
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: FeaturedPropertyCarousel(
-                listings: featuredListings,
-                onTapListing: (listing) =>
-                    context.push(Routes.listing(listing.id)),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: SectionHeader(
-                title: 'Near You',
-                topPadding: 18,
-                bottomPadding: 8,
-                onAction: () => _controller.animateTo(
-                  700,
-                  duration: Tokens.slow,
-                  curve: Tokens.ease,
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 195,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  physics: Tokens.scroll,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: Tokens.gutter),
-                  itemCount: nearYouListings.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 10),
-                  itemBuilder: (context, i) => PropertyCard(
-                    listing: nearYouListings[i],
-                    onTap: () =>
-                        context.push(Routes.listing(nearYouListings[i].id)),
                   ),
                 ),
               ),
             ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(top: Tokens.s20),
+                child: EditorialCarousel(
+                  cards: ref.watch(editorialCardsProvider(_heroSlot)),
+                  footnote: location.cityContext,
+                  agents: agents,
+                  onAction: (action) => context.push(editorialRoute(action)),
+                ),
+              ),
+            ),
+            if (!location.isSpecified || location.problem != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s16, Tokens.gutter, 0),
+                  child: LocationPrompt(state: location),
+                ),
+              ),
+            if (bothFailed)
+              SliverToBoxAdapter(
+                child: ErrorState(
+                  title: 'Couldn’t load places',
+                  message: 'Check your connection and try again.',
+                  onRetry: () => ref.invalidate(recommendationsProvider),
+                ),
+              )
+            else ...[
+              _RecommendationRow(
+                async: rent,
+                titleFor: (scope) => switch (scope) {
+                  RecommendationScope.nearby => 'Near you',
+                  RecommendationScope.city => 'Homes in ${location.cityContext ?? 'your area'}',
+                  RecommendationScope.broad => 'Recommended for you',
+                },
+                onSeeAll: () => context.push(Routes.rent()),
+              ),
+              _RecommendationRow(
+                async: buy,
+                titleFor: (scope) => scope == RecommendationScope.broad ? 'Properties for sale' : 'For sale near you',
+                onSeeAll: () => context.push(Routes.buy()),
+              ),
+              _TourRow(onSeeAll: () => context.push(Routes.rent(filter: QuickFilter.virtualTour))),
+            ],
+            const SliverToBoxAdapter(child: SizedBox(height: Tokens.s40)),
           ],
-          SliverToBoxAdapter(
-            child: SectionHeader(
-              title: isSearching ? 'Results' : 'All rentals',
-              subtitle: feed == null || feed.total == 0
-                  ? null
-                  : '${feed.total} ${feed.total == 1 ? "place" : "places"}',
-              topPadding: isSearching ? 18 : 22,
-              bottomPadding: 12,
-              actionLabel: isSearching ? 'Clear' : '',
-              onAction: isSearching
-                  ? () {
-                      ref.read(filtersProvider.notifier).clear();
-                      ref.read(selectedCategoryProvider.notifier).state =
-                          PropertyCategory.apartment;
-                    }
-                  : null,
-            ),
-          ),
-          ...switch (results) {
-            AsyncError(:final error) => [
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: _LoadFailed(
-                    error: error,
-                    onRetry: () => ref.invalidate(resultsProvider),
-                  ),
-                ),
-              ],
-            AsyncLoading() when items.isEmpty => [
-                const SliverToBoxAdapter(child: _ResultsSkeleton()),
-              ],
-            _ when items.isEmpty => [
-                const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: _EmptyResults(),
-                ),
-              ],
-            _ => [
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(
-                    Tokens.gutter,
-                    0,
-                    Tokens.gutter,
-                    Tokens.s64,
-                  ),
-                  sliver: SliverList.separated(
-                    itemCount: items.length + 1,
-                    separatorBuilder: (_, __) =>
-                        const SizedBox(height: Tokens.sectionTight),
-                    itemBuilder: (context, i) {
-                      if (i == items.length) {
-                        return _FeedFooter(
-                          state: feed!,
-                          onRetry: () => ref.read(resultsProvider.notifier).loadMore(),
-                        );
-                      }
-                      return Reveal(
-                        order: i.clamp(0, 3),
-                        child: ListingCard(
-                          listing: items[i],
-                          onTap: () => context.push(Routes.listing(items[i].id)),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-          },
-        ],
-      ),
+        ),
       ),
     );
   }
 }
 
-class _FeedFooter extends StatelessWidget {
-  const _FeedFooter({required this.state, required this.onRetry});
+class HomeCategoryRow extends StatelessWidget {
+  const HomeCategoryRow({required this.onSelected, super.key});
 
-  final DiscoveryFeedState state;
-  final VoidCallback onRetry;
+  final ValueChanged<HomeShortcut> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    if (state.loadingMore) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: Tokens.s16),
-        child: Center(child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.2))),
-      );
-    }
-    if (state.loadMoreError != null) {
-      return Center(
-        child: TextButton.icon(
-          onPressed: onRetry,
-          icon: const Icon(Icons.refresh, size: 18),
-          label: const Text('Couldn’t load more. Try again'),
-        ),
-      );
-    }
-    if (state.hasMore) {
-      return Center(
-        child: TextButton(onPressed: onRetry, child: const Text('Show more places')),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Tokens.s8),
-      child: Text(
-        'You’ve seen all ${state.total} ${state.total == 1 ? 'place' : 'places'}',
-        textAlign: TextAlign.center,
-        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+    return SizedBox(
+      height: Tokens.categoryTileHeight,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: Tokens.scroll,
+        padding: const EdgeInsets.symmetric(horizontal: Tokens.gutter),
+        itemCount: HomeShortcut.values.length,
+        separatorBuilder: (_, __) => const SizedBox(width: Tokens.s12),
+        itemBuilder: (context, index) {
+          final shortcut = HomeShortcut.values[index];
+          return CategoryTile(icon: shortcut.icon, label: shortcut.label, onTap: () => onSelected(shortcut));
+        },
       ),
     );
   }
 }
 
-class _EmptyResults extends ConsumerWidget {
-  const _EmptyResults();
+class LocationPrompt extends ConsumerWidget {
+  const LocationPrompt({required this.state, super.key});
+
+  final LocationState state;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final problem = state.problemMessage;
+    return AppInlineNotice(
+      icon: problem == null ? Icons.near_me_outlined : Icons.location_off_outlined,
+      message: problem ?? 'See homes and properties around you.',
+      trailing: state.locating
+          ? const Padding(
+              padding: EdgeInsets.all(Tokens.s12),
+              child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+            )
+          : problem == null
+              ? AppTextAction(label: 'Use location', onPressed: ref.read(locationProvider.notifier).useCurrentLocation)
+              : AppTextAction(label: 'Choose area', onPressed: () => showLocationSheet(context)),
+    );
+  }
+}
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        Tokens.s32,
-        Tokens.s16,
-        Tokens.s32,
-        Tokens.s40,
-      ),
+class _RecommendationRow extends StatelessWidget {
+  const _RecommendationRow({required this.async, required this.titleFor, required this.onSeeAll});
+
+  final AsyncValue<Recommendations> async;
+  final String Function(RecommendationScope scope) titleFor;
+  final VoidCallback onSeeAll;
+
+  @override
+  Widget build(BuildContext context) {
+    final value = async.valueOrNull;
+    if (value != null && value.items.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    if (async.hasError && value == null) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    return SliverToBoxAdapter(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Nothing matches that yet',
-            style: theme.textTheme.headlineSmall,
-            textAlign: TextAlign.center,
+          AppSectionHeader(
+            title: value == null ? 'Recommended for you' : titleFor(value.scope),
+            actionLabel: 'See all',
+            onAction: onSeeAll,
           ),
-          const SizedBox(height: Tokens.s8),
-          Text(
-            'Try widening the budget, or look at a nearby barangay — '
-            'Kamputhaw and Mabolo usually have more listings.',
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: Tokens.s20),
-          FilledButton(
-            onPressed: () {
-              ref.read(filtersProvider.notifier).clear();
-              ref.read(selectedCategoryProvider.notifier).state =
-                  PropertyCategory.apartment;
-            },
-            child: const Text('Clear filters'),
-          ),
+          _CardRow(items: value?.items),
         ],
       ),
     );
   }
 }
 
-class _ResultsSkeleton extends StatelessWidget {
-  const _ResultsSkeleton();
+class _TourRow extends ConsumerWidget {
+  const _TourRow({required this.onSeeAll});
+
+  final VoidCallback onSeeAll;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        Tokens.gutter,
-        0,
-        Tokens.gutter,
-        Tokens.s40,
-      ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = ref.watch(tourListingsProvider).valueOrNull;
+    if (items == null || items.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    return SliverToBoxAdapter(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (var i = 0; i < 3; i++)
-            Padding(
-              padding: const EdgeInsets.only(bottom: Tokens.s32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AspectRatio(
-                    aspectRatio: 4 / 3,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(Tokens.rLg),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: Tokens.s12),
-                  Container(
-                    height: 14,
-                    width: 220,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  const SizedBox(height: Tokens.s8),
-                  Container(
-                    height: 12,
-                    width: 140,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          AppSectionHeader(
+            title: 'Walk through with 360° tours',
+            subtitle: 'Look around before you visit',
+            actionLabel: 'See all',
+            onAction: onSeeAll,
+          ),
+          _CardRow(items: items),
         ],
       ),
     );
   }
 }
 
-class _LoadFailed extends StatelessWidget {
-  const _LoadFailed({required this.error, required this.onRetry});
+class _CardRow extends StatelessWidget {
+  const _CardRow({required this.items});
 
-  final Object error;
-  final VoidCallback onRetry;
+  final List<ListingCardView>? items;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final message = error is ApiException
-        ? (error as ApiException).message
-        : 'Something went wrong loading places.';
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          Tokens.s32,
-          Tokens.s16,
-          Tokens.s32,
-          Tokens.s40,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.cloud_off_outlined,
-              size: 40,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(height: Tokens.s16),
-            Text(
-              'Could not load places',
-              style: theme.textTheme.headlineSmall,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: Tokens.s8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: Tokens.s20),
-            SizedBox(
-              width: 200,
-              child: FilledButton(
-                onPressed: onRetry,
-                child: const Text('Try again'),
-              ),
-            ),
-          ],
-        ),
+    final list = items;
+    return SizedBox(
+      height: 196,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: list == null ? const NeverScrollableScrollPhysics() : Tokens.scroll,
+        padding: const EdgeInsets.symmetric(horizontal: Tokens.gutter),
+        itemCount: list?.length ?? 3,
+        separatorBuilder: (_, __) => const SizedBox(width: Tokens.s12),
+        itemBuilder: (context, i) => list == null
+            ? const SkeletonBox(width: 160, height: 190, radius: Tokens.rControl)
+            : PropertyCard(listing: list[i], onTap: () => context.push(Routes.listing(list[i].id))),
       ),
     );
   }

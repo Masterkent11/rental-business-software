@@ -27,9 +27,7 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
   DateTime? _checkOut;
   int _guests = 1;
 
-  int get _nights => (_checkIn != null && _checkOut != null)
-      ? _checkOut!.difference(_checkIn!).inDays
-      : 0;
+  int get _nights => (_checkIn != null && _checkOut != null) ? _checkOut!.difference(_checkIn!).inDays : 0;
 
   @override
   Widget build(BuildContext context) {
@@ -40,10 +38,14 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
     if (detailAsync.isLoading && detail == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    if (detail == null) {
+    final nightly = detail?.card.isSale == false ? detail?.card.priceCentavos : null;
+    if (detail == null || nightly == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Select dates')),
-        body: const Center(child: Text('This place is no longer available.')),
+        body: Center(
+          child: Text(
+              detail == null ? 'This place is no longer available.' : 'This property can’t be booked by the night.'),
+        ),
       );
     }
 
@@ -66,8 +68,7 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
     final loaded = nightsAsync.hasValue;
     final blocked = <DateTime>{
       for (final night in nightsAsync.valueOrNull ?? const <NightView>[])
-        if (night.status.isTaken)
-          DateTime(night.night.year, night.night.month, night.night.day),
+        if (night.status.isTaken) DateTime(night.night.year, night.night.month, night.night.day),
     };
 
     final tooShort = _nights > 0 && _nights < minStay;
@@ -92,7 +93,7 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
         children: [
           Text(card.title, style: theme.textTheme.titleMedium),
           Text(
-            '${Money.perNight(card.priceCentavos)} · minimum $minStay nights',
+            '${Money.perNight(nightly)} · minimum $minStay nights',
             style: theme.textTheme.bodySmall,
           ),
           const SizedBox(height: Tokens.s20),
@@ -167,11 +168,7 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
         return;
       }
 
-      for (
-        var d = _checkIn!;
-        d.isBefore(day);
-        d = d.add(const Duration(days: 1))
-      ) {
+      for (var d = _checkIn!; d.isBefore(day); d = d.add(const Duration(days: 1))) {
         if (_isBlocked(d, blocked, loaded)) {
           _checkIn = day;
           _checkOut = null;
@@ -238,7 +235,9 @@ class _BookingBar extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: Tokens.s8),
                     child: Text(
-                      quote!.error is ApiException ? (quote!.error as ApiException).message : 'We could not price these dates.',
+                      quote!.error is ApiException
+                          ? (quote!.error as ApiException).message
+                          : 'We could not price these dates.',
                       style: theme.textTheme.bodySmall?.copyWith(color: Tokens.taken),
                     ),
                   )

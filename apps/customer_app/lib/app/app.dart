@@ -54,9 +54,7 @@ class _CustomerAppState extends ConsumerState<CustomerApp> {
   Future<void> _startBootstrap() async {
     final bootstrap = widget.bootstrap ?? ref.read(appBootstrapProvider);
     try {
-      final result = await ref
-          .read(appBootstrapStateProvider.notifier)
-          .initialize(bootstrap);
+      final result = await ref.read(appBootstrapStateProvider.notifier).initialize(bootstrap);
       _onBootstrapResult(result);
     } catch (error) {
       _onBootstrapResult(AppBootstrapState.error(error));
@@ -66,9 +64,7 @@ class _CustomerAppState extends ConsumerState<CustomerApp> {
   Future<void> _retryBootstrap() async {
     final bootstrap = widget.bootstrap ?? ref.read(appBootstrapProvider);
     try {
-      final result = await ref
-          .read(appBootstrapStateProvider.notifier)
-          .retry(bootstrap);
+      final result = await ref.read(appBootstrapStateProvider.notifier).retry(bootstrap);
       _onBootstrapResult(result);
     } catch (error) {
       _onBootstrapResult(AppBootstrapState.error(error));
@@ -117,12 +113,11 @@ class _CustomerAppState extends ConsumerState<CustomerApp> {
     final bootstrapState = ref.watch(appBootstrapStateProvider);
 
     return MaterialApp.router(
-      title: 'Rental Platform',
+      title: 'Westayplace',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       routerConfig: _router,
-
       builder: (context, child) => Stack(
         children: [
           if (_bootstrapReady)

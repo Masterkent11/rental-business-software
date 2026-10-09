@@ -71,8 +71,9 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> with Wi
             ? const Text('Conversation')
             : Column(
                 children: [
-                  Text(conversation.organizationName, style: theme.textTheme.titleLarge),
-                  Text(conversation.listingTitle, style: theme.textTheme.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(conversation.partnerName, style: theme.textTheme.titleLarge),
+                  Text(conversation.listingTitle,
+                      style: theme.textTheme.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],
               ),
         actions: [
@@ -106,7 +107,8 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> with Wi
                     ? const EmptyState(
                         icon: Icons.waving_hand_outlined,
                         title: 'Start the conversation',
-                        message: 'Ask about availability, the neighbourhood, or anything else. Owners usually reply within the day.',
+                        message:
+                            'Ask about availability, the neighbourhood, or anything else. Owners usually reply within the day.',
                       )
                     : ListView.builder(
                         controller: _scroll,
@@ -125,7 +127,8 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> with Wi
                               ? value.messages[value.messages.length - 2 - index]
                               : null;
                           final showDay = previous == null ||
-                              DateUtils.dateOnly(previous.createdAt.toLocal()) != DateUtils.dateOnly(message.createdAt.toLocal());
+                              DateUtils.dateOnly(previous.createdAt.toLocal()) !=
+                                  DateUtils.dateOnly(message.createdAt.toLocal());
                           return Column(
                             children: [
                               if (showDay)
@@ -138,7 +141,8 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> with Wi
                                 ),
                               _Bubble(
                                 message: message,
-                                onRetry: () => ref.read(threadProvider(widget.conversationId).notifier).retry(message.clientId),
+                                onRetry: () =>
+                                    ref.read(threadProvider(widget.conversationId).notifier).retry(message.clientId),
                               ),
                             ],
                           );
@@ -170,7 +174,11 @@ class _Bubble extends StatelessWidget {
         : mine
             ? Tokens.primaryNavy
             : theme.colorScheme.onSurface.withValues(alpha: 0.06);
-    final textColor = failed ? Tokens.taken : mine ? Colors.white : theme.colorScheme.onSurface;
+    final textColor = failed
+        ? Tokens.taken
+        : mine
+            ? Colors.white
+            : theme.colorScheme.onSurface;
 
     return Align(
       alignment: mine ? Alignment.centerRight : Alignment.centerLeft,

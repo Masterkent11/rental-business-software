@@ -77,33 +77,24 @@ class ApplicationRepository {
       moveIn: DateTime.parse(json['desiredMoveIn'] as String),
       submittedAt: DateTime.parse(json['createdAt'] as String),
       status: _status(json['state'] as String?),
-      documents: (json['documentNames'] as List<dynamic>? ?? const [])
-          .whereType<String>()
-          .toList(growable: false),
-      decidedAt: json['decidedAt'] == null
-          ? null
-          : DateTime.parse(json['decidedAt'] as String),
+      documents: (json['documentNames'] as List<dynamic>? ?? const []).whereType<String>().toList(growable: false),
+      decidedAt: json['decidedAt'] == null ? null : DateTime.parse(json['decidedAt'] as String),
       reason: json['decisionReason'] as String?,
-      moveInCostCentavos: approved
-          ? (json['moveInCostCentavos'] as num?)?.toInt()
-          : null,
-      holdExpiresAt: reservation?['expiresAt'] == null
-          ? null
-          : DateTime.parse(reservation!['expiresAt'] as String),
+      moveInCostCentavos: approved ? (json['moveInCostCentavos'] as num?)?.toInt() : null,
+      holdExpiresAt: reservation?['expiresAt'] == null ? null : DateTime.parse(reservation!['expiresAt'] as String),
     );
   }
 
   static ApplicationStatus _status(String? raw) => switch (raw) {
-    'UNDER_REVIEW' => ApplicationStatus.underReview,
-    'APPROVED' => ApplicationStatus.approved,
-    'REJECTED' => ApplicationStatus.rejected,
-    'WITHDRAWN' => ApplicationStatus.withdrawn,
-    'EXPIRED' => ApplicationStatus.expired,
-    _ => ApplicationStatus.submitted,
-  };
+        'UNDER_REVIEW' => ApplicationStatus.underReview,
+        'APPROVED' => ApplicationStatus.approved,
+        'REJECTED' => ApplicationStatus.rejected,
+        'WITHDRAWN' => ApplicationStatus.withdrawn,
+        'EXPIRED' => ApplicationStatus.expired,
+        _ => ApplicationStatus.submitted,
+      };
 
-  static String _iso(DateTime day) =>
-      '${day.year.toString().padLeft(4, '0')}-'
+  static String _iso(DateTime day) => '${day.year.toString().padLeft(4, '0')}-'
       '${day.month.toString().padLeft(2, '0')}-'
       '${day.day.toString().padLeft(2, '0')}';
 }

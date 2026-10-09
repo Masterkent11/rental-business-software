@@ -23,12 +23,12 @@ export function SignIn() {
       <div className="flex flex-col px-6 py-10 sm:px-12">
         <div className="flex items-center gap-2.5">
           <BrandMark className="size-9" />
-          <span className="text-[15px] font-bold tracking-tight">Rental Platform</span>
+          <span className="text-[15px] font-bold tracking-tight">Westayplace</span>
         </div>
         <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
           <h1 className="text-[30px] font-bold tracking-tight">Welcome back</h1>
           <p className="mt-2 text-[14px] leading-relaxed text-muted">
-            Sign in to manage your properties, bookings and guest messages.
+            Sign in to manage properties, inquiries, viewings and client messages.
           </p>
           <form
             className="mt-8 flex flex-col gap-4"
@@ -79,10 +79,10 @@ export function SignIn() {
             </Btn>
           </form>
           <p className="mt-6 text-[12.5px] leading-relaxed text-muted">
-            Owner accounts are set up by the platform team. Customers book and message from the Rental Platform mobile app.
+            Owners and agents use the same sign-in. After signing in you choose your workspace. Customers use the Westayplace mobile app.
           </p>
         </div>
-        <p className="text-[12px] text-muted/80">© {new Date().getFullYear()} Rental Platform</p>
+        <p className="text-[12px] text-muted/80">© {new Date().getFullYear()} Westayplace</p>
       </div>
       <div className="relative hidden overflow-hidden bg-[#0A0F1D] lg:block">
         <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_85%_100%,#33202A_0%,transparent_55%),linear-gradient(140deg,#1E293B_0%,#0E1526_55%,#0A0F1D_100%)]" />

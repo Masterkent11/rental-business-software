@@ -87,3 +87,5 @@ export async function withUserAndScope<T>(
     return work(tx);
   }) as Promise<T>;
 }
+
+export const escapeLike = (value: string): string => value.replace(/[\\%_]/g, (character) => `\\${character}`);

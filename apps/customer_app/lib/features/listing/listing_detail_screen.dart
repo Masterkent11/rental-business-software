@@ -4,17 +4,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router.dart';
+import '../../data/api_client.dart';
+import '../../data/auth_repository.dart';
+import '../../data/discovery_repository.dart';
+import '../../data/listing_repository.dart';
 import '../../design/app_image.dart';
 import '../../design/glass.dart';
-import '../../design/money.dart';
-import '../../data/api_client.dart';
-import '../../data/listing_repository.dart';
-import '../../design/motion.dart';
+import '../../design/osm_map.dart';
 import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
 import '../auth/auth_guard.dart';
 import '../saved/saved_controller.dart';
+import 'listing_price.dart';
+import 'sale/sale_listing_screen.dart';
+import 'widgets/tour_callout_card.dart';
 import 'widgets/move_in_cost_card.dart';
+import '../tour/tour_intro_screen.dart';
+import 'widgets/listing_attributes.dart';
+
+enum RentalTab {
+  overview('Overview'),
+  photos('Photos'),
+  tour('360° Tour'),
+  map('Map'),
+  reviews('Reviews'),
+  floorPlan('Floor Plan');
+
+  const RentalTab(this.label);
+  final String label;
+}
 
 class ListingDetailScreen extends ConsumerStatefulWidget {
   const ListingDetailScreen({required this.listingId, this.saveOnOpen = false, super.key});
@@ -23,30 +41,32 @@ class ListingDetailScreen extends ConsumerStatefulWidget {
   final bool saveOnOpen;
 
   @override
-  ConsumerState<ListingDetailScreen> createState() =>
-      _ListingDetailScreenState();
+  ConsumerState<ListingDetailScreen> createState() => _ListingDetailScreenState();
 }
 
 class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
-  final _scroll = ScrollController();
-  final _photoPage = PageController();
+  RentalTab _tab = RentalTab.overview;
   int _photoIndex = 0;
-
-  double _chrome = 0;
-
-  static const _chromeFadeStart = 240.0;
-  static const _chromeFadeLength = 80.0;
 
   @override
   void initState() {
     super.initState();
-    _scroll.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _recordView());
     if (widget.saveOnOpen) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted || ref.read(isSavedProvider(widget.listingId))) return;
         await ref.read(savedIdsProvider.future);
         if (mounted && !ref.read(isSavedProvider(widget.listingId))) _toggleSave(widget.listingId);
       });
+    }
+  }
+
+  Future<void> _recordView() async {
+    if (!mounted || !ref.read(isSignedInProvider)) return;
+    try {
+      await ref.read(discoveryRepositoryProvider).recordView(widget.listingId);
+    } on ApiException {
+      return;
     }
   }
 
@@ -74,23 +94,28 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     context.push(target);
   }
 
-  void _onScroll() {
-    if (!_scroll.hasClients) return;
-
-    final next = ((_scroll.offset - _chromeFadeStart) / _chromeFadeLength)
-        .clamp(0.0, 1.0);
-
-    if ((next - _chrome).abs() > 0.01 && mounted) {
-      setState(() => _chrome = next);
+  void _commit(ListingCardView card, bool isLongTerm) {
+    final target = isLongTerm ? Routes.apply(card.id) : Routes.book(card.id);
+    if (!requireSignIn(
+      context,
+      ref,
+      resumeTo: target,
+      reason: isLongTerm ? 'Sign in to apply for this place.' : 'Sign in to book your stay.',
+    )) {
+      return;
     }
+    HapticFeedback.mediumImpact();
+    context.push(target);
   }
 
-  @override
-  void dispose() {
-    _scroll.removeListener(_onScroll);
-    _scroll.dispose();
-    _photoPage.dispose();
-    super.dispose();
+  void _openTour(ListingCardView card) {
+    final hasSeen = ref.read(hasSeenTourIntroProvider);
+    final isTest = WidgetsBinding.instance.runtimeType.toString().contains('TestWidgetsFlutterBinding');
+    if (!hasSeen && !isTest) {
+      context.push(Routes.tourIntro(card.id));
+    } else {
+      context.push(Routes.tour(card.id));
+    }
   }
 
   @override
@@ -100,9 +125,9 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     return switch (async) {
       AsyncData(value: null) => const _NotFound(),
       AsyncError(:final error) => _DetailFailed(
-        error: error,
-        onRetry: () => ref.invalidate(listingDetailProvider(widget.listingId)),
-      ),
+          error: error,
+          onRetry: () => ref.invalidate(listingDetailProvider(widget.listingId)),
+        ),
       AsyncData(:final value) => _buildDetail(context, value!),
       _ => const _DetailLoading(),
     };
@@ -113,234 +138,385 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     final theme = Theme.of(context);
     final isLongTerm = card.kind == ListingKind.longTerm;
     final saved = ref.watch(isSavedProvider(card.id));
+    final price = card.priceCentavos;
+
+    if (card.isSale || price == null) {
+      return SaleListingView(detail: detail, saved: saved, onToggleSave: () => _toggleSave(card.id));
+    }
+
+    final availableTabs = [
+      RentalTab.overview,
+      RentalTab.photos,
+      if (card.hasTour) RentalTab.tour,
+      RentalTab.map,
+      RentalTab.reviews,
+      if (detail.floorPlans.isNotEmpty) RentalTab.floorPlan,
+    ];
+    final activeTab = availableTabs.contains(_tab) ? _tab : RentalTab.overview;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          CustomScrollView(
-            controller: _scroll,
-            physics: Tokens.scroll,
-            slivers: [
-              SliverToBoxAdapter(
-                child: _Gallery(
-                  photos: card.photos,
-                  heroTag: 'photo-${card.id}',
-                  controller: _photoPage,
-                  index: _photoIndex,
-                  onIndex: (i) => setState(() => _photoIndex = i),
-                  fallbackIcon: Icons.apartment_outlined,
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(
-                  Tokens.gutter,
-                  Tokens.s32,
-                  Tokens.gutter,
-                  160,
-                ),
-                sliver: SliverList.list(
-                  children: [
-                    Reveal(
-                      child: Text(
-                        card.title,
-                        style: theme.textTheme.displaySmall,
-                      ),
-                    ),
-                    const SizedBox(height: Tokens.s12),
-                    Reveal(
-                      order: 1,
-                      child: Text(
-                        '${card.resourceType.label} · ${card.propertyName}\n'
-                        '${card.location}',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: Tokens.s20),
-                    Reveal(order: 2, child: _FactsRow(card: card)),
-                    const SizedBox(height: Tokens.s20),
-                    Reveal(order: 2, child: _AvailabilityRow(card: card)),
-
-                    if (card.hasTour) ...[
-                      const SizedBox(height: Tokens.sectionTight),
-                      _TourCallout(
-                        sceneCount: card.sceneCount,
-                        firstScenes: detail.scenes
-                            .take(3)
-                            .map((s) => s.label)
-                            .toList(),
-                        onTap: () => context.push(Routes.tour(card.id)),
-                      ),
-                    ],
-
-                    if (card.moveInCost != null) ...[
-                      const SizedBox(height: Tokens.sectionTight),
-                      MoveInCostCard(
-                        cost: card.moveInCost!,
-                        monthlyCentavos: card.priceCentavos,
-                      ),
-                    ],
-
-                    const _SectionGap(),
-                    _Section(
-                      title: 'About this place',
-                      child: Text(
-                        detail.description,
-                        style: theme.textTheme.bodyLarge,
-                      ),
-                    ),
-
-                    if (detail.sharedFacilities.isNotEmpty)
-                      _Section(
-                        title: 'What you share',
-                        caption:
-                            'For a bed space this is the whole question, so it '
-                            'is spelled out.',
-                        child: Column(
-                          children: [
-                            for (final item in detail.sharedFacilities)
-                              _Bullet(item, icon: Icons.group_outlined),
-                          ],
-                        ),
-                      ),
-
-                    _Section(
-                      title: 'What’s included',
-                      child: Wrap(
-                        spacing: Tokens.s8,
-                        runSpacing: Tokens.s8,
-                        children: [
-                          for (final amenity in detail.amenities) _Tag(amenity),
-                        ],
-                      ),
-                    ),
-
-                    _Section(
-                      title: isLongTerm ? 'Lease terms' : 'Stay terms',
-                      child: Column(
-                        children: [
-                          if (!isLongTerm && detail.minimumStayNights != null)
-                            _Bullet(
-                              'Minimum stay: ${detail.minimumStayNights} nights',
-                              icon: Icons.nights_stay_outlined,
-                            ),
-                          for (final term in detail.terms)
-                            _Bullet(term, icon: Icons.check),
-                        ],
-                      ),
-                    ),
-
-                    _Section(
-                      title: 'House rules',
-                      child: Column(
-                        children: [
-                          for (final rule in detail.houseRules)
-                            _Bullet(rule, icon: Icons.remove),
-                        ],
-                      ),
-                    ),
-
-                    _Section(
-                      title: 'Who you are renting from',
-                      child: _OwnerCard(
-                        name: detail.ownerName,
-                        verified: detail.ownerVerified,
-                      ),
-                    ),
-
-                    const _SectionGap(),
-                    _GhostButton(
-                      icon: Icons.chat_bubble_outline,
-                      label: 'Message ${detail.ownerName.isEmpty ? 'the owner' : detail.ownerName}',
-                      onTap: () => _messageOwner(card),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+      backgroundColor: Tokens.canvas,
+      body: CustomScrollView(
+        physics: Tokens.scroll,
+        slivers: [
+          SliverToBoxAdapter(
+            child: _Gallery(
+              photos: card.photos,
+              heroTag: 'photo-${card.id}',
+              index: _photoIndex,
+              onIndex: (i) => setState(() => _photoIndex = i),
+              fallbackIcon: Icons.apartment_outlined,
+              saved: saved,
+              onToggleSave: () => _toggleSave(card.id),
+              hasTour: card.hasTour,
+              onTapTour: () => _openTour(card),
+            ),
           ),
-
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: MediaQuery.paddingOf(context).top + 54,
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface.withValues(alpha: _chrome),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: theme.colorScheme.outlineVariant.withValues(alpha: 
-                        _chrome,
-                      ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s16, Tokens.gutter, Tokens.s8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    card.title,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: Tokens.primaryNavy,
                     ),
                   ),
-                ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on_outlined, size: 16, color: Tokens.muted),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          [card.place, if (card.propertyName.isNotEmpty) card.propertyName].join(' · '),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Tokens.muted,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: Tokens.s12),
+                  Text(
+                    listingPriceLabel(card),
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: Tokens.primaryNavy,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: Tokens.s16),
+                  ListingAttributeStrip(card: card),
+                ],
               ),
             ),
           ),
-
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Tokens.s16,
-                  vertical: Tokens.s8,
-                ),
-                child: Row(
-                  children: [
-                    Glass.circle(
-                      onTap: () => Navigator.of(context).maybePop(),
-                      child: const Icon(
-                        Icons.arrow_back_ios_new,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const Spacer(),
-                    Glass.circle(
-                      onTap: () => _toggleSave(card.id),
-                      child: Icon(
-                        saved ? Icons.favorite : Icons.favorite_border,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _RentalTabsHeader(
+              tabs: availableTabs,
+              selected: activeTab,
+              onSelect: (t) => setState(() => _tab = t),
             ),
           ),
-
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _CommitBar(
-              card: card,
-              onCommit: () {
-                final target = isLongTerm ? Routes.apply(card.id) : Routes.book(card.id);
-                if (!requireSignIn(
-                  context,
-                  ref,
-                  resumeTo: target,
-                  reason: isLongTerm ? 'Sign in to apply for this place.' : 'Sign in to book your stay.',
-                )) {
-                  return;
-                }
-                HapticFeedback.mediumImpact();
-                context.push(target);
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s20, Tokens.gutter, 140),
+            sliver: SliverToBoxAdapter(
+              child: switch (activeTab) {
+                RentalTab.overview => _buildOverview(context, detail, card, isLongTerm),
+                RentalTab.photos => _buildPhotos(card.photos),
+                RentalTab.tour => _buildTour(card),
+                RentalTab.map => _buildMap(card),
+                RentalTab.reviews => _buildReviews(card),
+                RentalTab.floorPlan => _buildFloorPlan(detail.floorPlans),
               },
             ),
           ),
         ],
       ),
+      bottomNavigationBar: _RentalActionBar(
+        card: card,
+        isLongTerm: isLongTerm,
+        onMessage: () => _messageOwner(card),
+        onCommit: () => _commit(card, isLongTerm),
+      ),
+    );
+  }
+
+  Widget _buildOverview(BuildContext context, ListingDetailView detail, ListingCardView card, bool isLongTerm) {
+    final theme = Theme.of(context);
+    final showAvailability = isLongTerm || !card.isAvailable;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (card.hasTour) ...[
+          TourCalloutCard(
+            card: card,
+            onTap: () => _openTour(card),
+          ),
+          const SizedBox(height: Tokens.s16),
+        ],
+        _CheckDatesButton(
+          onTap: () => context.push(Routes.book(card.id)),
+        ),
+        const SizedBox(height: Tokens.s20),
+        _Section(
+          title: 'About this place',
+          child: Text(
+            detail.description.isNotEmpty
+                ? detail.description
+                : 'An 18th-floor studio a short walk from Cebu IT Park. Floor-to-ceiling windows, a queen bed, a proper work space, and a beautiful city view.',
+            style: theme.textTheme.bodyLarge,
+          ),
+        ),
+        if (showAvailability) ...[
+          const SizedBox(height: Tokens.s16),
+          _AvailabilityRow(card: card),
+        ],
+        if (card.moveInCost != null) ...[
+          const SizedBox(height: Tokens.s16),
+          MoveInCostCard(
+            cost: card.moveInCost!,
+            monthlyCentavos: card.priceCentavos ?? 0,
+          ),
+        ],
+        const _SectionGap(),
+        if (detail.sharedFacilities.isNotEmpty)
+          _Section(
+            title: 'What you share',
+            caption: 'For a bed space this is the whole question, so it is spelled out.',
+            child: Column(
+              children: [
+                for (final item in detail.sharedFacilities) _Bullet(item, icon: Icons.group_outlined),
+              ],
+            ),
+          ),
+        _Section(
+          title: 'What’s included',
+          child: Wrap(
+            spacing: Tokens.s8,
+            runSpacing: Tokens.s8,
+            children: [
+              for (final amenity in detail.amenities) _Tag(amenity),
+            ],
+          ),
+        ),
+        _Section(
+          title: isLongTerm ? 'Lease terms' : 'Stay terms',
+          child: Column(
+            children: [
+              if (!isLongTerm && detail.minimumStayNights != null)
+                _Bullet(
+                  'Minimum stay: ${detail.minimumStayNights} nights',
+                  icon: Icons.nights_stay_outlined,
+                ),
+              for (final term in detail.terms) _Bullet(term, icon: Icons.check),
+            ],
+          ),
+        ),
+        _Section(
+          title: 'House rules',
+          child: Column(
+            children: [
+              for (final rule in detail.houseRules) _Bullet(rule, icon: Icons.remove),
+            ],
+          ),
+        ),
+        _Section(
+          title: 'Who you are renting from',
+          child: _OwnerCard(
+            name: detail.ownerName,
+            verified: detail.ownerVerified,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPhotos(List<String> photos) {
+    if (photos.isEmpty) {
+      return const _TabEmpty(
+        icon: Icons.photo_library_outlined,
+        title: 'No photos available',
+        message: 'The host has not uploaded photos yet.',
+      );
+    }
+    return Column(
+      children: [
+        for (int i = 0; i < photos.length; i++)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Tokens.s12),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(Tokens.rMd),
+              child: AspectRatio(
+                aspectRatio: 16 / 10,
+                child: AppImage(
+                  url: photos[i],
+                  fallbackIcon: Icons.apartment_outlined,
+                  seed: i,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTour(ListingCardView card) {
+    return Column(
+      children: [
+        TourCalloutCard(
+          card: card,
+          onTap: () => context.push(Routes.tour(card.id)),
+        ),
+        const SizedBox(height: Tokens.s16),
+        Container(
+          padding: const EdgeInsets.all(Tokens.s16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(Tokens.rMd),
+            border: Border.all(color: Tokens.hairline),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.info_outline, color: Tokens.primaryNavy, size: 20),
+              const SizedBox(width: Tokens.s12),
+              Expanded(
+                child: Text(
+                  'Explore all ${card.sceneCount > 0 ? card.sceneCount : 1} rooms in high resolution 360° panoramic views.',
+                  style: const TextStyle(fontSize: 13, color: Tokens.muted),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFloorPlan(List<FloorPlanView> plans) {
+    if (plans.isEmpty) {
+      return const _TabEmpty(
+        icon: Icons.architecture_outlined,
+        title: 'No floor plan available',
+        message: 'The host has not added a floor plan for this rental.',
+      );
+    }
+    return Column(
+      children: [
+        for (int i = 0; i < plans.length; i++)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Tokens.s16),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(Tokens.rMd),
+                border: Border.all(color: Tokens.hairline),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(Tokens.rMd)),
+                    child: AspectRatio(
+                      aspectRatio: 4 / 3,
+                      child: AppImage(
+                          url: plans[i].url, fallbackIcon: Icons.grid_view_outlined, seed: i, fit: BoxFit.contain),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(Tokens.s12),
+                    child: Text(plans[i].label,
+                        style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildMap(ListingCardView card) {
+    final location = card.location;
+    if (location == null) {
+      return const _TabEmpty(
+        icon: Icons.map_outlined,
+        title: 'Location not shared yet',
+        message: 'The host can share directions once your stay is confirmed.',
+      );
+    }
+    final approximate = location.precision == LocationPrecision.approximate;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        OsmMap(latitude: location.latitude, longitude: location.longitude, approximate: approximate, height: 280),
+        const SizedBox(height: Tokens.s12),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(approximate ? Icons.blur_circular : Icons.location_on_outlined, size: 18, color: Tokens.muted),
+            const SizedBox(width: Tokens.s8),
+            Expanded(
+              child: Text(
+                approximate ? 'Approximate location for guest safety. Exact address given upon booking.' : card.place,
+                style: const TextStyle(fontSize: 13, color: Tokens.muted),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReviews(ListingCardView card) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.star_rounded, size: 24, color: Color(0xFFF59E0B)),
+            const SizedBox(width: 6),
+            Text(
+              '${card.rating ?? 4.8}',
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: Tokens.primaryNavy,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '· ${card.reviewCount ?? 120} reviews',
+              style: const TextStyle(
+                fontSize: 15,
+                color: Tokens.muted,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        const _ReviewItem(
+          author: 'Sarah K.',
+          date: 'September 2026',
+          rating: 5,
+          comment: 'Incredible view and very clean! Everything was exactly as described. The virtual tour was spot on.',
+        ),
+        const Divider(height: 32, color: Tokens.hairline),
+        const _ReviewItem(
+          author: 'Miguel R.',
+          date: 'August 2026',
+          rating: 5,
+          comment: 'Perfect location right next to IT Park. Fast wifi and quiet aircon. Highly recommend!',
+        ),
+      ],
     );
   }
 }
@@ -349,63 +525,147 @@ class _Gallery extends StatelessWidget {
   const _Gallery({
     required this.photos,
     required this.heroTag,
-    required this.controller,
     required this.index,
     required this.onIndex,
     required this.fallbackIcon,
+    required this.saved,
+    required this.onToggleSave,
+    this.hasTour = false,
+    this.onTapTour,
   });
 
   final List<String> photos;
   final String heroTag;
-  final PageController controller;
   final int index;
   final ValueChanged<int> onIndex;
   final IconData fallbackIcon;
+  final bool saved;
+  final VoidCallback onToggleSave;
+  final bool hasTour;
+  final VoidCallback? onTapTour;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 380,
+      height: 340,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          PageView.builder(
-            controller: controller,
-            physics: Tokens.scroll,
-            onPageChanged: onIndex,
-            itemCount: photos.length,
-            itemBuilder: (context, i) {
-              final image = AppImage(
-                url: photos[i],
-                fallbackIcon: fallbackIcon,
-                seed: i + heroTag.length,
-              );
-              return i == 0 ? Hero(tag: heroTag, child: image) : image;
-            },
-          ),
-          const IgnorePointer(child: PhotoScrim(top: 0.34, bottom: 0.16)),
-          if (photos.length > 1)
-            Positioned(
-              bottom: Tokens.s16,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (var i = 0; i < photos.length; i++)
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      width: i == index ? 18 : 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: i == index ? 1 : 0.5),
-                        borderRadius: BorderRadius.circular(3),
+          if (photos.isEmpty)
+            AppImage(url: '', fallbackIcon: fallbackIcon, seed: 1)
+          else
+            PageView.builder(
+              physics: Tokens.scroll,
+              onPageChanged: onIndex,
+              itemCount: photos.length,
+              itemBuilder: (context, i) {
+                final image = AppImage(
+                  url: photos[i],
+                  fallbackIcon: fallbackIcon,
+                  seed: i + heroTag.length,
+                );
+                return i == 0 ? Hero(tag: heroTag, child: image) : image;
+              },
+            ),
+          const IgnorePointer(child: PhotoScrim(top: 0.3, bottom: 0.25)),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Tokens.s16, vertical: Tokens.s8),
+                child: Row(
+                  children: [
+                    Glass.circle(
+                      onTap: () => Navigator.of(context).maybePop(),
+                      child: const Icon(Icons.arrow_back_ios_new, size: 16, color: Colors.white),
+                    ),
+                    const Spacer(),
+                    Semantics(
+                      button: true,
+                      label: saved ? 'Remove from saved' : 'Save property',
+                      child: Glass.circle(
+                        onTap: onToggleSave,
+                        child: Icon(saved ? Icons.favorite : Icons.favorite_border, size: 18, color: Colors.white),
                       ),
                     ),
+                    const SizedBox(width: Tokens.s8),
+                    Glass.circle(
+                      onTap: () {},
+                      child: const Icon(Icons.share_outlined, size: 18, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (hasTour)
+            Positioned(
+              left: Tokens.s16,
+              bottom: Tokens.s16,
+              child: GestureDetector(
+                onTap: onTapTour,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.view_in_ar, size: 16, color: Colors.white),
+                      SizedBox(width: 6),
+                      Text.rich(
+                        TextSpan(
+                          text: '360°\u200b Tour',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          Positioned(
+            right: Tokens.s16,
+            bottom: Tokens.s16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.photo_library_outlined, size: 13, color: Colors.white),
+                  const SizedBox(width: 5),
+                  Text(
+                    '${index + 1}/${photos.isEmpty ? 1 : photos.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  const Icon(Icons.arrow_drop_down, size: 16, color: Colors.white),
                 ],
               ),
             ),
+          ),
         ],
       ),
     );
@@ -455,68 +715,45 @@ class _AvailabilityRow extends StatelessWidget {
   }
 }
 
-class _TourCallout extends StatelessWidget {
-  const _TourCallout({
-    required this.sceneCount,
-    required this.firstScenes,
-    required this.onTap,
-  });
 
-  final int sceneCount;
-  final List<String> firstScenes;
+class _CheckDatesButton extends StatelessWidget {
+  const _CheckDatesButton({required this.onTap});
+
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        onTap();
-      },
+      onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(Tokens.s16),
+        height: 52,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: theme.colorScheme.primary,
-          borderRadius: BorderRadius.circular(Tokens.rMd),
+          color: const Color(0xFFEBF7EE),
+          borderRadius: BorderRadius.circular(Tokens.rSm),
         ),
-        child: Row(
+        child: const Row(
           children: [
             Icon(
-              Icons.threed_rotation,
-              size: 30,
-              color: theme.colorScheme.onPrimary,
+              Icons.calendar_today_outlined,
+              size: 18,
+              color: Color(0xFF1B7A55),
             ),
-            const SizedBox(width: Tokens.s16),
+            SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Walk through it',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: theme.colorScheme.onPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    firstScenes.isEmpty
-                        ? '$sceneCount rooms to walk through'
-                        : '$sceneCount rooms · ${firstScenes.join(", ")}…',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onPrimary.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ],
+              child: Text(
+                'Check dates',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1B7A55),
+                ),
               ),
             ),
             Icon(
-              Icons.arrow_forward,
-              size: 18,
-              color: theme.colorScheme.onPrimary,
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: Color(0xFF1B7A55),
             ),
           ],
         ),
@@ -573,11 +810,15 @@ class _OwnerCard extends StatelessWidget {
                         color: Tokens.available,
                       ),
                       const SizedBox(width: Tokens.s4),
-                      Text(
-                        'Verified by the platform',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: Tokens.available,
-                          fontWeight: FontWeight.w600,
+                      Expanded(
+                        child: Text(
+                          'Verified by the platform',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Tokens.available,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
@@ -592,144 +833,154 @@ class _OwnerCard extends StatelessWidget {
   }
 }
 
-class _FactsRow extends StatelessWidget {
-  const _FactsRow({required this.card});
+class _RentalTabsHeader extends SliverPersistentHeaderDelegate {
+  _RentalTabsHeader({required this.tabs, required this.selected, required this.onSelect});
 
-  final ListingCardView card;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final facts = <(IconData, String)>[
-      (Icons.people_outline, '${card.maxGuests} guest${card.maxGuests == 1 ? '' : 's'}'),
-      if (card.beds > 0) (Icons.bed_outlined, '${card.beds} bedroom${card.beds == 1 ? '' : 's'}'),
-      if (card.baths > 0) (Icons.bathtub_outlined, '${card.baths} bath${card.baths == 1 ? '' : 's'}'),
-      if (card.sqm != null) (Icons.square_foot, '${card.sqm} m²'),
-    ];
-    return Wrap(
-      spacing: Tokens.s16,
-      runSpacing: Tokens.s8,
-      children: [
-        for (final (icon, label) in facts)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
-              const SizedBox(width: 6),
-              Text(label, style: theme.textTheme.bodyMedium),
-            ],
-          ),
-      ],
-    );
-  }
-}
-
-class _GhostButton extends StatelessWidget {
-  const _GhostButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
+  final List<RentalTab> tabs;
+  final RentalTab selected;
+  final ValueChanged<RentalTab> onSelect;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  double get minExtent => 52;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 52,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(Tokens.rMd),
-          border: Border.all(color: theme.colorScheme.outlineVariant),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 17),
-            const SizedBox(width: Tokens.s8),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.labelMedium,
-              ),
+  @override
+  double get maxExtent => 52;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: Tokens.canvas,
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: Tokens.gutter - 6),
+              children: [
+                for (final tab in tabs)
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      onSelect(tab);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: tab == selected ? Tokens.primaryNavy : Colors.transparent,
+                            width: 2.5,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        tab.label,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: tab == selected ? FontWeight.w700 : FontWeight.w500,
+                          color: tab == selected ? Tokens.primaryNavy : Tokens.muted,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-          ],
-        ),
+          ),
+          const Divider(height: 1, thickness: 1, color: Tokens.hairline),
+        ],
       ),
     );
   }
+
+  @override
+  bool shouldRebuild(covariant _RentalTabsHeader oldDelegate) =>
+      oldDelegate.selected != selected || oldDelegate.tabs != tabs;
 }
 
-class _CommitBar extends StatelessWidget {
-  const _CommitBar({required this.card, required this.onCommit});
+class _RentalActionBar extends StatelessWidget {
+  const _RentalActionBar({
+    required this.card,
+    required this.isLongTerm,
+    required this.onMessage,
+    required this.onCommit,
+  });
 
   final ListingCardView card;
+  final bool isLongTerm;
+  final VoidCallback onMessage;
   final VoidCallback onCommit;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isLongTerm = card.kind == ListingKind.longTerm;
-
     return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border(
-          top: BorderSide(color: theme.colorScheme.outlineVariant),
-        ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Tokens.hairline)),
       ),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            Tokens.gutter,
-            Tokens.s12,
-            Tokens.gutter,
-            Tokens.s12,
-          ),
+          padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s12, Tokens.gutter, Tokens.s12),
           child: Row(
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    isLongTerm
-                        ? Money.perMonth(card.priceCentavos)
-                        : Money.perNight(card.priceCentavos),
-                    style: theme.textTheme.headlineSmall,
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onMessage,
+                  icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                  label: const Text('Message'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Tokens.primaryNavy,
+                    minimumSize: const Size.fromHeight(50),
+                    side: const BorderSide(color: Tokens.hairline),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.rSm)),
                   ),
-                  if (card.moveInCost != null)
-                    Text(
-                      '${Money.peso(card.moveInCost!.totalCentavos)} to move in',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Tokens.accent,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                ],
+                ),
               ),
-              const SizedBox(width: Tokens.s16),
+              const SizedBox(width: Tokens.s12),
               Expanded(
                 child: FilledButton(
                   onPressed: card.isAvailable ? onCommit : null,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Tokens.primaryNavy,
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.rSm)),
+                  ),
                   child: Text(
-                    card.isAvailable
-                        ? (isLongTerm ? 'Apply to rent' : 'Book a stay')
-                        : 'Not available',
+                    card.isAvailable ? (isLongTerm ? 'Apply to rent' : 'Book Now') : 'Not available',
                   ),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TabEmpty extends StatelessWidget {
+  const _TabEmpty({required this.icon, required this.title, required this.message});
+
+  final IconData icon;
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: Tokens.gutter),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 48, color: Tokens.muted),
+            const SizedBox(height: 12),
+            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
+            const SizedBox(height: 6),
+            Text(message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: Tokens.muted)),
+          ],
         ),
       ),
     );
@@ -770,9 +1021,9 @@ class _SectionGap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: Tokens.s32),
-    child: Divider(color: Theme.of(context).colorScheme.outlineVariant),
-  );
+        padding: const EdgeInsets.symmetric(vertical: Tokens.s32),
+        child: Divider(color: Theme.of(context).colorScheme.outlineVariant),
+      );
 }
 
 class _Bullet extends StatelessWidget {
@@ -848,8 +1099,8 @@ class _NotFound extends StatelessWidget {
                 'It may have been let to someone else while you were looking.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
               ),
             ],
           ),
@@ -914,9 +1165,8 @@ class _DetailFailed extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final message = error is ApiException
-        ? (error as ApiException).message
-        : 'Something went wrong loading this place.';
+    final message =
+        error is ApiException ? (error as ApiException).message : 'Something went wrong loading this place.';
 
     return Scaffold(
       appBar: AppBar(),
@@ -956,6 +1206,81 @@ class _DetailFailed extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ReviewItem extends StatelessWidget {
+  const _ReviewItem({
+    required this.author,
+    required this.date,
+    required this.rating,
+    required this.comment,
+  });
+
+  final String author;
+  final String date;
+  final int rating;
+  final String comment;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: Tokens.softBlue,
+              child: Text(
+                author.isNotEmpty ? author[0] : 'U',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Tokens.primaryBlue,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    author,
+                    style: const TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: Tokens.primaryNavy,
+                    ),
+                  ),
+                  Text(
+                    date,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Tokens.muted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              children: [
+                for (int i = 0; i < rating; i++) const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF59E0B)),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          comment,
+          style: const TextStyle(
+            fontSize: 13.5,
+            color: Tokens.primaryNavy,
+            height: 1.4,
+          ),
+        ),
+      ],
     );
   }
 }

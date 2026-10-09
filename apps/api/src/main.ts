@@ -3,6 +3,7 @@ import { Readable } from 'node:stream';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import { loadEnvironmentConfig } from './infrastructure/config/environment-config.ts';
+import { corsOptions } from './infrastructure/config/cors-options.ts';
 
 const config = loadEnvironmentConfig();
 
@@ -50,7 +51,7 @@ const app = await NestFactory.create<NestFastifyApplication>(
   adapter,
 );
 
-app.enableCors({ origin: config.corsOrigins === true ? true : [...config.corsOrigins] });
+app.enableCors(corsOptions(config.corsOrigins));
 
 await app.listen(config.port, '0.0.0.0');
 

@@ -10,7 +10,13 @@ import 'auth_repository.dart';
 import 'ids.dart';
 import 'listing_repository.dart';
 
-enum SenderRole { customer, owner }
+enum SenderRole { customer, owner, agent }
+
+SenderRole senderRoleFrom(Object? raw) => switch (raw) {
+      'OWNER' => SenderRole.owner,
+      'AGENT' => SenderRole.agent,
+      _ => SenderRole.customer,
+    };
 
 enum Delivery { sent, sending, failed }
 
@@ -49,9 +55,7 @@ class MessageView {
   static MessageView fromJson(Map<String, dynamic> json) => MessageView(
         id: json['id'] as String,
         conversationId: (json['conversationId'] ?? json['conversation_id']) as String,
-        senderRole: ((json['senderRole'] ?? json['sender_role']) as String) == 'OWNER'
-            ? SenderRole.owner
-            : SenderRole.customer,
+        senderRole: senderRoleFrom(json['senderRole'] ?? json['sender_role']),
         body: json['body'] as String? ?? '',
         clientId: (json['clientId'] ?? json['client_id']) as String,
         createdAt: DateTime.parse((json['createdAt'] ?? json['created_at']) as String).toUtc(),
@@ -66,6 +70,8 @@ class ConversationView {
     required this.listingTitle,
     required this.listingPhoto,
     required this.organizationName,
+    this.agentName,
+    this.isSale = false,
     required this.bookingId,
     required this.bookingStartsOn,
     required this.lastMessageAt,
@@ -79,7 +85,11 @@ class ConversationView {
   final String listingTitle;
   final String? listingPhoto;
   final String organizationName;
+  final String? agentName;
+  final bool isSale;
   final String? bookingId;
+
+  String get partnerName => agentName ?? organizationName;
   final String? bookingStartsOn;
   final DateTime? lastMessageAt;
   final String lastMessagePreview;
@@ -92,16 +102,13 @@ class ConversationView {
         listingTitle: json['listingTitle'] as String? ?? '',
         listingPhoto: json['listingPhoto'] as String?,
         organizationName: json['organizationName'] as String? ?? 'Owner',
+        agentName: json['agentName'] as String?,
+        isSale: json['listingIntent'] == 'SALE',
         bookingId: json['bookingId'] as String?,
         bookingStartsOn: json['bookingStartsOn'] as String?,
-        lastMessageAt:
-            json['lastMessageAt'] == null ? null : DateTime.parse(json['lastMessageAt'] as String),
+        lastMessageAt: json['lastMessageAt'] == null ? null : DateTime.parse(json['lastMessageAt'] as String),
         lastMessagePreview: json['lastMessagePreview'] as String? ?? '',
-        lastSenderRole: switch (json['lastSenderRole']) {
-          'OWNER' => SenderRole.owner,
-          'CUSTOMER' => SenderRole.customer,
-          _ => null,
-        },
+        lastSenderRole: json['lastSenderRole'] == null ? null : senderRoleFrom(json['lastSenderRole']),
         unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
       );
 }
@@ -297,10 +304,7 @@ class InboxController extends AsyncNotifier<InboxState> {
     final userId = ref.watch(currentUserIdProvider);
     if (userId == null) return const InboxState(conversations: [], unreadTotal: 0);
     _subscription?.cancel();
-    _subscription = ref
-        .watch(realtimeGatewayProvider)
-        .conversationChangesFor(userId)
-        .listen((_) => refreshQuietly());
+    _subscription = ref.watch(realtimeGatewayProvider).conversationChangesFor(userId).listen((_) => refreshQuietly());
     ref.onDispose(() => _subscription?.cancel());
     final result = await ref.watch(messagingRepositoryProvider).mine();
     return InboxState(conversations: result.conversations, unreadTotal: result.unreadTotal);
@@ -362,7 +366,7 @@ class ThreadController extends AutoDisposeFamilyAsyncNotifier<ThreadState, Strin
     final current = state.valueOrNull;
     if (current == null) return;
     state = AsyncData(current.copyWith(messages: mergeMessages(current.messages, [message])));
-    if (message.senderRole == SenderRole.owner) _markRead();
+    if (message.senderRole != SenderRole.customer) _markRead();
   }
 
   void _markRead() {
@@ -388,9 +392,7 @@ class ThreadController extends AutoDisposeFamilyAsyncNotifier<ThreadState, Strin
     if (current == null || !current.hasMore || current.loadingOlder || current.messages.isEmpty) return;
     state = AsyncData(current.copyWith(loadingOlder: true));
     try {
-      final page = await ref
-          .read(messagingRepositoryProvider)
-          .thread(arg, before: current.messages.first.createdAt);
+      final page = await ref.read(messagingRepositoryProvider).thread(arg, before: current.messages.first.createdAt);
       state = AsyncData(current.copyWith(
         messages: mergeMessages(current.messages, page.messages),
         hasMore: page.hasMore,

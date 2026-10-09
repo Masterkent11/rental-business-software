@@ -4,5 +4,6 @@ export interface SessionPort {
   getCurrentSession(): Promise<ActiveSession | null>;
   signIn(email: string, password: string): Promise<ActiveSession>;
   signOut(): Promise<void>;
-  rememberOrganization(organizationId: string): void;
+  rememberWorkspace(key: string): void;
+  refresh(): Promise<ActiveSession>;
 }

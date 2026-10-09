@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/shell_destination.dart';
 import '../../data/messaging_repository.dart';
 import '../../design/tokens.dart';
 
@@ -11,18 +12,11 @@ class HomeShell extends ConsumerWidget {
 
   final StatefulNavigationShell navigationShell;
 
-  static const _tabs = [
-    (Icons.home_outlined, Icons.home_rounded, 'Home'),
-    (Icons.favorite_border, Icons.favorite, 'Saved'),
-    (Icons.event_note_outlined, Icons.event_note, 'Bookings'),
-    (Icons.chat_bubble_outline, Icons.chat_bubble, 'Messages'),
-    (Icons.person_outline, Icons.person, 'Profile'),
-  ];
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final unread = ref.watch(inboxProvider).valueOrNull?.unreadTotal ?? 0;
+    final unread = ref.watch(inboxProvider.select((inbox) => inbox.valueOrNull?.unreadTotal ?? 0));
     final theme = Theme.of(context);
+    final current = ShellDestination.ofIndex(navigationShell.currentIndex);
 
     return Scaffold(
       body: navigationShell,
@@ -37,17 +31,17 @@ class HomeShell extends ConsumerWidget {
             height: 58,
             child: Row(
               children: [
-                for (final (index, (icon, activeIcon, label)) in _tabs.indexed)
+                for (final destination in ShellDestination.values)
                   Expanded(
                     child: _NavItem(
-                      icon: icon,
-                      activeIcon: activeIcon,
-                      label: label,
-                      badge: index == 3 ? unread : 0,
-                      selected: navigationShell.currentIndex == index,
+                      icon: destination.icon,
+                      activeIcon: destination.activeIcon,
+                      label: destination.label,
+                      badge: destination == ShellDestination.messages ? unread : 0,
+                      selected: destination == current,
                       onTap: () {
                         HapticFeedback.selectionClick();
-                        navigationShell.goBranch(index, initialLocation: navigationShell.currentIndex == index);
+                        navigationShell.goBranch(destination.index, initialLocation: destination == current);
                       },
                     ),
                   ),
@@ -95,17 +89,24 @@ class _NavItem extends StatelessWidget {
             Stack(
               clipBehavior: Clip.none,
               children: [
-                Icon(selected ? activeIcon : icon, size: 23, color: color),
+                Icon(selected ? activeIcon : icon, size: Tokens.navIcon, color: color),
                 if (badge > 0)
                   Positioned(
                     right: -8,
                     top: -4,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                      decoration: BoxDecoration(color: Tokens.taken, borderRadius: BorderRadius.circular(999)),
+                      decoration: BoxDecoration(
+                        color: Tokens.taken,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
                       child: Text(
                         badge > 9 ? '9+' : '$badge',
-                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),

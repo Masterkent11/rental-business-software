@@ -1,4 +1,5 @@
 import type { Principal } from '@/domain/identity/identity.ts';
+import type { AgentProfile } from '@/domain/agents/agent.ts';
 import type {
   OrganizationMembershipView,
   UserProfile,
@@ -12,4 +13,5 @@ export interface GetMeResult {
   readonly principal: Principal;
   readonly profile: UserProfile | null;
   readonly organizations: readonly OrganizationMembershipView[];
+  readonly agentProfile: AgentProfile | null;
 }

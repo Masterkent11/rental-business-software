@@ -1,11 +1,15 @@
 import type { Centavos } from '@/domain/shared/money.ts';
 import type { OrganizationId } from '@/domain/shared/organization-scope.ts';
+import type { Coordinates, LocationPrivacy } from '@/domain/shared/geo.ts';
 import type {
+  Furnishing,
+  ListingIntent,
   ListingKind,
   ListingSort,
   ListingState,
   PropertyType,
   ResourceType,
+  SaleStatus,
 } from './listing-state.ts';
 
 export * from './listing-state.ts';
@@ -19,11 +23,28 @@ export interface ListingPhoto {
   readonly position: number;
 }
 
+export interface ListingFloorPlan extends ListingPhoto {
+  readonly label: string;
+}
+
+export interface PropertyLocation extends Coordinates {
+  readonly privacy: LocationPrivacy;
+}
+
+export interface ListingRepresentative {
+  readonly agentId: string;
+  readonly displayName: string;
+  readonly headline: string;
+  readonly photoUrl: string | null;
+  readonly verified: boolean;
+}
+
 export interface Listing {
   readonly id: string;
   readonly organizationId: OrganizationId;
   readonly resourceId: string;
-  readonly kind: ListingKind;
+  readonly intent: ListingIntent;
+  readonly kind: ListingKind | null;
   readonly resourceType: ResourceType;
   readonly title: string;
   readonly description: string;
@@ -57,11 +78,30 @@ export interface Listing {
   readonly publishedAt?: Date | null;
   readonly updatedAt?: Date | null;
   readonly nextAvailableOn?: string | null;
+  readonly saleStatus?: SaleStatus | null;
+  readonly lotAreaSqm?: number | null;
+  readonly parkingSlots?: number;
+  readonly location?: PropertyLocation | null;
+  readonly publicLocation?: Coordinates | null;
+  readonly distanceKm?: number | null;
+  readonly floorPlans?: readonly ListingFloorPlan[];
+  readonly representative?: ListingRepresentative | null;
+  readonly tourProvider?: 'PLATFORM' | 'MATTERPORT' | null;
+  readonly furnishing?: Furnishing | null;
+  readonly petsAllowed?: boolean | null;
+}
+
+export interface NearQuery extends Coordinates {
+  readonly radiusKm: number;
 }
 
 export interface ListingQuery {
   readonly text?: string;
   readonly ids?: readonly string[];
+  readonly intent?: ListingIntent;
+  readonly saleStatus?: SaleStatus;
+  readonly city?: string;
+  readonly near?: NearQuery;
   readonly kind?: ListingKind;
   readonly resourceType?: ResourceType;
   readonly propertyType?: PropertyType;
@@ -69,6 +109,12 @@ export interface ListingQuery {
   readonly maxPriceCentavos?: Centavos;
   readonly guests?: number;
   readonly bedrooms?: number;
+  readonly bathrooms?: number;
+  readonly minFloorAreaSqm?: number;
+  readonly furnished?: boolean;
+  readonly petsAllowed?: boolean;
+  readonly amenity?: string;
+  readonly area?: string;
   readonly hasTour?: boolean;
   readonly availableFrom?: string;
   readonly availableTo?: string;

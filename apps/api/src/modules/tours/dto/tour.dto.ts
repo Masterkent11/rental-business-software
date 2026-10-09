@@ -32,6 +32,22 @@ export const addHotspotSchema = angleSchema.extend({
   targetSceneId: z.guid().nullable().default(null),
 });
 
+export const updateHotspotSchema = angleSchema.extend({
+  label: z.string().trim().max(120).default(''),
+  targetSceneId: z.guid().nullable().default(null),
+});
+
+export const sceneViewSchema = z.object({
+  yaw: z.number().min(-360).max(360),
+  pitch: z.number().min(-85).max(85),
+  fov: z.number().min(30).max(110),
+});
+
+export const tourProviderSchema = z.object({
+  provider: z.enum(['PLATFORM', 'MATTERPORT']),
+  matterport: z.string().trim().max(300).nullable().default(null),
+});
+
 export const tileCoordsSchema = z.object({
   sceneId: z.guid(),
   level: z.coerce.number().int().min(0).max(8),

@@ -29,9 +29,8 @@ class _StartConversationScreenState extends ConsumerState<StartConversationScree
   Future<void> _open() async {
     setState(() => _error = null);
     try {
-      final conversation = await ref
-          .read(messagingRepositoryProvider)
-          .open(listingId: widget.listingId, bookingId: widget.bookingId);
+      final conversation =
+          await ref.read(messagingRepositoryProvider).open(listingId: widget.listingId, bookingId: widget.bookingId);
       if (!mounted) return;
       ref.read(inboxProvider.notifier).refreshQuietly();
       context.pushReplacement(Routes.conversation(conversation.id));

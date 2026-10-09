@@ -5,8 +5,11 @@ import {
   ListingPhotoRejectedError,
   assertAcceptablePhoto,
   assertPhotoPathBelongs,
+  assertValidInternalPrice,
   assertValidListingDetails,
+  assertValidSaleDetails,
   nextListingState,
+  publicPriceCentavos,
   publishProblems,
   resourceTypeForProperty,
   type Listing,
@@ -18,6 +21,7 @@ const listing = (over: Partial<Listing> = {}): Listing => ({
   id: 'l-1',
   organizationId: 'org-1' as OrganizationId,
   resourceId: 'r-1',
+  intent: 'RENT',
   kind: 'SHORT_TERM',
   resourceType: 'UNIT',
   title: 'Bright studio',
@@ -97,5 +101,52 @@ describe('listing rules', () => {
     expect(() => assertAcceptablePhoto({ contentType: 'image/jpeg', sizeBytes: 11 * 1024 * 1024, currentCount: 0 })).toThrow();
     expect(() => assertAcceptablePhoto({ contentType: 'image/webp', sizeBytes: 10, currentCount: 12 })).toThrow();
     expect(() => assertAcceptablePhoto({ contentType: 'image/png', sizeBytes: 10, currentCount: 3 })).not.toThrow();
+  });
+});
+
+describe('sale listings', () => {
+  const sale = {
+    title: 'Modern house and lot',
+    description: 'Two-storey home in Talamban.',
+    propertyType: 'HOUSE' as const,
+    saleStatus: 'READY_FOR_OCCUPANCY' as const,
+    bedrooms: 4,
+    bathrooms: 3,
+    floorAreaSqm: 220,
+    lotAreaSqm: 300,
+    parkingSlots: 2,
+  };
+
+  it('accepts a complete sale listing and rejects rental-only property types', () => {
+    expect(() => assertValidSaleDetails(sale)).not.toThrow();
+    expect(() => assertValidSaleDetails({ ...sale, propertyType: 'BOARDING_HOUSE' })).toThrow(InvalidListingDetailsError);
+  });
+
+  it('a lot needs a lot area, a building needs a floor area', () => {
+    expect(() => assertValidSaleDetails({ ...sale, propertyType: 'LOT', lotAreaSqm: null })).toThrow(InvalidListingDetailsError);
+    expect(() => assertValidSaleDetails({ ...sale, floorAreaSqm: null })).toThrow(InvalidListingDetailsError);
+  });
+
+  it('never exposes a public price for a sale', () => {
+    expect(publicPriceCentavos({ intent: 'SALE', priceCentavos: centavos(1_850_000_000) })).toBeNull();
+    expect(publicPriceCentavos({ intent: 'RENT', priceCentavos: centavos(250_000) })).toBe(250_000);
+  });
+
+  it('a sale is publishable without a price but not without a location', () => {
+    const base = listing({ intent: 'SALE', kind: null, priceCentavos: centavos(0), saleStatus: 'READY_FOR_OCCUPANCY' });
+    expect(publishProblems(base, true)).toContain('set the property location on the map');
+    const located = listing({
+      intent: 'SALE',
+      kind: null,
+      priceCentavos: centavos(0),
+      saleStatus: 'READY_FOR_OCCUPANCY',
+      location: { latitude: 10.35, longitude: 123.91, privacy: 'APPROXIMATE' },
+    });
+    expect(publishProblems(located, true)).toEqual([]);
+  });
+
+  it('validates the internal asking price', () => {
+    expect(() => assertValidInternalPrice(0)).toThrow(InvalidListingDetailsError);
+    expect(() => assertValidInternalPrice(null)).not.toThrow();
   });
 });

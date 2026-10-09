@@ -1,7 +1,3 @@
-/**
- * Application Use Cases: Session Management
- */
-
 import type { SessionPort } from "../../ports/session.port";
 import type { ActiveSession } from "../../../domain/session/session";
 
@@ -32,10 +28,18 @@ export class SignOutUseCase {
   }
 }
 
-export class SwitchOrganizationUseCase {
+export class SwitchWorkspaceUseCase {
   constructor(private readonly sessionPort: SessionPort) {}
 
-  execute(organizationId: string): void {
-    this.sessionPort.rememberOrganization(organizationId);
+  execute(key: string): void {
+    this.sessionPort.rememberWorkspace(key);
+  }
+}
+
+export class RefreshSessionUseCase {
+  constructor(private readonly sessionPort: SessionPort) {}
+
+  async execute(): Promise<ActiveSession> {
+    return this.sessionPort.refresh();
   }
 }

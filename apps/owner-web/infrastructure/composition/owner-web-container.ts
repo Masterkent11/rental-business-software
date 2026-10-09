@@ -3,6 +3,9 @@ import { ApiOwnerRepositoryAdapter } from "../http/api-owner-repository.adapter"
 import { SupabaseSessionAdapter } from "../auth/supabase-session.adapter";
 import { SupabaseRealtimeAdapter } from "../realtime/supabase-realtime.adapter";
 import { SupabasePhotoStorageAdapter } from "../storage/supabase-photo-storage.adapter";
+import { BrowserFileReaderAdapter } from "../storage/browser-file-reader.adapter";
+import { ApiPartnerRepositoryAdapter } from "../http/api-partner-repository.adapter";
+import type { PartnerRepositoryPort } from "../../application/ports/partner-repository.port";
 
 import type { OwnerRepositoryPort } from "../../application/ports/owner-repository.port";
 import type { SessionPort } from "../../application/ports/session.port";
@@ -12,22 +15,65 @@ import type { PhotoStoragePort } from "../../application/ports/photo-storage.por
 import {
   GetCurrentSessionUseCase,
   SignInUseCase,
+  RefreshSessionUseCase,
   SignOutUseCase,
-  SwitchOrganizationUseCase,
+  SwitchWorkspaceUseCase,
 } from "../../application/use-cases/session/session.use-cases";
+import {
+  CreateSaleListingUseCase,
+  LoadPartnerListingUseCase,
+  LoadSaleTermsUseCase,
+  RemoveFloorPlanUseCase,
+  RemovePartnerPhotoUseCase,
+  ReorderPartnerPhotosUseCase,
+  SaveSaleTermsUseCase,
+  UpdateSaleListingUseCase,
+  UploadFloorPlanUseCase,
+  UploadPartnerPhotoUseCase,
+} from "../../application/use-cases/partner/sale-listings.use-cases";
+import {
+  LoadInquiriesUseCase,
+  LoadViewingsUseCase,
+  MoveInquiryUseCase,
+  ViewingActionUseCase,
+} from "../../application/use-cases/partner/engagement.use-cases";
+import {
+  CreateAgentTaskUseCase,
+  EndRepresentationUseCase,
+  InviteAgentUseCase,
+  LoadAgentClientsUseCase,
+  LoadAgentDashboardUseCase,
+  LoadAgentProfileUseCase,
+  LoadAgentRepresentationsUseCase,
+  LoadAgentTasksUseCase,
+  LoadAnalyticsUseCase,
+  LoadOrganizationRepresentationsUseCase,
+  RegisterAgentProfileUseCase,
+  RemoveAgentTaskUseCase,
+  RequestAgentVerificationUseCase,
+  RespondToRepresentationUseCase,
+  SearchAgentsUseCase,
+  SetAgentTaskDoneUseCase,
+  UpdateAgentProfileUseCase,
+  UpdateRepresentationPermissionsUseCase,
+} from "../../application/use-cases/partner/agents.use-cases";
+import {
+  AddTourSceneUseCase,
+  ConfigureTourProviderUseCase,
+  EditTourUseCase,
+  LoadTourOverviewUseCase,
+  LoadTourUseCase,
+  OpenListingTourUseCase,
+} from "../../application/use-cases/partner/tours.use-cases";
 import { LoadDashboardUseCase } from "../../application/use-cases/dashboard/load-dashboard.use-case";
 import {
   BlockDatesUseCase,
   ChangeListingStateUseCase,
   CreatePropertyListingUseCase,
   LoadListingCalendarUseCase,
-  LoadListingUseCase,
   LoadListingsUseCase,
-  RemoveListingPhotoUseCase,
-  ReorderListingPhotosUseCase,
   UnblockDatesUseCase,
   UpdateListingUseCase,
-  UploadListingPhotoUseCase,
 } from "../../application/use-cases/listings/listings.use-cases";
 import {
   DecideApplicationUseCase,
@@ -48,6 +94,7 @@ import {
 import {
   LoadNotificationsUseCase,
   MarkNotificationsReadUseCase,
+  WatchActivityUseCase,
   WatchNotificationsUseCase,
 } from "../../application/use-cases/notifications/notifications.use-cases";
 
@@ -57,22 +104,21 @@ export class OwnerWebContainer {
   readonly sessionPort: SessionPort = new SupabaseSessionAdapter(this.httpClient);
   readonly realtime: RealtimePort = new SupabaseRealtimeAdapter();
   readonly photoStorage: PhotoStoragePort = new SupabasePhotoStorageAdapter();
+  readonly partnerRepository: PartnerRepositoryPort = new ApiPartnerRepositoryAdapter(this.httpClient);
+  readonly fileReader = new BrowserFileReaderAdapter();
 
   readonly getCurrentSessionUseCase = new GetCurrentSessionUseCase(this.sessionPort);
   readonly signInUseCase = new SignInUseCase(this.sessionPort);
   readonly signOutUseCase = new SignOutUseCase(this.sessionPort);
-  readonly switchOrganizationUseCase = new SwitchOrganizationUseCase(this.sessionPort);
+  readonly switchWorkspaceUseCase = new SwitchWorkspaceUseCase(this.sessionPort);
+  readonly refreshSessionUseCase = new RefreshSessionUseCase(this.sessionPort);
 
   readonly loadDashboardUseCase = new LoadDashboardUseCase(this.ownerRepository);
 
   readonly loadListingsUseCase = new LoadListingsUseCase(this.ownerRepository);
-  readonly loadListingUseCase = new LoadListingUseCase(this.ownerRepository);
   readonly createPropertyListingUseCase = new CreatePropertyListingUseCase(this.ownerRepository);
   readonly updateListingUseCase = new UpdateListingUseCase(this.ownerRepository);
   readonly changeListingStateUseCase = new ChangeListingStateUseCase(this.ownerRepository);
-  readonly uploadListingPhotoUseCase = new UploadListingPhotoUseCase(this.ownerRepository, this.photoStorage);
-  readonly removeListingPhotoUseCase = new RemoveListingPhotoUseCase(this.ownerRepository, this.photoStorage);
-  readonly reorderListingPhotosUseCase = new ReorderListingPhotosUseCase(this.ownerRepository);
   readonly loadListingCalendarUseCase = new LoadListingCalendarUseCase(this.ownerRepository);
   readonly blockDatesUseCase = new BlockDatesUseCase(this.ownerRepository);
   readonly unblockDatesUseCase = new UnblockDatesUseCase(this.ownerRepository);
@@ -81,15 +127,58 @@ export class OwnerWebContainer {
   readonly loadBookingUseCase = new LoadBookingUseCase(this.ownerRepository);
   readonly updateBookingStatusUseCase = new UpdateBookingStatusUseCase(this.ownerRepository);
 
-  readonly loadConversationsUseCase = new LoadConversationsUseCase(this.ownerRepository);
-  readonly loadThreadUseCase = new LoadThreadUseCase(this.ownerRepository);
-  readonly sendMessageUseCase = new SendMessageUseCase(this.ownerRepository);
-  readonly markConversationReadUseCase = new MarkConversationReadUseCase(this.ownerRepository);
+  readonly loadConversationsUseCase = new LoadConversationsUseCase(this.partnerRepository);
+  readonly loadThreadUseCase = new LoadThreadUseCase(this.partnerRepository);
+  readonly sendMessageUseCase = new SendMessageUseCase(this.partnerRepository);
+  readonly markConversationReadUseCase = new MarkConversationReadUseCase(this.partnerRepository);
   readonly watchMessagesUseCase = new WatchMessagesUseCase(this.realtime);
 
-  readonly loadNotificationsUseCase = new LoadNotificationsUseCase(this.ownerRepository);
-  readonly markNotificationsReadUseCase = new MarkNotificationsReadUseCase(this.ownerRepository);
+  readonly loadNotificationsUseCase = new LoadNotificationsUseCase(this.partnerRepository);
+  readonly markNotificationsReadUseCase = new MarkNotificationsReadUseCase(this.partnerRepository);
   readonly watchNotificationsUseCase = new WatchNotificationsUseCase(this.realtime);
+  readonly watchActivityUseCase = new WatchActivityUseCase(this.realtime);
+
+  readonly loadPartnerListingUseCase = new LoadPartnerListingUseCase(this.partnerRepository);
+  readonly createSaleListingUseCase = new CreateSaleListingUseCase(this.partnerRepository);
+  readonly updateSaleListingUseCase = new UpdateSaleListingUseCase(this.partnerRepository);
+  readonly loadSaleTermsUseCase = new LoadSaleTermsUseCase(this.partnerRepository);
+  readonly saveSaleTermsUseCase = new SaveSaleTermsUseCase(this.partnerRepository);
+  readonly uploadPartnerPhotoUseCase = new UploadPartnerPhotoUseCase(this.partnerRepository, this.photoStorage);
+  readonly removePartnerPhotoUseCase = new RemovePartnerPhotoUseCase(this.partnerRepository, this.photoStorage);
+  readonly reorderPartnerPhotosUseCase = new ReorderPartnerPhotosUseCase(this.partnerRepository);
+  readonly uploadFloorPlanUseCase = new UploadFloorPlanUseCase(this.partnerRepository, this.photoStorage);
+  readonly removeFloorPlanUseCase = new RemoveFloorPlanUseCase(this.partnerRepository, this.photoStorage);
+
+  readonly loadInquiriesUseCase = new LoadInquiriesUseCase(this.partnerRepository);
+  readonly moveInquiryUseCase = new MoveInquiryUseCase(this.partnerRepository);
+  readonly loadViewingsUseCase = new LoadViewingsUseCase(this.partnerRepository);
+  readonly viewingActionUseCase = new ViewingActionUseCase(this.partnerRepository);
+
+  readonly loadAgentProfileUseCase = new LoadAgentProfileUseCase(this.partnerRepository);
+  readonly registerAgentProfileUseCase = new RegisterAgentProfileUseCase(this.partnerRepository);
+  readonly updateAgentProfileUseCase = new UpdateAgentProfileUseCase(this.partnerRepository);
+  readonly requestAgentVerificationUseCase = new RequestAgentVerificationUseCase(this.partnerRepository);
+  readonly loadAgentDashboardUseCase = new LoadAgentDashboardUseCase(this.partnerRepository);
+  readonly loadAgentRepresentationsUseCase = new LoadAgentRepresentationsUseCase(this.partnerRepository);
+  readonly respondToRepresentationUseCase = new RespondToRepresentationUseCase(this.partnerRepository);
+  readonly endRepresentationUseCase = new EndRepresentationUseCase(this.partnerRepository);
+  readonly searchAgentsUseCase = new SearchAgentsUseCase(this.partnerRepository);
+  readonly loadOrganizationRepresentationsUseCase = new LoadOrganizationRepresentationsUseCase(this.partnerRepository);
+  readonly inviteAgentUseCase = new InviteAgentUseCase(this.partnerRepository);
+  readonly updateRepresentationPermissionsUseCase = new UpdateRepresentationPermissionsUseCase(this.partnerRepository);
+  readonly loadAgentClientsUseCase = new LoadAgentClientsUseCase(this.partnerRepository);
+  readonly loadAgentTasksUseCase = new LoadAgentTasksUseCase(this.partnerRepository);
+  readonly createAgentTaskUseCase = new CreateAgentTaskUseCase(this.partnerRepository);
+  readonly setAgentTaskDoneUseCase = new SetAgentTaskDoneUseCase(this.partnerRepository);
+  readonly removeAgentTaskUseCase = new RemoveAgentTaskUseCase(this.partnerRepository);
+  readonly loadAnalyticsUseCase = new LoadAnalyticsUseCase(this.partnerRepository);
+
+  readonly loadTourOverviewUseCase = new LoadTourOverviewUseCase(this.partnerRepository);
+  readonly openListingTourUseCase = new OpenListingTourUseCase(this.partnerRepository);
+  readonly loadTourUseCase = new LoadTourUseCase(this.partnerRepository);
+  readonly configureTourProviderUseCase = new ConfigureTourProviderUseCase(this.partnerRepository);
+  readonly addTourSceneUseCase = new AddTourSceneUseCase(this.partnerRepository, this.fileReader);
+  readonly editTourUseCase = new EditTourUseCase(this.partnerRepository);
 
   readonly loadApplicationsUseCase = new LoadApplicationsUseCase(this.ownerRepository);
   readonly decideApplicationUseCase = new DecideApplicationUseCase(this.ownerRepository);

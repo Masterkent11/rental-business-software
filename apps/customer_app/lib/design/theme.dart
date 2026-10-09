@@ -42,11 +42,9 @@ abstract final class AppTheme {
       canvasColor: canvas,
       textTheme: text,
       fontFamilyFallback: Tokens.fontFallback,
-
       splashFactory: NoSplash.splashFactory,
       highlightColor: Colors.transparent,
       splashColor: Colors.transparent,
-
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.iOS: RiseTransitionsBuilder(),
@@ -54,7 +52,6 @@ abstract final class AppTheme {
           TargetPlatform.android: RiseTransitionsBuilder(),
         },
       ),
-
       appBarTheme: AppBarTheme(
         backgroundColor: canvas,
         surfaceTintColor: Colors.transparent,
@@ -64,28 +61,24 @@ abstract final class AppTheme {
         centerTitle: true,
         titleTextStyle: text.titleLarge,
       ),
-
       dividerTheme: DividerThemeData(color: hairline, thickness: 1, space: 1),
-
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: ink,
+          backgroundColor: isDark ? ink : Tokens.primaryNavy,
           foregroundColor: canvas,
-          minimumSize: const Size.fromHeight(54),
+          minimumSize: const Size.fromHeight(Tokens.primaryButtonHeight),
           textStyle: text.labelLarge,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(Tokens.rMd),
           ),
         ),
       ),
-
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: ink,
           textStyle: text.labelLarge,
         ),
       ),
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: card,
@@ -107,7 +100,6 @@ abstract final class AppTheme {
           vertical: Tokens.s16,
         ),
       ),
-
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: canvas,
         surfaceTintColor: Colors.transparent,
@@ -117,7 +109,6 @@ abstract final class AppTheme {
         showDragHandle: true,
         dragHandleColor: hairline,
       ),
-
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: ink,
@@ -127,29 +118,45 @@ abstract final class AppTheme {
         ),
         insetPadding: const EdgeInsets.all(Tokens.s16),
       ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return isDark ? ink : Tokens.primaryNavy;
+            }
+            return Colors.transparent;
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return canvas;
+            }
+            return muted;
+          }),
+        ),
+      ),
     );
   }
 
   static TextTheme _textTheme(Color ink, Color muted) {
     return TextTheme(
       displaySmall: TextStyle(
-        fontSize: 34,
+        fontSize: 28,
         height: 1.08,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.9,
         color: ink,
       ),
       headlineMedium: TextStyle(
-        fontSize: 27,
+        fontSize: 24,
         height: 1.15,
         fontWeight: FontWeight.w700,
         letterSpacing: -0.6,
         color: ink,
       ),
       headlineSmall: TextStyle(
-        fontSize: 22,
-        height: 1.2,
-        fontWeight: FontWeight.w600,
+        fontSize: 19,
+        height: 1.25,
+        fontWeight: FontWeight.w700,
         letterSpacing: -0.4,
         color: ink,
       ),
@@ -167,7 +174,7 @@ abstract final class AppTheme {
         color: ink,
       ),
       bodyLarge: TextStyle(
-        fontSize: 15.5,
+        fontSize: 15,
         height: 1.45,
         fontWeight: FontWeight.w400,
         color: ink,
@@ -180,7 +187,7 @@ abstract final class AppTheme {
       ),
       bodySmall: TextStyle(fontSize: 13, height: 1.35, color: muted),
       labelLarge: const TextStyle(
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: FontWeight.w600,
         letterSpacing: -0.1,
       ),
@@ -191,7 +198,7 @@ abstract final class AppTheme {
         color: ink,
       ),
       labelSmall: TextStyle(
-        fontSize: 11.5,
+        fontSize: 11,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.1,
         color: muted,

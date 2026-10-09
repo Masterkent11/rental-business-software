@@ -75,9 +75,7 @@ class AccountRepository {
   }
 
   static List<String> _ids(Map<String, dynamic> json) =>
-      (json['listingIds'] as List<dynamic>? ?? const [])
-          .whereType<String>()
-          .toList(growable: false);
+      (json['listingIds'] as List<dynamic>? ?? const []).whereType<String>().toList(growable: false);
 }
 
 final accountRepositoryProvider = Provider<AccountRepository>(

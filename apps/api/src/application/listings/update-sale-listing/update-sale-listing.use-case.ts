@@ -1,0 +1,64 @@
+import type {
+  ListingRepository,
+  PropertyDetails,
+  SaleListingDetails,
+} from '@/application/ports/repositories/listing-repository.port.ts';
+import {
+  InvalidListingDetailsError,
+  ListingNotFoundError,
+  assertValidSaleDetails,
+  type Listing,
+} from '@/domain/listings/listing.ts';
+import { assertCoordinates } from '@/domain/shared/geo.ts';
+import type { Principal } from '@/domain/identity/identity.ts';
+import type { ListingGate } from '@/application/identity/partner-access.rules.ts';
+
+export interface UpdateSaleListingCommand {
+  readonly principal: Principal;
+  readonly organizationId: string | null;
+  readonly listingId: string;
+  readonly listing: Partial<SaleListingDetails>;
+  readonly property?: Partial<PropertyDetails>;
+}
+
+export const updateSaleListing =
+  (listings: ListingRepository, gate: ListingGate) =>
+  async (command: UpdateSaleListingCommand): Promise<Listing> => {
+    const { organizationId } = await gate({
+      principal: command.principal,
+      organizationId: command.organizationId,
+      listingId: command.listingId,
+      permission: 'canEditListing',
+    });
+
+    const current = await listings.findById(organizationId, command.listingId);
+    if (!current) throw new ListingNotFoundError('Listing not found');
+    if (current.intent !== 'SALE') {
+      throw new InvalidListingDetailsError('Rental listings are edited with the rental editor');
+    }
+    if (command.property?.location === null && current.state === 'PUBLISHED') {
+      throw new InvalidListingDetailsError('A published sale listing needs a location');
+    }
+    if (command.property?.location) assertCoordinates(command.property.location);
+
+    assertValidSaleDetails({
+      title: command.listing.title ?? current.title,
+      description: command.listing.description ?? current.description,
+      propertyType: command.property?.propertyType ?? current.propertyType ?? 'HOUSE',
+      saleStatus: command.listing.saleStatus ?? current.saleStatus ?? 'READY_FOR_OCCUPANCY',
+      bedrooms: command.listing.bedrooms ?? current.bedrooms ?? 0,
+      bathrooms: command.listing.bathrooms ?? current.bathrooms ?? 0,
+      floorAreaSqm: command.listing.floorAreaSqm !== undefined ? command.listing.floorAreaSqm : (current.floorAreaSqm ?? null),
+      lotAreaSqm: command.listing.lotAreaSqm !== undefined ? command.listing.lotAreaSqm : (current.lotAreaSqm ?? null),
+      parkingSlots: command.listing.parkingSlots ?? current.parkingSlots ?? 0,
+    });
+
+    const updated = await listings.updateSaleListing({
+      organizationId,
+      listingId: command.listingId,
+      listing: command.listing,
+      ...(command.property ? { property: command.property } : {}),
+    });
+    if (!updated) throw new ListingNotFoundError('Listing not found');
+    return updated;
+  };

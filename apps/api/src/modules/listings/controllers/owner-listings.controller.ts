@@ -78,6 +78,11 @@ const parse = <T>(schema: z.ZodType<T>, raw: unknown): T => {
   return parsed.data;
 };
 
+const withLocation = <T extends { location?: unknown }>(property: T) => {
+  const { location, ...rest } = property;
+  return location === undefined ? rest : { ...rest, location };
+};
+
 const guid = (value: string, what: string) => {
   if (!z.guid().safeParse(value).success) throw new BadRequestException(`Not a valid ${what} id`);
   return value;
@@ -178,7 +183,7 @@ export class OwnerListingsController {
     const created = await this.createPropertyListingUseCase({
       principal,
       organizationId,
-      property: input.property,
+      property: withLocation(input.property),
       unitLabel: input.unitLabel,
       rentalMode: input.rentalMode,
       listing: {
@@ -243,8 +248,10 @@ export class OwnerListingsController {
       listing,
       ...(input.property
         ? {
-            property: Object.fromEntries(
-              Object.entries(input.property).filter(([, value]) => value !== undefined),
+            property: withLocation(
+              Object.fromEntries(
+                Object.entries(input.property).filter(([, value]) => value !== undefined),
+              ),
             ) as NonNullable<UpdateListingCommand['property']>,
           }
         : {}),

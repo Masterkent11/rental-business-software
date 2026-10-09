@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/router.dart';
+import '../../data/api_client.dart';
 import '../../data/auth_repository.dart';
+import '../../data/content_repository.dart';
 import '../../design/components.dart';
 import '../../design/tokens.dart';
+import '../../design/typography.dart';
 
 enum AuthMode { signIn, signUp, reset }
 
@@ -31,6 +35,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _passwordFocus = FocusNode();
 
   bool _busy = false;
+  bool _acceptedPolicies = false;
   String? _error;
   String? _notice;
   Map<String, String> _fieldErrors = const {};
@@ -61,15 +66,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     if (!_email.hasMatch(email)) errors['email'] = 'Enter a valid email address';
     if (_mode != AuthMode.reset) {
       if (_password.text.length < (_mode == AuthMode.signUp ? 8 : 6)) {
-        errors['password'] = _mode == AuthMode.signUp
-            ? 'Use at least 8 characters'
-            : 'Enter your password';
+        errors['password'] = _mode == AuthMode.signUp ? 'Use at least 8 characters' : 'Enter your password';
       }
     }
     if (_mode == AuthMode.signUp && _name.text.trim().length < 2) {
       errors['name'] = 'Tell us your name';
     }
+    if (_mode == AuthMode.signUp && !_acceptedPolicies) {
+      errors['terms'] = 'Please accept the Terms & Conditions and Privacy Policy';
+    }
     return errors;
+  }
+
+  Future<void> _recordPendingConsent() async {
+    try {
+      await ref.read(consentRecorderProvider).flushPending();
+    } on ApiException {
+      return;
+    }
   }
 
   void _finish() {
@@ -100,14 +114,27 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       switch (_mode) {
         case AuthMode.signIn:
           await auth.signInWithPassword(email: _emailField.text.trim(), password: _password.text);
+          await _recordPendingConsent();
           _finish();
         case AuthMode.signUp:
+          final consent = ref.read(consentRecorderProvider);
+          final List<PolicyReference> policies;
+          try {
+            policies = await consent.currentSignUpPolicies();
+          } on ApiException {
+            if (mounted) {
+              setState(() => _error = 'We couldn’t load the Terms right now. Check your connection and try again.');
+            }
+            return;
+          }
           final outcome = await auth.signUpWithPassword(
             email: _emailField.text.trim(),
             password: _password.text,
             fullName: _name.text.trim(),
           );
+          await consent.rememberPending(policies);
           if (outcome == SignUpOutcome.signedIn) {
+            await _recordPendingConsent();
             _finish();
           } else if (mounted) {
             setState(() {
@@ -168,7 +195,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 alignment: Alignment.centerLeft,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(14),
-                  child: Image.asset('assets/brand/mark.png', width: 52, height: 52, semanticLabel: 'Rental Platform'),
+                  child: Image.asset('assets/brand/mark.png', width: 52, height: 52, semanticLabel: 'Westayplace'),
                 ),
               ),
               const SizedBox(height: Tokens.s24),
@@ -217,12 +244,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   hint: _mode == AuthMode.signUp ? 'At least 8 characters' : 'Your password',
                   error: _fieldErrors['password'],
                   textInputAction: TextInputAction.done,
-                  autofillHints: _mode == AuthMode.signUp
-                      ? const [AutofillHints.newPassword]
-                      : const [AutofillHints.password],
+                  autofillHints:
+                      _mode == AuthMode.signUp ? const [AutofillHints.newPassword] : const [AutofillHints.password],
                   onSubmitted: (_) => _submit(),
                 ),
               ],
+              if (_mode == AuthMode.signUp)
+                _PolicyConsent(
+                  accepted: _acceptedPolicies,
+                  error: _fieldErrors['terms'],
+                  onChanged: (value) => setState(() {
+                    _acceptedPolicies = value;
+                    _fieldErrors = {..._fieldErrors}..remove('terms');
+                  }),
+                ),
               if (_mode == AuthMode.signIn)
                 Align(
                   alignment: Alignment.centerRight,
@@ -329,6 +364,86 @@ class _Banner extends StatelessWidget {
               child: Text(message, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: color)),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PolicyConsent extends StatelessWidget {
+  const _PolicyConsent({required this.accepted, required this.onChanged, this.error});
+
+  final bool accepted;
+  final ValueChanged<bool> onChanged;
+  final String? error;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: Tokens.s12, bottom: Tokens.s8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: Tokens.tap,
+                height: Tokens.tap,
+                child: Checkbox(
+                  value: accepted,
+                  onChanged: (value) => onChanged(value ?? false),
+                  activeColor: Tokens.primaryNavy,
+                  semanticLabel: 'I agree to the Terms and Conditions and Privacy Policy',
+                ),
+              ),
+              const Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(top: Tokens.s12),
+                  child: Wrap(
+                    children: [
+                      Text('I agree to the ', style: AppText.supporting),
+                      _PolicyLink(label: 'Terms & Conditions', slug: 'terms'),
+                      Text(' and ', style: AppText.supporting),
+                      _PolicyLink(label: 'Privacy Policy', slug: 'privacy'),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (error != null)
+            Padding(
+              padding: const EdgeInsets.only(left: Tokens.tap),
+              child: Text(error!, style: AppText.caption.copyWith(color: Tokens.taken)),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PolicyLink extends StatelessWidget {
+  const _PolicyLink({required this.label, required this.slug});
+
+  final String label;
+  final String slug;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      link: true,
+      label: label,
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: () => context.push(Routes.legal(slug)),
+        child: Text(
+          label,
+          style: AppText.supporting.copyWith(
+            color: Tokens.primaryNavy,
+            fontWeight: FontWeight.w600,
+            decoration: TextDecoration.underline,
+          ),
         ),
       ),
     );

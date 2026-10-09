@@ -82,7 +82,6 @@ void main() {
     });
   });
 
-
   group('AppBootstrapState', () {
     test('idle state values', () {
       const state = AppBootstrapState.idle();
@@ -146,10 +145,12 @@ void main() {
 
       expect(result.isReady, isTrue);
       expect(bootstrap.state.isReady, isTrue);
-      expect(stateHistory.map((s) => s.status).toList(), equals([
-        BootstrapStatus.loading,
-        BootstrapStatus.ready,
-      ]));
+      expect(
+          stateHistory.map((s) => s.status).toList(),
+          equals([
+            BootstrapStatus.loading,
+            BootstrapStatus.ready,
+          ]));
     });
 
     test('subsequent initialize calls return identical future and do not re-run', () async {
@@ -224,9 +225,7 @@ void main() {
         equals(BootstrapStatus.idle),
       );
 
-      final result = await container
-          .read(appBootstrapStateProvider.notifier)
-          .initialize();
+      final result = await container.read(appBootstrapStateProvider.notifier).initialize();
 
       expect(result.status, equals(BootstrapStatus.ready));
       expect(
@@ -251,15 +250,11 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final firstResult = await container
-          .read(appBootstrapStateProvider.notifier)
-          .initialize();
+      final firstResult = await container.read(appBootstrapStateProvider.notifier).initialize();
       expect(firstResult.hasError, isTrue);
       expect(container.read(appBootstrapStateProvider).hasError, isTrue);
 
-      final retryResult = await container
-          .read(appBootstrapStateProvider.notifier)
-          .retry();
+      final retryResult = await container.read(appBootstrapStateProvider.notifier).retry();
       expect(retryResult.isReady, isTrue);
       expect(container.read(appBootstrapStateProvider).isReady, isTrue);
       expect(attempts, equals(2));
@@ -268,8 +263,7 @@ void main() {
     test('authRepositoryProvider re-evaluates when bootstrap state becomes ready', () async {
       final completer = Completer<void>();
       final bootstrap = AppBootstrap(
-        initializeSupabase: ({required url, required publishableKey}) =>
-            completer.future,
+        initializeSupabase: ({required url, required publishableKey}) => completer.future,
       );
 
       final container = ProviderContainer(
@@ -279,9 +273,7 @@ void main() {
 
       expect(container.read(authRepositoryProvider), isA<UnavailableAuthGateway>());
 
-      final initFuture = container
-          .read(appBootstrapStateProvider.notifier)
-          .initialize(bootstrap);
+      final initFuture = container.read(appBootstrapStateProvider.notifier).initialize(bootstrap);
 
       expect(
         container.read(appBootstrapStateProvider).status,
@@ -317,8 +309,7 @@ void main() {
       setupScreen(tester);
       final bootstrapCompleter = Completer<void>();
       final bootstrap = AppBootstrap(
-        initializeSupabase: ({required url, required publishableKey}) =>
-            bootstrapCompleter.future,
+        initializeSupabase: ({required url, required publishableKey}) => bootstrapCompleter.future,
       );
 
       await tester.pumpWidget(
@@ -340,8 +331,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     });
 
-    testWidgets('waits for splash animation when bootstrap completes first',
-        (tester) async {
+    testWidgets('waits for splash animation when bootstrap completes first', (tester) async {
       setupScreen(tester);
       final bootstrap = AppBootstrap(
         initializeSupabase: ({required url, required publishableKey}) async {},
@@ -374,13 +364,11 @@ void main() {
       expect(find.byType(SplashScreen), findsNothing);
     });
 
-    testWidgets('waits for bootstrap if splash animation completes first',
-        (tester) async {
+    testWidgets('waits for bootstrap if splash animation completes first', (tester) async {
       setupScreen(tester);
       final bootstrapCompleter = Completer<void>();
       final bootstrap = AppBootstrap(
-        initializeSupabase: ({required url, required publishableKey}) =>
-            bootstrapCompleter.future,
+        initializeSupabase: ({required url, required publishableKey}) => bootstrapCompleter.future,
       );
 
       await tester.pumpWidget(
@@ -412,8 +400,7 @@ void main() {
       expect(find.byType(SplashScreen), findsNothing);
     });
 
-    testWidgets('shows AppBootstrapErrorView when bootstrap fails',
-        (tester) async {
+    testWidgets('shows AppBootstrapErrorView when bootstrap fails', (tester) async {
       setupScreen(tester);
       final bootstrap = AppBootstrap(
         initializeSupabase: ({required url, required publishableKey}) async {
@@ -449,8 +436,7 @@ void main() {
       expect(find.byKey(const ValueKey('bootstrap_retry_button')), findsOneWidget);
     });
 
-    testWidgets('recovers from failure when retry button is pressed',
-        (tester) async {
+    testWidgets('recovers from failure when retry button is pressed', (tester) async {
       setupScreen(tester);
       int attempts = 0;
       final bootstrap = AppBootstrap(
@@ -502,4 +488,3 @@ ApiClient _mockClient() {
   });
   return ApiClient(client: handler);
 }
-

@@ -9,6 +9,7 @@ import '../../data/auth_repository.dart';
 import '../../data/booking_repository.dart';
 import '../../design/app_image.dart';
 import '../../design/components.dart';
+import '../../design/controls.dart';
 import '../../design/money.dart';
 import '../../design/motion.dart';
 import '../../design/tokens.dart';
@@ -61,14 +62,22 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
                       Text('Your stays. Monthly applications live under Profile.', style: theme.textTheme.bodySmall),
                       if (signedIn) ...[
                         const SizedBox(height: Tokens.s20),
-                        SegmentedButton<_Tab>(
-                          showSelectedIcon: false,
-                          segments: [
-                            ButtonSegment(value: _Tab.upcoming, label: Text('Upcoming (${all.where((b) => b.isActive).length})')),
-                            ButtonSegment(value: _Tab.past, label: Text('Past (${all.where((b) => !b.isActive).length})')),
-                          ],
-                          selected: {_tab},
-                          onSelectionChanged: (next) => setState(() => _tab = next.first),
+                        SizedBox(
+                          width: double.infinity,
+                          child: AppSegmentedControl<_Tab>(
+                            segments: [
+                              AppSegment(
+                                value: _Tab.upcoming,
+                                label: 'Upcoming (${all.where((b) => b.isActive).length})',
+                              ),
+                              AppSegment(
+                                value: _Tab.past,
+                                label: 'Past (${all.where((b) => !b.isActive).length})',
+                              ),
+                            ],
+                            selected: _tab,
+                            onChanged: (next) => setState(() => _tab = next),
+                          ),
                         ),
                       ],
                     ],
@@ -84,7 +93,8 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
                   title: 'Your trips live here',
                   message: 'Sign in to see your bookings, pay for held dates, and message hosts.',
                   actionLabel: 'Sign in',
-                  onAction: () => context.push(Routes.auth(from: Routes.bookings, reason: 'Sign in to see your bookings.')),
+                  onAction: () =>
+                      context.push(Routes.auth(from: Routes.bookings, reason: 'Sign in to see your bookings.')),
                 ),
               )
             else if (bookings.hasError && all.isEmpty)
@@ -193,7 +203,8 @@ class _BookingCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: Tokens.s8),
-                    Text(booking.listingTitle, style: theme.textTheme.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    Text(booking.listingTitle,
+                        style: theme.textTheme.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 2),
                     Text(
                       '${format.format(booking.startsOn)} – ${format.format(booking.endsOn)} · ${booking.nights} night${booking.nights == 1 ? '' : 's'}',

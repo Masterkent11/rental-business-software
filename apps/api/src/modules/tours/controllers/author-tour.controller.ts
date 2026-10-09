@@ -8,20 +8,28 @@ import {
   Inject,
   NotFoundException,
   Param,
+  Patch,
   Post,
   Put,
 } from '@nestjs/common';
+import { z } from 'zod';
 import {
-  CREATE_OWNER_TOUR_FOR_RESOURCE,
-  GET_OWNER_TOUR_WITH_READINESS,
-  ADD_OWNER_SCENE_WITH_PANORAMA,
-  REORDER_OWNER_SCENES,
-  RENAME_OWNER_SCENE,
-  SET_OWNER_ENTRY_SCENE,
   ADD_OWNER_HOTSPOT,
-  REMOVE_OWNER_HOTSPOT,
+  ADD_OWNER_SCENE_WITH_PANORAMA,
+  CONFIGURE_TOUR_PROVIDER,
+  CREATE_OWNER_TOUR_FOR_RESOURCE,
+  ENSURE_LISTING_TOUR,
+  GET_OWNER_TOUR_WITH_READINESS,
+  LIST_ORGANIZATION_TOURS,
   PUBLISH_OWNER_TOUR,
+  REMOVE_OWNER_HOTSPOT,
+  REMOVE_TOUR_SCENE,
+  RENAME_OWNER_SCENE,
+  REORDER_OWNER_SCENES,
+  SET_OWNER_ENTRY_SCENE,
+  SET_SCENE_VIEW,
   UNPUBLISH_OWNER_TOUR,
+  UPDATE_TOUR_HOTSPOT,
 } from '@/modules/tours/tour.tokens.ts';
 import { RESOLVE_PRINCIPAL } from '@/modules/me/me.tokens.ts';
 import type { resolvePrincipal } from '@/application/identity/resolve-principal/resolve-principal.use-case.ts';
@@ -35,20 +43,53 @@ import type { addOwnerHotspot } from '@/application/tours/add-hotspot/add-hotspo
 import type { removeOwnerHotspot } from '@/application/tours/remove-hotspot/remove-hotspot.use-case.ts';
 import type { publishOwnerTour } from '@/application/tours/publish-tour/publish-tour.use-case.ts';
 import type { unpublishOwnerTour } from '@/application/tours/unpublish-tour/unpublish-tour.use-case.ts';
+import type { updateTourHotspot } from '@/application/tours/update-hotspot/update-hotspot.use-case.ts';
+import type { setSceneView } from '@/application/tours/set-scene-view/set-scene-view.use-case.ts';
+import type { removeTourScene } from '@/application/tours/remove-scene/remove-scene.use-case.ts';
+import type { configureTourProvider } from '@/application/tours/configure-tour-provider/configure-tour-provider.use-case.ts';
+import type { listOrganizationTours } from '@/application/tours/list-organization-tours/list-organization-tours.use-case.ts';
+import type { ensureListingTour } from '@/application/tours/ensure-listing-tour/ensure-listing-tour.use-case.ts';
 import {
-  createTourSchema,
-  addSceneSchema,
-  reorderScenesSchema,
-  renameSceneSchema,
-  setEntrySceneSchema,
   addHotspotSchema,
+  addSceneSchema,
+  createTourSchema,
+  renameSceneSchema,
+  reorderScenesSchema,
+  sceneViewSchema,
+  setEntrySceneSchema,
+  tourProviderSchema,
+  updateHotspotSchema,
 } from '@/modules/tours/dto/tour.dto.ts';
 import {
   toSceneHttpResponse,
   toTourHttpResponse,
+  toTourOverviewHttpResponse,
 } from '@/modules/tours/mappers/tour-http.mapper.ts';
 
-@Controller('organizations/:organizationId/tours')
+const parse = <T>(schema: z.ZodType<T>, raw: unknown): T => {
+  const parsed = schema.safeParse(raw ?? {});
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    const where = issue?.path.length ? `${issue.path.join('.')}: ` : '';
+    throw new BadRequestException(`${where}${issue?.message ?? 'Invalid request'}`);
+  }
+  return parsed.data;
+};
+
+const guid = (value: string, what: string) => {
+  if (!z.guid().safeParse(value).success) throw new BadRequestException(`Not a valid ${what} id`);
+  return value;
+};
+
+const bearer = (header: string | undefined) => header?.replace(/^Bearer\s+/i, '').trim() || null;
+
+const decodePanorama = (base64: string): Buffer => {
+  const panorama = Buffer.from(base64, 'base64');
+  if (panorama.byteLength === 0) throw new BadRequestException('That upload was empty');
+  return panorama;
+};
+
+@Controller('organizations/:organizationId')
 export class AuthorTourController {
   constructor(
     @Inject(CREATE_OWNER_TOUR_FOR_RESOURCE)
@@ -71,210 +112,266 @@ export class AuthorTourController {
     private readonly publishTourUseCase: ReturnType<typeof publishOwnerTour>,
     @Inject(UNPUBLISH_OWNER_TOUR)
     private readonly unpublishTourUseCase: ReturnType<typeof unpublishOwnerTour>,
+    @Inject(UPDATE_TOUR_HOTSPOT)
+    private readonly updateHotspotUseCase: ReturnType<typeof updateTourHotspot>,
+    @Inject(SET_SCENE_VIEW)
+    private readonly setSceneViewUseCase: ReturnType<typeof setSceneView>,
+    @Inject(REMOVE_TOUR_SCENE)
+    private readonly removeSceneUseCase: ReturnType<typeof removeTourScene>,
+    @Inject(CONFIGURE_TOUR_PROVIDER)
+    private readonly configureProviderUseCase: ReturnType<typeof configureTourProvider>,
+    @Inject(LIST_ORGANIZATION_TOURS)
+    private readonly listToursUseCase: ReturnType<typeof listOrganizationTours>,
+    @Inject(ENSURE_LISTING_TOUR)
+    private readonly ensureListingTourUseCase: ReturnType<typeof ensureListingTour>,
     @Inject(RESOLVE_PRINCIPAL)
     private readonly resolve: ReturnType<typeof resolvePrincipal>,
   ) {}
 
-  @Post()
+  private principal(organizationId: string, auth: string | undefined) {
+    return this.resolve({ authorization: auth, organizationId: guid(organizationId, 'organization') });
+  }
+
+  @Get('tours')
+  async list(@Param('organizationId') organizationId: string, @Headers('authorization') auth?: string) {
+    const principal = await this.principal(organizationId, auth);
+    const rows = await this.listToursUseCase({ principal, organizationId });
+    return { items: rows.map((row) => toTourOverviewHttpResponse(row.overview, row.thumbnailUrl)) };
+  }
+
+  @Post('listings/:listingId/tour')
+  async ensureForListing(
+    @Param('organizationId') organizationId: string,
+    @Param('listingId') listingId: string,
+    @Headers('authorization') auth?: string,
+  ) {
+    const principal = await this.principal(organizationId, auth);
+    const result = await this.ensureListingTourUseCase({ principal, organizationId, listingId: guid(listingId, 'listing') });
+    return { ...toTourHttpResponse(result.tour, result.media), ...result.readiness };
+  }
+
+  @Post('tours')
   async createForResource(
     @Param('organizationId') organizationId: string,
     @Body() body: unknown,
     @Headers('authorization') auth?: string,
   ) {
-    const parsed = createTourSchema.safeParse(body);
-    if (!parsed.success) throw new BadRequestException('Not a resource id');
-
-    const principal = await this.resolve({ authorization: auth, organizationId });
-    const tour = await this.createTourUseCase({
-      principal,
-      organizationId,
-      resourceId: parsed.data.resourceId,
-    });
+    const { resourceId } = parse(createTourSchema, body);
+    const principal = await this.principal(organizationId, auth);
+    const tour = await this.createTourUseCase({ principal, organizationId, resourceId });
     return toTourHttpResponse(tour);
   }
 
-  @Get(':tourId')
+  @Get('tours/:tourId')
   async read(
     @Param('organizationId') organizationId: string,
     @Param('tourId') tourId: string,
     @Headers('authorization') auth?: string,
   ) {
-    const principal = await this.resolve({ authorization: auth, organizationId });
-    const result = await this.getTourUseCase({ principal, organizationId, tourId });
+    const principal = await this.principal(organizationId, auth);
+    const result = await this.getTourUseCase({ principal, organizationId, tourId: guid(tourId, 'tour') });
     if (!result) throw new NotFoundException('No such tour');
-
-    return { ...toTourHttpResponse(result.tour), ...result.readiness };
+    return { ...toTourHttpResponse(result.tour, result.media), ...result.readiness };
   }
 
-  @Post(':tourId/scenes')
+  @Put('tours/:tourId/provider')
+  async provider(
+    @Param('organizationId') organizationId: string,
+    @Param('tourId') tourId: string,
+    @Body() body: unknown,
+    @Headers('authorization') auth?: string,
+  ) {
+    const dto = parse(tourProviderSchema, body);
+    const principal = await this.principal(organizationId, auth);
+    const tour = await this.configureProviderUseCase({
+      principal,
+      organizationId,
+      tourId: guid(tourId, 'tour'),
+      provider: dto.provider,
+      matterport: dto.matterport,
+    });
+    return toTourHttpResponse(tour);
+  }
+
+  @Post('tours/:tourId/scenes')
   async addScene(
     @Param('organizationId') organizationId: string,
     @Param('tourId') tourId: string,
     @Body() body: unknown,
     @Headers('authorization') auth?: string,
   ) {
-    const parsed = addSceneSchema.safeParse(body);
-    if (!parsed.success) {
-      throw new BadRequestException(parsed.error.issues[0]?.message ?? 'Bad request');
-    }
-
-    const principal = await this.resolve({ authorization: auth, organizationId });
-
-    let panorama: Buffer;
-    try {
-      panorama = Buffer.from(parsed.data.panoramaBase64, 'base64');
-    } catch {
-      throw new BadRequestException('That upload could not be decoded');
-    }
-    if (panorama.byteLength === 0) {
-      throw new BadRequestException('That upload was empty');
-    }
-
+    const dto = parse(addSceneSchema, body);
+    const principal = await this.principal(organizationId, auth);
     const scene = await this.addSceneUseCase({
       principal,
       organizationId,
-      tourId,
-      label: parsed.data.label,
-      panorama,
+      tourId: guid(tourId, 'tour'),
+      label: dto.label,
+      panorama: decodePanorama(dto.panoramaBase64),
+      accessToken: bearer(auth),
     });
     return toSceneHttpResponse(scene);
   }
 
-  @Put(':tourId/scenes/order')
+  @Put('tours/:tourId/scenes/order')
   async reorder(
     @Param('organizationId') organizationId: string,
     @Param('tourId') tourId: string,
     @Body() body: unknown,
     @Headers('authorization') auth?: string,
   ) {
-    const parsed = reorderScenesSchema.safeParse(body);
-    if (!parsed.success) throw new BadRequestException('Send the room ids in order');
-
-    const principal = await this.resolve({ authorization: auth, organizationId });
-    await this.reorderScenesUseCase({
-      principal,
-      organizationId,
-      tourId,
-      sceneIdsInOrder: parsed.data.sceneIds,
-    });
+    const dto = parse(reorderScenesSchema, body);
+    const principal = await this.principal(organizationId, auth);
+    await this.reorderScenesUseCase({ principal, organizationId, tourId: guid(tourId, 'tour'), sceneIdsInOrder: dto.sceneIds });
     return { ok: true };
   }
 
-  @Put(':tourId/scenes/:sceneId')
+  @Put('tours/:tourId/scenes/:sceneId')
   async rename(
     @Param('organizationId') organizationId: string,
+    @Param('tourId') tourId: string,
     @Param('sceneId') sceneId: string,
     @Body() body: unknown,
     @Headers('authorization') auth?: string,
   ) {
-    const parsed = renameSceneSchema.safeParse(body);
-    if (!parsed.success) throw new BadRequestException('A room needs a name');
-
-    const principal = await this.resolve({ authorization: auth, organizationId });
+    const dto = parse(renameSceneSchema, body);
+    const principal = await this.principal(organizationId, auth);
     const scene = await this.renameSceneUseCase({
       principal,
       organizationId,
-      sceneId,
-      label: parsed.data.label,
+      tourId: guid(tourId, 'tour'),
+      sceneId: guid(sceneId, 'room'),
+      label: dto.label,
     });
     return toSceneHttpResponse(scene);
   }
 
-  @Put(':tourId/entry')
+  @Put('tours/:tourId/scenes/:sceneId/view')
+  async view(
+    @Param('organizationId') organizationId: string,
+    @Param('tourId') tourId: string,
+    @Param('sceneId') sceneId: string,
+    @Body() body: unknown,
+    @Headers('authorization') auth?: string,
+  ) {
+    const dto = parse(sceneViewSchema, body);
+    const principal = await this.principal(organizationId, auth);
+    await this.setSceneViewUseCase({
+      principal,
+      organizationId,
+      tourId: guid(tourId, 'tour'),
+      sceneId: guid(sceneId, 'room'),
+      ...dto,
+    });
+    return { ok: true };
+  }
+
+  @Delete('tours/:tourId/scenes/:sceneId')
+  async removeScene(
+    @Param('organizationId') organizationId: string,
+    @Param('tourId') tourId: string,
+    @Param('sceneId') sceneId: string,
+    @Headers('authorization') auth?: string,
+  ) {
+    const principal = await this.principal(organizationId, auth);
+    return this.removeSceneUseCase({
+      principal,
+      organizationId,
+      tourId: guid(tourId, 'tour'),
+      sceneId: guid(sceneId, 'room'),
+      accessToken: bearer(auth),
+    });
+  }
+
+  @Put('tours/:tourId/entry')
   async setEntry(
     @Param('organizationId') organizationId: string,
     @Param('tourId') tourId: string,
     @Body() body: unknown,
     @Headers('authorization') auth?: string,
   ) {
-    const parsed = setEntrySceneSchema.safeParse(body);
-    if (!parsed.success) throw new BadRequestException('Not a room id');
-
-    const principal = await this.resolve({ authorization: auth, organizationId });
-    await this.setEntrySceneUseCase({
-      principal,
-      organizationId,
-      tourId,
-      sceneId: parsed.data.sceneId,
-    });
+    const dto = parse(setEntrySceneSchema, body);
+    const principal = await this.principal(organizationId, auth);
+    await this.setEntrySceneUseCase({ principal, organizationId, tourId: guid(tourId, 'tour'), sceneId: dto.sceneId });
     return { ok: true };
   }
 
-  @Post(':tourId/scenes/:sceneId/hotspots')
+  @Post('tours/:tourId/scenes/:sceneId/hotspots')
   async addHotspot(
     @Param('organizationId') organizationId: string,
+    @Param('tourId') tourId: string,
     @Param('sceneId') sceneId: string,
     @Body() body: unknown,
     @Headers('authorization') auth?: string,
   ) {
-    const parsed = addHotspotSchema.safeParse(body);
-    if (!parsed.success) {
-      throw new BadRequestException(parsed.error.issues[0]?.message ?? 'Bad request');
-    }
-
-    const { kind, targetSceneId } = parsed.data;
-    if (kind === 'NAVIGATION' && !targetSceneId) {
-      throw new BadRequestException('A door needs a room to lead to');
-    }
-    if (kind === 'INFO' && targetSceneId) {
-      throw new BadRequestException('A note does not lead anywhere');
-    }
-
-    const principal = await this.resolve({ authorization: auth, organizationId });
+    const dto = parse(addHotspotSchema, body);
+    if (dto.kind === 'NAVIGATION' && !dto.targetSceneId) throw new BadRequestException('A door needs a room to lead to');
+    if (dto.kind === 'INFO' && dto.targetSceneId) throw new BadRequestException('A note does not lead anywhere');
+    const principal = await this.principal(organizationId, auth);
     return this.addHotspotUseCase({
       principal,
       organizationId,
-      sceneId,
-      kind,
-      yaw: parsed.data.yaw,
-      pitch: parsed.data.pitch,
-      label: parsed.data.label,
-      targetSceneId: kind === 'NAVIGATION' ? targetSceneId : null,
+      tourId: guid(tourId, 'tour'),
+      sceneId: guid(sceneId, 'room'),
+      kind: dto.kind,
+      yaw: dto.yaw,
+      pitch: dto.pitch,
+      label: dto.label,
+      targetSceneId: dto.targetSceneId,
     });
   }
 
-  @Delete(':tourId/hotspots/:hotspotId')
-  async removeHotspot(
+  @Patch('tours/:tourId/hotspots/:hotspotId')
+  async updateHotspot(
     @Param('organizationId') organizationId: string,
+    @Param('tourId') tourId: string,
     @Param('hotspotId') hotspotId: string,
+    @Body() body: unknown,
     @Headers('authorization') auth?: string,
   ) {
-    const principal = await this.resolve({ authorization: auth, organizationId });
-    await this.removeHotspotUseCase({
+    const dto = parse(updateHotspotSchema, body);
+    const principal = await this.principal(organizationId, auth);
+    await this.updateHotspotUseCase({
       principal,
       organizationId,
-      hotspotId,
+      tourId: guid(tourId, 'tour'),
+      hotspotId: guid(hotspotId, 'hotspot'),
+      ...dto,
     });
     return { ok: true };
   }
 
-  @Post(':tourId/publish')
+  @Delete('tours/:tourId/hotspots/:hotspotId')
+  async removeHotspot(
+    @Param('organizationId') organizationId: string,
+    @Param('tourId') tourId: string,
+    @Param('hotspotId') hotspotId: string,
+    @Headers('authorization') auth?: string,
+  ) {
+    const principal = await this.principal(organizationId, auth);
+    await this.removeHotspotUseCase({ principal, organizationId, tourId: guid(tourId, 'tour'), hotspotId: guid(hotspotId, 'hotspot') });
+    return { ok: true };
+  }
+
+  @Post('tours/:tourId/publish')
   async publish(
     @Param('organizationId') organizationId: string,
     @Param('tourId') tourId: string,
     @Headers('authorization') auth?: string,
   ) {
-    const principal = await this.resolve({ authorization: auth, organizationId });
-    const tour = await this.publishTourUseCase({
-      principal,
-      organizationId,
-      tourId,
-    });
+    const principal = await this.principal(organizationId, auth);
+    const tour = await this.publishTourUseCase({ principal, organizationId, tourId: guid(tourId, 'tour') });
     return toTourHttpResponse(tour);
   }
 
-  @Post(':tourId/unpublish')
+  @Post('tours/:tourId/unpublish')
   async unpublish(
     @Param('organizationId') organizationId: string,
     @Param('tourId') tourId: string,
     @Headers('authorization') auth?: string,
   ) {
-    const principal = await this.resolve({ authorization: auth, organizationId });
-    await this.unpublishTourUseCase({
-      principal,
-      organizationId,
-      tourId,
-    });
-    return { ok: true };
+    const principal = await this.principal(organizationId, auth);
+    const tour = await this.unpublishTourUseCase({ principal, organizationId, tourId: guid(tourId, 'tour') });
+    return toTourHttpResponse(tour);
   }
 }

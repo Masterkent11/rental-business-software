@@ -116,7 +116,13 @@ export function sharpPanoramaProcessor(): PanoramaProcessor {
         }
       }
 
+      const archive = await sharp(source)
+        .resize({ width: Math.min(width, 8192), withoutEnlargement: true })
+        .jpeg({ quality: 85, mozjpeg: true })
+        .toBuffer();
+
       return {
+        archive,
         preview,
         thumbnail,
         tiles,

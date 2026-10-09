@@ -5,10 +5,17 @@ import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import {
   Bell,
+  BriefcaseBusiness,
   Building2,
   CalendarCheck,
+  CalendarClock,
+  ChartColumn,
+  ChevronsUpDown,
   ClipboardList,
+  ContactRound,
+  Inbox,
   LayoutDashboard,
+  ListTodo,
   LogOut,
   Menu,
   MessageSquare,
@@ -16,27 +23,38 @@ import {
   UserRound,
   Wallet,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useSessionStore } from "@/stores/use-session-store";
 import { useMessagesStore } from "@/stores/use-messages-store";
 import { useNotificationsStore } from "@/stores/use-notifications-store";
+import { useEngagementStore } from "@/stores/use-engagement-store";
 import { cn } from "@/lib/utils";
+import { isActivePath, navigationFor, type NavIcon } from "@/domain/workspace/navigation";
+import { pathBelongsTo, workspaceHome, type Workspace } from "@/domain/workspace/workspace";
 import { BrandMark } from "./brand";
 import { SignIn } from "./sign-in";
+import { AgentSetupCard } from "./agent-setup";
 import { Btn, ErrorState } from "./ui";
 
-const nav = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/properties", label: "Properties", icon: Building2 },
-  { href: "/bookings", label: "Bookings", icon: CalendarCheck },
-  { href: "/messages", label: "Messages", icon: MessageSquare },
-  { href: "/applications", label: "Applications", icon: ClipboardList },
-  { href: "/payments", label: "Payments", icon: Wallet },
-  { href: "/tours", label: "Virtual tours", icon: Rotate3d },
-  { href: "/account", label: "Account", icon: UserRound },
-] as const;
+const ICONS: Record<NavIcon, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  properties: Building2,
+  bookings: CalendarCheck,
+  inquiries: Inbox,
+  viewings: CalendarClock,
+  messages: MessageSquare,
+  applications: ClipboardList,
+  payments: Wallet,
+  tours: Rotate3d,
+  analytics: ChartColumn,
+  account: UserRound,
+  clients: ContactRound,
+  tasks: ListTodo,
+  profile: BriefcaseBusiness,
+};
 
 function timeAgo(iso: string) {
   const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
@@ -46,13 +64,22 @@ function timeAgo(iso: string) {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function useBadgeCounts() {
+  const messages = useMessagesStore((s) => s.unreadTotal);
+  const inquiries = useEngagementStore((s) => s.inquiries.filter((i) => i.status === "NEW").length);
+  const viewings = useEngagementStore((s) => s.viewings.filter((v) => v.status === "REQUESTED").length);
+  return { messages, inquiries, viewings };
+}
+
+function NavLinks({ workspace, onNavigate }: { workspace: Workspace; onNavigate?: () => void }) {
   const pathname = usePathname();
-  const unread = useMessagesStore((s) => s.unreadTotal);
+  const counts = useBadgeCounts();
   return (
     <nav aria-label="Main" className="flex flex-col gap-0.5">
-      {nav.map(({ href, label, icon: Icon }) => {
-        const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+      {navigationFor(workspace).map(({ href, label, icon, badge }) => {
+        const Icon = ICONS[icon];
+        const active = isActivePath(pathname, href);
+        const count = badge ? counts[badge] : 0;
         return (
           <Link
             key={href}
@@ -66,9 +93,9 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
           >
             <Icon className="size-[18px]" aria-hidden />
             <span className="flex-1">{label}</span>
-            {href === "/messages" && unread > 0 ? (
-              <span className="tabular rounded-full bg-foreground px-1.5 py-0.5 text-[11px] font-semibold text-white" aria-label={`${unread} unread`}>
-                {unread > 99 ? "99+" : unread}
+            {count > 0 ? (
+              <span className="tabular rounded-full bg-foreground px-1.5 py-0.5 text-[11px] font-semibold text-white" aria-label={`${count} need attention`}>
+                {count > 99 ? "99+" : count}
               </span>
             ) : null}
           </Link>
@@ -130,69 +157,82 @@ function NotificationsButton() {
   );
 }
 
-function OrganizationSwitcher() {
-  const { memberships, activeOrganizationId, setActiveOrganizationId } = useSessionStore();
-  const active = memberships.find((m) => m.organizationId === activeOrganizationId);
-  if (memberships.length <= 1) {
+function WorkspaceSwitcher({ workspace }: { workspace: Workspace }) {
+  const router = useRouter();
+  const { workspaces, setWorkspace } = useSessionStore();
+  if (workspaces.length <= 1) {
     return (
       <div className="min-w-0">
-        <p className="truncate text-[13.5px] font-semibold text-foreground">{active?.organizationName ?? "Your organization"}</p>
-        <p className="text-[11.5px] text-muted">{active?.role === "STAFF" ? "Staff" : "Owner"}{active && !active.verified ? " · not verified" : ""}</p>
+        <p className="truncate text-[13.5px] font-semibold text-foreground">{workspace.title}</p>
+        <p className="text-[11.5px] text-muted">{workspace.subtitle}{workspace.kind === "OWNER" && !workspace.verified ? " · not verified" : ""}</p>
       </div>
     );
   }
   return (
-    <label className="min-w-0 flex-1">
-      <span className="sr-only">Organization</span>
+    <label className="relative min-w-0 flex-1">
+      <span className="sr-only">Workspace</span>
       <select
-        value={activeOrganizationId ?? ""}
-        onChange={(event) => setActiveOrganizationId(event.target.value)}
-        className="focusable w-full truncate rounded-lg bg-transparent text-[13.5px] font-semibold text-foreground"
+        value={workspace.key}
+        onChange={(event) => {
+          const next = workspaces.find((w) => w.key === event.target.value);
+          if (!next) return;
+          setWorkspace(next.key);
+          router.push(workspaceHome(next));
+        }}
+        className="focusable w-full appearance-none truncate rounded-lg bg-transparent pr-6 text-[13.5px] font-semibold text-foreground"
       >
-        {memberships.map((m) => (
-          <option key={m.organizationId} value={m.organizationId}>
-            {m.organizationName}
+        {workspaces.map((w) => (
+          <option key={w.key} value={w.key}>
+            {w.kind === "AGENT" ? `Agent · ${w.title}` : `Owner · ${w.title}`}
           </option>
         ))}
       </select>
+      <ChevronsUpDown className="pointer-events-none absolute right-0 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden />
+      <span className="block text-[11.5px] text-muted">{workspace.subtitle}</span>
     </label>
   );
 }
 
-function LiveSubscriptions() {
+function LiveSubscriptions({ workspace }: { workspace: Workspace }) {
   const pathname = usePathname();
   const router = useRouter();
-  const organizationId = useSessionStore((s) => s.activeOrganizationId);
+  const scope = useSessionStore((s) => s.scope);
+  const userId = useSessionStore((s) => s.user?.id ?? null);
   const startMessages = useMessagesStore((s) => s.start);
   const stopMessages = useMessagesStore((s) => s.stop);
   const lastIncoming = useMessagesStore((s) => s.lastIncoming);
   const conversations = useMessagesStore((s) => s.conversations);
   const startNotifications = useNotificationsStore((s) => s.start);
   const stopNotifications = useNotificationsStore((s) => s.stop);
+  const startEngagement = useEngagementStore((s) => s.start);
+  const stopEngagement = useEngagementStore((s) => s.stop);
   const latest = useNotificationsStore((s) => s.latest);
   const seen = React.useRef<string | null>(null);
   const seenNotification = React.useRef<string | null>(null);
+  const messagesPath = workspace.kind === "AGENT" ? "/agent/messages" : "/messages";
 
   React.useEffect(() => {
-    if (!organizationId) return;
-    void startMessages(organizationId);
-    void startNotifications(organizationId);
+    if (!scope || !userId) return;
+    void startMessages(scope);
+    void startNotifications(scope, userId);
+    void startEngagement(scope);
     return () => {
       stopMessages();
       stopNotifications();
+      stopEngagement();
     };
-  }, [organizationId, startMessages, stopMessages, startNotifications, stopNotifications]);
+  }, [scope, userId, startMessages, stopMessages, startNotifications, stopNotifications, startEngagement, stopEngagement]);
 
   React.useEffect(() => {
     if (!lastIncoming || seen.current === lastIncoming.id) return;
     seen.current = lastIncoming.id;
-    if (pathname.startsWith("/messages")) return;
+    if (pathname.startsWith(messagesPath)) return;
     const conversation = conversations.find((c) => c.id === lastIncoming.conversationId);
     toast(`New message${conversation ? ` from ${conversation.customerName}` : ""}`, {
       description: lastIncoming.body.slice(0, 120),
-      action: { label: "Open", onClick: () => router.push(`/messages?c=${lastIncoming.conversationId}`) },
+      action: { label: "Open", onClick: () => router.push(`${messagesPath}?c=${lastIncoming.conversationId}`) },
     });
-  }, [lastIncoming, pathname, conversations, router]);
+  }, [lastIncoming, pathname, conversations, router, messagesPath]);
 
   React.useEffect(() => {
     if (!latest || seenNotification.current === latest.id) return;
@@ -207,8 +247,94 @@ function LiveSubscriptions() {
   return null;
 }
 
+function RouteGuard({ workspace, children }: { workspace: Workspace; children: React.ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const allowed = pathBelongsTo(pathname, workspace);
+
+  React.useEffect(() => {
+    if (!allowed) router.replace(workspaceHome(workspace));
+  }, [allowed, router, workspace]);
+
+  if (!allowed) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-10" aria-busy="true">
+        <p className="text-[13px] text-muted">Opening your {workspace.kind === "AGENT" ? "agent" : "owner"} workspace…</p>
+      </div>
+    );
+  }
+  return <>{children}</>;
+}
+
+function WorkspaceChooser() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user, workspaces, setWorkspace, signOut } = useSessionStore();
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-background p-4">
+      <div className="w-full max-w-lg">
+        <div className="mb-6 flex items-center gap-3">
+          <BrandMark className="size-10" />
+          <div>
+            <h1 className="text-[20px] font-bold tracking-tight">Choose a workspace</h1>
+            <p className="text-[13px] text-muted">Signed in as {user?.email}. You can switch any time from the sidebar.</p>
+          </div>
+        </div>
+        <ul className="flex flex-col gap-2">
+          {workspaces.map((w) => (
+            <li key={w.key}>
+              <button
+                type="button"
+                onClick={() => {
+                  setWorkspace(w.key);
+                  if (!pathBelongsTo(pathname, w)) router.push(workspaceHome(w));
+                }}
+                className="focusable flex w-full items-center gap-4 rounded-2xl border border-border bg-surface px-4 py-4 text-left transition-colors hover:border-foreground/25"
+              >
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-secondary text-muted">
+                  {w.kind === "AGENT" ? <BriefcaseBusiness className="size-5" aria-hidden /> : <Building2 className="size-5" aria-hidden />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[14.5px] font-semibold">{w.title}</p>
+                  <p className="text-[12.5px] text-muted">{w.subtitle}</p>
+                </div>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <Btn variant="ghost" className="mt-6" onClick={() => void signOut()}>
+          <LogOut className="size-4" aria-hidden /> Sign out
+        </Btn>
+      </div>
+    </div>
+  );
+}
+
+function NoWorkspace() {
+  const { user, signOut } = useSessionStore();
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-background p-4">
+      <div className="w-full max-w-xl">
+        <div className="mb-6 flex items-center gap-3">
+          <BrandMark className="size-10" />
+          <div>
+            <h1 className="text-[20px] font-bold tracking-tight">Welcome to the Partner Portal</h1>
+            <p className="text-[13px] text-muted">
+              {user?.email} isn&apos;t part of an owner organization yet. Ask an organization owner to add you, or set up an agent profile.
+            </p>
+          </div>
+        </div>
+        <AgentSetupCard />
+        <Btn variant="ghost" className="mt-6" onClick={() => void signOut()}>
+          <LogOut className="size-4" aria-hidden /> Sign out
+        </Btn>
+      </div>
+    </div>
+  );
+}
+
 export function OwnerShell({ children }: { children: React.ReactNode }) {
-  const { status, user, error, initialize, signOut, mobileDrawerOpen, setMobileDrawerOpen } = useSessionStore();
+  const { status, user, error, workspaces, activeWorkspace, initialize, signOut, mobileDrawerOpen, setMobileDrawerOpen } = useSessionStore();
 
   React.useEffect(() => {
     void initialize();
@@ -235,20 +361,26 @@ export function OwnerShell({ children }: { children: React.ReactNode }) {
     return <SignIn />;
   }
 
+  if (workspaces.length === 0) return <NoWorkspace />;
+  if (!activeWorkspace) return <WorkspaceChooser />;
+  const workspace = activeWorkspace;
+
   const sidebar = (
     <div className="flex h-full flex-col gap-4 p-4">
-      <Link href="/" className="focusable flex items-center gap-2.5 rounded-xl px-1 py-1" aria-label="Rental Platform home">
+      <Link href={workspaceHome(workspace)} className="focusable flex items-center gap-2.5 rounded-xl px-1 py-1" aria-label="Partner Portal home">
         <BrandMark className="size-9" />
         <div>
-          <p className="text-[14px] font-bold tracking-tight">Rental Platform</p>
-          <p className="text-[11.5px] text-muted">Owner workspace</p>
+          <p className="text-[14px] font-bold tracking-tight">Westayplace</p>
+          <p className="text-[11.5px] text-muted">Partner Portal</p>
         </div>
       </Link>
       <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-3 py-2.5">
-        <OrganizationSwitcher />
+        <WorkspaceSwitcher workspace={workspace} />
       </div>
-      <NavLinks onNavigate={() => setMobileDrawerOpen(false)} />
-      <div className="mt-auto flex items-center gap-3 rounded-2xl border border-border bg-surface px-3 py-2.5">
+      <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1">
+        <NavLinks workspace={workspace} onNavigate={() => setMobileDrawerOpen(false)} />
+      </div>
+      <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-3 py-2.5">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-foreground text-[12px] font-semibold text-white" aria-hidden>
           {user.displayName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "O"}
         </div>
@@ -269,7 +401,7 @@ export function OwnerShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-dvh bg-background text-foreground">
-      <LiveSubscriptions />
+      <LiveSubscriptions workspace={workspace} />
       <aside className="sticky top-0 hidden h-dvh w-[264px] shrink-0 border-r border-border bg-background lg:block">{sidebar}</aside>
       {mobileDrawerOpen ? (
         <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation">
@@ -290,7 +422,7 @@ export function OwnerShell({ children }: { children: React.ReactNode }) {
             <NotificationsButton />
           </div>
         </div>
-        {children}
+        <RouteGuard workspace={workspace}>{children}</RouteGuard>
       </div>
     </div>
   );

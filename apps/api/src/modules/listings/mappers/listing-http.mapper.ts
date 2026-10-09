@@ -1,12 +1,26 @@
 import type { Listing } from '@/domain/listings/listing.ts';
+import { publicPriceCentavos } from '@/domain/listings/listing.ts';
 import { moveInCostFor } from '@/domain/listings/move-in-cost.ts';
-import type { OwnerProperty } from '@/application/ports/repositories/listing-repository.port.ts';
+import type {
+  AreaSummary,
+  OwnerProperty,
+  SaleTerms,
+} from '@/application/ports/repositories/listing-repository.port.ts';
 import type { StayQuoteResult } from '@/application/listings/quote-stay/quote-stay.use-case.ts';
 import type { ListingCalendar } from '@/application/bookings/manage-availability-blocks/manage-availability-blocks.use-case.ts';
 import type { AvailabilityBlock } from '@/application/ports/repositories/booking-repository.port.ts';
 
 const availabilityFor = (listing: Listing) => {
   const next = listing.nextAvailableOn ?? null;
+  if (listing.intent === 'SALE') {
+    const label =
+      listing.saleStatus === 'PRE_SELLING'
+        ? 'Pre-selling'
+        : listing.saleStatus === 'UNDER_CONSTRUCTION'
+          ? 'Under construction'
+          : 'Ready for occupancy';
+    return { availabilityLabel: label, isAvailable: true, nextAvailableOn: null };
+  }
   if (listing.kind === 'SHORT_TERM') {
     return { availabilityLabel: 'Check dates', isAvailable: true, nextAvailableOn: next };
   }
@@ -29,6 +43,8 @@ export const toListingHttpResponse = (listing: Listing) => ({
   id: listing.id,
   resourceId: listing.resourceId,
   propertyId: listing.propertyId ?? null,
+  intent: listing.intent,
+  pricing: listing.intent === 'SALE' ? ('ON_INQUIRY' as const) : ('LISTED' as const),
   title: listing.title,
   description: listing.description,
   propertyName: listing.propertyName,
@@ -38,12 +54,36 @@ export const toListingHttpResponse = (listing: Listing) => ({
   cityLabel: listing.cityLabel,
   kind: listing.kind,
   resourceType: listing.resourceType,
-  priceCentavos: listing.priceCentavos,
-  cleaningFeeCentavos: listing.cleaningFeeCentavos ?? 0,
+  priceCentavos: publicPriceCentavos(listing),
+  cleaningFeeCentavos: listing.intent === 'SALE' ? null : (listing.cleaningFeeCentavos ?? 0),
   currency: 'PHP',
   hasTour: listing.hasTour,
+  tourProvider: listing.tourProvider ?? null,
   sceneCount: listing.sceneCount,
   photos: listing.photos,
+  floorPlans: (listing.floorPlans ?? []).map((plan) => ({ id: plan.id, url: plan.url, label: plan.label })),
+  saleStatus: listing.saleStatus ?? null,
+  furnishing: listing.furnishing ?? null,
+  petsAllowed: listing.intent === 'SALE' ? null : (listing.petsAllowed ?? null),
+  lotAreaSqm: listing.lotAreaSqm ?? null,
+  parkingSlots: listing.parkingSlots ?? 0,
+  location: listing.publicLocation
+    ? {
+        latitude: listing.publicLocation.latitude,
+        longitude: listing.publicLocation.longitude,
+        precision: listing.location?.privacy === 'EXACT' ? ('EXACT' as const) : ('APPROXIMATE' as const),
+      }
+    : null,
+  distanceKm: listing.distanceKm ?? null,
+  representative: listing.representative
+    ? {
+        agentId: listing.representative.agentId,
+        displayName: listing.representative.displayName,
+        headline: listing.representative.headline,
+        photoUrl: listing.representative.photoUrl,
+        verified: listing.representative.verified,
+      }
+    : null,
   ...availabilityFor(listing),
   amenities: listing.amenities,
   houseRules: listing.houseRules,
@@ -63,6 +103,16 @@ export const toListingHttpResponse = (listing: Listing) => ({
 
 export const toOwnerListingHttpResponse = (listing: Listing, publishProblems?: readonly string[]) => ({
   ...toListingHttpResponse(listing),
+  exactLocation: listing.location
+    ? { latitude: listing.location.latitude, longitude: listing.location.longitude, privacy: listing.location.privacy }
+    : null,
+  floorPlanMedia: (listing.floorPlans ?? []).map((plan) => ({
+    id: plan.id,
+    url: plan.url,
+    label: plan.label,
+    storagePath: plan.storagePath,
+    position: plan.position,
+  })),
   state: listing.state,
   advanceMonths: listing.advanceMonths,
   depositMonths: listing.depositMonths,
@@ -105,3 +155,14 @@ export const toCalendarHttpResponse = (calendar: ListingCalendar) => ({
   nights: calendar.nights,
   blocks: calendar.blocks.map(toBlock),
 });
+
+export const toSaleTermsHttpResponse = (terms: SaleTerms) => ({
+  listingId: terms.listingId,
+  askingPriceInternalCentavos: terms.askingPriceInternalCentavos,
+  priceNegotiable: terms.priceNegotiable,
+  commercialNotes: terms.commercialNotes,
+  updatedAt: terms.updatedAt?.toISOString() ?? null,
+  confidential: true,
+});
+
+export const toAreaHttpResponse = (area: AreaSummary) => ({ ...area });
