@@ -118,6 +118,22 @@ abstract final class AppTheme {
         ),
         insetPadding: const EdgeInsets.all(Tokens.s16),
       ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return isDark ? ink : Tokens.primaryNavy;
+            }
+            return Colors.transparent;
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return canvas;
+            }
+            return muted;
+          }),
+        ),
+      ),
     );
   }
 

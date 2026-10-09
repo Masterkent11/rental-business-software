@@ -15,6 +15,7 @@ Future<T?> showListingSheet<T>(BuildContext context, {required WidgetBuilder bui
     useRootNavigator: true,
     isScrollControlled: true,
     useSafeArea: true,
+    showDragHandle: false,
     backgroundColor: Tokens.card,
     barrierColor: Tokens.primaryNavy.withValues(alpha: 0.38),
     clipBehavior: Clip.antiAlias,

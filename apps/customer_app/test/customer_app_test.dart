@@ -382,16 +382,23 @@ void main() {
     });
   });
 
-  testWidgets('discovery leads with price and move-in cost', (tester) async {
+  testWidgets('discovery leads with price and move-in cost on detail', (tester) async {
     await _pumpApp(tester);
 
     expect(find.text(_headline), findsOneWidget);
     await _openRentals(tester);
     expect(find.text('₱8,500 / month', findRichText: true), findsWidgets);
+    expect(find.text('₱34,000 to move in'), findsNothing);
 
-    final moveIn = find.text('₱34,000 to move in');
-    await tester.scrollUntilVisible(moveIn, 300, scrollable: _page);
-    expect(moveIn, findsOneWidget);
+    final finder = find.text('One-bedroom corner unit with cross-ventilation');
+    final results = find.descendant(of: find.byType(CustomScrollView), matching: find.byType(Scrollable)).first;
+    await tester.scrollUntilVisible(finder, 300, scrollable: results);
+    await tester.pumpAndSettle();
+    await tester.tap(finder.first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('TO MOVE IN'), findsOneWidget);
+    expect(find.text('₱34,000'), findsOneWidget);
   });
 
   testWidgets('a listing opens its tour and walks between scenes', (

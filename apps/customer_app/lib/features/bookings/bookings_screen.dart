@@ -9,6 +9,7 @@ import '../../data/auth_repository.dart';
 import '../../data/booking_repository.dart';
 import '../../design/app_image.dart';
 import '../../design/components.dart';
+import '../../design/controls.dart';
 import '../../design/money.dart';
 import '../../design/motion.dart';
 import '../../design/tokens.dart';
@@ -61,16 +62,22 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
                       Text('Your stays. Monthly applications live under Profile.', style: theme.textTheme.bodySmall),
                       if (signedIn) ...[
                         const SizedBox(height: Tokens.s20),
-                        SegmentedButton<_Tab>(
-                          showSelectedIcon: false,
-                          segments: [
-                            ButtonSegment(
-                                value: _Tab.upcoming, label: Text('Upcoming (${all.where((b) => b.isActive).length})')),
-                            ButtonSegment(
-                                value: _Tab.past, label: Text('Past (${all.where((b) => !b.isActive).length})')),
-                          ],
-                          selected: {_tab},
-                          onSelectionChanged: (next) => setState(() => _tab = next.first),
+                        SizedBox(
+                          width: double.infinity,
+                          child: AppSegmentedControl<_Tab>(
+                            segments: [
+                              AppSegment(
+                                value: _Tab.upcoming,
+                                label: 'Upcoming (${all.where((b) => b.isActive).length})',
+                              ),
+                              AppSegment(
+                                value: _Tab.past,
+                                label: 'Past (${all.where((b) => !b.isActive).length})',
+                              ),
+                            ],
+                            selected: _tab,
+                            onChanged: (next) => setState(() => _tab = next),
+                          ),
                         ),
                       ],
                     ],

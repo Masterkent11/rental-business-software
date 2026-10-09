@@ -50,6 +50,7 @@ type Scene = {
   readonly forwardYaw?: number;
   readonly backYaw?: number;
 };
+type Tile = { readonly level: number; readonly x: number; readonly y: number; readonly body: Buffer };
 type DemoListing = {
   readonly org?: string;
   readonly listingId: string;
@@ -404,7 +405,7 @@ async function main() {
         { path: `${prefix}/source`, body: processed.archive, type: 'image/jpeg' },
         { path: `${prefix}/preview.webp`, body: processed.preview, type: 'image/webp' },
         { path: `${prefix}/thumb.webp`, body: processed.thumbnail, type: 'image/webp' },
-        ...processed.tiles.map((tile) => ({
+        ...processed.tiles.map((tile: Tile) => ({
           path: `${prefix}/tiles/${tile.level}/${tile.x}_${tile.y}.webp`,
           body: tile.body,
           type: 'image/webp',

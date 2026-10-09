@@ -109,13 +109,6 @@ class ListingCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: Tokens.s8),
                     _Price(listing: listing),
-                    if (!listing.isSale && listing.moveInCost != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        '${Money.peso(listing.moveInCost!.totalCentavos)} to move in',
-                        style: AppText.caption.copyWith(color: Tokens.accent, fontWeight: FontWeight.w600),
-                      ),
-                    ],
                     if (specs.isNotEmpty) ...[
                       const SizedBox(height: Tokens.s8),
                       Wrap(
