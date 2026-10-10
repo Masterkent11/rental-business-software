@@ -1,4 +1,4 @@
-import type { Listing } from '@/domain/listings/listing.ts';
+import type { Listing, ListingChangeProposal } from '@/domain/listings/listing.ts';
 import { publicPriceCentavos } from '@/domain/listings/listing.ts';
 import { moveInCostFor } from '@/domain/listings/move-in-cost.ts';
 import type {
@@ -75,15 +75,6 @@ export const toListingHttpResponse = (listing: Listing) => ({
       }
     : null,
   distanceKm: listing.distanceKm ?? null,
-  representative: listing.representative
-    ? {
-        agentId: listing.representative.agentId,
-        displayName: listing.representative.displayName,
-        headline: listing.representative.headline,
-        photoUrl: listing.representative.photoUrl,
-        verified: listing.representative.verified,
-      }
-    : null,
   ...availabilityFor(listing),
   amenities: listing.amenities,
   houseRules: listing.houseRules,
@@ -166,3 +157,15 @@ export const toSaleTermsHttpResponse = (terms: SaleTerms) => ({
 });
 
 export const toAreaHttpResponse = (area: AreaSummary) => ({ ...area });
+
+export const toChangeProposalHttpResponse = (proposal: ListingChangeProposal) => ({
+  id: proposal.id,
+  listingId: proposal.listingId,
+  listingTitle: proposal.listingTitle,
+  agentId: proposal.proposedByAgentId,
+  agentName: proposal.agentName,
+  changes: proposal.changes,
+  status: proposal.status,
+  createdAt: proposal.createdAt.toISOString(),
+  decidedAt: proposal.decidedAt?.toISOString() ?? null,
+});

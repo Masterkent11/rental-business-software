@@ -1,5 +1,5 @@
-export const LIST_VIEWING_SLOTS = Symbol('LIST_VIEWING_SLOTS');
 export const REQUEST_VIEWING = Symbol('REQUEST_VIEWING');
+export const GET_MY_VIEWING = Symbol('GET_MY_VIEWING');
 export const LIST_MY_VIEWINGS = Symbol('LIST_MY_VIEWINGS');
 export const CUSTOMER_VIEWING_ACTION = Symbol('CUSTOMER_VIEWING_ACTION');
 export const LIST_PARTNER_VIEWINGS = Symbol('LIST_PARTNER_VIEWINGS');

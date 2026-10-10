@@ -45,10 +45,6 @@ class DiscoveryScreen extends ConsumerWidget {
     final rent = ref.watch(recommendationsProvider(_rentKey));
     final buy = ref.watch(recommendationsProvider(_buyKey));
     final bothFailed = rent.hasError && buy.hasError && !rent.hasValue && !buy.hasValue;
-    final agents = {
-      for (final listing in buy.valueOrNull?.items ?? const <ListingCardView>[])
-        if (listing.representative != null) listing.representative!.agentId: listing.representative!,
-    }.values.toList(growable: false);
 
     return Scaffold(
       backgroundColor: Tokens.canvas,
@@ -108,7 +104,6 @@ class DiscoveryScreen extends ConsumerWidget {
                 child: EditorialCarousel(
                   cards: ref.watch(editorialCardsProvider(_heroSlot)),
                   footnote: location.cityContext,
-                  agents: agents,
                   onAction: (action) => context.push(editorialRoute(action)),
                 ),
               ),

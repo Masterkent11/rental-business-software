@@ -57,7 +57,14 @@ export class OrganizationViewingsController {
     const input = parse(partnerViewingActionSchema, body);
     const principal = await this.principal(organizationId, auth);
     return toPartnerViewingHttpResponse(
-      await this.act({ principal, organizationId, viewingId: guid(id, 'viewing'), action: input.action, note: input.note }),
+      await this.act({
+        principal,
+        organizationId,
+        viewingId: guid(id, 'viewing'),
+        action: input.action,
+        scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null,
+        note: input.note,
+      }),
     );
   }
 }
@@ -83,7 +90,14 @@ export class AgentViewingsController {
     const input = parse(partnerViewingActionSchema, body);
     const principal = await this.resolve({ authorization: auth, organizationId: null });
     return toPartnerViewingHttpResponse(
-      await this.act({ principal, organizationId: null, viewingId: guid(id, 'viewing'), action: input.action, note: input.note }),
+      await this.act({
+        principal,
+        organizationId: null,
+        viewingId: guid(id, 'viewing'),
+        action: input.action,
+        scheduledAt: input.scheduledAt ? new Date(input.scheduledAt) : null,
+        note: input.note,
+      }),
     );
   }
 }

@@ -1,0 +1,6 @@
+export const RESOLVE_LEAD_ASSIGNMENT = Symbol('RESOLVE_LEAD_ASSIGNMENT');
+export const REASSIGN_LEAD = Symbol('REASSIGN_LEAD');
+export const SWEEP_LEAD_ASSIGNMENTS = Symbol('SWEEP_LEAD_ASSIGNMENTS');
+export const ISSUE_REFERRAL_CODE = Symbol('ISSUE_REFERRAL_CODE');
+export const JOB_SCHEDULER = Symbol('JOB_SCHEDULER');
+export const ASSIGN_LEAD = Symbol('ASSIGN_LEAD');

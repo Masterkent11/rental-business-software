@@ -57,6 +57,8 @@ import {
 } from '@/domain/collection/collection.ts';
 import { TourNotPublishableError } from '@/domain/tours/tour.ts';
 import {
+  ChangeProposalNotFoundError,
+  DuplicatePropertyError,
   InvalidListingDetailsError,
   InvalidListingTransitionError,
   ListingNotFoundError,
@@ -142,6 +144,7 @@ const RULES: readonly Rule[] = [
       ViewingNotFoundError,
       DomainTourNotFoundError,
       ContentNotFoundError,
+      ChangeProposalNotFoundError,
     ],
     HttpStatus.NOT_FOUND,
     'NOT_FOUND',
@@ -152,6 +155,7 @@ const RULES: readonly Rule[] = [
   [[OutdatedPolicyVersionError], HttpStatus.CONFLICT, 'POLICY_OUTDATED', null],
   [[ViewingAlreadyRequestedError], HttpStatus.CONFLICT, 'ALREADY_REQUESTED', null],
   [[ListingAlreadyRepresentedError], HttpStatus.CONFLICT, 'ALREADY_REPRESENTED', null],
+  [[DuplicatePropertyError], HttpStatus.CONFLICT, 'DUPLICATE_PROPERTY', null],
   [[RepresentationForbiddenError], HttpStatus.FORBIDDEN, 'FORBIDDEN', null],
   [
     [
@@ -254,7 +258,11 @@ export class PresentationExceptionFilter implements ExceptionFilter {
       if (types.some((type) => exception instanceof type)) {
         const message = override ?? (exception as Error).message;
         const extra =
-          exception instanceof ListingNotPublishableError ? { problems: exception.problems } : {};
+          exception instanceof ListingNotPublishableError
+            ? { problems: exception.problems }
+            : exception instanceof DuplicatePropertyError
+              ? { existingListingId: exception.existingListingId }
+              : {};
         return response.status(status).send({ statusCode: status, code, title: message, message, ...extra });
       }
     }

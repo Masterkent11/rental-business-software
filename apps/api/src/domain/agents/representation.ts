@@ -9,6 +9,24 @@ export type RepresentationAction = 'ACCEPT' | 'DECLINE' | 'END';
 
 export type RepresentationActor = 'OWNER' | 'AGENT';
 
+export type RepresentationKind = 'EXCLUSIVE' | 'NON_EXCLUSIVE' | 'OWNER_DIRECT';
+
+export interface RepresentationTerms {
+  readonly representationType: RepresentationKind;
+  readonly isPrimary: boolean;
+  readonly acceptsLeads: boolean;
+  readonly validFrom: Date | null;
+  readonly validUntil: Date | null;
+}
+
+export const DEFAULT_TERMS: RepresentationTerms = {
+  representationType: 'NON_EXCLUSIVE',
+  isPrimary: false,
+  acceptsLeads: true,
+  validFrom: null,
+  validUntil: null,
+};
+
 export interface RepresentationPermissions {
   readonly canEditListing: boolean;
   readonly canManageTour: boolean;
@@ -32,6 +50,9 @@ export interface Representation {
   readonly agentName: string;
   readonly state: RepresentationState;
   readonly permissions: RepresentationPermissions;
+  readonly terms: RepresentationTerms;
+  readonly initiatedBy: RepresentationActor;
+  readonly endReason: string | null;
   readonly invitedAt: Date;
   readonly respondedAt: Date | null;
   readonly endedAt: Date | null;
@@ -47,10 +68,15 @@ export function nextRepresentationState(
   current: RepresentationState,
   action: RepresentationAction,
   actor: RepresentationActor,
+  initiatedBy: RepresentationActor = 'OWNER',
 ): RepresentationState {
   if (action === 'ACCEPT' || action === 'DECLINE') {
-    if (actor !== 'AGENT') {
-      throw new InvalidRepresentationTransitionError('Only the invited agent can respond to an invitation');
+    if (actor === initiatedBy) {
+      throw new InvalidRepresentationTransitionError(
+        initiatedBy === 'OWNER'
+          ? 'Only the invited agent can respond to an invitation'
+          : 'Only the listing owner can respond to a representation request',
+      );
     }
     if (current !== 'PENDING') {
       throw new InvalidRepresentationTransitionError('This invitation has already been answered');
@@ -61,6 +87,13 @@ export function nextRepresentationState(
     throw new InvalidRepresentationTransitionError('This representation has already ended');
   }
   return 'ENDED';
+}
+
+export function assertValidTerms(terms: RepresentationTerms): RepresentationTerms {
+  if (terms.validFrom && terms.validUntil && terms.validUntil.getTime() <= terms.validFrom.getTime()) {
+    throw new InvalidRepresentationTransitionError('The representation must end after it starts');
+  }
+  return terms;
 }
 
 export function assertActiveRepresentationAllows(

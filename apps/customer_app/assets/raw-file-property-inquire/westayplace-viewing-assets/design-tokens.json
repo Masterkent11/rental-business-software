@@ -1,0 +1,21 @@
+{
+  "colors": {
+    "navy": "#0B2145",
+    "muted": "#73819A",
+    "border": "#E4E8EF",
+    "surface": "#F4F8FD",
+    "blue": "#1682FF",
+    "successSurface": "#E7F8F0",
+    "white": "#FFFFFF"
+  },
+  "iconSize": 24,
+  "iconStroke": 1.8,
+  "buttonRadius": 14,
+  "cardRadius": 16,
+  "motionMs": {
+    "matchingOrbit": 3000,
+    "successCheck": 650,
+    "spinner": 1000,
+    "pendingPulse": 1800
+  }
+}

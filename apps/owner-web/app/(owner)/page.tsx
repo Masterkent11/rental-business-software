@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const newInquiries = useEngagementStore((s) => s.inquiries.filter((i) => i.status === "NEW").length);
   const openInquiries = useEngagementStore((s) => s.inquiries.filter((i) => i.status !== "CLOSED" && i.status !== "LOST").length);
   const viewingRequests = useEngagementStore((s) => s.viewings.filter((v) => v.status === "REQUESTED").length);
-  const upcomingViewings = useEngagementStore((s) => s.viewings.filter((v) => v.status === "CONFIRMED" && new Date(v.scheduledAt).getTime() > Date.now()).length);
+  const upcomingViewings = useEngagementStore((s) => s.viewings.filter((v) => v.status === "CONFIRMED" && v.scheduledAt !== null && new Date(v.scheduledAt).getTime() > Date.now()).length);
 
   useEffect(() => {
     if (organizationId) void load(organizationId);

@@ -12,6 +12,7 @@ import type {
   SaleStatus,
 } from '@/domain/listings/listing.ts';
 import type { LocationPrivacy } from '@/domain/shared/geo.ts';
+import type { DuplicateCandidate } from '@/domain/listings/listing.ts';
 import type { Centavos } from '@/domain/shared/money.ts';
 import type { PublicScope } from '@/domain/shared/organization-scope.ts';
 
@@ -100,6 +101,14 @@ export interface CreateSaleListingInput {
   readonly listing: SaleListingDetails;
   readonly saleTerms: SaleTermsInput | null;
   readonly updatedBy: string;
+  readonly possibleDuplicateOf: string | null;
+}
+
+export interface DuplicateCandidateQuery {
+  readonly cityLabel: string;
+  readonly propertyType: PropertyType;
+  readonly location: { readonly latitude: number; readonly longitude: number } | null;
+  readonly radiusMeters: number;
 }
 
 export interface UpdateSaleListingInput {
@@ -202,6 +211,7 @@ export interface ListingRepository {
   listProperties(organizationId: string): Promise<readonly OwnerProperty[]>;
   stayPricing(listingId: string): Promise<StayPricingSource | null>;
   createSaleListing(input: CreateSaleListingInput): Promise<Listing>;
+  saleDuplicateCandidates(query: DuplicateCandidateQuery): Promise<readonly DuplicateCandidate[]>;
   updateSaleListing(input: UpdateSaleListingInput): Promise<Listing | null>;
   saleTerms(organizationId: string, listingId: string): Promise<SaleTerms | null>;
   saveSaleTerms(

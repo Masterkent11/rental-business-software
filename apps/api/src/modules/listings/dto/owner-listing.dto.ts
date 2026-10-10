@@ -94,6 +94,7 @@ export const createSaleListingSchema = z.object({
     availableFrom: saleListingShape.availableFrom.default(null),
   }),
   saleTerms: saleTermsSchema.nullable().default(null),
+  confirmDistinctProperty: z.boolean().default(false),
 });
 
 export const updateSaleListingSchema = z.object({
@@ -166,3 +167,7 @@ export const addBlockSchema = z.object({
 export type CreateListingDto = z.infer<typeof createListingSchema>;
 export type CreatePropertyListingDto = z.infer<typeof createPropertyListingSchema>;
 export type UpdateListingDto = z.infer<typeof updateListingSchema>;
+
+export const proposalDecisionSchema = z.object({
+  approve: z.boolean(),
+});

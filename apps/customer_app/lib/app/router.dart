@@ -6,7 +6,7 @@ import '../features/account/account_screen.dart';
 import '../features/activity/activity_screen.dart';
 import '../features/agents/agent_profile_screen.dart';
 import '../features/inquiry/inquiry_screen.dart';
-import '../features/viewing/schedule_viewing_screen.dart';
+import '../features/viewing/request_viewing_screen.dart';
 import '../features/application/applications_screen.dart';
 import '../features/application/apply_screen.dart';
 import '../features/auth/auth_screen.dart';
@@ -121,6 +121,7 @@ abstract final class Routes {
   static String apply(String id) => '${listing(id)}/apply';
   static String inquire(String id) => '${listing(id)}/inquire';
   static String viewing(String id) => '${listing(id)}/viewing';
+  static String viewingRequest(String listingId, String viewingId) => '${viewing(listingId)}?request=$viewingId';
   static String agent(String id) => '/agents/$id';
   static const activity = '/activity';
   static String booking(String id, {bool confirmed = false}) => '$bookings/$id${confirmed ? '?confirmed=1' : ''}';
@@ -384,9 +385,10 @@ final Map<ShellDestination, StatefulShellBranch> _branches = {
               GoRoute(
                 path: 'viewing',
                 parentNavigatorKey: _rootNavigatorKey,
-                builder: (context, state) => ScheduleViewingScreen(
+                builder: (context, state) => RequestViewingScreen(
                   listingId: state.pathParameters['id']!,
                   rescheduleId: state.uri.queryParameters['reschedule'],
+                  viewingId: state.uri.queryParameters['request'],
                 ),
               ),
             ],

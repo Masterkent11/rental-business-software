@@ -15,6 +15,8 @@ import type {
 export * from './listing-state.ts';
 export * from './listing-rules.ts';
 export * from './listing-errors.ts';
+export * from './duplicate-detection.ts';
+export * from './canonical-facts.ts';
 
 export interface ListingPhoto {
   readonly id: string;
@@ -29,14 +31,6 @@ export interface ListingFloorPlan extends ListingPhoto {
 
 export interface PropertyLocation extends Coordinates {
   readonly privacy: LocationPrivacy;
-}
-
-export interface ListingRepresentative {
-  readonly agentId: string;
-  readonly displayName: string;
-  readonly headline: string;
-  readonly photoUrl: string | null;
-  readonly verified: boolean;
 }
 
 export interface Listing {
@@ -85,7 +79,6 @@ export interface Listing {
   readonly publicLocation?: Coordinates | null;
   readonly distanceKm?: number | null;
   readonly floorPlans?: readonly ListingFloorPlan[];
-  readonly representative?: ListingRepresentative | null;
   readonly tourProvider?: 'PLATFORM' | 'MATTERPORT' | null;
   readonly furnishing?: Furnishing | null;
   readonly petsAllowed?: boolean | null;

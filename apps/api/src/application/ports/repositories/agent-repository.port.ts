@@ -14,6 +14,7 @@ export interface AgentSearchQuery {
 export interface AgentRepository {
   findByUser(userId: string): Promise<AgentProfile | null>;
   findPublic(agentId: string): Promise<AgentProfile | null>;
+  findAssigned(customerId: string, agentId: string): Promise<AgentProfile | null>;
   searchPublic(query: AgentSearchQuery): Promise<readonly AgentProfile[]>;
   create(userId: string, input: AgentProfileInput): Promise<AgentProfile>;
   update(userId: string, input: AgentProfileInput): Promise<AgentProfile>;

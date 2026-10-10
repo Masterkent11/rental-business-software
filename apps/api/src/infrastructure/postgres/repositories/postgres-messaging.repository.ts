@@ -163,7 +163,7 @@ export const postgresMessagingRepository = (): MessagingRepository => ({
                 ${input.agentId ?? null})
         on conflict (listing_id, customer_id) do update
           set occupancy_id = coalesce(excluded.occupancy_id, conversations.occupancy_id),
-              agent_id = coalesce(conversations.agent_id, excluded.agent_id)
+              agent_id = coalesce(excluded.agent_id, conversations.agent_id)
       `;
       const [row] = await tx<ConversationRow[]>`
         ${SELECT_CONVERSATION(tx, 'CUSTOMER')}
@@ -213,18 +213,6 @@ export const postgresMessagingRepository = (): MessagingRepository => ({
         limit 200
       `;
       return rows.map(toConversation);
-    });
-  },
-
-  async activeAgentForListing(listingId) {
-    return withScope(null, async (tx) => {
-      const [row] = await tx<{ agent_id: string }[]>`
-        select r.agent_id from listing_representations r
-          join agent_profiles a on a.id = r.agent_id
-         where r.listing_id = ${listingId} and r.state = 'ACTIVE' and a.verification_state = 'VERIFIED'
-         limit 1
-      `;
-      return row?.agent_id ?? null;
     });
   },
 

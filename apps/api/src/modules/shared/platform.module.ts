@@ -6,6 +6,8 @@ import {
   BOOKING_REPOSITORY,
   CLOCK,
   INQUIRY_REPOSITORY,
+  LEAD_ASSIGNMENT_REPOSITORY,
+  LEAD_ASSIGNMENT_SETTINGS,
   LISTING_GATE,
   LISTING_MEDIA_STORAGE,
   MESSAGING_REPOSITORY,
@@ -24,6 +26,8 @@ import { postgresMessagingRepository } from '@/infrastructure/postgres/repositor
 import { postgresAgentRepository } from '@/infrastructure/postgres/repositories/postgres-agent.repository.ts';
 import { postgresRepresentationRepository } from '@/infrastructure/postgres/repositories/postgres-representation.repository.ts';
 import { postgresInquiryRepository } from '@/infrastructure/postgres/repositories/postgres-inquiry.repository.ts';
+import { postgresLeadAssignmentRepository } from '@/infrastructure/postgres/repositories/postgres-lead-assignment.repository.ts';
+import { loadEnvironmentConfig } from '@/infrastructure/config/environment-config.ts';
 import { postgresViewingRepository } from '@/infrastructure/postgres/repositories/postgres-viewing.repository.ts';
 import { postgresAgentTaskRepository } from '@/infrastructure/postgres/repositories/postgres-agent-task.repository.ts';
 import { postgresAnalyticsRepository } from '@/infrastructure/postgres/repositories/postgres-analytics.repository.ts';
@@ -39,6 +43,8 @@ import type { MessagingRepository } from '@/application/ports/repositories/messa
 import type { AgentRepository } from '@/application/ports/repositories/agent-repository.port.ts';
 import type { RepresentationRepository } from '@/application/ports/repositories/representation-repository.port.ts';
 import type { InquiryRepository } from '@/application/ports/repositories/inquiry-repository.port.ts';
+import type { LeadAssignmentRepository } from '@/application/ports/repositories/lead-assignment-repository.port.ts';
+import type { LeadAssignmentSettings } from '@/application/assignment/assignment.types.ts';
 import type { ViewingRepository } from '@/application/ports/repositories/viewing-repository.port.ts';
 import type { AgentTaskRepository } from '@/application/ports/repositories/agent-task-repository.port.ts';
 import type { AnalyticsRepository } from '@/application/ports/repositories/analytics-repository.port.ts';
@@ -57,6 +63,8 @@ const SHARED = [
   REPRESENTATION_REPOSITORY,
   INQUIRY_REPOSITORY,
   VIEWING_REPOSITORY,
+  LEAD_ASSIGNMENT_REPOSITORY,
+  LEAD_ASSIGNMENT_SETTINGS,
   AGENT_TASK_REPOSITORY,
   ANALYTICS_REPOSITORY,
   SHARED_LISTING_REPOSITORY,
@@ -78,6 +86,17 @@ const SHARED = [
     { provide: REPRESENTATION_REPOSITORY, useFactory: (): RepresentationRepository => postgresRepresentationRepository() },
     { provide: INQUIRY_REPOSITORY, useFactory: (): InquiryRepository => postgresInquiryRepository() },
     { provide: VIEWING_REPOSITORY, useFactory: (): ViewingRepository => postgresViewingRepository() },
+    { provide: LEAD_ASSIGNMENT_REPOSITORY, useFactory: (): LeadAssignmentRepository => postgresLeadAssignmentRepository() },
+    {
+      provide: LEAD_ASSIGNMENT_SETTINGS,
+      useFactory: (): LeadAssignmentSettings => {
+        const config = loadEnvironmentConfig();
+        return {
+          responseWindowMinutes: config.leadResponseWindowMinutes,
+          sweepIntervalSeconds: config.leadSweepIntervalSeconds,
+        };
+      },
+    },
     { provide: AGENT_TASK_REPOSITORY, useFactory: (): AgentTaskRepository => postgresAgentTaskRepository() },
     { provide: ANALYTICS_REPOSITORY, useFactory: (): AnalyticsRepository => postgresAnalyticsRepository() },
     { provide: SHARED_LISTING_REPOSITORY, useFactory: (): ListingRepository => postgresListingRepository() },

@@ -38,6 +38,7 @@ flutter:
     - assets/brand/mark.png
     - assets/images/categories/
     - assets/icons/categories/
+    - assets/raw-file-property-inquire/westayplace-viewing-assets/icons/svg/
 
   shaders:
     - shaders/panorama.frag

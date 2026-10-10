@@ -126,7 +126,7 @@ export const postgresInquiryRepository = (): InquiryRepository => ({
           insert into conversations (organization_id, listing_id, customer_id, agent_id)
           values (${input.organizationId}, ${input.listingId}, ${input.customerId}, ${input.agentId})
           on conflict (listing_id, customer_id) do update
-            set agent_id = coalesce(conversations.agent_id, excluded.agent_id)
+            set agent_id = coalesce(excluded.agent_id, conversations.agent_id)
           returning id
         `;
 

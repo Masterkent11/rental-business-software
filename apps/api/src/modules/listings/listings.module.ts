@@ -12,6 +12,9 @@ import {
   GET_LISTING_CALENDAR,
   GET_OWNER_LISTING,
   LISTING_REPOSITORY,
+  LISTING_CHANGE_PROPOSAL_REPOSITORY,
+  LIST_CHANGE_PROPOSALS,
+  DECIDE_CHANGE_PROPOSAL,
   LIST_OWNER_LISTINGS,
   LIST_OWNER_PROPERTIES,
   LIST_RESOURCES,
@@ -34,7 +37,11 @@ import {
   GET_PARTNER_LISTING,
 } from './listing.tokens.ts';
 import { OCCUPANCY_REPOSITORY } from '@/modules/bookings/booking.tokens.ts';
-import { BOOKING_REPOSITORY, LISTING_GATE, LISTING_MEDIA_STORAGE } from '@/modules/shared/shared.tokens.ts';
+import { BOOKING_REPOSITORY, LISTING_GATE, LISTING_MEDIA_STORAGE, NOTIFICATION_REPOSITORY } from '@/modules/shared/shared.tokens.ts';
+import type { NotificationRepository } from '@/application/ports/repositories/notification-repository.port.ts';
+import type { ListingChangeProposalRepository } from '@/application/ports/repositories/listing-change-proposal-repository.port.ts';
+import { postgresListingChangeProposalRepository } from '@/infrastructure/postgres/repositories/postgres-listing-change-proposal.repository.ts';
+import { decideChangeProposal, listChangeProposals } from '@/application/listings/review-change-proposal/review-change-proposal.use-case.ts';
 import type { ListingGate } from '@/application/identity/partner-access.rules.ts';
 import { createSaleListing } from '@/application/listings/create-sale-listing/create-sale-listing.use-case.ts';
 import { updateSaleListing } from '@/application/listings/update-sale-listing/update-sale-listing.use-case.ts';
@@ -81,6 +88,20 @@ import type { ListingMediaStorage } from '@/application/ports/storage/listing-me
   ],
   providers: [
     { provide: LISTING_REPOSITORY, useFactory: (): ListingRepository => postgresListingRepository() },
+    {
+      provide: LISTING_CHANGE_PROPOSAL_REPOSITORY,
+      useFactory: (): ListingChangeProposalRepository => postgresListingChangeProposalRepository(),
+    },
+    {
+      provide: LIST_CHANGE_PROPOSALS,
+      inject: [LISTING_CHANGE_PROPOSAL_REPOSITORY],
+      useFactory: (p: ListingChangeProposalRepository) => listChangeProposals(p),
+    },
+    {
+      provide: DECIDE_CHANGE_PROPOSAL,
+      inject: [LISTING_CHANGE_PROPOSAL_REPOSITORY, LISTING_REPOSITORY],
+      useFactory: (p: ListingChangeProposalRepository, repo: ListingRepository) => decideChangeProposal(p, repo),
+    },
     { provide: OCCUPANCY_REPOSITORY, useFactory: (): OccupancyRepository => postgresOccupancyRepository() },
     {
       provide: SEARCH_LISTINGS,
@@ -156,8 +177,13 @@ import type { ListingMediaStorage } from '@/application/ports/storage/listing-me
     },
     {
       provide: UPDATE_SALE_LISTING,
-      inject: [LISTING_REPOSITORY, LISTING_GATE],
-      useFactory: (repo: ListingRepository, gate: ListingGate) => updateSaleListing(repo, gate),
+      inject: [LISTING_REPOSITORY, LISTING_GATE, LISTING_CHANGE_PROPOSAL_REPOSITORY, NOTIFICATION_REPOSITORY],
+      useFactory: (
+        repo: ListingRepository,
+        gate: ListingGate,
+        proposals: ListingChangeProposalRepository,
+        notifications: NotificationRepository,
+      ) => updateSaleListing(repo, gate, proposals, notifications),
     },
     {
       provide: GET_SALE_TERMS,

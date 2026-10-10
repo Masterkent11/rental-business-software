@@ -77,6 +77,13 @@ export const postgresAgentRepository = (): AgentRepository => ({
     });
   },
 
+  async findAssigned(customerId: string, agentId: string) {
+    return withUser(customerId, async (tx) => {
+      const [row] = await tx<AgentRow[]>`select ${COLUMNS(tx)} from agent_profiles where id = ${agentId}`;
+      return row ? toAgent(row) : null;
+    });
+  },
+
   async searchPublic(query: AgentSearchQuery) {
     return withScope(null, async (tx) => {
       const text = query.text ? `%${query.text}%` : null;

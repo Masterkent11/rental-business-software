@@ -1,7 +1,7 @@
 import { localDay } from '@/domain/shared/calendar.ts';
 import type { Inquiry, InquiryStatus } from '@/domain/inquiries/inquiry.ts';
 import { INQUIRY_STATUSES, isOpenInquiry } from '@/domain/inquiries/inquiry.ts';
-import type { Viewing } from '@/domain/viewings/viewing.ts';
+import { expectedViewingStart, type Viewing } from '@/domain/viewings/viewing.ts';
 
 export interface ScheduleTask {
   readonly id: string;
@@ -44,19 +44,19 @@ export function agentWorkload(input: {
     input.inquiries.filter((inquiry) => isOpenInquiry(inquiry.status)).map((inquiry) => inquiry.customerId),
   ).size;
 
-  const viewingsToday = input.viewings.filter(
-    (viewing) =>
-      localDay(viewing.scheduledAt) === today &&
-      (viewing.status === 'CONFIRMED' || viewing.status === 'REQUESTED' || viewing.status === 'RESCHEDULE_REQUESTED'),
-  );
+  const viewingsToday = input.viewings.flatMap((viewing) => {
+    const at = expectedViewingStart(viewing);
+    const pending = viewing.status === 'CONFIRMED' || viewing.status === 'REQUESTED' || viewing.status === 'RESCHEDULE_REQUESTED';
+    return at && pending && localDay(at) === today ? [{ viewing, at }] : [];
+  });
 
   const dueTasks = input.tasks.filter((task) => task.doneAt === null && localDay(task.dueAt) <= today);
 
   const items: ScheduleItem[] = [
-    ...viewingsToday.map<ScheduleItem>((viewing) => ({
+    ...viewingsToday.map<ScheduleItem>(({ viewing, at }) => ({
       kind: 'VIEWING',
       id: viewing.id,
-      at: viewing.scheduledAt,
+      at,
       title: 'Property viewing',
       subtitle: `${viewing.customerName} · ${viewing.listingTitle}`,
       status: viewing.status,

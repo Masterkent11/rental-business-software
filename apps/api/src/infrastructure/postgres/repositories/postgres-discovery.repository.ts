@@ -77,7 +77,7 @@ export const postgresDiscoveryRepository = (): DiscoveryRepository => ({
         select g.area_label, g.city_label, g.listing_count,
                (select m.storage_url
                   from matching mt
-                  join media_assets m on m.listing_id = mt.id and m.kind = 'PHOTO'
+                  join media_assets m on m.listing_id = mt.id and m.kind = 'PHOTO' and m.representation_id is null
                  where mt.area_label = g.area_label and mt.city_label = g.city_label
                  order by mt.published_at desc nulls last, m.position
                  limit 1) as cover_photo_url

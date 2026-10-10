@@ -1,3 +1,5 @@
+import { DEFAULT_LEAD_RESPONSE_WINDOW_MINUTES } from '@/domain/assignment/lead-assignment.ts';
+
 export type AppEnvironment = 'development' | 'demo' | 'production' | 'test';
 export type PaymentProviderName = 'sandbox' | 'none';
 
@@ -9,9 +11,13 @@ export interface EnvironmentConfig {
   readonly paymentProvider: PaymentProviderName;
   readonly paymentWebhookSecret: string | null;
   readonly corsOrigins: readonly string[] | true;
+  readonly leadResponseWindowMinutes: number;
+  readonly leadSweepIntervalSeconds: number;
 }
 
 export class EnvironmentConfigError extends Error {}
+
+const DEFAULT_LEAD_SWEEP_INTERVAL_SECONDS = 60;
 
 const APP_ENVS: readonly AppEnvironment[] = ['development', 'demo', 'production', 'test'];
 
@@ -48,6 +54,15 @@ export function loadEnvironmentConfig(env: NodeJS.ProcessEnv = process.env): Env
     problems.push('CORS_ORIGINS is required in production');
   }
 
+  const leadResponseWindowMinutes = Number(env.LEAD_RESPONSE_WINDOW_MINUTES ?? DEFAULT_LEAD_RESPONSE_WINDOW_MINUTES);
+  if (!Number.isInteger(leadResponseWindowMinutes) || leadResponseWindowMinutes < 5 || leadResponseWindowMinutes > 10080) {
+    problems.push('LEAD_RESPONSE_WINDOW_MINUTES must be a whole number between 5 and 10080');
+  }
+  const leadSweepIntervalSeconds = Number(env.LEAD_SWEEP_INTERVAL_SECONDS ?? DEFAULT_LEAD_SWEEP_INTERVAL_SECONDS);
+  if (!Number.isInteger(leadSweepIntervalSeconds) || leadSweepIntervalSeconds < 0 || leadSweepIntervalSeconds > 3600) {
+    problems.push('LEAD_SWEEP_INTERVAL_SECONDS must be a whole number between 0 and 3600');
+  }
+
   if (problems.length > 0) {
     throw new EnvironmentConfigError(`Invalid API configuration:\n- ${problems.join('\n- ')}`);
   }
@@ -60,5 +75,7 @@ export function loadEnvironmentConfig(env: NodeJS.ProcessEnv = process.env): Env
     paymentProvider: requestedProvider as PaymentProviderName,
     paymentWebhookSecret,
     corsOrigins,
+    leadResponseWindowMinutes,
+    leadSweepIntervalSeconds,
   };
 }

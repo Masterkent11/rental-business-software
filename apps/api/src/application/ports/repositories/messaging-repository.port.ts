@@ -24,7 +24,6 @@ export interface MessagingRepository {
   }): Promise<Conversation>;
   findForAgent(agentUserId: string, conversationId: string): Promise<Conversation | null>;
   listForAgent(agentUserId: string): Promise<readonly Conversation[]>;
-  activeAgentForListing(listingId: string): Promise<string | null>;
   findForCustomer(customerId: string, conversationId: string): Promise<Conversation | null>;
   findForOrganization(organizationId: string, conversationId: string): Promise<Conversation | null>;
   listForCustomer(customerId: string): Promise<readonly Conversation[]>;

@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { container } from "../infrastructure/composition/owner-web-container";
 import type { PartnerScope } from "../domain/workspace/workspace";
 import type { Inquiry, InquiryStatus } from "../domain/inquiries/inquiry";
-import type { PartnerViewingAction, Viewing } from "../domain/viewings/viewing";
+import { confirmationTimes, localInstant, type PartnerViewingAction, type Viewing } from "../domain/viewings/viewing";
 
 interface EngagementState {
   scopeKey: string | null;
@@ -19,6 +19,8 @@ interface EngagementState {
   actionError: string | null;
   lostReason: string;
   viewingNote: string;
+  viewingDate: string;
+  viewingTime: string;
   view: "board" | "list";
   viewingFilter: "upcoming" | "past";
   now: number;
@@ -32,6 +34,8 @@ interface EngagementState {
   selectViewing: (id: string | null) => void;
   setLostReason: (value: string) => void;
   setViewingNote: (value: string) => void;
+  setViewingDate: (value: string) => void;
+  setViewingTime: (value: string) => void;
   setView: (view: "board" | "list") => void;
   setViewingFilter: (filter: "upcoming" | "past") => void;
   move: (inquiry: Inquiry, status: InquiryStatus) => Promise<void>;
@@ -56,6 +60,8 @@ export const useEngagementStore = create<EngagementState>((set, get) => ({
   actionError: null,
   lostReason: "",
   viewingNote: "",
+  viewingDate: "",
+  viewingTime: "",
   view: "board",
   viewingFilter: "upcoming",
   now: Date.now(),
@@ -102,9 +108,22 @@ export const useEngagementStore = create<EngagementState>((set, get) => ({
   },
 
   selectInquiry: (selectedInquiryId) => set({ selectedInquiryId, actionError: null, lostReason: "" }),
-  selectViewing: (selectedViewingId) => set({ selectedViewingId, actionError: null, viewingNote: "", now: Date.now() }),
+  selectViewing: (selectedViewingId) => {
+    const viewing = get().viewings.find((v) => v.id === selectedViewingId);
+    const times = confirmationTimes(viewing?.preferredTimeWindow ?? null);
+    set({
+      selectedViewingId,
+      actionError: null,
+      viewingNote: "",
+      viewingDate: viewing?.preferredDate ?? "",
+      viewingTime: times[Math.min(4, times.length - 1)] ?? "",
+      now: Date.now(),
+    });
+  },
   setLostReason: (lostReason) => set({ lostReason }),
   setViewingNote: (viewingNote) => set({ viewingNote }),
+  setViewingDate: (viewingDate) => set({ viewingDate }),
+  setViewingTime: (viewingTime) => set({ viewingTime }),
   setView: (view) => set({ view }),
   setViewingFilter: (viewingFilter) => set({ viewingFilter, selectedViewingId: null, now: Date.now() }),
 
@@ -123,13 +142,29 @@ export const useEngagementStore = create<EngagementState>((set, get) => ({
   act: async (viewing, action) => {
     const scope = get().scope;
     if (!scope) return;
+    const { viewingDate, viewingTime } = get();
+    const needsTime = action === "CONFIRM" || action === "REQUEST_RESCHEDULE";
+    const scheduledAt = needsTime && viewingDate && viewingTime ? localInstant(viewingDate, viewingTime) : null;
     set({ busyId: viewing.id, actionError: null });
     try {
-      const updated = await container.viewingActionUseCase.execute(scope, viewing.id, action, get().viewingNote.trim() || null);
-      set((state) => ({ busyId: null, viewingNote: "", viewings: state.viewings.map((v) => (v.id === updated.id ? updated : v)) }));
+      const updated = await container.viewingActionUseCase.execute(scope, viewing.id, {
+        action,
+        scheduledAt,
+        note: get().viewingNote.trim() || null,
+      });
+      set((state) => ({
+        busyId: null,
+        viewingNote: "",
+        selectedViewingId: action === "DECLINE" ? null : state.selectedViewingId,
+        viewings:
+          action === "DECLINE" && scope.kind === "AGENT"
+            ? state.viewings.filter((v) => v.id !== updated.id)
+            : state.viewings.map((v) => (v.id === updated.id ? updated : v)),
+      }));
       void get().loadInquiries();
     } catch (error) {
       set({ busyId: null, actionError: messageOf(error, "That didn't go through") });
     }
   },
+
 }));

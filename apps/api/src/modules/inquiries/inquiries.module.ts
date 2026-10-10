@@ -16,14 +16,15 @@ import {
 import {
   AGENT_REPOSITORY,
   INQUIRY_REPOSITORY,
-  MESSAGING_REPOSITORY,
   NOTIFICATION_REPOSITORY,
   SHARED_LISTING_REPOSITORY,
 } from '@/modules/shared/shared.tokens.ts';
 import type { AgentRepository } from '@/application/ports/repositories/agent-repository.port.ts';
 import type { InquiryRepository } from '@/application/ports/repositories/inquiry-repository.port.ts';
 import type { ListingRepository } from '@/application/ports/repositories/listing-repository.port.ts';
-import type { MessagingRepository } from '@/application/ports/repositories/messaging-repository.port.ts';
+import { AssignmentModule } from '@/modules/assignment/assignment.module.ts';
+import { ASSIGN_LEAD } from '@/modules/assignment/assignment.tokens.ts';
+import type { assignLead } from '@/application/assignment/assign-lead/assign-lead.use-case.ts';
 import type { NotificationRepository } from '@/application/ports/repositories/notification-repository.port.ts';
 import { submitInquiry } from '@/application/inquiries/submit-inquiry/submit-inquiry.use-case.ts';
 import {
@@ -38,13 +39,19 @@ import {
 import { updateInquiryStatus } from '@/application/inquiries/update-inquiry-status/update-inquiry-status.use-case.ts';
 
 @Module({
+  imports: [AssignmentModule],
   controllers: [CustomerInquiriesController, OrganizationInquiriesController, AgentInquiriesController],
   providers: [
     {
       provide: SUBMIT_INQUIRY,
-      inject: [INQUIRY_REPOSITORY, SHARED_LISTING_REPOSITORY, MESSAGING_REPOSITORY, AGENT_REPOSITORY, NOTIFICATION_REPOSITORY],
-      useFactory: (i: InquiryRepository, l: ListingRepository, m: MessagingRepository, a: AgentRepository, n: NotificationRepository) =>
-        submitInquiry(i, l, m, a, n),
+      inject: [INQUIRY_REPOSITORY, SHARED_LISTING_REPOSITORY, AGENT_REPOSITORY, NOTIFICATION_REPOSITORY, ASSIGN_LEAD],
+      useFactory: (
+        i: InquiryRepository,
+        l: ListingRepository,
+        a: AgentRepository,
+        n: NotificationRepository,
+        assign: ReturnType<typeof assignLead>,
+      ) => submitInquiry(i, l, a, n, assign),
     },
     { provide: LIST_MY_INQUIRIES, inject: [INQUIRY_REPOSITORY], useFactory: (i: InquiryRepository) => listMyInquiries(i) },
     { provide: GET_MY_INQUIRY, inject: [INQUIRY_REPOSITORY], useFactory: (i: InquiryRepository) => getMyInquiry(i) },

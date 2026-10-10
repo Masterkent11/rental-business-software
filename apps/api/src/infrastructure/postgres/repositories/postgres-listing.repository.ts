@@ -42,14 +42,6 @@ interface MediaRow {
   label?: string;
 }
 
-interface RepresentativeRow {
-  agent_id: string;
-  display_name: string;
-  headline: string;
-  photo_url: string | null;
-  verified: boolean;
-}
-
 interface Row {
   id: string;
   organization_id: string;
@@ -97,7 +89,6 @@ interface Row {
   public_latitude: number | null;
   public_longitude: number | null;
   floor_plans: MediaRow[] | null;
-  representative: RepresentativeRow | null;
   tour_provider: string | null;
   furnishing: string | null;
   pets_allowed: boolean | null;
@@ -187,15 +178,6 @@ const toListing = (row: Row): Listing => {
         position: m.position,
         label: m.label ?? '',
       })),
-    representative: row.representative
-      ? {
-          agentId: row.representative.agent_id,
-          displayName: row.representative.display_name,
-          headline: row.representative.headline,
-          photoUrl: row.representative.photo_url,
-          verified: row.representative.verified,
-        }
-      : null,
   };
 };
 
@@ -216,16 +198,9 @@ const SELECT = sql`
                 'id', m.id, 'url', m.storage_url, 'path', m.storage_path, 'position', m.position, 'label', m.label
               ) order by m.position, m.created_at)
          from media_assets m
-        where m.listing_id = l.id and m.kind = 'FLOOR_PLAN'),
+        where m.listing_id = l.id and m.kind = 'FLOOR_PLAN' and m.representation_id is null),
       '[]'::json
     ) as floor_plans,
-    (select json_build_object(
-              'agent_id', a.id, 'display_name', a.display_name, 'headline', a.headline,
-              'photo_url', a.photo_url, 'verified', a.verification_state = 'VERIFIED')
-       from listing_representations rp
-       join agent_profiles a on a.id = rp.agent_id
-      where rp.listing_id = l.id and rp.state = 'ACTIVE' and a.public_state = 'PUBLIC'
-      limit 1) as representative,
     l.price_centavos::text as price_centavos,
     l.cleaning_fee_centavos::text as cleaning_fee_centavos,
     l.state,
@@ -243,7 +218,7 @@ const SELECT = sql`
                 'id', m.id, 'url', m.storage_url, 'path', m.storage_path, 'position', m.position
               ) order by m.position, m.created_at)
          from media_assets m
-        where m.listing_id = l.id and m.kind = 'PHOTO'),
+        where m.listing_id = l.id and m.kind = 'PHOTO' and m.representation_id is null),
       '[]'::json
     ) as media,
     case
@@ -794,6 +769,49 @@ export const postgresListingRepository = (): ListingRepository => ({
     });
   },
 
+  async saleDuplicateCandidates(query) {
+    return withScope(null, async (tx) => {
+      const rows = await tx<
+        {
+          listing_id: string;
+          organization_id: string;
+          property_name: string;
+          address_line: string;
+          area_label: string;
+          city_label: string;
+          property_type: string;
+          latitude: number | null;
+          longitude: number | null;
+          bedrooms: number;
+          bathrooms: number;
+          floor_area_sqm: number | null;
+          lot_area_sqm: number | null;
+        }[]
+      >`
+        select * from app_private.sale_listing_duplicate_candidates(
+          ${query.cityLabel}, ${query.propertyType},
+          ${query.location?.latitude ?? null}::float8, ${query.location?.longitude ?? null}::float8,
+          ${query.radiusMeters}::float8
+        )
+      `;
+      return rows.map((row) => ({
+        listingId: row.listing_id,
+        organizationId: row.organization_id,
+        name: row.property_name,
+        addressLine: row.address_line,
+        areaLabel: row.area_label,
+        cityLabel: row.city_label,
+        propertyType: row.property_type,
+        location:
+          row.latitude !== null && row.longitude !== null ? { latitude: row.latitude, longitude: row.longitude } : null,
+        bedrooms: row.bedrooms,
+        bathrooms: row.bathrooms,
+        floorAreaSqm: row.floor_area_sqm,
+        lotAreaSqm: row.lot_area_sqm,
+      }));
+    });
+  },
+
   async createSaleListing(input: CreateSaleListingInput) {
     return withScope(input.organizationId, async (tx) => {
       const property = await insertProperty(tx, input.organizationId, input.property);
@@ -812,12 +830,13 @@ export const postgresListingRepository = (): ListingRepository => ({
           organization_id, resource_id, intent, kind, title, description, price_centavos,
           amenities, house_rules, terms, min_stay_nights, advance_months, deposit_months,
           max_occupants, bedrooms, bathrooms, floor_area_sqm, cleaning_fee_centavos,
-          available_from, sale_status, lot_area_sqm, parking_slots, furnishing, state
+          available_from, sale_status, lot_area_sqm, parking_slots, furnishing, state, possible_duplicate_of
         ) values (
           ${input.organizationId}, ${resource!.id}, 'SALE', null, ${l.title.trim()}, ${l.description.trim()}, 0,
           ${textArray(tx, l.amenities)}, ${textArray(tx, [])}, ${textArray(tx, [])}, null, 0, 0,
           1, ${l.bedrooms}, ${l.bathrooms}, ${l.floorAreaSqm}, 0,
-          ${l.availableFrom}, ${l.saleStatus}, ${l.lotAreaSqm}, ${l.parkingSlots}, ${l.furnishing ?? null}, 'DRAFT'
+          ${l.availableFrom}, ${l.saleStatus}, ${l.lotAreaSqm}, ${l.parkingSlots}, ${l.furnishing ?? null}, 'DRAFT',
+          ${input.possibleDuplicateOf}
         )
         returning id
       `;

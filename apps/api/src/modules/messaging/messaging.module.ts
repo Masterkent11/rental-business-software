@@ -22,8 +22,11 @@ import {
   INQUIRY_REPOSITORY,
   MESSAGING_REPOSITORY,
   NOTIFICATION_REPOSITORY,
+  SHARED_LISTING_REPOSITORY,
+  LEAD_ASSIGNMENT_REPOSITORY,
 } from '@/modules/shared/shared.tokens.ts';
 import type { InquiryRepository } from '@/application/ports/repositories/inquiry-repository.port.ts';
+import type { LeadAssignmentRepository } from '@/application/ports/repositories/lead-assignment-repository.port.ts';
 import { listAgentConversations } from '@/application/messaging/list-agent-conversations/list-agent-conversations.use-case.ts';
 import { startConversation } from '@/application/messaging/start-conversation/start-conversation.use-case.ts';
 import { listMyConversations } from '@/application/messaging/list-my-conversations/list-my-conversations.use-case.ts';
@@ -44,16 +47,22 @@ import {
   markOrganizationConversationRead,
 } from '@/application/messaging/mark-conversation-read/mark-conversation-read.use-case.ts';
 import type { MessagingRepository } from '@/application/ports/repositories/messaging-repository.port.ts';
+import type { ListingRepository } from '@/application/ports/repositories/listing-repository.port.ts';
+import type { assignLead } from '@/application/assignment/assign-lead/assign-lead.use-case.ts';
+import { AssignmentModule } from '@/modules/assignment/assignment.module.ts';
+import { ASSIGN_LEAD } from '@/modules/assignment/assignment.tokens.ts';
 import type { NotificationRepository } from '@/application/ports/repositories/notification-repository.port.ts';
 import type { Clock } from '@/application/ports/providers/clock.port.ts';
 
 @Module({
+  imports: [AssignmentModule],
   controllers: [CustomerConversationsController, OrganizationConversationsController, AgentConversationsController],
   providers: [
     {
       provide: START_CONVERSATION,
-      inject: [MESSAGING_REPOSITORY],
-      useFactory: (repo: MessagingRepository) => startConversation(repo),
+      inject: [MESSAGING_REPOSITORY, SHARED_LISTING_REPOSITORY, ASSIGN_LEAD],
+      useFactory: (repo: MessagingRepository, listings: ListingRepository, assign: ReturnType<typeof assignLead>) =>
+        startConversation(repo, listings, assign),
     },
     {
       provide: LIST_MY_CONVERSATIONS,
@@ -89,9 +98,14 @@ import type { Clock } from '@/application/ports/providers/clock.port.ts';
     },
     {
       provide: SEND_AGENT_MESSAGE,
-      inject: [MESSAGING_REPOSITORY, NOTIFICATION_REPOSITORY, CLOCK, INQUIRY_REPOSITORY],
-      useFactory: (repo: MessagingRepository, notifications: NotificationRepository, clock: Clock, inquiries: InquiryRepository) =>
-        sendAgentMessage(repo, notifications, clock, inquiries),
+      inject: [MESSAGING_REPOSITORY, NOTIFICATION_REPOSITORY, CLOCK, LEAD_ASSIGNMENT_REPOSITORY, INQUIRY_REPOSITORY],
+      useFactory: (
+        repo: MessagingRepository,
+        notifications: NotificationRepository,
+        clock: Clock,
+        assignments: LeadAssignmentRepository,
+        inquiries: InquiryRepository,
+      ) => sendAgentMessage(repo, notifications, clock, assignments, inquiries),
     },
     {
       provide: LIST_AGENT_CONVERSATIONS,

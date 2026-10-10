@@ -13,21 +13,25 @@ import {
 } from '@nestjs/common';
 import { z } from 'zod';
 import {
+  DECIDE_REPRESENTATION_REQUEST,
   END_REPRESENTATION,
   GET_ORGANIZATION_ANALYTICS,
   INVITE_AGENT,
   LIST_ORGANIZATION_REPRESENTATIONS,
   SEARCH_ASSIGNABLE_AGENTS,
   UPDATE_REPRESENTATION_PERMISSIONS,
+  UPDATE_REPRESENTATION_TERMS,
 } from '@/modules/agents/agent.tokens.ts';
 import { RESOLVE_PRINCIPAL } from '@/modules/me/me.tokens.ts';
 import type { resolvePrincipal } from '@/application/identity/resolve-principal/resolve-principal.use-case.ts';
 import type { searchAssignableAgents } from '@/application/agents/search-agents/search-agents.use-case.ts';
 import type {
+  decideRepresentationRequest,
   endRepresentation,
   inviteAgentToListing,
   listOrganizationRepresentations,
   updateRepresentationPermissions,
+  updateRepresentationTerms,
 } from '@/application/agents/manage-representation/manage-representation.use-case.ts';
 import type { getOrganizationAnalytics } from '@/application/agents/partner-analytics/partner-analytics.use-case.ts';
 import {
@@ -35,6 +39,8 @@ import {
   endRepresentationSchema,
   inviteAgentSchema,
   permissionsSchema,
+  respondSchema,
+  termsSchema,
 } from '@/modules/agents/dto/agent.dto.ts';
 import {
   toAnalyticsHttpResponse,
@@ -64,6 +70,16 @@ const definedPermissions = (value: { canEditListing?: boolean | undefined; canMa
     canViewCommercial?: boolean;
   };
 
+type TermsInput = { readonly [K in keyof z.infer<typeof termsSchema>]?: z.infer<typeof termsSchema>[K] | undefined };
+
+const termsFrom = (value: TermsInput) => ({
+  ...(value.representationType !== undefined ? { representationType: value.representationType } : {}),
+  ...(value.isPrimary !== undefined ? { isPrimary: value.isPrimary } : {}),
+  ...(value.acceptsLeads !== undefined ? { acceptsLeads: value.acceptsLeads } : {}),
+  ...(value.validFrom !== undefined ? { validFrom: value.validFrom ? new Date(value.validFrom) : null } : {}),
+  ...(value.validUntil !== undefined ? { validUntil: value.validUntil ? new Date(value.validUntil) : null } : {}),
+});
+
 @Controller('organizations/:organizationId')
 export class OrganizationAgentsController {
   constructor(
@@ -71,6 +87,8 @@ export class OrganizationAgentsController {
     @Inject(INVITE_AGENT) private readonly invite: ReturnType<typeof inviteAgentToListing>,
     @Inject(END_REPRESENTATION) private readonly end: ReturnType<typeof endRepresentation>,
     @Inject(UPDATE_REPRESENTATION_PERMISSIONS) private readonly updatePermissions: ReturnType<typeof updateRepresentationPermissions>,
+    @Inject(UPDATE_REPRESENTATION_TERMS) private readonly updateTerms: ReturnType<typeof updateRepresentationTerms>,
+    @Inject(DECIDE_REPRESENTATION_REQUEST) private readonly decide: ReturnType<typeof decideRepresentationRequest>,
     @Inject(LIST_ORGANIZATION_REPRESENTATIONS) private readonly listRepresentations: ReturnType<typeof listOrganizationRepresentations>,
     @Inject(GET_ORGANIZATION_ANALYTICS) private readonly analytics: ReturnType<typeof getOrganizationAnalytics>,
     @Inject(RESOLVE_PRINCIPAL) private readonly resolve: ReturnType<typeof resolvePrincipal>,
@@ -111,6 +129,7 @@ export class OrganizationAgentsController {
         listingId: guid(listingId, 'listing'),
         agentId: input.agentId,
         permissions: definedPermissions(input.permissions),
+        terms: termsFrom(input.terms),
       }),
     );
   }
@@ -141,6 +160,46 @@ export class OrganizationAgentsController {
     const principal = await this.principal(organizationId, auth);
     return toRepresentationHttpResponse(
       await this.updatePermissions({ principal, organizationId, representationId: guid(id, 'representation'), permissions: input }),
+    );
+  }
+
+  @Put('representations/:id/terms')
+  async terms(
+    @Param('organizationId') organizationId: string,
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Headers('authorization') auth?: string,
+  ) {
+    const input = parse(termsSchema, body);
+    const principal = await this.principal(organizationId, auth);
+    return toRepresentationHttpResponse(
+      await this.updateTerms({
+        principal,
+        organizationId,
+        representationId: guid(id, 'representation'),
+        terms: {
+          representationType: input.representationType,
+          isPrimary: input.isPrimary,
+          acceptsLeads: input.acceptsLeads,
+          validFrom: input.validFrom ? new Date(input.validFrom) : null,
+          validUntil: input.validUntil ? new Date(input.validUntil) : null,
+        },
+      }),
+    );
+  }
+
+  @Post('representations/:id/decision')
+  @HttpCode(200)
+  async decision(
+    @Param('organizationId') organizationId: string,
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Headers('authorization') auth?: string,
+  ) {
+    const input = parse(respondSchema, body);
+    const principal = await this.principal(organizationId, auth);
+    return toRepresentationHttpResponse(
+      await this.decide({ principal, organizationId, representationId: guid(id, 'representation'), accept: input.accept }),
     );
   }
 

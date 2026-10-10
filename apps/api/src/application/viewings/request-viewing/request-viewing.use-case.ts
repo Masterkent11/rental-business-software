@@ -1,93 +1,147 @@
 import type { AgentRepository } from '@/application/ports/repositories/agent-repository.port.ts';
 import type { InquiryRepository } from '@/application/ports/repositories/inquiry-repository.port.ts';
 import type { ListingRepository } from '@/application/ports/repositories/listing-repository.port.ts';
-import type { MessagingRepository } from '@/application/ports/repositories/messaging-repository.port.ts';
 import type { NotificationRepository } from '@/application/ports/repositories/notification-repository.port.ts';
-import type { ViewingRepository } from '@/application/ports/repositories/viewing-repository.port.ts';
+import type { ViewingAssignmentInput, ViewingRepository } from '@/application/ports/repositories/viewing-repository.port.ts';
 import type { Clock } from '@/application/ports/providers/clock.port.ts';
+import type { LeadAssignmentSettings } from '@/application/assignment/assignment.types.ts';
+import type { CustomerViewingView } from '@/application/viewings/viewing.types.ts';
+import type { reassignLead } from '@/application/assignment/reassign-lead/reassign-lead.use-case.ts';
+import { assignableListing } from '@/application/assignment/assignable-listing.rules.ts';
+import {
+  newAssignmentFrom,
+  type resolveLeadAssignment,
+} from '@/application/assignment/resolve-lead-assignment/resolve-lead-assignment.use-case.ts';
+import { customerViewingView } from '@/application/viewings/customer-viewing-view.rules.ts';
+import { agentViewingNotice, organizationViewingNotice } from '@/application/viewings/viewing-notifications.rules.ts';
 import { ListingNotFoundError } from '@/domain/listings/listing.ts';
 import { InquiryNotAllowedError } from '@/domain/inquiries/inquiry.ts';
 import {
   VIEWING_DURATION_MINUTES,
-  assertBookableSlot,
-  formatViewingTime,
+  VIEWING_TIME_ZONE,
+  assertPreferredSchedule,
+  describePreferredSchedule,
   normaliseViewingNote,
-  type Viewing,
 } from '@/domain/viewings/viewing.ts';
+import type { PreferredTimeWindow } from '@/domain/assignment/lead-assignment.ts';
 import { previewOf } from '@/domain/messaging/conversation.ts';
 import { PUBLIC } from '@/domain/shared/organization-scope.ts';
 import type { NewNotification } from '@/domain/notifications/notification.ts';
 import type { Principal } from '@/domain/identity/identity.ts';
 
+export interface ViewingRequestResult extends CustomerViewingView {
+  readonly created: boolean;
+}
+
 export const requestViewing =
-  (
-    viewings: ViewingRepository,
-    listings: ListingRepository,
-    inquiries: InquiryRepository,
-    messaging: MessagingRepository,
-    agents: AgentRepository,
-    notifications: NotificationRepository,
-    clock: Clock,
-  ) =>
+  (deps: {
+    readonly viewings: ViewingRepository;
+    readonly listings: ListingRepository;
+    readonly inquiries: InquiryRepository;
+    readonly agents: AgentRepository;
+    readonly notifications: NotificationRepository;
+    readonly resolve: ReturnType<typeof resolveLeadAssignment>;
+    readonly reassign: ReturnType<typeof reassignLead>;
+    readonly clock: Clock;
+    readonly settings: LeadAssignmentSettings;
+  }) =>
   async (input: {
     readonly principal: Principal;
     readonly listingId: string;
-    readonly scheduledAt: Date;
+    readonly preferredDate: string;
+    readonly preferredWindow: PreferredTimeWindow;
     readonly note: string | null;
     readonly clientRef: string;
-  }): Promise<{ readonly viewing: Viewing; readonly created: boolean }> => {
-    const listing = await listings.findPublicById(PUBLIC, input.listingId);
-    if (!listing || listing.state !== 'PUBLISHED') throw new ListingNotFoundError('That property is no longer listed');
-    if (listing.intent !== 'SALE') throw new InquiryNotAllowedError('Viewings are scheduled for properties for sale');
-    assertBookableSlot(input.scheduledAt, clock.now());
-    const note = normaliseViewingNote(input.note);
-    const [agentId, openInquiry] = await Promise.all([
-      messaging.activeAgentForListing(listing.id),
-      inquiries.openForCustomerListing(input.principal.userId, listing.id),
-    ]);
-    const when = formatViewingTime(input.scheduledAt);
-    const requestMessage = note
-      ? `I'd like to view this property on ${when}.\n\n${note}`
-      : `I'd like to view this property on ${when}.`;
+    readonly referralCode: string | null;
+  }): Promise<ViewingRequestResult> => {
+    const customerId = input.principal.userId;
+    const replay = await deps.viewings.findByClientRef(customerId, input.clientRef);
+    if (replay) return { ...(await customerViewingView(replay, deps.agents)), created: false };
 
-    const result = await viewings.submit({
+    const found = await deps.listings.findPublicById(PUBLIC, input.listingId);
+    if (!found || found.state !== 'PUBLISHED') throw new ListingNotFoundError('That property is no longer listed');
+    if (found.intent !== 'SALE') throw new InquiryNotAllowedError('Viewings are requested for properties for sale');
+
+    const now = deps.clock.now();
+    assertPreferredSchedule(input.preferredDate, input.preferredWindow, now);
+    const note = normaliseViewingNote(input.note);
+
+    const active = await deps.viewings.activeForCustomerListing(customerId, found.id);
+    if (active) return { ...(await customerViewingView(active, deps.agents)), created: false };
+
+    const listing = assignableListing(found);
+    const schedule = { date: input.preferredDate, window: input.preferredWindow };
+    const { decision, existing } = await deps.resolve({
+      listing,
+      customerId,
+      purpose: 'VIEWING',
+      schedule,
+      referralCode: input.referralCode,
+    });
+
+    let assignment: ViewingAssignmentInput = { kind: 'NONE' };
+    if (existing && decision.kind === 'ASSIGNED' && decision.continued) {
+      assignment = { kind: 'EXISTING', assignmentId: existing.id };
+    } else if (existing) {
+      const next = await deps.reassign({
+        organizationId: listing.organizationId,
+        assignment: existing,
+        releaseReason: 'AGENT_UNAVAILABLE',
+        listing,
+        schedule,
+        viewingStatusWithoutAgent: 'MATCHING',
+      });
+      if (next) assignment = { kind: 'EXISTING', assignmentId: next.id };
+    } else if (decision.kind === 'ASSIGNED') {
+      assignment = {
+        kind: 'NEW',
+        assignment: newAssignmentFrom(decision, {
+          listing,
+          customerId,
+          purpose: 'VIEWING',
+          previousAssignmentId: null,
+          settings: deps.settings,
+          now,
+        }),
+      };
+    }
+
+    const openInquiry = await deps.inquiries.openForCustomerListing(customerId, found.id);
+    const when = describePreferredSchedule(input.preferredDate, input.preferredWindow);
+    const requestMessage = note
+      ? `I'd like to view this property. Preferred schedule: ${when}.\n\n${note}`
+      : `I'd like to view this property. Preferred schedule: ${when}.`;
+
+    const result = await deps.viewings.submitRequest({
       organizationId: listing.organizationId,
       listingId: listing.id,
-      customerId: input.principal.userId,
-      agentId,
+      customerId,
       inquiryId: openInquiry?.id ?? null,
-      scheduledAt: input.scheduledAt,
+      preferredDate: input.preferredDate,
+      preferredWindow: input.preferredWindow,
+      timeZone: VIEWING_TIME_ZONE,
       durationMinutes: VIEWING_DURATION_MINUTES,
       customerNote: note,
       clientRef: input.clientRef,
+      assignment,
       requestMessage,
       requestPreview: previewOf(requestMessage),
     });
 
     if (result.created) {
-      const customer = input.principal.displayName || 'A buyer';
+      const viewing = result.viewing;
       const outgoing: NewNotification[] = [
-        {
-          audience: { organizationId: listing.organizationId },
-          kind: 'VIEWING_REQUESTED',
-          title: `${customer} requested a viewing`,
-          body: `${listing.title} · ${when}`,
-          link: `/viewings?v=${result.viewing.id}`,
-        },
+        organizationViewingNotice(viewing, `${viewing.customerName} requested a viewing`),
       ];
-      if (agentId) {
-        const agent = await agents.findPublic(agentId);
+      if (viewing.agentId) {
+        const agent = await deps.agents.findAssigned(customerId, viewing.agentId);
         if (agent) {
-          outgoing.push({
-            audience: { userId: agent.userId },
-            kind: 'VIEWING_REQUESTED',
-            title: `${customer} requested a viewing`,
-            body: `${listing.title} · ${when}`,
-            link: `/agent/viewings?v=${result.viewing.id}`,
-          });
+          outgoing.push(
+            agentViewingNotice(viewing, agent.userId, 'VIEWING_REQUESTED', `New viewing request from ${viewing.customerName}`),
+          );
         }
       }
-      await notifications.publish(outgoing);
+      await deps.notifications.publish(outgoing);
     }
-    return result;
+    return { ...(await customerViewingView(result.viewing, deps.agents)), created: result.created };
   };

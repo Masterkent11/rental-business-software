@@ -1,6 +1,7 @@
 import type {
   Representation,
   RepresentationPermissions,
+  RepresentationTerms,
 } from '@/domain/agents/agent.ts';
 
 export interface RepresentationRepository {
@@ -9,9 +10,18 @@ export interface RepresentationRepository {
     readonly listingId: string;
     readonly agentId: string;
     readonly permissions: RepresentationPermissions;
+    readonly terms: RepresentationTerms;
     readonly invitedBy: string;
   }): Promise<Representation>;
-  currentForListing(organizationId: string, listingId: string): Promise<Representation | null>;
+  requestByAgent(input: {
+    readonly agentUserId: string;
+    readonly agentId: string;
+    readonly organizationId: string;
+    readonly listingId: string;
+    readonly permissions: RepresentationPermissions;
+    readonly terms: RepresentationTerms;
+  }): Promise<Representation>;
+  listForListing(organizationId: string, listingId: string): Promise<readonly Representation[]>;
   listForOrganization(organizationId: string): Promise<readonly Representation[]>;
   findForOrganization(organizationId: string, id: string): Promise<Representation | null>;
   listForAgent(agentUserId: string): Promise<readonly Representation[]>;
@@ -20,7 +30,7 @@ export interface RepresentationRepository {
   currentForAgentTour(agentUserId: string, tourId: string): Promise<Representation | null>;
   currentForAgentResource(agentUserId: string, resourceId: string): Promise<Representation | null>;
   respond(input: {
-    readonly agentUserId: string;
+    readonly responderUserId: string;
     readonly representation: Representation;
     readonly accept: boolean;
   }): Promise<Representation>;
@@ -34,4 +44,5 @@ export interface RepresentationRepository {
     id: string,
     permissions: RepresentationPermissions,
   ): Promise<Representation | null>;
+  updateTerms(organizationId: string, id: string, terms: RepresentationTerms): Promise<Representation | null>;
 }

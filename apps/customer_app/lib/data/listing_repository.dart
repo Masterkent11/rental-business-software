@@ -257,7 +257,6 @@ class ListingRepository {
       parkingSlots: (json['parkingSlots'] as num?)?.toInt() ?? 0,
       distanceKm: (json['distanceKm'] as num?)?.toDouble(),
       location: _point(json['location']),
-      representative: _representative(json['representative']),
       tourProvider: json['tourProvider'] as String?,
       furnishing: json['furnishing'] as String?,
       petsAllowed: json['intent'] == 'SALE' ? null : json['petsAllowed'] as bool?,
@@ -276,19 +275,6 @@ class ListingRepository {
     );
   }
 
-  static RepresentativeView? _representative(Object? raw) {
-    if (raw is! Map<String, dynamic>) return null;
-    final agentId = raw['agentId'] as String?;
-    if (agentId == null) return null;
-    final photo = raw['photoUrl'] as String?;
-    return RepresentativeView(
-      agentId: agentId,
-      displayName: raw['displayName'] as String? ?? 'Agent',
-      headline: raw['headline'] as String? ?? '',
-      photoUrl: photo != null && photo.startsWith('http') ? photo : null,
-      verified: raw['verified'] as bool? ?? false,
-    );
-  }
 }
 
 final savedListingsProvider = FutureProvider<List<ListingCardView>>((ref) async {

@@ -23,8 +23,8 @@ abstract final class EditorialContent {
     ),
     EditorialCard(
       id: 'home-agents',
-      title: 'Buying a home?\nTalk to an agent',
-      body: 'Message the agent on any property for sale.',
+      title: 'Buying a home?\nSee it in person',
+      body: 'Request a viewing and we match you with an available specialist.',
       actionLabel: 'Homes for sale',
       image: ListingCategory.house.image,
       action: EditorialAction.homesForSale,

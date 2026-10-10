@@ -1,13 +1,39 @@
+import type { PreferredTimeWindow } from '@/domain/assignment/lead-assignment.ts';
+
 export * from './viewing-rules.ts';
 export * from './viewing-errors.ts';
 
-export type ViewingStatus = 'REQUESTED' | 'CONFIRMED' | 'RESCHEDULE_REQUESTED' | 'COMPLETED' | 'CANCELLED';
+export type ViewingStatus =
+  | 'MATCHING'
+  | 'REQUESTED'
+  | 'CONFIRMED'
+  | 'RESCHEDULE_REQUESTED'
+  | 'DECLINED'
+  | 'COMPLETED'
+  | 'CANCELLED';
 
-export const ACTIVE_VIEWING_STATUSES: readonly ViewingStatus[] = ['REQUESTED', 'CONFIRMED', 'RESCHEDULE_REQUESTED'];
+export const VIEWING_STATUSES: readonly ViewingStatus[] = [
+  'MATCHING',
+  'REQUESTED',
+  'CONFIRMED',
+  'RESCHEDULE_REQUESTED',
+  'DECLINED',
+  'COMPLETED',
+  'CANCELLED',
+];
+
+export const ACTIVE_VIEWING_STATUSES: readonly ViewingStatus[] = ['MATCHING', 'REQUESTED', 'CONFIRMED', 'RESCHEDULE_REQUESTED'];
 
 export type ViewingActor = 'CUSTOMER' | 'OWNER' | 'AGENT';
 
-export type ViewingAction = 'CONFIRM' | 'REQUEST_RESCHEDULE' | 'RESCHEDULE' | 'CANCEL' | 'COMPLETE';
+export type ViewingAction =
+  | 'CONFIRM'
+  | 'REQUEST_RESCHEDULE'
+  | 'DECLINE'
+  | 'RESCHEDULE'
+  | 'ACCEPT_SUGGESTION'
+  | 'CANCEL'
+  | 'COMPLETE';
 
 export interface Viewing {
   readonly id: string;
@@ -24,24 +50,23 @@ export interface Viewing {
   readonly agentName: string | null;
   readonly inquiryId: string | null;
   readonly conversationId: string;
-  readonly scheduledAt: Date;
+  readonly leadAssignmentId: string | null;
+  readonly representationId: string | null;
+  readonly preferredDate: string | null;
+  readonly preferredWindow: PreferredTimeWindow | null;
+  readonly timeZone: string;
+  readonly scheduledAt: Date | null;
   readonly durationMinutes: number;
   readonly status: ViewingStatus;
   readonly customerNote: string;
   readonly partnerNote: string;
+  readonly agentChangeNotice: string | null;
   readonly createdAt: Date;
   readonly updatedAt: Date;
   readonly confirmedAt: Date | null;
+  readonly declinedAt: Date | null;
   readonly cancelledAt: Date | null;
   readonly cancelledByRole: ViewingActor | null;
-}
-
-export interface ViewingSlot {
-  readonly startsAt: Date;
-  readonly available: boolean;
-}
-
-export interface ViewingDay {
-  readonly date: string;
-  readonly slots: readonly ViewingSlot[];
+  readonly assignedAt: Date | null;
+  readonly responseDueAt: Date | null;
 }

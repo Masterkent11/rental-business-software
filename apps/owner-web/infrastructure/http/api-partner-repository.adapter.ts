@@ -1,4 +1,4 @@
-import type { PartnerRepositoryPort, PartnerThreadPage } from "../../application/ports/partner-repository.port";
+import type { PartnerRepositoryPort, PartnerThreadPage, ViewingCommand } from "../../application/ports/partner-repository.port";
 import type { PartnerScope } from "../../domain/workspace/workspace";
 import type {
   AgentPermissions,
@@ -10,7 +10,7 @@ import type {
   UpdateSaleListingInput,
 } from "../../domain/listings/listing";
 import type { Inquiry, InquiryStatus } from "../../domain/inquiries/inquiry";
-import type { PartnerViewingAction, Viewing } from "../../domain/viewings/viewing";
+import type { Viewing } from "../../domain/viewings/viewing";
 import type { Conversation, Message } from "../../domain/messaging/conversation";
 import type { AppNotification } from "../../domain/notifications/notification";
 import type { AgentProfile, AgentProfileForm, PublicAgent, Representation } from "../../domain/agents/agent";
@@ -150,8 +150,14 @@ export class ApiPartnerRepositoryAdapter implements PartnerRepositoryPort {
     return (res.items ?? []).map((item) => ViewingDtoSchema.parse(item));
   }
 
-  async viewingAction(scope: PartnerScope, viewingId: string, action: PartnerViewingAction, note: string | null): Promise<Viewing> {
-    return ViewingDtoSchema.parse(await this.send(scope, `${base(scope)}/viewings/${id(viewingId)}/action`, "POST", { action, note }));
+  async viewingAction(scope: PartnerScope, viewingId: string, command: ViewingCommand): Promise<Viewing> {
+    return ViewingDtoSchema.parse(
+      await this.send(scope, `${base(scope)}/viewings/${id(viewingId)}/action`, "POST", {
+        action: command.action,
+        scheduledAt: command.scheduledAt,
+        note: command.note,
+      }),
+    );
   }
 
   async getConversations(scope: PartnerScope): Promise<{ conversations: readonly Conversation[]; unreadTotal: number }> {

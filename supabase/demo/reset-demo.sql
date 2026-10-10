@@ -11,7 +11,9 @@ select unnest(array[
   'd0000000-0000-4000-8000-0000000000a1',
   'd0000000-0000-4000-8000-0000000000c1',
   'd0000000-0000-4000-8000-0000000000e1',
-  'd0000000-0000-4000-8000-0000000000b1'
+  'd0000000-0000-4000-8000-0000000000b1',
+  'd0000000-0000-4000-8000-0000000000b3',
+  'd0000000-0000-4000-8000-0000000000b5'
 ]::uuid[]) as id;
 
 create temporary table seeded_resources on commit drop as
@@ -69,6 +71,20 @@ delete from viewings
  where organization_id in (select id from demo_org)
     or customer_id in (select id from demo_users);
 
+delete from lead_referrals
+ where listing_id in (select id from listings where organization_id in (select id from demo_org))
+    or customer_id in (select id from demo_users);
+
+delete from agent_referral_codes
+ where listing_id in (select id from listings where organization_id in (select id from demo_org))
+    or agent_id in (select a.id from agent_profiles a where a.user_id in (select id from demo_users));
+
+delete from listing_change_proposals where organization_id in (select id from demo_org);
+
+delete from lead_assignments
+ where organization_id in (select id from demo_org)
+    or customer_id in (select id from demo_users);
+
 delete from inquiries
  where organization_id in (select id from demo_org)
     or customer_id in (select id from demo_users);
@@ -107,11 +123,19 @@ delete from listing_representations
 delete from user_capabilities
  where capability = 'AGENT'
    and user_id in (select id from demo_users)
-   and user_id <> 'd0000000-0000-4000-8000-0000000000b1';
+   and user_id not in (
+     'd0000000-0000-4000-8000-0000000000b1',
+     'd0000000-0000-4000-8000-0000000000b3',
+     'd0000000-0000-4000-8000-0000000000b5'
+   );
 
 delete from agent_profiles
  where user_id in (select id from demo_users)
-   and user_id <> 'd0000000-0000-4000-8000-0000000000b1';
+   and user_id not in (
+     'd0000000-0000-4000-8000-0000000000b1',
+     'd0000000-0000-4000-8000-0000000000b3',
+     'd0000000-0000-4000-8000-0000000000b5'
+   );
 
 delete from listing_sale_terms
  where organization_id in (select id from demo_org)
@@ -162,6 +186,8 @@ update user_profiles
          when 'd0000000-0000-4000-8000-0000000000c1' then 'Carlo Mendoza'
          when 'd0000000-0000-4000-8000-0000000000e1' then 'Bea Santos'
          when 'd0000000-0000-4000-8000-0000000000b1' then 'Maria Santos'
+         when 'd0000000-0000-4000-8000-0000000000b3' then 'John Reyes'
+         when 'd0000000-0000-4000-8000-0000000000b5' then 'Lea Villanueva'
        end
  where id in (select id from demo_users);
 
