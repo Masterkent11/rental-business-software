@@ -39,6 +39,14 @@ flutter:
     - assets/images/categories/
     - assets/icons/categories/
     - assets/raw-file-property-inquire/westayplace-viewing-assets/icons/svg/
+    - assets/raw-file-home-page-icon/assets/westayplace/animations/
+    - assets/raw-file-home-page-icon/assets/westayplace/backgrounds/
+    - assets/raw-file-home-page-icon/assets/westayplace/effects/
+    - assets/raw-file-home-page-icon/assets/westayplace/header/png/
+    - assets/raw-file-home-page-icon/assets/westayplace/header/svg/
+    - assets/raw-file-home-page-icon/assets/westayplace/navigation/png/
+    - assets/raw-file-home-page-icon/assets/westayplace/navigation/svg/
+    - assets/raw-file-home-page-icon/assets/westayplace/viewing/
 
   shaders:
     - shaders/panorama.frag

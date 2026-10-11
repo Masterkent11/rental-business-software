@@ -343,7 +343,7 @@ bool _noBookings = false;
 
 Finder get _page => find.byType(Scrollable).first;
 
-const _headline = 'Find your\nnext place';
+const _headline = 'Live closer to\nwhat matters';
 
 Future<void> _openRentals(WidgetTester tester) async {
   final seeAll = find.text('See all').first;

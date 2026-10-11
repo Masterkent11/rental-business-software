@@ -57,6 +57,45 @@ void main() {
       );
     });
 
+    test('a debug build in development environment allows local HTTP', () {
+      expect(
+        AppBootstrap.configurationProblem(
+          release: false,
+          apiBaseUrl: 'http://192.168.1.5:8080',
+          supabaseUrl: 'https://x.supabase.co',
+          supabasePublishableKey: 'sb_publishable_x',
+          appEnv: 'development',
+        ),
+        isNull,
+      );
+    });
+
+    test('a debug build in production environment rejects HTTP', () {
+      expect(
+        AppBootstrap.configurationProblem(
+          release: false,
+          apiBaseUrl: 'http://192.168.1.5:8080',
+          supabaseUrl: 'https://x.supabase.co',
+          supabasePublishableKey: 'sb_publishable_x',
+          appEnv: 'production',
+        ),
+        contains('HTTPS'),
+      );
+    });
+
+    test('a release build rejects HTTP even with development environment', () {
+      expect(
+        AppBootstrap.configurationProblem(
+          release: true,
+          apiBaseUrl: 'http://192.168.1.5:8080',
+          supabaseUrl: 'https://x.supabase.co',
+          supabasePublishableKey: 'sb_publishable_x',
+          appEnv: 'development',
+        ),
+        contains('HTTPS'),
+      );
+    });
+
     test('a secret key is never accepted in the app', () {
       expect(
         AppBootstrap.configurationProblem(

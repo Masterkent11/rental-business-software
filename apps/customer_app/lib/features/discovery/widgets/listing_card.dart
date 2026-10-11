@@ -6,6 +6,7 @@ import '../../../design/money.dart';
 import '../../../design/motion.dart';
 import '../../../design/tokens.dart';
 import '../../../design/typography.dart';
+import '../../../design/virtual_tour_action.dart';
 import '../../../fixtures/view_models.dart';
 import '../../listing/widgets/listing_attributes.dart';
 import '../../saved/saved_controller.dart';
@@ -70,10 +71,14 @@ class ListingCard extends ConsumerWidget {
                       ),
                     ),
                     if (listing.hasTour)
-                      const Positioned(
+                      Positioned(
                         left: Tokens.s12,
                         bottom: Tokens.s12,
-                        child: _PhotoBadge(label: '360° tour', icon: Icons.threed_rotation, dark: true),
+                        child: VirtualTourAction(
+                          title: '360°\u200b Tour',
+                          variant: VirtualTourActionVariant.dark,
+                          onTap: onTap,
+                        ),
                       ),
                     if (listing.photos.length > 1)
                       Positioned(
@@ -215,10 +220,9 @@ class _Tag extends StatelessWidget {
 }
 
 class _PhotoBadge extends StatelessWidget {
-  const _PhotoBadge({required this.label, this.icon, this.dark = false});
+  const _PhotoBadge({required this.label, this.dark = false});
 
   final String label;
-  final IconData? icon;
   final bool dark;
 
   @override
@@ -230,13 +234,7 @@ class _PhotoBadge extends StatelessWidget {
         color: dark ? Colors.black.withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.94),
         borderRadius: BorderRadius.circular(Tokens.rSm),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[Icon(icon, size: 14, color: foreground), const SizedBox(width: Tokens.s4)],
-          Text(label, style: AppText.caption.copyWith(color: foreground, fontWeight: FontWeight.w700, fontSize: 12)),
-        ],
-      ),
+      child: Text(label, style: AppText.caption.copyWith(color: foreground, fontWeight: FontWeight.w700, fontSize: 12)),
     );
   }
 }

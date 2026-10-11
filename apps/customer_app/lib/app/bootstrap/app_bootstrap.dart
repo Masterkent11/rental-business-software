@@ -21,6 +21,7 @@ class AppBootstrap {
     String? supabaseUrl,
     String? supabasePublishableKey,
     String? apiBaseUrl,
+    String? appEnv,
     bool? release,
     Future<void> Function({
       required String url,
@@ -30,17 +31,20 @@ class AppBootstrap {
   })  : _supabaseUrl = supabaseUrl ?? defaultSupabaseUrl,
         _supabasePublishableKey = supabasePublishableKey ?? defaultSupabasePublishableKey,
         _apiBaseUrl = apiBaseUrl ?? configuredApiBaseUrl,
-        _release = release ?? kReleaseMode,
+        _appEnv = appEnv ?? configuredAppEnv,
+        _release = release ?? (kReleaseMode || kProfileMode),
         _initializeSupabase = initializeSupabase ?? _defaultInitSupabase,
         _onStateChanged = onStateChanged;
 
   static const configuredApiBaseUrl = String.fromEnvironment('API_BASE_URL');
+  static const configuredAppEnv = String.fromEnvironment('APP_ENV');
 
   static String? configurationProblem({
     required bool release,
     required String apiBaseUrl,
     required String supabaseUrl,
     required String supabasePublishableKey,
+    String? appEnv,
   }) {
     if (supabaseUrl.isEmpty || supabasePublishableKey.isEmpty) {
       return 'This build is missing its Supabase settings.';
@@ -48,7 +52,10 @@ class AppBootstrap {
     if (supabasePublishableKey.startsWith('sb_secret_') || supabasePublishableKey.contains('service_role')) {
       return 'This build was given a secret key. Only the publishable key may ship in the app.';
     }
-    if (!release) return null;
+    final normalizedEnv = (appEnv ?? '').trim().toLowerCase();
+    final isProductionEnv = normalizedEnv == 'production' || normalizedEnv == 'prod';
+    final requiresHttps = release || isProductionEnv;
+    if (!requiresHttps) return null;
     if (apiBaseUrl.isEmpty) {
       return 'This build has no server address. Rebuild with --dart-define=API_BASE_URL=https://your-api.';
     }
@@ -71,6 +78,7 @@ class AppBootstrap {
   final String _supabaseUrl;
   final String _supabasePublishableKey;
   final String _apiBaseUrl;
+  final String _appEnv;
   final bool _release;
   final Future<void> Function({
     required String url,
@@ -115,11 +123,25 @@ class AppBootstrap {
 
     _setState(const AppBootstrapState.loading());
 
+    final resolvedEnv = _appEnv.isNotEmpty
+        ? _appEnv
+        : (_release ? 'production' : 'development');
+
+    if (kDebugMode) {
+      final uri = Uri.tryParse(_apiBaseUrl);
+      debugPrint('mode=debug');
+      debugPrint('env=$resolvedEnv');
+      debugPrint('apiScheme=${uri?.scheme ?? ""}');
+      debugPrint('apiHost=${uri?.host ?? ""}');
+      debugPrint('apiPort=${uri != null && uri.hasPort ? uri.port.toString() : ""}');
+    }
+
     final problem = configurationProblem(
       release: _release,
       apiBaseUrl: _apiBaseUrl,
       supabaseUrl: _supabaseUrl,
       supabasePublishableKey: _supabasePublishableKey,
+      appEnv: resolvedEnv,
     );
     if (problem != null) {
       _initFuture = null;

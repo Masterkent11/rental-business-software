@@ -235,10 +235,17 @@ class AppSegmentedControl<T> extends StatelessWidget {
 }
 
 class CategoryTile extends StatelessWidget {
-  const CategoryTile({required this.label, required this.icon, required this.onTap, super.key});
+  const CategoryTile({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    this.pngIcon,
+    super.key,
+  });
 
   final String label;
   final String icon;
+  final String? pngIcon;
   final VoidCallback onTap;
 
   @override
@@ -262,7 +269,23 @@ class CategoryTile extends StatelessWidget {
                 height: Tokens.categoryTileWidth,
                 radius: Tokens.rCard,
                 padding: const EdgeInsets.all(Tokens.s8),
-                child: SvgPicture.asset(icon, fit: BoxFit.contain, excludeFromSemantics: true),
+                blur: true,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      icon,
+                      fit: BoxFit.contain,
+                      excludeFromSemantics: true,
+                    ),
+                    if (pngIcon != null)
+                      Image.asset(
+                        pngIcon!,
+                        fit: BoxFit.contain,
+                        excludeFromSemantics: true,
+                      ),
+                  ],
+                ),
               ),
               const SizedBox(height: Tokens.s6),
               Text(

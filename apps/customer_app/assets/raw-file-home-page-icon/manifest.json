@@ -1,0 +1,345 @@
+{
+  "asset_count": 68,
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 4146,
+      "sha256": "7388bc307e7535432b1d0b279a7700a206e2107b2a19331233dbbb1c27b63c78"
+    },
+    {
+      "path": "assets/westayplace/animations/winter-snow.gif",
+      "bytes": 429869,
+      "sha256": "66853caf4a6b71b040633a29d1c33009926b00ca81e64d6348154a45e77fe9c1"
+    },
+    {
+      "path": "assets/westayplace/backgrounds/winter-header-960.png",
+      "bytes": 301460,
+      "sha256": "d1991c08f06bf567f902581cacd88d97e624c46bfba16918306beccee4fc9935"
+    },
+    {
+      "path": "assets/westayplace/backgrounds/winter-header.png",
+      "bytes": 1376029,
+      "sha256": "e9a31160c0f54591ec894f276c0ba50542a7a6676cd7a2aa4e8d9f4531c2791c"
+    },
+    {
+      "path": "assets/westayplace/backgrounds/winter-snow-still.png",
+      "bytes": 134579,
+      "sha256": "35a66aab12eeec8a05ed3ec751c72adce8bc2ce917735caf0957667b25fafed1"
+    },
+    {
+      "path": "assets/westayplace/categories/png/apartment-outline.png",
+      "bytes": 916,
+      "sha256": "42f3fb7f9676c9b6846fee0667121d07c2889c577bd365c75aa5c4e5c6ff75d8"
+    },
+    {
+      "path": "assets/westayplace/categories/png/apartment.png",
+      "bytes": 64458,
+      "sha256": "b7c1ff5c2dc54a94030aea57cab8332a95b04de73fe9c673b43186a80b809849"
+    },
+    {
+      "path": "assets/westayplace/categories/png/boarding-outline.png",
+      "bytes": 1255,
+      "sha256": "b9f017007bf7b4a2f1fa0854da9eef7bbc15a80d22eeace0fea430dda9672e18"
+    },
+    {
+      "path": "assets/westayplace/categories/png/boarding.png",
+      "bytes": 61103,
+      "sha256": "00e3d68e069ad21d3a6754fa85c465b5fd4f3ae6737f0aed2634c5de3871a845"
+    },
+    {
+      "path": "assets/westayplace/categories/png/condo-outline.png",
+      "bytes": 1051,
+      "sha256": "b03b1433ec64c58034f7abf8707194e1ccd653c0a80a2eefe2a4441a6a60d81b"
+    },
+    {
+      "path": "assets/westayplace/categories/png/condo.png",
+      "bytes": 57612,
+      "sha256": "0e06fdf19f8fdf58e66b70e97b74ea1e766e2f4c000b9e3fc8f8e0bc9bc88e49"
+    },
+    {
+      "path": "assets/westayplace/categories/png/house-outline.png",
+      "bytes": 1601,
+      "sha256": "9596c906b68992b6b07f26bad061b2a0edc32c614eee9c86f280a3b2912689d0"
+    },
+    {
+      "path": "assets/westayplace/categories/png/house.png",
+      "bytes": 58031,
+      "sha256": "e80937ce4d1a731c702f73573c219bf69f72928643eb9bd2b83aff82b66d521a"
+    },
+    {
+      "path": "assets/westayplace/categories/png/room-outline.png",
+      "bytes": 798,
+      "sha256": "5395cf78b022caf650a5a4a3e3cc356867ff1d1cadcdc6b3469400901fdffaa0"
+    },
+    {
+      "path": "assets/westayplace/categories/png/room.png",
+      "bytes": 50555,
+      "sha256": "e8ecc0770703611ba0f0dfae32b35bc7d3aa588750847578bec77c646dd45f68"
+    },
+    {
+      "path": "assets/westayplace/categories/svg/apartment.svg",
+      "bytes": 289,
+      "sha256": "e2171e662c8c81f0198735b933339a90608a1f6c9d3af1fd66da8677b48d7acc"
+    },
+    {
+      "path": "assets/westayplace/categories/svg/boarding.svg",
+      "bytes": 262,
+      "sha256": "74e1682ae44ea7c85f89161a67589562d0d816538c28dc9cf183f676977d022e"
+    },
+    {
+      "path": "assets/westayplace/categories/svg/condo.svg",
+      "bytes": 251,
+      "sha256": "994a5827ad75a7bbdbf6d5d10968b5e19e519390fa711536edc5fc202d24b287"
+    },
+    {
+      "path": "assets/westayplace/categories/svg/house.svg",
+      "bytes": 231,
+      "sha256": "089683434c819d57764735d208ad4f4221b82336fac9c9d351ef98191d125218"
+    },
+    {
+      "path": "assets/westayplace/categories/svg/room.svg",
+      "bytes": 242,
+      "sha256": "92f8cd662d5d28415370a9f96c73170c651e1974e051c3b3ddf9b546006e6529"
+    },
+    {
+      "path": "assets/westayplace/effects/frost-wind.png",
+      "bytes": 1732495,
+      "sha256": "1f4f51456d6909761be04902eefeb70b1b7f1eff50ec3d95dcf1f8ef3db2502b"
+    },
+    {
+      "path": "assets/westayplace/header/png/arrow-right.png",
+      "bytes": 824,
+      "sha256": "8613baaf16e11006c050181b8eaba50be097f660397ce63263113ee3fc8f861d"
+    },
+    {
+      "path": "assets/westayplace/header/png/ask-bino-white.png",
+      "bytes": 1770,
+      "sha256": "29bc33a197360106587fad0204763807250494d0937fcf22521ecb99033fa33b"
+    },
+    {
+      "path": "assets/westayplace/header/png/ask-bino.png",
+      "bytes": 2368,
+      "sha256": "af798bc1b5b2b44cfc9ba477fc63d7a3d564ce5bde70f2af656bc7e6be880dc0"
+    },
+    {
+      "path": "assets/westayplace/header/png/bell.png",
+      "bytes": 2487,
+      "sha256": "1ce3eaf85b807c4c277afea4686997cc419430f3c178df333303af624819ceff"
+    },
+    {
+      "path": "assets/westayplace/header/png/search.png",
+      "bytes": 2545,
+      "sha256": "2a1e31d3c009132b0fceb75a34a5ec8e5caa958710abcbdfee8e5673b0d7a107"
+    },
+    {
+      "path": "assets/westayplace/header/png/tour-360.png",
+      "bytes": 2736,
+      "sha256": "26731ceedd7f4ce1052e06d42138cd7ee36731d7ef2abd70d16887b337e1102f"
+    },
+    {
+      "path": "assets/westayplace/header/svg/arrow-right.svg",
+      "bytes": 217,
+      "sha256": "ee12de53eae5d2223dd6904f1451be86f9ed464f2ecf8a032ea17dafc1f32a59"
+    },
+    {
+      "path": "assets/westayplace/header/svg/ask-bino-white.svg",
+      "bytes": 362,
+      "sha256": "a9b8d71659e4c32f2b77bdbc18f66dc4875503f875929d07eae4a17c459d4e9d"
+    },
+    {
+      "path": "assets/westayplace/header/svg/ask-bino.svg",
+      "bytes": 378,
+      "sha256": "dfc8def2b18e05f75085c0196d71349df7a6f3851180726775d135e9f8123eb5"
+    },
+    {
+      "path": "assets/westayplace/header/svg/bell.svg",
+      "bytes": 254,
+      "sha256": "07f24b95fc8b78376ebe92b0b382c9cbe3175c33128aff4469e34c8152a1700d"
+    },
+    {
+      "path": "assets/westayplace/header/svg/search.svg",
+      "bytes": 243,
+      "sha256": "3c4068a25bec9fb4ff0c62f92b5becbca5a2fbb240785e2a8ba1de466b8d8353"
+    },
+    {
+      "path": "assets/westayplace/header/svg/tour-360.svg",
+      "bytes": 304,
+      "sha256": "6ca9d58f9a5fc306c36467f7893c77e8376fb6321e83ba92a5b34b7b5aef63b5"
+    },
+    {
+      "path": "assets/westayplace/navigation/png/bookings-active.png",
+      "bytes": 1618,
+      "sha256": "f44a4572f0ab70a07877b207d0714e97784251eead335a4a866fb8b4e03f8542"
+    },
+    {
+      "path": "assets/westayplace/navigation/png/bookings-inactive.png",
+      "bytes": 1600,
+      "sha256": "c60704e55f804dff1d03fdff8ee4bc611fa959ac08b68de0e5b149a7d8d60da2"
+    },
+    {
+      "path": "assets/westayplace/navigation/png/home-active.png",
+      "bytes": 1202,
+      "sha256": "a6ad87363b8f157d866f8805372b8ca5aa0786c4bc8639698b99943c56f48776"
+    },
+    {
+      "path": "assets/westayplace/navigation/png/home-inactive.png",
+      "bytes": 1566,
+      "sha256": "2b479422bf23e09d4d20e9a6f0d2cc3047afae986a814271b18330a9797ce11a"
+    },
+    {
+      "path": "assets/westayplace/navigation/png/messages-active.png",
+      "bytes": 724,
+      "sha256": "0763152515815f4e07e3e9308434a89cb62027af6f7d75c4b4eb1c7f342aa717"
+    },
+    {
+      "path": "assets/westayplace/navigation/png/messages-inactive.png",
+      "bytes": 921,
+      "sha256": "1ac13b93ea55c357476a97cda258f1d220e646cf018281d40caafbb61b7e694c"
+    },
+    {
+      "path": "assets/westayplace/navigation/png/profile-active.png",
+      "bytes": 1900,
+      "sha256": "11c7fe3e032781b980bc9a42a245a869ac5835c64109c936a7c69f058424ef83"
+    },
+    {
+      "path": "assets/westayplace/navigation/png/profile-inactive.png",
+      "bytes": 2785,
+      "sha256": "65500282623ce6cf463aa0d14bce91cf7de50432ff2726bae016cd5108c58580"
+    },
+    {
+      "path": "assets/westayplace/navigation/png/saved-active.png",
+      "bytes": 2254,
+      "sha256": "dbc7e7dcbc36f6ff3df87771a1ce326d7acbbfaa42fb351b0531fe3b98fc6408"
+    },
+    {
+      "path": "assets/westayplace/navigation/png/saved-inactive.png",
+      "bytes": 3425,
+      "sha256": "703e36037eda308417320beb9e71725fd0a8f42b172b36147f8f2fc39a1a71d4"
+    },
+    {
+      "path": "assets/westayplace/navigation/svg/bookings-active.svg",
+      "bytes": 322,
+      "sha256": "a72789b7f688b66ca2c55fa39ee653c91d4af19564a26644d9d3aac883db0754"
+    },
+    {
+      "path": "assets/westayplace/navigation/svg/bookings-inactive.svg",
+      "bytes": 286,
+      "sha256": "ace41f653b6bc43cd53f3d87f2baf4124ec64d46229f81e0078bd34f8754e011"
+    },
+    {
+      "path": "assets/westayplace/navigation/svg/home-active.svg",
+      "bytes": 237,
+      "sha256": "985909963ac992ed51189f2be2a54a68f882cf49d8c246b9da78c09294c44467"
+    },
+    {
+      "path": "assets/westayplace/navigation/svg/home-inactive.svg",
+      "bytes": 231,
+      "sha256": "0c2e670249e0e0e72b978e61069c9ffa45f3dd5b7323db0c84e6dad6bc8f493a"
+    },
+    {
+      "path": "assets/westayplace/navigation/svg/messages-active.svg",
+      "bytes": 219,
+      "sha256": "b0b74e5461576779f2235fd1db74923942df1fa9df21e016eda2704fa6678ae5"
+    },
+    {
+      "path": "assets/westayplace/navigation/svg/messages-inactive.svg",
+      "bytes": 216,
+      "sha256": "4b10038baa5663f49ff6fc41bfacb30da9c1b99d4232cd7b155d0f3d57d7f10d"
+    },
+    {
+      "path": "assets/westayplace/navigation/svg/profile-active.svg",
+      "bytes": 254,
+      "sha256": "6c064c38d22bb084e3102a2c2c044a20b61c4d362498ecd7d61dc8f8806551ca"
+    },
+    {
+      "path": "assets/westayplace/navigation/svg/profile-inactive.svg",
+      "bytes": 251,
+      "sha256": "adc393a3096a4a11c5d3359c1c4e25393c971d69ce65614e53a7c2fe7b51b616"
+    },
+    {
+      "path": "assets/westayplace/navigation/svg/saved-active.svg",
+      "bytes": 263,
+      "sha256": "d91940aff58c3050612b8d8edefc9aa29a53143c8021d5f4b5d44bbd65edece5"
+    },
+    {
+      "path": "assets/westayplace/navigation/svg/saved-inactive.svg",
+      "bytes": 260,
+      "sha256": "73a0bc3851bbb2ade96c94d1b516050d902a16b9046103b5668163f5a6c774d0"
+    },
+    {
+      "path": "assets/westayplace/viewing/agent-matching.gif",
+      "bytes": 116006,
+      "sha256": "461c2cc0b7cb5af69a84f64f157f1ee5a2c7543de6525b87938712d92d922164"
+    },
+    {
+      "path": "assets/westayplace/viewing/loading-spinner.gif",
+      "bytes": 101914,
+      "sha256": "b6eaba8c66f36dd0e0b847985547c48c358fdcf55fe0195f848b450c91786f29"
+    },
+    {
+      "path": "assets/westayplace/viewing/pending-pulse.gif",
+      "bytes": 96711,
+      "sha256": "2938fea8fd1f1398f952f4e5c33638498f9d42ecee1f0b872a36185e91aefb7f"
+    },
+    {
+      "path": "assets/westayplace/viewing/request-sent.gif",
+      "bytes": 23781,
+      "sha256": "b2ecd67d03e61dbea44c6b0956c0f68288046d05c8d31a101f62cf5f75cf086d"
+    },
+    {
+      "path": "design-tokens.json",
+      "bytes": 368,
+      "sha256": "dae08c4e5d2113b5493062d62d9e86612f3b0da270b1e47d28140e01a8ad8006"
+    },
+    {
+      "path": "flutter/glass_bottom_nav.dart",
+      "bytes": 3721,
+      "sha256": "492c37db4ddbd5f59f2fb536c021a62e5d99402ad3ae5d53c097599158e701ad"
+    },
+    {
+      "path": "flutter/viewing_animations.dart",
+      "bytes": 5117,
+      "sha256": "e10075e055b61ee5f5a7b0bc4a4c93522f655f9fe36f97a782fd45a0f752a057"
+    },
+    {
+      "path": "flutter/winter_header_background.dart",
+      "bytes": 850,
+      "sha256": "4e90809cfc17f3a1a0f2c169013b535cffb8b5d96c0dc28cc1e65fd920a1418a"
+    },
+    {
+      "path": "preview/index.html",
+      "bytes": 9933,
+      "sha256": "64a8c559be23ff80d51844b716108449ffa5e7a190f3ab41579b19792d423e79"
+    },
+    {
+      "path": "preview/navigation-transition.gif",
+      "bytes": 61094,
+      "sha256": "969ce093e23dd8605491e410400765c59283b9b5338faf9e891aad33fd387272"
+    },
+    {
+      "path": "preview/westayplace-calm-reindeer.gif",
+      "bytes": 393868,
+      "sha256": "59601e26014ededf082c7248a71cfa24d65cc0c29be9034891b4ef90145d0040"
+    },
+    {
+      "path": "preview/westayplace-santa-reindeer.gif",
+      "bytes": 646139,
+      "sha256": "6c6a9f4088731f804931cb1bd10adda1fe3dab4b7a978bcc224fd1f687e95434"
+    },
+    {
+      "path": "preview/westayplace-snow-frost.gif",
+      "bytes": 609648,
+      "sha256": "ffbb4f955dc0451a4c98db3f2ec2ac82fd817e597f4e9ce99270edff2cbc2eed"
+    },
+    {
+      "path": "pubspec-assets.yaml",
+      "bytes": 400,
+      "sha256": "02915ff1e3dd7f2d2c6bca980fb80a81a511f51fa1d57577102ce16db9f8d987"
+    },
+    {
+      "path": "reference/approved-mockup.png",
+      "bytes": 2453075,
+      "sha256": "b61b58f0160bfa6da35ddc6a5007ec7de7a1cb9f2f467a184c0373e7ef56e37e"
+    }
+  ]
+}

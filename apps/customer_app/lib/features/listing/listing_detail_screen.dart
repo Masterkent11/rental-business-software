@@ -12,6 +12,7 @@ import '../../design/app_image.dart';
 import '../../design/glass.dart';
 import '../../design/osm_map.dart';
 import '../../design/tokens.dart';
+import '../../design/virtual_tour_action.dart';
 import '../../fixtures/view_models.dart';
 import '../auth/auth_guard.dart';
 import '../saved/saved_controller.dart';
@@ -605,37 +606,10 @@ class _Gallery extends StatelessWidget {
             Positioned(
               left: Tokens.s16,
               bottom: Tokens.s16,
-              child: GestureDetector(
+              child: VirtualTourAction(
+                title: '360°\u200b Tour',
+                variant: VirtualTourActionVariant.dark,
                 onTap: onTapTour,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.55),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.4),
-                      width: 1.2,
-                    ),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.view_in_ar, size: 16, color: Colors.white),
-                      SizedBox(width: 6),
-                      Text.rich(
-                        TextSpan(
-                          text: '360°\u200b Tour',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
             ),
           Positioned(

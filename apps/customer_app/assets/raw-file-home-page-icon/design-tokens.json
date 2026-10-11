@@ -1,0 +1,17 @@
+{
+  "primary": "#142642",
+  "secondary": "#7A8493",
+  "askBinoGradient": [
+    "#142642",
+    "#3568A0"
+  ],
+  "categorySurface": "white at 20% opacity",
+  "navSurface": "white at 72% opacity",
+  "navBlurSigma": 16,
+  "navRadius": 24,
+  "selectedSurface": "#DCE6F2",
+  "pressDurationMs": 100,
+  "selectionDurationMs": 200,
+  "navIconSize": 22,
+  "navTouchHeight": 56
+}
