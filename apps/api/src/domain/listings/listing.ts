@@ -53,6 +53,9 @@ export interface Listing {
   readonly amenities: readonly string[];
   readonly houseRules: readonly string[];
   readonly terms: readonly string[];
+  readonly minLeaseMonths?: number | null;
+  readonly maxLeaseMonths?: number | null;
+  readonly allowPendingIdentityApplication?: boolean;
   readonly minStayNights: number | null;
   readonly advanceMonths: number;
   readonly depositMonths: number;

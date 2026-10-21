@@ -83,7 +83,7 @@ abstract final class SampleData {
           kind: ListingKind.shortTerm,
           resourceType: ResourceType.unit,
           priceCentavos: 150000,
-          availabilityLabel: 'Dec 26–29 taken',
+          availabilityLabel: 'Dec 2629 taken',
           isAvailable: true,
           hasTour: true,
           sceneCount: 7,

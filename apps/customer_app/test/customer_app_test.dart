@@ -116,6 +116,9 @@ MockClient _fakeTransport() {
       };
 
   final client = MockClient((request) async {
+    if (request.url.path.startsWith('/application-drafts/resource/')) {
+      return http.Response(jsonEncode({'draft': null}), 200, headers: {'content-type': 'application/json'});
+    }
     final segments = request.url.pathSegments;
 
     if (segments.length == 3 && segments[0] == 'resources' && segments[2] == 'tour') {
@@ -260,7 +263,7 @@ MockClient _fakeTransport() {
             'id': 'n-1',
             'kind': 'BOOKING_CONFIRMED',
             'title': 'Your booking is confirmed',
-            'body': 'Skyline Residences · Dec 26 – Dec 29',
+            'body': 'Skyline Residences · Dec 26  Dec 29',
             'link': '/bookings/bkg-4471',
             'readAt': null,
             'createdAt': '2026-10-01T08:00:00.000Z',
@@ -397,8 +400,10 @@ void main() {
     await tester.tap(finder.first);
     await tester.pumpAndSettle();
 
-    expect(find.text('TO MOVE IN'), findsOneWidget);
-    expect(find.text('₱34,000'), findsOneWidget);
+    expect(find.text('TO MOVE IN'), findsNothing);
+    expect(find.text('₱34,000'), findsNothing);
+    expect(find.text('₱8,500/mo'), findsOneWidget);
+    expect(find.text('Message'), findsNothing);
   });
 
   testWidgets('a listing opens its tour and walks between scenes', (
@@ -445,11 +450,15 @@ void main() {
     await tester.tap(find.text('Apply to rent'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Attach at least one document'), findsOneWidget);
+    expect(find.text('Application details'), findsOneWidget);
+    expect(find.text('When do you want to move in?'), findsOneWidget);
+    expect(find.text('Submit application to owner'), findsNothing);
 
-    final notice = find.textContaining('does not reserve');
-    await tester.scrollUntilVisible(notice, 200);
-    expect(notice, findsOneWidget);
+    expect(find.text('Continue'), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(find.textContaining('does not reserve'), findsNothing);
+    expect(find.text('Rental term'), findsOneWidget);
+    expect(find.text('Message to owner (optional)'), findsNothing);
   });
 
   testWidgets('a photo-only listing offers no tour', (tester) async {
@@ -576,7 +585,8 @@ void main() {
     expect(find.text('One-bedroom corner unit with cross-ventilation'), findsWidgets);
     expect(find.text('₱8,500/mo'), findsWidgets);
 
-    expect(find.text('1 Guest'), findsOneWidget);
+    expect(find.text('1 Guest'), findsNothing);
+    expect(find.text('Unit'), findsOneWidget);
     expect(find.text('1 Bed'), findsOneWidget);
     expect(find.text('1 Bath'), findsOneWidget);
     expect(find.text('32 sqm'), findsNothing);
@@ -592,9 +602,9 @@ void main() {
     expect(find.text('Explore in 360°'), findsOneWidget);
     expect(find.text('Move your phone or drag to look around'), findsOneWidget);
 
-    expect(find.text('Check dates'), findsOneWidget);
-    expect(find.text('About this place'), findsOneWidget);
-    expect(find.text('Message'), findsOneWidget);
+    expect(find.text('Select dates'), findsNothing);
+    expect(find.text('Read more  ›'), findsOneWidget);
+    expect(find.text('Message'), findsNothing);
     expect(find.text('Apply to rent'), findsOneWidget);
   });
 

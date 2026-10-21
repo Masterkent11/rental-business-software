@@ -9,10 +9,10 @@ Recreated assets based on the approved mockup. These are not original Figma laye
 4. Run `flutter pub get`, then rebuild and check on your target devices.
 
 ## What to use
-- `categories/png/{apartment,condo,house,room,boarding}.png`: transparent 256px 3D icon variants. No tile background is baked in. Show at approximately 36–44 logical pixels.
+- `categories/png/{apartment,condo,house,room,boarding}.png`: transparent 256px 3D icon variants. No tile background is baked in. Show at approximately 3644 logical pixels.
 - `categories/svg/`: editable simplified outline alternatives. Matching `*-outline.png` files are raster fallbacks.
 - `header/`: Search, Bell, Ask Bino (navy and white), arrow and 360° tour icons in SVG + transparent PNG.
-- `navigation/`: Home, Saved, Bookings, Messages and Profile in both active/inactive SVG + 96px PNG. PNGs render at 22–24 logical pixels.
+- `navigation/`: Home, Saved, Bookings, Messages and Profile in both active/inactive SVG + 96px PNG. PNGs render at 2224 logical pixels.
 - `backgrounds/`: clean high-resolution winter landscape, compact 960px version and still fallback.
 - `animations/winter-snow.gif`: clean background-only falling snow loop (8 seconds, 768×256). No UI or phone frame is baked into this file.
 - `effects/frost-wind.png`: transparent frost texture for a separate low-opacity translation effect if desired.

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   InvalidMessageError,
+  assertRentalMessagingAllowed,
+  ConversationNotAllowedError,
   isUnread,
   normaliseMessageBody,
   previewOf,
@@ -37,5 +39,13 @@ describe('messaging rules', () => {
     expect(
       shouldNotifyRecipient({ previousSenderRole: 'OWNER', previousMessageAt: new Date('2027-01-01T10:05:00Z'), senderRole: 'CUSTOMER', now }),
     ).toBe(true);
+  });
+});
+
+describe('rental messaging eligibility', () => {
+  it('blocks pre-transaction rental messaging and keeps sale inquiries', () => {
+    expect(() => assertRentalMessagingAllowed('RENT', false)).toThrow(ConversationNotAllowedError);
+    expect(() => assertRentalMessagingAllowed('RENT', true)).not.toThrow();
+    expect(() => assertRentalMessagingAllowed('SALE', false)).not.toThrow();
   });
 });

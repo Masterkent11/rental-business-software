@@ -7,6 +7,7 @@ import type { LeadAssignmentRepository } from '@/application/ports/repositories/
 import type { NotificationRepository } from '@/application/ports/repositories/notification-repository.port.ts';
 import type { Clock } from '@/application/ports/providers/clock.port.ts';
 import {
+  assertRentalMessagingAllowed,
   ConversationNotFoundError,
   normaliseMessageBody,
   previewOf,
@@ -35,6 +36,8 @@ async function deliver(
   },
   inquiries?: InquiryRepository,
 ): Promise<Message> {
+  assertRentalMessagingAllowed(input.conversation.listingIntent,
+    input.conversation.listingIntent === 'SALE' || await messaging.customerMayMessageListing(input.conversation.customerId, input.conversation.listingId));
   const body = normaliseMessageBody(input.body);
   const preview = previewOf(body);
   const { message, created } = await messaging.append({

@@ -1,3 +1,4 @@
+import { VerificationConflictError, VerificationInputError, VerificationNotFoundError, VerificationRateLimitError, VerificationRequiredError, VerificationUnavailableError } from '@/domain/verification/verification.ts';
 import {
   Catch,
   HttpException,
@@ -123,6 +124,12 @@ type Rule = readonly [
 ];
 
 const RULES: readonly Rule[] = [
+  [[VerificationNotFoundError], 404, 'NOT_FOUND', null],
+  [[VerificationInputError], 400, 'INVALID_REQUEST', null],
+  [[VerificationConflictError], 409, 'VERIFICATION_CHANGED', null],
+  [[VerificationRequiredError], 409, 'VERIFICATION_REQUIRED', null],
+  [[VerificationUnavailableError], 503, 'VERIFICATION_UNAVAILABLE', null],
+  [[VerificationRateLimitError], 429, 'RATE_LIMITED', null],
   [[UnauthenticatedError], HttpStatus.UNAUTHORIZED, 'UNAUTHENTICATED', 'Please sign in again.'],
   [[OrganizationForbiddenError], HttpStatus.FORBIDDEN, 'FORBIDDEN', null],
   [[WebhookVerificationError], HttpStatus.UNAUTHORIZED, 'WEBHOOK_REJECTED', 'Signature check failed'],
@@ -234,6 +241,21 @@ export class PresentationExceptionFilter implements ExceptionFilter {
 
   catch(exception: unknown, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<FastifyReply>();
+
+    const dependencyCode = typeof exception === 'object' && exception !== null && 'code' in exception
+      ? String(exception.code)
+      : '';
+    if (/^08[A-Z0-9]{3}$/.test(dependencyCode) || [
+      '57P01', '57P02', '57P03', '53300', 'ECONNREFUSED', 'ECONNRESET',
+      'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN', 'CONNECT_TIMEOUT', 'CONNECTION_CLOSED',
+      'CONNECTION_DESTROYED',
+    ].includes(dependencyCode)) {
+      this.logger.error(`Request dependency unavailable (${dependencyCode})`);
+      const message = 'The service is temporarily unavailable. Please try again.';
+      return response.status(HttpStatus.SERVICE_UNAVAILABLE).send({
+        statusCode: HttpStatus.SERVICE_UNAVAILABLE, code: 'SERVICE_UNAVAILABLE', title: message, message,
+      });
+    }
 
     if (exception instanceof HttpException) {
       const status = exception.getStatus();

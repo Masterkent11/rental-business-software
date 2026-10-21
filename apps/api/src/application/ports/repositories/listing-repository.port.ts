@@ -34,6 +34,9 @@ export interface CreateListingInput {
   readonly amenities: readonly string[];
   readonly houseRules: readonly string[];
   readonly terms: readonly string[];
+  readonly minLeaseMonths?: number | null | undefined;
+  readonly maxLeaseMonths?: number | null | undefined;
+  readonly allowPendingIdentityApplication?: boolean | undefined;
   readonly minStayNights: number | null;
   readonly advanceMonths: number;
   readonly depositMonths: number;
@@ -48,6 +51,9 @@ export interface ListingDetails {
   readonly amenities: readonly string[];
   readonly houseRules: readonly string[];
   readonly terms: readonly string[];
+  readonly minLeaseMonths?: number | null | undefined;
+  readonly maxLeaseMonths?: number | null | undefined;
+  readonly allowPendingIdentityApplication?: boolean | undefined;
   readonly minStayNights: number | null;
   readonly advanceMonths: number;
   readonly depositMonths: number;

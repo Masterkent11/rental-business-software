@@ -135,7 +135,7 @@ export function describePreferredSchedule(day: string, window: PreferredTimeWind
     day: 'numeric',
   }).format(new Date(`${day}T00:00:00Z`));
   const hours = VIEWING_TIME_WINDOWS[window];
-  return `${date}, ${window.toLowerCase()} (${formatHour(hours.startHour)} – ${formatHour(hours.endHour)})`;
+  return `${date}, ${window.toLowerCase()} (${formatHour(hours.startHour)}  ${formatHour(hours.endHour)})`;
 }
 
 export function formatViewingTime(startsAt: Date): string {

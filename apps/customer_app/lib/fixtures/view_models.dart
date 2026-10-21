@@ -118,6 +118,9 @@ class ListingCardView {
     this.cleaningFeeCentavos = 0,
     this.propertyType,
     this.minStayNights,
+    this.minLeaseMonths,
+    this.maxLeaseMonths,
+    this.allowPendingIdentityApplication = false,
     this.intent = ListingIntent.rent,
     this.saleStatus,
     this.lotAreaSqm,
@@ -156,6 +159,9 @@ class ListingCardView {
   final int cleaningFeeCentavos;
   final String? propertyType;
   final int? minStayNights;
+  final int? minLeaseMonths;
+  final int? maxLeaseMonths;
+  final bool allowPendingIdentityApplication;
   final ListingIntent intent;
   final String? saleStatus;
   final int? lotAreaSqm;

@@ -250,6 +250,9 @@ class ListingRepository {
       cleaningFeeCentavos: (json['cleaningFeeCentavos'] as num?)?.toInt() ?? 0,
       propertyType: json['propertyType'] as String?,
       minStayNights: (json['minStayNights'] as num?)?.toInt(),
+      minLeaseMonths: (json['minLeaseMonths'] as num?)?.toInt(),
+      maxLeaseMonths: (json['maxLeaseMonths'] as num?)?.toInt(),
+      allowPendingIdentityApplication: json['allowPendingIdentityApplication'] == true,
       isPopular: json['hasTour'] as bool? ?? false,
       intent: json['intent'] == 'SALE' ? ListingIntent.sale : ListingIntent.rent,
       saleStatus: json['saleStatus'] as String?,
@@ -274,7 +277,6 @@ class ListingRepository {
       precision: raw['precision'] == 'EXACT' ? LocationPrecision.exact : LocationPrecision.approximate,
     );
   }
-
 }
 
 final savedListingsProvider = FutureProvider<List<ListingCardView>>((ref) async {

@@ -35,7 +35,7 @@ describe('preferred viewing windows', () => {
   });
 
   it('describes the preference in plain words', () => {
-    expect(describePreferredSchedule('2026-10-14', 'AFTERNOON')).toBe('Wednesday, October 14, afternoon (12:00 PM – 4:00 PM)');
+    expect(describePreferredSchedule('2026-10-14', 'AFTERNOON')).toBe('Wednesday, October 14, afternoon (12:00 PM  4:00 PM)');
   });
 
   it('confirmed times must be future, on a quarter hour and within viewing hours', () => {

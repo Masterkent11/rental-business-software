@@ -197,7 +197,7 @@ class _RentFiltersSheetState extends ConsumerState<_RentFiltersSheet> {
                   label: 'Check-in → check-out',
                   value: _dates == null
                       ? 'Any dates'
-                      : '${_dayFormat.format(_dates!.start)} – ${_dayFormat.format(_dates!.end)}',
+                      : '${_dayFormat.format(_dates!.start)}  ${_dayFormat.format(_dates!.end)}',
                   icon: Icons.date_range_outlined,
                   onTap: _pickDates,
                 ),

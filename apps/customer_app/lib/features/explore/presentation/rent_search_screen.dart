@@ -49,7 +49,7 @@ class _StaySummary extends ConsumerWidget {
     final day = DateFormat('MMM d');
     final label = switch (query.stay) {
       ShortStaySearch(:final checkIn, :final checkOut, :final guests) =>
-        '${day.format(checkIn)} – ${day.format(checkOut)} · $guests ${guests == 1 ? 'guest' : 'guests'}',
+        '${day.format(checkIn)}  ${day.format(checkOut)} · $guests ${guests == 1 ? 'guest' : 'guests'}',
       MonthlySearch(:final moveIn, :final occupants) =>
         'Move in ${day.format(moveIn)} · $occupants ${occupants == 1 ? 'occupant' : 'occupants'}',
       null => null,

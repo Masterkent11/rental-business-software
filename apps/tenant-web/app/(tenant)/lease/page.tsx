@@ -71,7 +71,7 @@ export default function LeasePage() {
                 Term
               </dt>
               <dd className="mt-1 text-sm">
-                {formatDate(lease.startDate)} –<br />
+                {formatDate(lease.startDate)} <br />
                 {formatDate(lease.endDate)}
               </dd>
             </div>

@@ -66,6 +66,9 @@ interface Row {
   amenities: string[] | null;
   house_rules: string[] | null;
   terms: string[] | null;
+  min_lease_months: number | null;
+  max_lease_months: number | null;
+  allow_pending_identity_application: boolean;
   min_stay_nights: number | null;
   advance_months: number;
   deposit_months: number;
@@ -141,6 +144,9 @@ const toListing = (row: Row): Listing => {
     houseRules: row.house_rules ?? [],
     terms: row.terms ?? [],
     minStayNights: row.min_stay_nights,
+    minLeaseMonths: row.min_lease_months,
+    maxLeaseMonths: row.max_lease_months,
+    allowPendingIdentityApplication: row.allow_pending_identity_application,
     advanceMonths: row.advance_months,
     depositMonths: row.deposit_months,
     maxOccupants: row.max_occupants,
@@ -204,7 +210,7 @@ const SELECT = sql`
     l.price_centavos::text as price_centavos,
     l.cleaning_fee_centavos::text as cleaning_fee_centavos,
     l.state,
-    l.amenities, l.house_rules, l.terms, l.min_stay_nights,
+    l.amenities, l.house_rules, l.terms, l.min_stay_nights, l.min_lease_months, l.max_lease_months, l.allow_pending_identity_application,
     l.advance_months, l.deposit_months,
     l.max_occupants, l.bedrooms, l.bathrooms, l.floor_area_sqm,
     to_char(l.available_from, 'YYYY-MM-DD') as available_from,
@@ -490,12 +496,12 @@ export const postgresListingRepository = (): ListingRepository => ({
         insert into listings (
           organization_id, resource_id, kind, title, description,
           price_centavos, amenities, house_rules, terms,
-          min_stay_nights, advance_months, deposit_months, state
+          min_stay_nights, min_lease_months, max_lease_months, allow_pending_identity_application, advance_months, deposit_months, state
         ) values (
           ${input.organizationId}, ${input.resourceId}, ${input.kind},
           ${input.title}, ${input.description}, ${input.priceCentavos},
           ${textArray(tx, input.amenities)}, ${textArray(tx, input.houseRules)},
-          ${textArray(tx, input.terms)}, ${input.minStayNights},
+          ${textArray(tx, input.terms)}, ${input.minStayNights}, ${input.minLeaseMonths ?? null}, ${input.maxLeaseMonths ?? null}, ${input.allowPendingIdentityApplication ?? false},
           ${input.advanceMonths}, ${input.depositMonths}, 'DRAFT'
         )
         returning id
@@ -523,13 +529,13 @@ export const postgresListingRepository = (): ListingRepository => ({
       const [listing] = await tx<{ id: string }[]>`
         insert into listings (
           organization_id, resource_id, kind, title, description, price_centavos,
-          amenities, house_rules, terms, min_stay_nights, advance_months, deposit_months,
+          amenities, house_rules, terms, min_stay_nights, min_lease_months, max_lease_months, allow_pending_identity_application, advance_months, deposit_months,
           max_occupants, bedrooms, bathrooms, floor_area_sqm, cleaning_fee_centavos,
           available_from, furnishing, pets_allowed, state
         ) values (
           ${input.organizationId}, ${resource!.id}, ${l.kind}, ${l.title.trim()}, ${l.description.trim()},
           ${l.priceCentavos}, ${textArray(tx, l.amenities)}, ${textArray(tx, l.houseRules)},
-          ${textArray(tx, l.terms)}, ${l.minStayNights}, ${l.advanceMonths}, ${l.depositMonths},
+          ${textArray(tx, l.terms)}, ${l.minStayNights}, ${l.minLeaseMonths ?? null}, ${l.maxLeaseMonths ?? null}, ${l.allowPendingIdentityApplication ?? false}, ${l.advanceMonths}, ${l.depositMonths},
           ${l.maxOccupants}, ${l.bedrooms}, ${l.bathrooms}, ${l.floorAreaSqm}, ${l.cleaningFeeCentavos},
           ${l.availableFrom}, ${l.furnishing ?? null}, ${l.petsAllowed ?? null}, 'DRAFT'
         )
@@ -555,6 +561,9 @@ export const postgresListingRepository = (): ListingRepository => ({
           amenities = ${l.amenities ? textArray(tx, l.amenities) : tx`amenities`},
           house_rules = ${l.houseRules ? textArray(tx, l.houseRules) : tx`house_rules`},
           terms = ${l.terms ? textArray(tx, l.terms) : tx`terms`},
+          min_lease_months = ${l.minLeaseMonths !== undefined ? l.minLeaseMonths : tx`min_lease_months`},
+          max_lease_months = ${l.maxLeaseMonths !== undefined ? l.maxLeaseMonths : tx`max_lease_months`},
+          allow_pending_identity_application = coalesce(${l.allowPendingIdentityApplication ?? null}, allow_pending_identity_application),
           min_stay_nights = ${l.minStayNights !== undefined ? l.minStayNights : tx`min_stay_nights`},
           advance_months = coalesce(${l.advanceMonths ?? null}, advance_months),
           deposit_months = coalesce(${l.depositMonths ?? null}, deposit_months),

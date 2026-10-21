@@ -46,6 +46,7 @@ export interface ApplicationDetail extends Application {
 
 export interface ApplicationRepository {
   submit(input: {
+    draftId?: string;
     resourceId: string;
     applicantId: string;
     desiredMoveIn: string;

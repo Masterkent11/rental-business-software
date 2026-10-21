@@ -1,6 +1,6 @@
 # Documentation Index
 
-> **Status:** Steps 1–3 written, Steps 4–6 not started
+> **Status:** Steps 13 written, Steps 46 not started
 > **Last updated:** 2026-08-20
 
 This directory is the engineering source of truth for the rental platform. Every implementation phase reads from here. **No phase re-decides something a document already decided** — if a phase disagrees with a document, the document is amended first, deliberately, and the change is recorded in [00-overview/product-decisions.md](00-overview/product-decisions.md).
@@ -98,7 +98,7 @@ The platform decision is [ADR-0001](12-adr/0001-supabase-api-mediated.md): **Sup
 
 ## Frontend, ahead of schedule
 
-Two client shells exist ahead of Steps 4–5, both **deliberate exceptions** to the documentation-first rule and both bounded the same way — UI shell and fixture data only, no domain rules, no availability or balance computation, no API contracts:
+Two client shells exist ahead of Steps 45, both **deliberate exceptions** to the documentation-first rule and both bounded the same way — UI shell and fixture data only, no domain rules, no availability or balance computation, no API contracts:
 
 | App | Surface | Stack | Doc |
 |---|---|---|---|
@@ -114,7 +114,7 @@ Every document opens with a front block:
 
 ```
 Status:        Draft | Written | Frozen
-Owner step:    which of Steps 1–6 produces it
+Owner step:    which of Steps 16 produces it
 Last updated:  ISO date
 Depends on:    documents that must be read first
 Informs:       documents and phases that consume it

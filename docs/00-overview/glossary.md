@@ -177,7 +177,7 @@ An interactive point placed inside a Scene. Four kinds in V1:
 
 A reservation of a Rentable Resource for specific dates. **Short-term concept.**
 
-> **Example:** *Condo Unit 101, 3 nights, Dec 26–29, ₱4,500 total*
+> **Example:** *Condo Unit 101, 3 nights, Dec 2629, ₱4,500 total*
 
 - Confirmed by payment, and becomes a Stay.
 - **Not to be confused with:** an Application. A booking reserves dates; an application requests to live somewhere.

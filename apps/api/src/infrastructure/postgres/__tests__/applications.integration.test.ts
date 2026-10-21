@@ -1,3 +1,5 @@
+import { VerificationInputError } from '@/domain/verification/verification.ts';
+import { verifiedDraft } from '@/infrastructure/postgres/__tests__/helpers/verified-draft.ts';
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { postgresApplicationRepository } from '@/infrastructure/postgres/repositories/postgres-application.repository.ts';
@@ -30,7 +32,9 @@ const OWNER = '88888888-8888-4888-8888-888888888888';
 const RIVAL = '66666666-6666-4666-8666-666666666666';
 
 suite('applications against real PostgreSQL', { timeout: 30_000 }, () => {
-  const applications = postgresApplicationRepository();
+  const realApplications = postgresApplicationRepository();
+  const applications = { ...realApplications, submit: async (input: Parameters<typeof realApplications.submit>[0]) =>
+    realApplications.submit({ ...input, draftId: await verifiedDraft(input) }) };
   const users = postgresUserRepository();
 
   beforeAll(async () => {
@@ -107,7 +111,7 @@ suite('applications against real PostgreSQL', { timeout: 30_000 }, () => {
     // a way to reach inventory nobody has published (D-12), nor to apply for
     // something that is only let by the night (D-06).
     await expect(submit(ROOM_UNPUBLISHED)).rejects.toBeInstanceOf(
-      NotApplicableError,
+      VerificationInputError,
     );
   });
 

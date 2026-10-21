@@ -1,0 +1,121 @@
+{
+  "source": {
+    "filename": "image(20261020-161720).png",
+    "width": 1448,
+    "height": 1086,
+    "sha256": "3186ef03a0675f1a010cb4958f97054b341fc98b5debf2ef9e679b3be105cd08"
+  },
+  "coordinate_system": "source screenshot pixels, x/y from top-left; scale each guide uniformly; layouts are examples, not hard-coded device sizes",
+  "front_scan": {
+    "screen_bbox": [
+      364,
+      14,
+      588,
+      436
+    ],
+    "frame_bbox": [
+      380,
+      169,
+      574,
+      299
+    ],
+    "asset": "svg/ocr/id_front_frame.svg"
+  },
+  "face_alignment": {
+    "screen_bbox": [
+      83,
+      539,
+      314,
+      879
+    ],
+    "guide_bbox": [
+      116,
+      628,
+      280,
+      826
+    ],
+    "asset": "svg/facial/face_alignment_contour.svg"
+  },
+  "tilt_right": {
+    "screen_bbox": [
+      354,
+      539,
+      578,
+      879
+    ],
+    "arrow_bbox": [
+      470,
+      629,
+      566,
+      673
+    ],
+    "asset": "svg/facial/tilt_head_right_arrow.svg"
+  },
+  "tilt_left": {
+    "screen_bbox": [
+      615,
+      539,
+      837,
+      879
+    ],
+    "arrow_bbox": [
+      632,
+      629,
+      728,
+      673
+    ],
+    "asset": "svg/facial/tilt_head_left_arrow.svg"
+  },
+  "look_up": {
+    "screen_bbox": [
+      876,
+      539,
+      1097,
+      879
+    ],
+    "arrow_bbox": [
+      974,
+      625,
+      1006,
+      673
+    ],
+    "asset": "svg/facial/look_up_arrow.svg"
+  },
+  "verified": {
+    "screen_bbox": [
+      1136,
+      539,
+      1365,
+      879
+    ],
+    "badge_bbox": [
+      1215,
+      679,
+      1291,
+      755
+    ],
+    "asset": "svg/facial/verification_success_badge.svg"
+  },
+  "composite_guide_anchor": {
+    "canvas": [
+      220,
+      238
+    ],
+    "contour_origin": [
+      28,
+      35
+    ],
+    "right_arrow_origin": [
+      112,
+      8
+    ],
+    "left_arrow_origin": [
+      9,
+      8
+    ],
+    "up_arrow_origin": [
+      94,
+      1
+    ]
+  }
+}

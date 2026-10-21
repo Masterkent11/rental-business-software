@@ -5,6 +5,7 @@ export interface ConversationContext {
   readonly organizationId: string;
   readonly listingTitle: string;
   readonly listingPublished: boolean;
+  readonly listingIntent: 'RENT' | 'SALE';
 }
 
 export type MessagingScope =
@@ -14,6 +15,7 @@ export type MessagingScope =
 
 export interface MessagingRepository {
   listingContext(listingId: string): Promise<ConversationContext | null>;
+  customerMayMessageListing(customerId: string, listingId: string): Promise<boolean>;
   customerHasBookingFor(customerId: string, listingId: string, occupancyId: string): Promise<boolean>;
   openForCustomer(input: {
     readonly organizationId: string;

@@ -207,7 +207,7 @@ class _BookingCard extends StatelessWidget {
                         style: theme.textTheme.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 2),
                     Text(
-                      '${format.format(booking.startsOn)} – ${format.format(booking.endsOn)} · ${booking.nights} night${booking.nights == 1 ? '' : 's'}',
+                      '${format.format(booking.startsOn)}  ${format.format(booking.endsOn)} · ${booking.nights} night${booking.nights == 1 ? '' : 's'}',
                       style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                     ),
                     if (booking.isPaid) ...[

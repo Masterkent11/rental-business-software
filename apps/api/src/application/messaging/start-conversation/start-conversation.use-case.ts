@@ -4,6 +4,7 @@ import type { assignLead } from '@/application/assignment/assign-lead/assign-lea
 import { assignableListing } from '@/application/assignment/assignable-listing.rules.ts';
 import { PUBLIC } from '@/domain/shared/organization-scope.ts';
 import {
+  assertRentalMessagingAllowed,
   ConversationNotAllowedError,
   ConversationNotFoundError,
   type Conversation,
@@ -20,6 +21,7 @@ export const startConversation =
     const context = await messaging.listingContext(input.listingId);
     if (!context) throw new ConversationNotFoundError('That place could not be found');
 
+    const hasTransaction = context.listingIntent === 'SALE' || await messaging.customerMayMessageListing(input.principal.userId, input.listingId);
     let occupancyId: string | null = null;
     if (input.bookingId) {
       const owns = await messaging.customerHasBookingFor(
@@ -29,9 +31,12 @@ export const startConversation =
       );
       if (!owns) throw new ConversationNotAllowedError('That booking is not yours');
       occupancyId = input.bookingId;
-    } else if (!context.listingPublished) {
+    } else if (!context.listingPublished && (context.listingIntent === 'SALE' || !hasTransaction)) {
       throw new ConversationNotAllowedError('This place is no longer listed');
     }
+
+    assertRentalMessagingAllowed(context.listingIntent,
+      hasTransaction);
 
     let agentId: string | null = null;
     if (context.listingPublished && !occupancyId) {

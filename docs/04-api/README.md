@@ -49,7 +49,7 @@ Returns **published listings only**, across all organizations. The marketplace i
 | `type` | `UNIT` \| `ROOM` \| `BED_SPACE` \| `PARKING` \| `STORAGE` | |
 | `maxPrice` | integer centavos | |
 | `hasTour` | boolean | |
-| `limit` | integer 1–50, default 20 | |
+| `limit` | integer 150, default 20 | |
 | `offset` | integer ≥ 0, default 0 | |
 
 **No date or occupancy parameters, deliberately.** "Is this free on those nights" is a question about one resource's occupancy timeline, answered by the availability endpoint that arrives in Sprint 3 — not by filtering listings. Adding dates here would invite the client-side availability the domain model refuses.

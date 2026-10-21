@@ -1,0 +1,617 @@
+{
+  "pack": "WeStayPlace OCR Front + Facial Verification",
+  "source_raster_dimensions": [
+    1448,
+    1086
+  ],
+  "scope": "OCR front scan, OCR processing, review details, facial alignment, right/left/up cues, verified",
+  "source_vectors_available": false,
+  "source_animation_frames_available": false,
+  "items": [
+    {
+      "name": "back_arrow_white",
+      "svg": "svg/icons/back_arrow_white.svg",
+      "width": 24,
+      "height": 24,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "back_arrow_navy",
+      "svg": "svg/icons/back_arrow_navy.svg",
+      "width": 24,
+      "height": 24,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "continue_arrow",
+      "svg": "svg/icons/continue_arrow.svg",
+      "width": 24,
+      "height": 24,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "id_front_frame",
+      "svg": "svg/ocr/id_front_frame.svg",
+      "width": 194,
+      "height": 130,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "id_front_corner_brackets",
+      "svg": "svg/ocr/id_front_corner_brackets.svg",
+      "width": 194,
+      "height": 130,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "id_front_processing_glass",
+      "svg": "svg/ocr/id_front_processing_glass.svg",
+      "width": 194,
+      "height": 130,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "id_front_scan_line",
+      "svg": "svg/ocr/id_front_scan_line.svg",
+      "width": 194,
+      "height": 24,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "face_alignment_contour",
+      "svg": "svg/facial/face_alignment_contour.svg",
+      "width": 164,
+      "height": 198,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "face_alignment_oval",
+      "svg": "svg/facial/face_alignment_oval.svg",
+      "width": 164,
+      "height": 198,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "tilt_head_right_arrow",
+      "svg": "svg/facial/tilt_head_right_arrow.svg",
+      "width": 96,
+      "height": 44,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "tilt_head_left_arrow",
+      "svg": "svg/facial/tilt_head_left_arrow.svg",
+      "width": 96,
+      "height": 44,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "look_up_arrow",
+      "svg": "svg/facial/look_up_arrow.svg",
+      "width": 32,
+      "height": 48,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "success_check_white",
+      "svg": "svg/icons/success_check_white.svg",
+      "width": 48,
+      "height": 48,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "verification_success_badge",
+      "svg": "svg/facial/verification_success_badge.svg",
+      "width": 76,
+      "height": 76,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "verification_success_ring",
+      "svg": "svg/facial/verification_success_ring.svg",
+      "width": 76,
+      "height": 76,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "ocr_progress",
+      "svg": "svg/components/ocr_progress.svg",
+      "width": 140,
+      "height": 8,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "face_alignment_progress",
+      "svg": "svg/components/face_alignment_progress.svg",
+      "width": 180,
+      "height": 8,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "tilt_right_progress",
+      "svg": "svg/components/tilt_right_progress.svg",
+      "width": 180,
+      "height": 8,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "tilt_left_progress",
+      "svg": "svg/components/tilt_left_progress.svg",
+      "width": 180,
+      "height": 8,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "look_up_progress",
+      "svg": "svg/components/look_up_progress.svg",
+      "width": 180,
+      "height": 8,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "verification_complete_progress",
+      "svg": "svg/components/verification_complete_progress.svg",
+      "width": 180,
+      "height": 8,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "progress_track",
+      "svg": "svg/components/progress_track.svg",
+      "width": 180,
+      "height": 8,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "continue_button_background",
+      "svg": "svg/components/continue_button_background.svg",
+      "width": 202,
+      "height": 33,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "review_field_background",
+      "svg": "svg/components/review_field_background.svg",
+      "width": 202,
+      "height": 30,
+      "provenance": "vector reconstruction from supplied raster; not an original source vector"
+    },
+    {
+      "name": "02_front_scan_screen",
+      "png": "reference/exact_crops/02_front_scan_screen.png",
+      "width": 224,
+      "height": 422,
+      "source_bbox": [
+        364,
+        14,
+        588,
+        436
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "03_ocr_processing_screen",
+      "png": "reference/exact_crops/03_ocr_processing_screen.png",
+      "width": 218,
+      "height": 421,
+      "source_bbox": [
+        624,
+        15,
+        842,
+        436
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "04_review_details_screen",
+      "png": "reference/exact_crops/04_review_details_screen.png",
+      "width": 219,
+      "height": 421,
+      "source_bbox": [
+        882,
+        15,
+        1101,
+        436
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "06_face_alignment_screen",
+      "png": "reference/exact_crops/06_face_alignment_screen.png",
+      "width": 231,
+      "height": 340,
+      "source_bbox": [
+        83,
+        539,
+        314,
+        879
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "07_tilt_right_screen",
+      "png": "reference/exact_crops/07_tilt_right_screen.png",
+      "width": 224,
+      "height": 340,
+      "source_bbox": [
+        354,
+        539,
+        578,
+        879
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "08_tilt_left_screen",
+      "png": "reference/exact_crops/08_tilt_left_screen.png",
+      "width": 222,
+      "height": 340,
+      "source_bbox": [
+        615,
+        539,
+        837,
+        879
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "09_look_up_screen",
+      "png": "reference/exact_crops/09_look_up_screen.png",
+      "width": 221,
+      "height": 340,
+      "source_bbox": [
+        876,
+        539,
+        1097,
+        879
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "10_verified_screen",
+      "png": "reference/exact_crops/10_verified_screen.png",
+      "width": 229,
+      "height": 340,
+      "source_bbox": [
+        1136,
+        539,
+        1365,
+        879
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "id_front_scan_area",
+      "png": "reference/exact_crops/id_front_scan_area.png",
+      "width": 195,
+      "height": 131,
+      "source_bbox": [
+        380,
+        169,
+        575,
+        300
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "ocr_processing_scan_area",
+      "png": "reference/exact_crops/ocr_processing_scan_area.png",
+      "width": 192,
+      "height": 131,
+      "source_bbox": [
+        638,
+        169,
+        830,
+        300
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "id_front_review_sample",
+      "png": "reference/exact_crops/id_front_review_sample.png",
+      "width": 181,
+      "height": 91,
+      "source_bbox": [
+        901,
+        124,
+        1082,
+        215
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "face_alignment_camera_sample",
+      "png": "reference/exact_crops/face_alignment_camera_sample.png",
+      "width": 230,
+      "height": 253,
+      "source_bbox": [
+        84,
+        626,
+        314,
+        879
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "tilt_right_camera_sample",
+      "png": "reference/exact_crops/tilt_right_camera_sample.png",
+      "width": 224,
+      "height": 253,
+      "source_bbox": [
+        354,
+        626,
+        578,
+        879
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "tilt_left_camera_sample",
+      "png": "reference/exact_crops/tilt_left_camera_sample.png",
+      "width": 222,
+      "height": 253,
+      "source_bbox": [
+        615,
+        626,
+        837,
+        879
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "look_up_camera_sample",
+      "png": "reference/exact_crops/look_up_camera_sample.png",
+      "width": 221,
+      "height": 253,
+      "source_bbox": [
+        876,
+        626,
+        1097,
+        879
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "tilt_right_arrow_reference",
+      "png": "reference/exact_crops/tilt_right_arrow_reference.png",
+      "width": 89,
+      "height": 42,
+      "source_bbox": [
+        474,
+        630,
+        563,
+        672
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "tilt_left_arrow_reference",
+      "png": "reference/exact_crops/tilt_left_arrow_reference.png",
+      "width": 83,
+      "height": 42,
+      "source_bbox": [
+        635,
+        630,
+        718,
+        672
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "look_up_arrow_reference",
+      "png": "reference/exact_crops/look_up_arrow_reference.png",
+      "width": 32,
+      "height": 48,
+      "source_bbox": [
+        974,
+        625,
+        1006,
+        673
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "verification_badge_reference",
+      "png": "reference/exact_crops/verification_badge_reference.png",
+      "width": 81,
+      "height": 79,
+      "source_bbox": [
+        1212,
+        676,
+        1293,
+        755
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "face_alignment_outline_reference",
+      "png": "reference/exact_crops/face_alignment_outline_reference.png",
+      "width": 165,
+      "height": 197,
+      "source_bbox": [
+        116,
+        628,
+        281,
+        825
+      ],
+      "provenance": "exact source pixels at native resolution; includes raster camera/background where visible; demo reference only"
+    },
+    {
+      "name": "tilt_head_right",
+      "gif": "gif/transparent_overlays/tilt_head_right.gif",
+      "webp": "webp/transparent_overlays/tilt_head_right.webp",
+      "width": 208,
+      "height": 96,
+      "duration_ms": 2000,
+      "loop": true,
+      "transparent": true,
+      "provenance": "new motion applied to reconstructed reference overlay; no photographic face deformation",
+      "input_frame_count": 40,
+      "encoded_frame_count": 40
+    },
+    {
+      "name": "tilt_head_left",
+      "gif": "gif/transparent_overlays/tilt_head_left.gif",
+      "webp": "webp/transparent_overlays/tilt_head_left.webp",
+      "width": 208,
+      "height": 96,
+      "duration_ms": 2000,
+      "loop": true,
+      "transparent": true,
+      "provenance": "new motion applied to reconstructed reference overlay; no photographic face deformation",
+      "input_frame_count": 40,
+      "encoded_frame_count": 40
+    },
+    {
+      "name": "look_up",
+      "gif": "gif/transparent_overlays/look_up.gif",
+      "webp": "webp/transparent_overlays/look_up.webp",
+      "width": 80,
+      "height": 120,
+      "duration_ms": 2000,
+      "loop": true,
+      "transparent": true,
+      "provenance": "new motion applied to reconstructed reference overlay; no photographic face deformation",
+      "input_frame_count": 40,
+      "encoded_frame_count": 39
+    },
+    {
+      "name": "face_alignment_pulse",
+      "gif": "gif/transparent_overlays/face_alignment_pulse.gif",
+      "webp": "webp/transparent_overlays/face_alignment_pulse.webp",
+      "width": 328,
+      "height": 396,
+      "duration_ms": 2000,
+      "loop": true,
+      "transparent": true,
+      "provenance": "new motion applied to reconstructed reference overlay; no photographic face deformation",
+      "input_frame_count": 40,
+      "encoded_frame_count": 35
+    },
+    {
+      "name": "face_guide_tilt_right",
+      "gif": "gif/transparent_overlays/face_guide_tilt_right.gif",
+      "webp": "webp/transparent_overlays/face_guide_tilt_right.webp",
+      "width": 440,
+      "height": 476,
+      "duration_ms": 2000,
+      "loop": true,
+      "transparent": true,
+      "provenance": "new motion applied to reconstructed reference overlay; no photographic face deformation",
+      "input_frame_count": 40,
+      "encoded_frame_count": 40
+    },
+    {
+      "name": "face_guide_tilt_left",
+      "gif": "gif/transparent_overlays/face_guide_tilt_left.gif",
+      "webp": "webp/transparent_overlays/face_guide_tilt_left.webp",
+      "width": 440,
+      "height": 476,
+      "duration_ms": 2000,
+      "loop": true,
+      "transparent": true,
+      "provenance": "new motion applied to reconstructed reference overlay; no photographic face deformation",
+      "input_frame_count": 40,
+      "encoded_frame_count": 40
+    },
+    {
+      "name": "face_guide_look_up",
+      "gif": "gif/transparent_overlays/face_guide_look_up.gif",
+      "webp": "webp/transparent_overlays/face_guide_look_up.webp",
+      "width": 440,
+      "height": 476,
+      "duration_ms": 2000,
+      "loop": true,
+      "transparent": true,
+      "provenance": "new motion applied to reconstructed reference overlay; no photographic face deformation",
+      "input_frame_count": 40,
+      "encoded_frame_count": 40
+    },
+    {
+      "name": "id_front_scan",
+      "gif": "gif/transparent_overlays/id_front_scan.gif",
+      "webp": "webp/transparent_overlays/id_front_scan.webp",
+      "width": 388,
+      "height": 260,
+      "duration_ms": 3000,
+      "loop": true,
+      "transparent": true,
+      "provenance": "new motion applied to reconstructed reference overlay; no photographic face deformation",
+      "input_frame_count": 60,
+      "encoded_frame_count": 60
+    },
+    {
+      "name": "ocr_processing",
+      "gif": "gif/transparent_overlays/ocr_processing.gif",
+      "webp": "webp/transparent_overlays/ocr_processing.webp",
+      "width": 280,
+      "height": 16,
+      "duration_ms": 2000,
+      "loop": true,
+      "transparent": true,
+      "provenance": "new motion applied to reconstructed reference overlay; no photographic face deformation",
+      "input_frame_count": 40,
+      "encoded_frame_count": 40
+    },
+    {
+      "name": "verification_success",
+      "gif": "gif/transparent_overlays/verification_success.gif",
+      "webp": "webp/transparent_overlays/verification_success.webp",
+      "width": 152,
+      "height": 152,
+      "duration_ms": 2500,
+      "loop": true,
+      "transparent": true,
+      "provenance": "new motion applied to reconstructed reference overlay; no photographic face deformation",
+      "input_frame_count": 50,
+      "encoded_frame_count": 8
+    },
+    {
+      "name": "head_right_pose_demo",
+      "gif": "gif/camera_previews/head_right_pose_demo.gif",
+      "width": 440,
+      "height": 496,
+      "duration_ms": 2400,
+      "transparent": false,
+      "demo_only": true,
+      "provenance": "short dissolves between supplied still poses; 2x upscaled; not continuous head motion or a live verification result",
+      "input_frame_count": 48,
+      "encoded_frame_count": 15
+    },
+    {
+      "name": "head_left_pose_demo",
+      "gif": "gif/camera_previews/head_left_pose_demo.gif",
+      "width": 440,
+      "height": 496,
+      "duration_ms": 2400,
+      "transparent": false,
+      "demo_only": true,
+      "provenance": "short dissolves between supplied still poses; 2x upscaled; not continuous head motion or a live verification result",
+      "input_frame_count": 48,
+      "encoded_frame_count": 15
+    },
+    {
+      "name": "head_up_pose_demo",
+      "gif": "gif/camera_previews/head_up_pose_demo.gif",
+      "width": 440,
+      "height": 496,
+      "duration_ms": 2400,
+      "transparent": false,
+      "demo_only": true,
+      "provenance": "short dissolves between supplied still poses; 2x upscaled; not continuous head motion or a live verification result",
+      "input_frame_count": 48,
+      "encoded_frame_count": 15
+    },
+    {
+      "name": "id_front_scan_demo",
+      "gif": "gif/camera_previews/id_front_scan_demo.gif",
+      "width": 388,
+      "height": 260,
+      "duration_ms": 3000,
+      "demo_only": true,
+      "provenance": "supplied front ID still with reconstructed animated scan overlay; 2x upscaled",
+      "input_frame_count": 60,
+      "encoded_frame_count": 60
+    }
+  ]
+}

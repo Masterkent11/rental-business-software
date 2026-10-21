@@ -202,7 +202,7 @@ void main() {
       await _search(tester);
 
       expect(find.byType(StayResultsScreen), findsOneWidget);
-      expect(find.text('Fri, 16 Oct – Mon, 19 Oct · 3 guests'), findsOneWidget);
+      expect(find.text('Fri, 16 Oct  Mon, 19 Oct · 3 guests'), findsOneWidget);
       expect(find.text('1 condo'), findsOneWidget);
       final request = backend.searches.last.url.queryParameters;
       expect(request['intent'], 'RENT');

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { VerificationModule } from './verification.module.ts';
 import { SubmitApplicationController } from './controllers/submit-application.controller.ts';
 import { GetMyApplicationsController } from './controllers/get-my-applications.controller.ts';
 import { GetMyApplicationController } from './controllers/get-my-application.controller.ts';
@@ -45,6 +46,7 @@ import { listOrganizationApplications } from '@/application/applications/list-or
 import { decideApplication } from '@/application/applications/decide-application/decide-application.use-case.ts';
 
 @Module({
+  imports: [VerificationModule],
   controllers: [
     SubmitApplicationController,
     GetMyApplicationsController,

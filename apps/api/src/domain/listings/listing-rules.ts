@@ -120,6 +120,8 @@ export interface ListingDetailsInput {
   readonly kind: ListingKind;
   readonly title: string;
   readonly priceCentavos: number;
+  readonly minLeaseMonths?: number | null | undefined;
+  readonly maxLeaseMonths?: number | null | undefined;
   readonly minStayNights: number | null;
   readonly maxOccupants: number;
   readonly advanceMonths: number;
@@ -128,6 +130,7 @@ export interface ListingDetailsInput {
 }
 
 export function assertValidListingDetails(input: ListingDetailsInput): void {
+  assertLeaseDurationLimits(input);
   if (input.title.trim().length < 3) {
     throw new InvalidListingDetailsError('Give the listing a title of at least 3 characters');
   }
@@ -238,5 +241,16 @@ export function assertPhotoPathBelongs(
   const rest = storagePath.startsWith(prefix) ? storagePath.slice(prefix.length) : '';
   if (!rest || rest.includes('/') || rest.includes('..') || !/^[A-Za-z0-9._-]+$/.test(rest)) {
     throw new ListingPhotoRejectedError('That photo was not uploaded for this listing');
+  }
+}
+
+export function assertLeaseDurationLimits(input: { readonly minLeaseMonths?: number | null | undefined; readonly maxLeaseMonths?: number | null | undefined }): void {
+  for (const limit of [input.minLeaseMonths, input.maxLeaseMonths]) {
+    if (limit != null && (!Number.isInteger(limit) || limit < 1 || limit > 60)) {
+      throw new InvalidListingDetailsError('Lease duration limits must be between 1 and 60 months.');
+    }
+  }
+  if (input.minLeaseMonths != null && input.maxLeaseMonths != null && input.minLeaseMonths > input.maxLeaseMonths) {
+    throw new InvalidListingDetailsError('The minimum rental term cannot exceed the maximum.');
   }
 }

@@ -280,7 +280,7 @@ Minimum viable footprint for the pilot:
 
 | | |
 |---|---|
-| Organizations | 3–5 real owners, verified |
+| Organizations | 35 real owners, verified |
 | Properties | Mixed: an apartment building, a boarding house with bed spaces, one hybrid short-term resource |
 | Rentable resources | ~50 |
 | Active leases | ~20 |

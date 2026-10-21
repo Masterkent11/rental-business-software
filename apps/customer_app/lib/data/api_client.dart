@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -20,6 +21,7 @@ class ApiException implements Exception {
     this.statusCode,
     this.code,
     this.isNetwork = false,
+    this.isTimeout = false,
     this.cause,
   });
 
@@ -27,6 +29,7 @@ class ApiException implements Exception {
   final int? statusCode;
   final String? code;
   final bool isNetwork;
+  final bool isTimeout;
 
   final Object? cause;
 
@@ -80,11 +83,7 @@ class ApiClient {
     try {
       response = await _client.get(uri, headers: _headers()).timeout(kRequestTimeout);
     } catch (error) {
-      throw ApiException(
-        'Could not reach the server. Check your connection and try again.',
-        isNetwork: true,
-        cause: error,
-      );
+      throw _connectionFailure(error);
     }
 
     if (response.statusCode >= 400) throw _failure(response);
@@ -111,14 +110,13 @@ class ApiClient {
 
     late final http.Response response;
     try {
-      final streamed = await _client.send(request).timeout(kRequestTimeout);
-      response = await http.Response.fromStream(streamed);
+      response = await (() async {
+        final streamed = await _client.send(request);
+        return http.Response.fromStream(streamed);
+      })()
+          .timeout(kRequestTimeout);
     } catch (error) {
-      throw ApiException(
-        'Could not reach the server. Check your connection and try again.',
-        isNetwork: true,
-        cause: error,
-      );
+      throw _connectionFailure(error);
     }
 
     if (response.statusCode >= 400) throw _failure(response);
@@ -130,6 +128,14 @@ class ApiClient {
     }
     return decoded;
   }
+
+  ApiException _connectionFailure(Object error) => ApiException(
+      error is TimeoutException
+          ? 'The server took too long to respond. Please try again.'
+          : 'Could not reach the server. Check your connection and try again.',
+      isNetwork: error is! TimeoutException,
+      isTimeout: error is TimeoutException,
+      cause: error);
 
   ApiException _failure(http.Response response) {
     final status = response.statusCode;
@@ -145,7 +151,8 @@ class ApiClient {
     } on FormatException {
       message = null;
     }
-    if (status >= 500 || message == null) {
+    if (status == 401) message = 'Your session expired. Please sign in again.';
+    if ((status >= 500 && code != 'VERIFICATION_UNAVAILABLE') || message == null) {
       message = switch (status) {
         401 => 'Please sign in again.',
         403 => 'You do not have access to that.',

@@ -36,9 +36,9 @@ enum ViewingTimeWindow {
   final int startHour;
   final int endHour;
 
-  String get rangeLabel => '${_hour(startHour)} – ${_hour(endHour)}';
+  String get rangeLabel => '${_hour(startHour)}  ${_hour(endHour)}';
 
-  String get compactRangeLabel => '${_short(startHour)} – ${_short(endHour)}';
+  String get compactRangeLabel => '${_short(startHour)}  ${_short(endHour)}';
 
   String get spokenRange => '${_hour(startHour)} to ${_hour(endHour)}';
 

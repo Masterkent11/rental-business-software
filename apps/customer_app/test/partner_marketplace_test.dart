@@ -131,7 +131,7 @@ void main() {
 
     test('time windows follow Manila time and close an hour before they end', () {
       final day = DateTime.utc(2026, 10, 8);
-      expect(ViewingTimeWindow.afternoon.rangeLabel, '12:00 PM – 4:00 PM');
+      expect(ViewingTimeWindow.afternoon.rangeLabel, '12:00 PM  4:00 PM');
       expect(ViewingTimeWindow.morning.isOpenOn(day, DateTime.utc(2026, 10, 8, 2, 59)), isTrue);
       expect(ViewingTimeWindow.morning.isOpenOn(day, DateTime.utc(2026, 10, 8, 3, 1)), isFalse);
       expect(ViewingTimeWindow.evening.isOpenOn(day, DateTime.utc(2026, 10, 8, 10)), isTrue);
@@ -255,7 +255,7 @@ void main() {
       expect(find.bySemanticsLabel('Verified agent'), findsOneWidget);
       expect(find.textContaining('Maria'), findsNothing);
       expect(find.text('Thursday, October 8'), findsWidgets);
-      expect(find.text('Afternoon (12:00 PM – 4:00 PM)'), findsWidgets);
+      expect(find.text('Afternoon (12:00 PM  4:00 PM)'), findsWidgets);
       expect(find.text('Request sent'), findsOneWidget);
       expect(find.text('Agent confirming'), findsOneWidget);
       expect(find.text('Viewing confirmed'), findsOneWidget);

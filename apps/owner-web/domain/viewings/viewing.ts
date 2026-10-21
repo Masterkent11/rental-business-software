@@ -148,7 +148,7 @@ export const formatDay = (day: string) =>
 export function windowLabel(window: PreferredTimeWindow): string {
   const bounds = TIME_WINDOWS[window];
   const hour = (h: number) => `${h % 12 === 0 ? 12 : h % 12} ${h >= 12 ? "PM" : "AM"}`;
-  return `${bounds.label} (${hour(bounds.startHour)} – ${hour(bounds.endHour)})`;
+  return `${bounds.label} (${hour(bounds.startHour)}  ${hour(bounds.endHour)})`;
 }
 
 export function scheduleLabel(viewing: Pick<Viewing, "scheduledAt" | "preferredTimeWindow">): string {

@@ -26,3 +26,5 @@ This documentation set serves as the single source of truth for engineering prac
 ## Machine-Readable Operational Contract
 
 For automated AI coding agents, refer to **[`AGENTS.md`](../AGENTS.md)** at the root of `apps/api/`.
+
+- [Customer identity verification](identity-verification.md) — custom ML Kit capture, private evidence, submission gate, setup, and current server-verification limitation.

@@ -1,3 +1,4 @@
+import { verifiedDraft } from '@/infrastructure/postgres/__tests__/helpers/verified-draft.ts';
 import { randomUUID } from 'node:crypto';
 import { amountDue } from '@/application/payments/start-booking-payment/start-booking-payment.use-case.ts';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
@@ -24,7 +25,9 @@ const APPLICANT = '77777777-7777-4777-8777-777777777777';
 const OWNER = '88888888-8888-4888-8888-888888888888';
 
 suite('reservations against real PostgreSQL', { timeout: 30_000 }, () => {
-  const applications = postgresApplicationRepository();
+  const realApplications = postgresApplicationRepository();
+  const applications = { ...realApplications, submit: async (input: Parameters<typeof realApplications.submit>[0]) =>
+    realApplications.submit({ ...input, draftId: await verifiedDraft(input) }) };
   const payments = postgresPaymentRepository();
   const users = postgresUserRepository();
 
