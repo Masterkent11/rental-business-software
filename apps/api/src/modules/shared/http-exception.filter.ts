@@ -1,3 +1,4 @@
+import { InvoiceNotFoundError, PaymentNotInOrganizationError } from '@/application/ports/repositories/invoice-repository.port.ts';
 import { VerificationConflictError, VerificationInputError, VerificationNotFoundError, VerificationRateLimitError, VerificationRequiredError, VerificationUnavailableError } from '@/domain/verification/verification.ts';
 import {
   Catch,
@@ -42,7 +43,9 @@ import {
 import {
   EmptyInvoiceError,
   InvalidPeriodError,
-} from '@/application/collection/issue-invoice/issue-invoice.use-case.ts';
+  PaymentAllocationError,
+  InvalidInvoiceAmountError,
+} from '@/domain/collection/collection-errors.ts';
 import { InvoiceMissingError } from '@/application/collection/apply-payment-to-invoice/apply-payment-to-invoice.use-case.ts';
 import {
   PaymentNotOwnedError,
@@ -138,6 +141,8 @@ const RULES: readonly Rule[] = [
       ApplicationNotFoundError,
       TourNotFoundError,
       InvoiceMissingError,
+      InvoiceNotFoundError,
+      PaymentNotInOrganizationError,
       BookingNotHeldError,
       DomainBookingNotHeldError,
       PaymentNotOwnedError,
@@ -169,6 +174,7 @@ const RULES: readonly Rule[] = [
       ApprovalConflictError,
       TourNotPublishableError,
       InvoiceOverpaidError,
+      PaymentAllocationError,
       InvoiceNotSettleableError,
       InvalidListingTransitionError,
       InvalidStayTransitionError,
@@ -201,6 +207,7 @@ const RULES: readonly Rule[] = [
       InvalidDateRangeError,
       EmptyInvoiceError,
       InvalidPeriodError,
+      InvalidInvoiceAmountError,
       AmountMismatchError,
       SceneNotFoundError,
       InvalidListingDetailsError,

@@ -134,14 +134,22 @@ export function assertValidListingDetails(input: ListingDetailsInput): void {
   if (input.title.trim().length < 3) {
     throw new InvalidListingDetailsError('Give the listing a title of at least 3 characters');
   }
-  if (!Number.isInteger(input.priceCentavos) || input.priceCentavos <= 0) {
+  if (!Number.isSafeInteger(input.priceCentavos) || input.priceCentavos <= 0) {
     throw new InvalidListingDetailsError('Set a price greater than zero');
   }
   if (!Number.isInteger(input.maxOccupants) || input.maxOccupants < 1) {
     throw new InvalidListingDetailsError('Occupancy must allow at least one person');
   }
+  if (!Number.isSafeInteger(input.cleaningFeeCentavos) || input.cleaningFeeCentavos < 0) {
+    throw new InvalidListingDetailsError('The cleaning fee must be a nonnegative whole-centavo amount');
+  }
+  for (const months of [input.advanceMonths, input.depositMonths]) {
+    if (!Number.isInteger(months) || months < 0 || months > 6) {
+      throw new InvalidListingDetailsError('Advance and deposit must be whole months between 0 and 6');
+    }
+  }
   if (input.kind === 'SHORT_TERM') {
-    if (input.minStayNights === null || input.minStayNights < 1 || input.minStayNights > 90) {
+    if (input.minStayNights === null || !Number.isInteger(input.minStayNights) || input.minStayNights < 1 || input.minStayNights > 90) {
       throw new InvalidListingDetailsError('Short stays need a minimum of 1 to 90 nights');
     }
     if (input.advanceMonths !== 0 || input.depositMonths !== 0) {
@@ -153,9 +161,6 @@ export function assertValidListingDetails(input: ListingDetailsInput): void {
     }
     if (input.cleaningFeeCentavos !== 0) {
       throw new InvalidListingDetailsError('Monthly rentals do not charge a cleaning fee');
-    }
-    if (input.advanceMonths > 6 || input.depositMonths > 6) {
-      throw new InvalidListingDetailsError('Advance and deposit are limited to 6 months each');
     }
   }
 }

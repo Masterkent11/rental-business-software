@@ -23,10 +23,15 @@ final searchSuggestionsProvider =
 });
 
 class RecentSearches extends Notifier<List<String>> {
+  int _generation = 0;
   @override
   List<String> build() {
+    final generation = ++_generation;
+    ref.onDispose(() => _generation++);
     Future.microtask(() async {
+      if (generation != _generation) return;
       final stored = await ref.read(preferencesStoreProvider).readList(kRecentSearchesKey);
+      if (generation != _generation) return;
       if (state.isEmpty && stored.isNotEmpty) state = stored;
     });
     return const [];
@@ -35,11 +40,13 @@ class RecentSearches extends Notifier<List<String>> {
   Future<void> add(String text) async {
     final value = text.trim();
     if (value.length < kMinSuggestionLength) return;
+    _generation++;
     state = [value, ...state.where((s) => s.toLowerCase() != value.toLowerCase())].take(kMaxRecentSearches).toList();
     await ref.read(preferencesStoreProvider).writeList(kRecentSearchesKey, state);
   }
 
   Future<void> clear() async {
+    _generation++;
     state = const [];
     await ref.read(preferencesStoreProvider).remove(kRecentSearchesKey);
   }

@@ -376,7 +376,7 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
       organizationId: SANTOS,
       listingId,
       agentId: junAgentId,
-      permissions: { canViewCommercial: false },
+      permissions: { canViewCommercial: false, canManageTour: false },
       terms: {},
     });
     junRepresentationId = junInvite.id;
@@ -660,14 +660,15 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
     });
     const tourId = ensured.tour.id;
     const configure = configureTourProvider(tours, tourGate);
-    const matterport = await configure({
+    const configured = await configure({
       principal: agent(MARIA, 'Maria Santos'),
       organizationId: null,
       tourId,
       provider: 'MATTERPORT',
       matterport: 'https://my.matterport.com/show/?m=SxQL3iGyoDo',
     });
-    expect(matterport.externalModelId).toBe('SxQL3iGyoDo');
+    expect(configured.provider).toBe('PLATFORM');
+    expect(configured.externalModelId).toBeNull();
 
     await expect(
       configure({ principal: agent(JUN, 'Jun Dela Cruz'), organizationId: null, tourId, provider: 'PLATFORM', matterport: null }),

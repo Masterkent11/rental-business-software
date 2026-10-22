@@ -1,6 +1,8 @@
 import type { ArgumentsHost } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { InvoiceNotFoundError, PaymentNotInOrganizationError } from '@/application/ports/repositories/invoice-repository.port.ts';
+import { PaymentAllocationError, InvalidInvoiceAmountError } from '@/domain/collection/collection-errors.ts';
 import { PresentationExceptionFilter } from '@/modules/shared/http-exception.filter.ts';
 
 describe('dependency failures', () => {
@@ -25,5 +27,20 @@ describe('dependency failures', () => {
     new PresentationExceptionFilter().catch(Object.assign(new Error('private schema details'), { code: '42P01' }), host);
     expect(status).toHaveBeenCalledWith(500);
     expect(JSON.stringify(send.mock.calls)).not.toContain('private schema');
+  });
+});
+
+describe('allocation error contract', () => {
+  it.each([
+    [new PaymentNotInOrganizationError('No applicable payment.'), 404, 'NOT_FOUND'],
+    [new InvoiceNotFoundError('No applicable invoice.'), 404, 'NOT_FOUND'],
+    [new PaymentAllocationError('Payment balance is insufficient.'), 409, 'CONFLICT'],
+    [new InvalidInvoiceAmountError('The invoice total is too large.'), 400, 'INVALID_REQUEST'],
+  ] as const)('maps allocation failures to their public status', (error, expectedStatus, expectedCode) => {
+    const send = vi.fn(), status = vi.fn().mockReturnValue({ send });
+    const host = { switchToHttp: () => ({ getResponse: () => ({ status }) }) } as unknown as ArgumentsHost;
+    new PresentationExceptionFilter().catch(error, host);
+    expect(status).toHaveBeenCalledWith(expectedStatus);
+    expect(send).toHaveBeenCalledWith(expect.objectContaining({ statusCode: expectedStatus, code: expectedCode }));
   });
 });

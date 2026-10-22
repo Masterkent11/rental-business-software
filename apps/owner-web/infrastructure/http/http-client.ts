@@ -30,6 +30,8 @@ export class HttpClient {
     options: { method?: string; body?: unknown; organizationId?: string; signal?: AbortSignal } = {},
   ): Promise<T> {
     const token = await currentAccessToken();
+    const timeout = AbortSignal.timeout(20_000);
+    const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout;
     let response: Response;
     try {
       response = await fetch(`${env.apiBaseUrl}${path}`, {
@@ -41,10 +43,12 @@ export class HttpClient {
           ...(options.body !== undefined ? { "content-type": "application/json" } : {}),
         },
         ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
-        ...(options.signal ? { signal: options.signal } : {}),
+        signal,
         cache: "no-store",
       });
     } catch {
+      if (options.signal?.aborted) throw new HttpError("Request cancelled.", 0, "CANCELLED");
+      if (timeout.aborted) throw new HttpError("The server took too long to respond. Please try again.", 0, "TIMEOUT");
       throw new HttpError("Can't reach the server. Check your connection and try again.", 0, "NETWORK");
     }
 

@@ -1,5 +1,13 @@
 # Flutter Toolchain
 
+## Current verified workstation (2026-10-22)
+
+Flutter 3.47.6 / Dart 3.13.5, Xcode 27.0 on macOS 27.0.1. The current pubspec supports Dart >=3.5.4 <4 and Flutter >=3.24.5 <4; the old upper-bound statements below are historical, not current enforcement. New environment/flavor commands and validation limits are in [environment-management](../environment-management.md). Development iOS Simulator build passed during the architecture audit. Android SDK is absent on this workstation. CI pins Flutter 3.47.6; production distribution remains a separate signing/release task.
+
+## Historical baseline (2026-08-20)
+
+The remainder records the original toolchain and dependency decisions; do not use it as a current installed-version assertion.
+
 > **Status:** Written
 > **Owner step:** Step 3+ — Frontend (started early, deliberately)
 > **Last updated:** 2026-08-20

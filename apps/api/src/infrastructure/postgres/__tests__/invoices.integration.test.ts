@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { postgresInvoiceRepository } from '@/infrastructure/postgres/repositories/postgres-invoice.repository.ts';
 import { sql, withScope } from '@/infrastructure/postgres/db.ts';
 import { getOwnerCollection } from '@/application/collection/get-owner-collection/get-owner-collection.use-case.ts';
+import { PaymentAllocationError } from '@/domain/collection/collection-errors.ts';
 import { OccupancyNotInOrganizationError } from '@/application/ports/repositories/invoice-repository.port.ts';
 import type { Centavos } from '@/domain/shared/money.ts';
 import type { Principal } from '@/domain/identity/identity.ts';
@@ -299,4 +300,165 @@ suite('invoices against real PostgreSQL', { timeout: 45_000 }, () => {
       }),
     ).rejects.toBeInstanceOf(OccupancyNotInOrganizationError);
   });
+  it('cannot allocate more money than the source payment across invoices', async () => {
+    const occupancy = await anOccupancy(SANTOS_ORG);
+    const input = { organizationId: SANTOS_ORG, occupancyId: occupancy,
+      periodStart: day(0), periodEnd: day(30), dueOn: day(5),
+      lines: [{ kind: 'RENT' as const, description: 'Rent', amountCentavos: peso(1_000) }] };
+    const first = await invoices.issue(input);
+    const second = await invoices.issue(input);
+    const paymentId = await aPayment(SANTOS_ORG, occupancy, peso(500));
+    await invoices.applyPayment({ organizationId: SANTOS_ORG, invoiceId: first.id, paymentId, amountCentavos: peso(400) });
+    await expect(invoices.applyPayment({ organizationId: SANTOS_ORG, invoiceId: second.id,
+      paymentId, amountCentavos: peso(200) })).rejects.toThrow();
+    expect((await invoices.findById(SANTOS_ORG, second.id))!.amountPaidCentavos).toBe(0);
+  });
+
+  it('cannot use a foreign organization payment to settle a local invoice', async () => {
+    const occupancy = await anOccupancy(SANTOS_ORG);
+    const foreignOccupancy = await anOccupancy(VILLA_ORG);
+    const invoice = await invoices.issue({ organizationId: SANTOS_ORG, occupancyId: occupancy,
+      periodStart: day(0), periodEnd: day(30), dueOn: day(5),
+      lines: [{ kind: 'RENT', description: 'Rent', amountCentavos: peso(500) }] });
+    const paymentId = await aPayment(VILLA_ORG, foreignOccupancy, peso(500));
+    await expect(invoices.applyPayment({ organizationId: SANTOS_ORG, invoiceId: invoice.id,
+      paymentId, amountCentavos: peso(500) })).rejects.toThrow();
+    expect((await invoices.findById(SANTOS_ORG, invoice.id))!.amountPaidCentavos).toBe(0);
+  });
+
+  it.each(['PENDING', 'FAILED', 'REFUNDED'])('cannot allocate a %s payment', async (state) => {
+    const occupancy = await anOccupancy(SANTOS_ORG);
+    const invoice = await invoices.issue({ organizationId: SANTOS_ORG, occupancyId: occupancy,
+      periodStart: day(0), periodEnd: day(30), dueOn: day(5),
+      lines: [{ kind: 'RENT', description: 'Rent', amountCentavos: peso(500) }] });
+    const paymentId = await aPayment(SANTOS_ORG, occupancy, peso(500));
+    await withScope(SANTOS_ORG, tx => tx`update payments set state = ${state} where id = ${paymentId}`);
+    await expect(invoices.applyPayment({ organizationId: SANTOS_ORG, invoiceId: invoice.id,
+      paymentId, amountCentavos: peso(500) })).rejects.toThrow();
+    expect((await invoices.findById(SANTOS_ORG, invoice.id))!.amountPaidCentavos).toBe(0);
+  });
+
+  it('serializes allocations drawing on the same payment', async () => {
+    const occupancy = await anOccupancy(SANTOS_ORG);
+    const input = { organizationId: SANTOS_ORG, occupancyId: occupancy,
+      periodStart: day(0), periodEnd: day(30), dueOn: day(5),
+      lines: [{ kind: 'RENT' as const, description: 'Rent', amountCentavos: peso(500) }] };
+    const first = await invoices.issue(input), second = await invoices.issue(input);
+    const paymentId = await aPayment(SANTOS_ORG, occupancy, peso(500));
+    const results = await Promise.allSettled([first, second].map(invoice => invoices.applyPayment({
+      organizationId: SANTOS_ORG, invoiceId: invoice.id, paymentId, amountCentavos: peso(400) })));
+    expect(results.filter(r => r.status === 'fulfilled')).toHaveLength(1);
+    const amounts = await Promise.all([first, second].map(invoice => invoices.findById(SANTOS_ORG, invoice.id)));
+    expect(amounts.reduce((sum, invoice) => sum + invoice!.amountPaidCentavos, 0)).toBe(peso(400));
+  });
+
+  it('serializes different payments settling the same invoice', async () => {
+    const occupancy = await anOccupancy(SANTOS_ORG);
+    const invoice = await invoices.issue({ organizationId: SANTOS_ORG, occupancyId: occupancy,
+      periodStart: day(0), periodEnd: day(30), dueOn: day(5),
+      lines: [{ kind: 'RENT', description: 'Rent', amountCentavos: peso(500) }] });
+    const payments = await Promise.all([aPayment(SANTOS_ORG, occupancy, peso(400)), aPayment(SANTOS_ORG, occupancy, peso(400))]);
+    const results = await Promise.allSettled(payments.map(paymentId => invoices.applyPayment({
+      organizationId: SANTOS_ORG, invoiceId: invoice.id, paymentId, amountCentavos: peso(400) })));
+    expect(results.filter(r => r.status === 'fulfilled')).toHaveLength(1);
+    expect((await invoices.findById(SANTOS_ORG, invoice.id))!.amountPaidCentavos).toBe(peso(400));
+  });
+
+  it('guards the payment budget when SQL bypasses the repository', async () => {
+    const occupancy = await anOccupancy(SANTOS_ORG);
+    const input = { organizationId: SANTOS_ORG, occupancyId: occupancy,
+      periodStart: day(0), periodEnd: day(30), dueOn: day(5),
+      lines: [{ kind: 'RENT' as const, description: 'Rent', amountCentavos: peso(500) }] };
+    const first = await invoices.issue(input), second = await invoices.issue(input);
+    const paymentId = await aPayment(SANTOS_ORG, occupancy, peso(500));
+    const allocate = (invoiceId: string) => withScope(SANTOS_ORG, tx => tx`
+      insert into payment_applications (organization_id, payment_id, invoice_id, amount_centavos)
+      values (${SANTOS_ORG}, ${paymentId}, ${invoiceId}, ${peso(400)})
+    `);
+    const results = await Promise.allSettled([allocate(first.id), allocate(second.id)]);
+    expect(results.filter(r => r.status === 'fulfilled')).toHaveLength(1);
+    const rejected = results.find(r => r.status === 'rejected') as PromiseRejectedResult;
+    expect(rejected.reason).toMatchObject({ code: '23514', constraint_name: 'payment_application_payment_balance' });
+  });
+
+  it('guards invoice totals when concurrent SQL bypasses the repository', async () => {
+    const occupancy = await anOccupancy(SANTOS_ORG);
+    const invoice = await invoices.issue({ organizationId: SANTOS_ORG, occupancyId: occupancy,
+      periodStart: day(0), periodEnd: day(30), dueOn: day(5),
+      lines: [{ kind: 'RENT', description: 'Rent', amountCentavos: peso(500) }] });
+    const payments = await Promise.all([aPayment(SANTOS_ORG, occupancy, peso(400)), aPayment(SANTOS_ORG, occupancy, peso(400))]);
+    const results = await Promise.allSettled(payments.map(paymentId => withScope(SANTOS_ORG, tx => tx`
+      insert into payment_applications (organization_id, payment_id, invoice_id, amount_centavos)
+      values (${SANTOS_ORG}, ${paymentId}, ${invoice.id}, ${peso(400)})
+    `)));
+    expect(results.filter(r => r.status === 'fulfilled')).toHaveLength(1);
+    const rejected = results.find(r => r.status === 'rejected') as PromiseRejectedResult;
+    expect(rejected.reason).toMatchObject({ code: '23514', constraint_name: 'payment_application_invoice_balance' });
+  });
+
+  it('guards foreign payment references when SQL bypasses the repository', async () => {
+    const occupancy = await anOccupancy(SANTOS_ORG);
+    const foreign = await anOccupancy(VILLA_ORG);
+    const invoice = await invoices.issue({ organizationId: SANTOS_ORG, occupancyId: occupancy,
+      periodStart: day(0), periodEnd: day(30), dueOn: day(5),
+      lines: [{ kind: 'RENT', description: 'Rent', amountCentavos: peso(500) }] });
+    const paymentId = await aPayment(VILLA_ORG, foreign, peso(500));
+    await expect(withScope(SANTOS_ORG, tx => tx`
+      insert into payment_applications (organization_id, payment_id, invoice_id, amount_centavos)
+      values (${SANTOS_ORG}, ${paymentId}, ${invoice.id}, ${peso(500)})
+    `)).rejects.toMatchObject({ code: '23514', constraint_name: 'payment_application_payment_scope' });
+  });
+
+  it('rejects duplicate allocations without repeating their ledger entry', async () => {
+    const occupancy = await anOccupancy(SANTOS_ORG);
+    const invoice = await invoices.issue({ organizationId: SANTOS_ORG, occupancyId: occupancy,
+      periodStart: day(0), periodEnd: day(30), dueOn: day(5),
+      lines: [{ kind: 'RENT', description: 'Rent', amountCentavos: peso(500) }] });
+    const paymentId = await aPayment(SANTOS_ORG, occupancy, peso(500));
+    const input = { organizationId: SANTOS_ORG, invoiceId: invoice.id, paymentId, amountCentavos: peso(100) };
+    await invoices.applyPayment(input);
+    await expect(invoices.applyPayment(input)).rejects.toBeInstanceOf(PaymentAllocationError);
+    const counts = await withScope(SANTOS_ORG, tx => tx`
+      select (select count(*)::int from payment_applications where invoice_id = ${invoice.id}) as allocations,
+             (select count(*)::int from ledger_entries where cause_id = ${invoice.id} and entry_type = 'PAYMENT_RECEIVED') as ledger
+    `);
+    expect(counts[0]).toMatchObject({ allocations: 1, ledger: 1 });
+  });
+
+  it('guards foreign invoice references when SQL bypasses the repository', async () => {
+    const occupancy = await anOccupancy(SANTOS_ORG);
+    const foreign = await anOccupancy(VILLA_ORG);
+    const invoice = await invoices.issue({ organizationId: VILLA_ORG, occupancyId: foreign,
+      periodStart: day(0), periodEnd: day(30), dueOn: day(5),
+      lines: [{ kind: 'RENT', description: 'Rent', amountCentavos: peso(500) }] });
+    const paymentId = await aPayment(SANTOS_ORG, occupancy, peso(500));
+    await expect(withScope(SANTOS_ORG, tx => tx`
+      insert into payment_applications (organization_id, payment_id, invoice_id, amount_centavos)
+      values (${SANTOS_ORG}, ${paymentId}, ${invoice.id}, ${peso(500)})
+    `)).rejects.toMatchObject({ code: '23514', constraint_name: 'payment_application_invoice_scope' });
+  });
+
+  it.each(['PENDING', 'FAILED', 'REFUNDED'])('guards %s payments when SQL bypasses the repository', async state => {
+    const occupancy = await anOccupancy(SANTOS_ORG);
+    const invoice = await invoices.issue({ organizationId: SANTOS_ORG, occupancyId: occupancy,
+      periodStart: day(0), periodEnd: day(30), dueOn: day(5),
+      lines: [{ kind: 'RENT', description: 'Rent', amountCentavos: peso(500) }] });
+    const paymentId = await aPayment(SANTOS_ORG, occupancy, peso(500));
+    await withScope(SANTOS_ORG, tx => tx`update payments set state = ${state} where id = ${paymentId}`);
+    await expect(withScope(SANTOS_ORG, tx => tx`
+      insert into payment_applications (organization_id, payment_id, invoice_id, amount_centavos)
+      values (${SANTOS_ORG}, ${paymentId}, ${invoice.id}, ${peso(500)})
+    `)).rejects.toMatchObject({ code: '23514', constraint_name: 'payment_application_payment_state' });
+  });
+
+  it('keeps the allocation guard private and subject to invoker permissions', async () => {
+    const [guard] = await sql<{ prosecdef: boolean; proconfig: string[]; public_execute: boolean }[]>`
+      select p.prosecdef, p.proconfig, has_function_privilege('anon', p.oid, 'EXECUTE') as public_execute
+      from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'app_private' and p.proname = 'guard_payment_allocation'
+    `;
+    expect(guard).toMatchObject({ prosecdef: false, public_execute: false });
+    expect(guard!.proconfig).toContain('search_path=public, pg_temp');
+  });
+
 });

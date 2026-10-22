@@ -27,3 +27,19 @@ export class InvoiceNotSettleableError extends DomainError {
 function formatCentavos(amount: Centavos): string {
   return `₱${(amount / 100).toLocaleString('en-PH', { maximumFractionDigits: 2 })}`;
 }
+
+export class PaymentAllocationError extends DomainError {}
+
+export class EmptyInvoiceError extends DomainError {
+  constructor() {
+    super('An invoice needs at least one line. A claim for nothing is not a claim.');
+  }
+}
+
+export class InvalidPeriodError extends DomainError {
+  constructor() {
+    super('The invoice period must end after it starts.');
+  }
+}
+
+export class InvalidInvoiceAmountError extends DomainError {}

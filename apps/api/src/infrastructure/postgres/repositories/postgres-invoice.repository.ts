@@ -1,14 +1,18 @@
 import { sql, withScope } from '@/infrastructure/postgres/db.ts';
 import {
   InvoiceNotFoundError,
+  PaymentNotInOrganizationError,
   OccupancyNotInOrganizationError,
   type CollectedPayment,
   type CollectionMonth,
   type InvoiceRepository,
   type InvoiceWithContext,
 } from '@/application/ports/repositories/invoice-repository.port.ts';
+import { assertCanApply, assertPaymentCanCover, deriveState, invoiceTotalCentavos } from '@/domain/collection/collection-rules.ts';
+import { PaymentAllocationError } from '@/domain/collection/collection-errors.ts';
+import { centavos, type Centavos } from '@/domain/shared/money.ts';
+import type { PaymentState } from '@/domain/payments/payment-state.ts';
 import type { Invoice, InvoiceLineKind, InvoiceState } from '@/domain/collection/collection.ts';
-import type { Centavos } from '@/domain/shared/money.ts';
 import type { PaymentOrigin } from '@/domain/payments/payment.ts';
 
 interface InvoiceRow {
@@ -38,8 +42,8 @@ const toInvoice = (row: InvoiceRow): InvoiceWithContext => ({
   periodStart: row.period_start,
   periodEnd: row.period_end,
   dueOn: row.due_on,
-  totalCentavos: Number(row.total_centavos) as Centavos,
-  amountPaidCentavos: Number(row.amount_paid_centavos) as Centavos,
+  totalCentavos: centavos(Number(row.total_centavos)),
+  amountPaidCentavos: centavos(Number(row.amount_paid_centavos)),
   state: row.state,
   // A claim against someone who has not finished signing up is still a claim.
   tenantName: row.tenant_name ?? 'Unnamed tenant',
@@ -47,7 +51,7 @@ const toInvoice = (row: InvoiceRow): InvoiceWithContext => ({
   lines: (row.lines ?? []).map((line) => ({
     kind: line.kind,
     description: line.description,
-    amountCentavos: Number(line.amount_centavos) as Centavos,
+    amountCentavos: centavos(Number(line.amount_centavos)),
   })),
 });
 
@@ -152,8 +156,8 @@ export function postgresInvoiceRepository(): InvoiceRepository {
         return rows.map(
           (row): CollectionMonth => ({
             month: row.month,
-            claimedCentavos: Number(row.claimed) as Centavos,
-            receivedCentavos: Number(row.received) as Centavos,
+            claimedCentavos: centavos(Number(row.claimed)),
+            receivedCentavos: centavos(Number(row.received)),
           }),
         );
       });
@@ -200,7 +204,7 @@ export function postgresInvoiceRepository(): InvoiceRepository {
             id: row.id,
             tenantName: row.tenant_name ?? 'Unnamed tenant',
             resourceLabel: row.resource_label ?? 'Unknown resource',
-            amountCentavos: Number(row.amount_centavos) as Centavos,
+            amountCentavos: centavos(Number(row.amount_centavos)),
             origin: row.origin,
             reference: row.provider_ref,
             recordedBy: row.recorded_by_name,
@@ -255,7 +259,7 @@ export function postgresInvoiceRepository(): InvoiceRepository {
         // catch it because the *invoice* row is theirs.
         if (!occupancy) throw new OccupancyNotInOrganizationError(input.occupancyId);
 
-        const total = input.lines.reduce((sum, line) => sum + line.amountCentavos, 0);
+        const total = invoiceTotalCentavos(input.lines);
 
         const rows = await tx<{ id: string; number: number }[]>`
           insert into invoices (
@@ -313,6 +317,31 @@ export function postgresInvoiceRepository(): InvoiceRepository {
 
     async applyPayment(input) {
       return withScope(input.organizationId, async (tx) => {
+        const [payment] = await tx<{ amount_centavos: string; state: PaymentState }[]>`
+          select amount_centavos::text, state from payments
+          where id = ${input.paymentId} and organization_id = ${input.organizationId}
+          for update
+        `;
+        if (!payment) throw new PaymentNotInOrganizationError('No applicable payment in this organization.');
+        const [invoice] = await tx<{ total_centavos: string; amount_paid_centavos: string; state: InvoiceState; due_on: string }[]>`
+          select total_centavos::text, amount_paid_centavos::text, state, due_on::text from invoices
+          where id = ${input.invoiceId} and organization_id = ${input.organizationId}
+          for update
+        `;
+        if (!invoice) throw new InvoiceNotFoundError('No applicable invoice in this organization.');
+        const [allocated] = await tx<{ amount: string; already_applied: boolean }[]>`
+          select coalesce(sum(amount_centavos), 0)::text as amount,
+                 coalesce(bool_or(invoice_id = ${input.invoiceId}), false) as already_applied
+          from payment_applications
+          where payment_id = ${input.paymentId} and organization_id = ${input.organizationId}
+        `;
+        if (allocated!.already_applied) throw new PaymentAllocationError('That payment has already been allocated to this invoice.');
+        assertPaymentCanCover({ state: payment.state, amountCentavos: centavos(Number(payment.amount_centavos)),
+          allocatedCentavos: centavos(Number(allocated!.amount)) }, input.amountCentavos);
+        const claim = { state: invoice.state, totalCentavos: centavos(Number(invoice.total_centavos)),
+          amountPaidCentavos: centavos(Number(invoice.amount_paid_centavos)), dueOn: invoice.due_on };
+        assertCanApply({ ...claim, state: deriveState(claim) }, input.amountCentavos);
+
         /*
          * One transaction: write the application, let the trigger re-derive
          * amount_paid and state, append the ledger entry, read the result. If

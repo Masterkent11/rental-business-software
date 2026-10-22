@@ -1,10 +1,7 @@
-import 'package:flutter/foundation.dart';
-
 enum EditorialAction { exploreHomes, homesForSale, virtualTours, contactSupport, shortStays, monthlyStays }
 
 enum EditorialPlacement { home, staySearch }
 
-@immutable
 class EditorialCard {
   const EditorialCard({
     required this.id,

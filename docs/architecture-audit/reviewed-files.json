@@ -1,0 +1,1991 @@
+{
+  ".github/workflows/quality.yml": {
+    "sha256": "ad0b8a0aed5e3ac301fba0e5d536072d8044a2a0ed49982508fd8fc916ddd5a3",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "CI quality gates, disposable database tests and synthetic public Flutter flavor validation; remote execution pending.",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Full content inspected; dependencies, responsibilities and failure/security paths reviewed. Deployed settings and complete dependency closure not certified."
+  },
+  ".gitignore": {
+    "sha256": "8531dd93db40603103eef9e4b065e33722aa7e2ebeb7dfa00cf9049b23520bb0",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Ignore local build configuration and Python cache artifacts.",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Full content inspected; dependencies, responsibilities and failure/security paths reviewed. Deployed settings and complete dependency closure not certified."
+  },
+  "apps/api/AGENTS.md": {
+    "sha256": "e3af3c55e6a0f7fe9380fe42eb70e9ba5cd263c0930218029665b2cc3bb48ac3",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/package.json": {
+    "sha256": "baf3aa667ec9312deaca19abe90c91d4c5061438961397b341e871e7f13e9b07",
+    "findings": [
+      "F06"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/scripts/contracts/generate.mts": {
+    "sha256": "607eaed7ec38550a42d42728dfab98d3ee4bfa40e2f436e8cb0f901251ab17c4",
+    "findings": [
+      "F10"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/scripts/contracts/run.mts": {
+    "sha256": "a0dc43045463e1af6dbdf7449e81e52fea2b67a5af0d2c934a04b7134c4824ce",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/scripts/contracts/validate.mts": {
+    "sha256": "f7c82313d130832465e20c8c9aa86c97a972bf70916f3fa5093c07c151348dda",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/scripts/test-db.sh": {
+    "sha256": "65f46c9e6ff3ea407f123a9ac861e356b44bb13b4dfe49eeb7ff4b98aaab9fe7",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/scripts/test-isolated-db.sh": {
+    "sha256": "b480a06494a4d45d785a711f48e8bfe9031b7a88e88248c4e5558ac1d5de535f",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Create synthetic isolated PostgreSQL cluster, migrate/seed/test, stop and remove only its marked disposable files while preserving server log.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/app.module.ts": {
+    "sha256": "d195684e40513b3ef913e5d06290e548195d34461ae45f7c798386b5ab83a941",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/application/applications/submit-application/submit-application.use-case.ts": {
+    "sha256": "5eac57235974e676d60143ef6d9ea73da0e7654a906db5248b84620e8d190232",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/application/collection/apply-payment-to-invoice/apply-payment-to-invoice.types.ts": {
+    "sha256": "78999b9a9cc3a5badc4a297e1b9d3f17d82e6d916b792e2df096418e6ee904c5",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/collection/apply-payment-to-invoice/apply-payment-to-invoice.use-case.ts": {
+    "sha256": "9437bdd3625ef646e66979c1e42371932ceb4bc7d8f8170c82ecdbc623b08228",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/application/collection/get-owner-collection/get-owner-collection.types.ts": {
+    "sha256": "c37a1c59f8cebd06973953df6d5c84a844af6c11349170bead1279950e509353",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/collection/get-owner-collection/get-owner-collection.use-case.ts": {
+    "sha256": "0932c573f1263271f79b70a3c76b3fa9beec46bebd52e2e9efe237c1b7bab577",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/collection/issue-invoice/issue-invoice.types.ts": {
+    "sha256": "a703612c2f72ae3a04d5d021a0058db26cd5b75197ed215bcabb576adab21fbe",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/collection/issue-invoice/issue-invoice.use-case.ts": {
+    "sha256": "ea21ebcc87740b7c83fe49f9abb574004367ecdff5aa7eda6b8a1a61aff1cd11",
+    "findings": [
+      "F14"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/identity/application-authorization.rules.ts": {
+    "sha256": "77a1f1b90d8b2761b25b046b9f057bcadad8e31982476ce0753e801ed77b0c1c",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/identity/resolve-principal/resolve-principal.use-case.ts": {
+    "sha256": "b735b288e34fc42e09bb1d8d24dad79cf39cd0bfd015c0040216b0f67d0858a8",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/application/payments/confirm-booking-payment/confirm-booking-payment.types.ts": {
+    "sha256": "fcba33ac10ed5a180aa9aecc604e4925401671a67f311e62feaec56ed3e71c6e",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/payments/confirm-booking-payment/confirm-booking-payment.use-case.ts": {
+    "sha256": "868e5597c6ce20c02bfcdfba9d7764214c8b2c2bfbaa1ce5c7dda388e8c84915",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/payments/simulate-booking-payment/simulate-booking-payment.types.ts": {
+    "sha256": "d738851560d521177f0e8cae8f4ae21f33315731f3b53e4efb359a61837c1c2d",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/payments/simulate-booking-payment/simulate-booking-payment.use-case.ts": {
+    "sha256": "8e5481d23c12ea6e1a7d0239af512d8a3f7a9f2c9b5d74f77dad1c0f92531788",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/payments/start-booking-payment/start-booking-payment.types.ts": {
+    "sha256": "50eee6774c007106442638e39a4da1a7c0a86810f3bb739206b86369505d8b2b",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/payments/start-booking-payment/start-booking-payment.use-case.ts": {
+    "sha256": "25d18143ebe7ce7744d8b42c5d981d83244bbead0f3a8a45308c5c20194b2816",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/ports/providers/payment-gateway.port.ts": {
+    "sha256": "49f23d2b0e7743f4538e474322231957aa07c2075fdfbf321b45897fc0ef4595",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/ports/repositories/invoice-repository.port.ts": {
+    "sha256": "a343f77c2844c6d8c9da18d7a8793bc109c1934763f7523370ea565f38ed065f",
+    "findings": [
+      "F12"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/ports/repositories/payment-repository.port.ts": {
+    "sha256": "e10dd182a9d59afab6a2f13bdc2545e97269e9b23e5e7b5dc0e29679aa95de93",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/application/verification/capture-face-pose/capture-face-pose.use-case.ts": {
+    "sha256": "ed9fa000f2a27458bb84d5341bd3b7ec8a5c33fd1a58e2fc8572f4c33926555f",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/application/verification/cleanup-verification-evidence/cleanup-verification-evidence.use-case.ts": {
+    "sha256": "53654db3a3afae2f13c4da17dcea8c11811c8a40ef40633ad13554c4d0c45022",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/application/verification/decide-identity-review/decide-identity-review.use-case.ts": {
+    "sha256": "f3c00977548dd9f91545572194f2c5db08dd708069eb8abcec41c2dade789c1b",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/domain/agents/__tests__/agent.test.ts": {
+    "sha256": "32bbd4ba5185fb81a035e4d365e5794ac6ba9d51e3363e41020941944224684a",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "agents domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/agents/agent-dashboard.ts": {
+    "sha256": "2d02ef1aff6fbf8abac89f5fb618d4e7f86eaf09f1ef722ba2e518f9c5bf2e0e",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "agents domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/agents/agent-errors.ts": {
+    "sha256": "1dbae980619e7120cd66072f3a04f09484e7555d7a153959fbe7576c9d69c353",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "agents domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/agents/agent-rules.ts": {
+    "sha256": "efe4c6adfac1591e76dcea112f4af232c33b919fca79eb5d8624e8cc5422690e",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "agents domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/agents/agent.ts": {
+    "sha256": "65a838f3cd71d1fd4ff65cd3dd78bd3d40a7cc0337ba2b7cd08da27f3a341856",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "agents domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/agents/representation.ts": {
+    "sha256": "ee75e71bd047f6d5e76126dc47dd9619feff6f43e5e18180a0ac9b3cbf2ad627",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "agents domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/applications/__tests__/application.test.ts": {
+    "sha256": "6a6b14ff25d7d50dcd68afbebbdde98218fd540ac084139f6195846db6c687ee",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "applications domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/applications/application-errors.ts": {
+    "sha256": "f82468ca18b314a5848bf65b4583c3b3bee8b71b5ceb950aa2b8cc3436fe36f0",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "applications domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/applications/application-events.ts": {
+    "sha256": "f78f0c7276cbbc6025e1f3afffbb5b89ad14d9055410bcd925c7b1220c94d2ef",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "applications domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/applications/application-rules.ts": {
+    "sha256": "a90e52a09ad4e313ab34cf0fb9352bf3bf0550ae0f93ff97ddd859e913d19b37",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "applications domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/applications/application-state.ts": {
+    "sha256": "6f2194364c2170135afffcd3e26384a08dfaaf71ee39488f8b7106c7b5be3c63",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "applications domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/applications/application.ts": {
+    "sha256": "906d64ca1b986bd0e01f0cd7c45fccad93924c0c7e7d49d389f224c238cdfae6",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "applications domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/assignment/__tests__/assignment-engine.test.ts": {
+    "sha256": "24217fc999f9de07f4e73bc7bff0fa43a362e8c743da62cd309d4bb7b70c1316",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "assignment domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/assignment/assignment-engine.ts": {
+    "sha256": "1336ca8d6a64853a64b079215508e8f635f12e674bd444d53937bec3436b7245",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "assignment domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/assignment/assignment-policy.ts": {
+    "sha256": "93b94ef7852c8f3ebb6e46bd4089ef59b66067cf01b8a7c3bf79a5b6571a51db",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "assignment domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/assignment/assignment-types.ts": {
+    "sha256": "5c7d951bcb4821e802467ae66db75a200f9d4343ce89962dd3315307bf68bb3a",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "assignment domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/assignment/lead-assignment.ts": {
+    "sha256": "a2e5fc189e7548def359c7a527771969710466a36847580d587a8532871c96d5",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "assignment domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/bookings/booking-errors.ts": {
+    "sha256": "65689e29d5b3e97643611f2806e64bac0687c3a92857e28e9dae0f788a044edc",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/domain/bookings/booking-rules.ts": {
+    "sha256": "da1948d30eb95681fb93d549da88b3c15765718d9d820a1b107d00e2d5d24e4a",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/domain/bookings/stay-quote.ts": {
+    "sha256": "bc300f6aaffc2684c4f7e93c4420b6d72a8b9a16bc8fb433399f522d6e86fbe9",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/domain/collection/__tests__/invoice.test.ts": {
+    "sha256": "90ffd9b4cd55e3b9797e5e49dd7afea5df9ccebe778c9b4bc0f3895ba464ef63",
+    "findings": [
+      "F12",
+      "F14",
+      "F18"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "purpose": "Financial policy regression cases.",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Full content inspected; dependencies, responsibilities and failure/security paths reviewed. Deployed settings and complete dependency closure not certified."
+  },
+  "apps/api/src/domain/collection/collection-errors.ts": {
+    "sha256": "f5db277ab8c11b019ad99bbfdc55dccd6a1fd6df75d64d088ed8cea58a3f5179",
+    "findings": [
+      "F12",
+      "F14"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "purpose": "Typed collection business errors.",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Full content inspected; dependencies, responsibilities and failure/security paths reviewed. Deployed settings and complete dependency closure not certified."
+  },
+  "apps/api/src/domain/collection/collection-rules.ts": {
+    "sha256": "aa27a455c0f79c4b5e65f85888406fd4deb62f11a1c09163b272a63354c27ce7",
+    "findings": [
+      "F12",
+      "F14",
+      "F18"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "purpose": "Pure invoice state, balances, allocation budget and invoice validation/calculation.",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Full content inspected; dependencies, responsibilities and failure/security paths reviewed. Deployed settings and complete dependency closure not certified."
+  },
+  "apps/api/src/domain/collection/collection-state.ts": {
+    "sha256": "6820cb9dcef202493c7b864f526b9927522efe5a6a37b6104c7c06cbdb7e28f6",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/domain/collection/collection.ts": {
+    "sha256": "bf6d6129921a9a18595235d25822bfae76cdd736b5a941a4a844e708ce9f8cf5",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/domain/collection/ledger-entry.ts": {
+    "sha256": "a84f55711f29d6fd55ff8f4ab7db5b5df5329799af28b38c6ffb42271a09d36a",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/domain/identity/identity-errors.ts": {
+    "sha256": "3df2b9eefbcce51222f4648f87e7b58716260a16cb6707de67769fa180dde1ed",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "identity domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/identity/identity.ts": {
+    "sha256": "ebc84aa767cfec404d310e8af3c2de81fce9afe6daf7bf9b17c56e5efe4836c0",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "identity domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/identity/organization-membership.ts": {
+    "sha256": "f484ff33bc2a8d8a80ad52752c700bc7124d03ac73b0009fff43505b51473764",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "identity domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/identity/role.ts": {
+    "sha256": "05b13b533ff25101a98153222429ade0608327ddba76f5a56cbfc4cd6b672b0d",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "identity domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/inquiries/__tests__/inquiry.test.ts": {
+    "sha256": "3146a05b9d9a2ad2d2274973b6797ea578c13990b3527a855ef402bc03d1ac34",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "inquiries domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/inquiries/inquiry-errors.ts": {
+    "sha256": "616ab3e04caab17498e2c6be8a361065d8492de723e00b1d8bc292082200cc39",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "inquiries domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/inquiries/inquiry-rules.ts": {
+    "sha256": "6a563e6eb1a9fefbf2008918fa214abaa09ab7e87ea9c027099b313b6bad93e6",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "inquiries domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/inquiries/inquiry.ts": {
+    "sha256": "607775c74cf5d0f62949e6aa8dd7da6053c08766f299f9c0506ec628b0fe8392",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "inquiries domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/listings/__tests__/canonical-property.test.ts": {
+    "sha256": "2b937fffb70483d8b8ec75a75ff15b1bbb5f22b1dbbee2110d3380610d0b9dd0",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Listing lifecycle, canonical facts/duplicates, rental and sale validation, money calculations or corresponding domain regressions.",
+    "tests": "Full 561-test run includes listing domain and persistence tests; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected. This does not certify all callers, duplicate candidate search adapters, media processing or deployed authorization."
+  },
+  "apps/api/src/domain/listings/__tests__/listing-rules.test.ts": {
+    "sha256": "1f8886a2e6fe3829dc2c69239f84f71d2fe3b1f4159b23c59c30e6b29c498ede",
+    "findings": [
+      "F19"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "purpose": "Listing lifecycle, canonical facts/duplicates, rental and sale validation, money calculations or corresponding domain regressions.",
+    "tests": "Full 561-test run includes listing domain and persistence tests; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected. This does not certify all callers, duplicate candidate search adapters, media processing or deployed authorization."
+  },
+  "apps/api/src/domain/listings/canonical-facts.ts": {
+    "sha256": "1bd59a70d8804e08d5f37fa0e4fd7f13c29ad8d92c5ecefdf2d7aabb949fe0b0",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Listing lifecycle, canonical facts/duplicates, rental and sale validation, money calculations or corresponding domain regressions.",
+    "tests": "Full 561-test run includes listing domain and persistence tests; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected. This does not certify all callers, duplicate candidate search adapters, media processing or deployed authorization."
+  },
+  "apps/api/src/domain/listings/duplicate-detection.ts": {
+    "sha256": "467d6aff06fd26c876da51d62aa974f259f7ba39cf5abb854763eb9450fae102",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Listing lifecycle, canonical facts/duplicates, rental and sale validation, money calculations or corresponding domain regressions.",
+    "tests": "Full 561-test run includes listing domain and persistence tests; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected. This does not certify all callers, duplicate candidate search adapters, media processing or deployed authorization."
+  },
+  "apps/api/src/domain/listings/listing-errors.ts": {
+    "sha256": "dedcd3c5277362d32b6968eda99f81d9f47865b7812afed61d9042666ee72957",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Listing lifecycle, canonical facts/duplicates, rental and sale validation, money calculations or corresponding domain regressions.",
+    "tests": "Full 561-test run includes listing domain and persistence tests; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected. This does not certify all callers, duplicate candidate search adapters, media processing or deployed authorization."
+  },
+  "apps/api/src/domain/listings/listing-rules.ts": {
+    "sha256": "c5021c229902ce0ecc32b17734d30953ea126b6670e8b2b445f6ed1fe197f41a",
+    "findings": [
+      "F19"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "purpose": "Listing lifecycle, canonical facts/duplicates, rental and sale validation, money calculations or corresponding domain regressions.",
+    "tests": "Full 561-test run includes listing domain and persistence tests; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected. This does not certify all callers, duplicate candidate search adapters, media processing or deployed authorization."
+  },
+  "apps/api/src/domain/listings/listing-state.ts": {
+    "sha256": "0e932c388647aaf096aa8da1b95dca6aa5f6e8c3e18ab6e6a057fa47acd52a5d",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Listing lifecycle, canonical facts/duplicates, rental and sale validation, money calculations or corresponding domain regressions.",
+    "tests": "Full 561-test run includes listing domain and persistence tests; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected. This does not certify all callers, duplicate candidate search adapters, media processing or deployed authorization."
+  },
+  "apps/api/src/domain/listings/listing.ts": {
+    "sha256": "89944d5cfb358c9e985de3f06a68ae5681253de65a8806bd9226e5f00519a7b5",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Listing lifecycle, canonical facts/duplicates, rental and sale validation, money calculations or corresponding domain regressions.",
+    "tests": "Full 561-test run includes listing domain and persistence tests; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected. This does not certify all callers, duplicate candidate search adapters, media processing or deployed authorization."
+  },
+  "apps/api/src/domain/listings/move-in-cost.ts": {
+    "sha256": "0322e4840a2dff1e2f21d33d889388d2e8eedd88bfdaab29f8033228fc1791b9",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Listing lifecycle, canonical facts/duplicates, rental and sale validation, money calculations or corresponding domain regressions.",
+    "tests": "Full 561-test run includes listing domain and persistence tests; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected. This does not certify all callers, duplicate candidate search adapters, media processing or deployed authorization."
+  },
+  "apps/api/src/domain/messaging/__tests__/messaging-rules.test.ts": {
+    "sha256": "25632025939b62733a75028484c366b594960d98689a0f2bba5aadd495c52aff",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "messaging domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/messaging/conversation.ts": {
+    "sha256": "499e0af4c4842e54a458a4acf30afa9d403ec36e6d0148689bb41dbb64a8029a",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "messaging domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/messaging/messaging-errors.ts": {
+    "sha256": "79f601e05f841899ec2bd12788433675d8561ec56c05f4d5ada02f1406f9bb77",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "messaging domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/messaging/messaging-rules.ts": {
+    "sha256": "b009243ef069e5a411fdf05a641b0e0470167d26c67d9f2ae4325a2461762155",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "messaging domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/occupancy/__tests__/occupancy.test.ts": {
+    "sha256": "9213c934346a6825c7faeb6ae3ab8a71c71fd2fc8d837c0ded0ebe804e85cafa",
+    "findings": [
+      "F18"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "purpose": "occupancy domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/occupancy/occupancy-errors.ts": {
+    "sha256": "16f1de5a2a3516ea2c97512c7a4a8eec087525e71283207372f3a444e62a3ec6",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "occupancy domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/occupancy/occupancy-rules.ts": {
+    "sha256": "6641e527ae4b26099b9c4cce35a715d2c7a7f62fa40ad21315b6cb2f5806563d",
+    "findings": [
+      "F18"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "purpose": "occupancy domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/occupancy/occupancy-state.ts": {
+    "sha256": "123a538f73dfcbc380ef72430b27ce60d3b5f153041800e0feb33f514f3391cc",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "occupancy domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/occupancy/occupancy.ts": {
+    "sha256": "a857afccfd5c11cd343f3e153e06893aabcafff1d863c87a3deb84d9ec1891dc",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "occupancy domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/payments/__tests__/payment-rules.test.ts": {
+    "sha256": "0fc1ba079df546a4459d1a78a41b37c1e0f36b8f113903bc87330aae94ea4cff",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial/domain/transport regression scenarios; reviewed fixture scope, assertions, concurrency and rollback paths.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/domain/payments/payment-errors.ts": {
+    "sha256": "8289fe9e52e6121dcb061f2c09e66741a102699d5a1f429eb1e666737b74e0fb",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/domain/payments/payment-rules.ts": {
+    "sha256": "0311a39f7083a6c1a05a60634e5cac98f416ac6686aa325fdc1ca807e06a9bb0",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/domain/payments/payment-state.ts": {
+    "sha256": "9fe4e63e7fc5c3405bc7ad7cdf17786748f12466c234692229908b00589f6e23",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/domain/payments/payment.ts": {
+    "sha256": "4ad9392a7bba990516d74faf6ed4ecfbf24e041b0dd7c57e000fbe6d5b42c50a",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/domain/reservations/reservation-state.ts": {
+    "sha256": "c1043a0cd54588ad095bde0d54330b24eb026967b43322897f0f2f81b866fa03",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "reservations domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/reservations/reservation.ts": {
+    "sha256": "cea26ba429c71a11fa163abf3e107bb155bb53a62619b780947f612b5cef221b",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "reservations domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/shared/__tests__/geo.test.ts": {
+    "sha256": "7de70661ef4657a4aa389cde7100a27cccfd365c743b4c63f663a67d4d498f3e",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Shared pure domain contract or geography helper/test; import boundaries, validation and calculations inspected.",
+    "tests": "Existing geography regressions included in full suite; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected; caller validation and database/public location disclosure remain separate review scope."
+  },
+  "apps/api/src/domain/shared/__tests__/money.test.ts": {
+    "sha256": "074d866310e5884afca9f2051897bcda1d92eecdf417ff9e0c1aa5b4b02bc7d7",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial/domain/transport regression scenarios; reviewed fixture scope, assertions, concurrency and rollback paths.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/domain/shared/aggregate-root.ts": {
+    "sha256": "857413957b2c8ebdceb9e4bacd1fdc74dd82b4b149a9e89cf6ea981aa279d8cd",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Shared pure domain contract or geography helper/test; import boundaries, validation and calculations inspected.",
+    "tests": "Existing geography regressions included in full suite; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected; caller validation and database/public location disclosure remain separate review scope."
+  },
+  "apps/api/src/domain/shared/calendar.ts": {
+    "sha256": "ce7906bc12faeec48834c3ac0bb0c2d6dd244b18204d800fc00d961018a04b59",
+    "findings": [
+      "F18"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/domain/shared/domain-error.ts": {
+    "sha256": "37b3f0af41a03ac0303fecc5f0aa4c98975e31cabac6c1345f8e2e21da2d2c29",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/domain/shared/domain-event.ts": {
+    "sha256": "54eabbf42ecbea0b5e27f3ff74570c12478400baaa3d898a0a4e50f5e0e0db77",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Shared pure domain contract or geography helper/test; import boundaries, validation and calculations inspected.",
+    "tests": "Existing geography regressions included in full suite; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected; caller validation and database/public location disclosure remain separate review scope."
+  },
+  "apps/api/src/domain/shared/entity.ts": {
+    "sha256": "969530821538f5a6ffcfa92950a7438b275f87c7ad44218d6dc1fa95b266a713",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Shared pure domain contract or geography helper/test; import boundaries, validation and calculations inspected.",
+    "tests": "Existing geography regressions included in full suite; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected; caller validation and database/public location disclosure remain separate review scope."
+  },
+  "apps/api/src/domain/shared/geo.ts": {
+    "sha256": "a50e25dc64cdeefee645368c97d915947e3f703145a00cafefa0832399308551",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Shared pure domain contract or geography helper/test; import boundaries, validation and calculations inspected.",
+    "tests": "Existing geography regressions included in full suite; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected; caller validation and database/public location disclosure remain separate review scope."
+  },
+  "apps/api/src/domain/shared/money.ts": {
+    "sha256": "64f4f2ace477959d3391f4bbff84df6d73fe39fc49e325b1c657c828ed0269ef",
+    "findings": [
+      "F13"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/domain/shared/organization-scope.ts": {
+    "sha256": "b66c13c1731a5f8381667ff20faca0baea041f6b5971f4be94e13aefec6c1f14",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Shared pure domain contract or geography helper/test; import boundaries, validation and calculations inspected.",
+    "tests": "Existing geography regressions included in full suite; per-symbol coverage not measured.",
+    "reviewScope": "Full content inspected; caller validation and database/public location disclosure remain separate review scope."
+  },
+  "apps/api/src/domain/verification/__tests__/rental-application-policy.test.ts": {
+    "sha256": "eaa25d07cd425dba2bfa831a90893c110ac8fa1305cef5fbec7bb4759944b48e",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "verification domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/verification/__tests__/verification.fixture.ts": {
+    "sha256": "d94255c0dd91b878307ceef0d40c572940916cef6292b1f1b2bbc6e3cdfa911a",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "verification domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/verification/__tests__/verification.test.ts": {
+    "sha256": "ed1c6b9f6b2b2de58ee6ab24fbee2a17bb63928a5e2caaa5b99d05fc80b8883f",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "verification domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/domain/verification/verification.ts": {
+    "sha256": "ca6bed1a145a83611be5b90ae470701b2fd6c31c7c8e12b61bf4f03bc74cb023",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "verification domain types/policy or policy regression test; framework dependencies and transitions/validation reviewed.",
+    "tests": "Included in full 553-test disposable PostgreSQL run; method-level coverage not measured.",
+    "reviewScope": "Full file content inspected. Domain policy review does not certify caller authorization, persistence concurrency, deployed configuration or complete cross-feature dependency closure."
+  },
+  "apps/api/src/infrastructure/config/environment-config.ts": {
+    "sha256": "7f7217698fc2a9f55392d328f520841ec301676f5dbf2175251e312044e4f04c",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/infrastructure/http/__tests__/webhook-body.test.ts": {
+    "sha256": "10dade9850bea303c28108d37e2567a542e0fefb79de5c38c5af7304512d4fda",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/infrastructure/http/webhook-body.adapter.ts": {
+    "sha256": "dc97f342f9f663d1162e24c2a81d6f992fd2d5e10f5b395557b2073073b90859",
+    "findings": [
+      "F02"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/infrastructure/payments/sandbox-payment-gateway.adapter.ts": {
+    "sha256": "5e51f5eb231d7c6f94118fd6bae049bab15423613e92c5fc42e451b5d26c0eee",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/infrastructure/postgres/__tests__/invoices.integration.test.ts": {
+    "sha256": "29abbe0ae2d6b2edbcc69d7a84ccce87aa7df492d7d7101c1209710d8fcd54c7",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial/domain/transport regression scenarios; reviewed fixture scope, assertions, concurrency and rollback paths.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/infrastructure/postgres/db.ts": {
+    "sha256": "a98085a2576b09b3343e19b87172cd4e76ad5c9f45c0b1be3c2bd9f06d248bbc",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/infrastructure/postgres/repositories/postgres-invoice.repository.ts": {
+    "sha256": "c0dc9854eeb405d72c15e8b5120ed8aa48e0bc4de0b3f56ce688da0f55dc036f",
+    "findings": [
+      "F12",
+      "F13",
+      "F14"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "purpose": "Financial persistence adapter; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/infrastructure/postgres/repositories/postgres-payment.repository.ts": {
+    "sha256": "1187264335ca5e34a0cded1d6f0b95bf30da1ac44caa0a9a55f726834fc9eb91",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial persistence adapter; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/infrastructure/supabase/jwks-identity.provider.ts": {
+    "sha256": "4aad68cb168f7ac044558ea196545201da5b3713ecaf531475d477c520e98c3a",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/infrastructure/verification/manual-review-verification.adapter.ts": {
+    "sha256": "8272699c66f1630b9500895895de1cd4ea8bd4dc7354ae6044bc9abb49505b1d",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/main.ts": {
+    "sha256": "1dd973add6285d41c2d19295e07f6f0dee88021987b3e2151e4958fc803a62ee",
+    "findings": [
+      "F02"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/modules/bookings/controllers/place-hold.controller.ts": {
+    "sha256": "a50650a0b4eb0c75fc76f43361839494b8c5267abb814d9171b5e1f9c672b3dc",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/modules/bookings/dto/booking.dto.ts": {
+    "sha256": "069a0601db9704aafe027cbf4968c65c142fce9acc8d8b9e3d127f54c69cbf65",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/modules/collection/controllers/apply-payment-to-invoice.controller.ts": {
+    "sha256": "6247a7153e062e19e1b40928bcb8190dbc3272247c73430062b159a9bf99c26e",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/modules/collection/controllers/issue-invoice.controller.ts": {
+    "sha256": "63f2e78529d267d03af1159e789a92e5466d92f067c887e95ecbccddb58a2509",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/modules/collection/dto/apply-payment.dto.ts": {
+    "sha256": "8c9e47a9a569a3acaa0aa9df2e8aa8c1254349d9515cc1e58a7aea88e5cb614a",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/modules/collection/dto/issue-invoice.dto.ts": {
+    "sha256": "054a690f6fde12a0b55077f4fefa52150df49f615f709b60d556f89e3df3ad61",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/modules/collection/mappers/collection-http.mapper.ts": {
+    "sha256": "874634b76c37ba81440e57ea8df6a7edd2627b0f28636f1b965426f0da29c442",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/modules/content/controllers/content.controller.ts": {
+    "sha256": "1dd830e0dbc4634f9cde7da6356a6adef1a4cff013ceff743bc1d1d27570e850",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/modules/discovery/controllers/discovery.controller.ts": {
+    "sha256": "cc9e2dfb71e99277f73590d6d8e8a06bceb7ddc3c7b7205105d2a7dadb199794",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/modules/listings/controllers/search-listings.controller.ts": {
+    "sha256": "4c48b891df57acf36d675f952f6c7e9a26d819af6f9c9d8ebe32a29028c6a2bb",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/modules/listings/dto/owner-listing.dto.ts": {
+    "sha256": "9323142d9de5bb0841454d11e6415275073b5759d9353ce477fdfb0717ca4a1a",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Inbound Zod owner listing schemas; field limits and optional/default/partial input behavior inspected.",
+    "tests": "Existing DTO/HTTP and integration tests; full per-operation refinement coverage pending.",
+    "reviewScope": "Full content inspected; calendar-shaped dates rely on domain validation where invoked. No claim every date consumer is validated."
+  },
+  "apps/api/src/modules/me/controllers/get-me.controller.ts": {
+    "sha256": "48dadafdf26c130df4b3260b2f53e46e8544611c22b1eee95696941ba67e7e41",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/modules/notifications/controllers/notifications.controller.ts": {
+    "sha256": "b55a250463dcbcc913fc7c7d36977c355fab9b51f2b560797e2dd703191b0881",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/modules/payments/controllers/confirm-booking-payment.controller.ts": {
+    "sha256": "d6ba26c43b6047d4869fc6d1c8d0279cda58f45bdc1e294b283a7ce444ca364a",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/api/src/modules/payments/controllers/simulate-booking-payment.controller.ts": {
+    "sha256": "684ae7771c1ba070bbc83f7afd7ce6322b431e3d45ff6bda3eb3ef2bd90ca2c4",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/modules/payments/controllers/start-booking-payment.controller.ts": {
+    "sha256": "57bb2aecc2b094c69142baf48696716636465ae2e5c354f4eb75075a427da9dd",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/modules/payments/dto/payment.dto.ts": {
+    "sha256": "a4a9adc49662a01a5400c502dcf4aaa36248a2c4e1a934f6b05577927624c541",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/modules/payments/mappers/payment-http.mapper.ts": {
+    "sha256": "8970f4dda9d0eec9c035711edbb8cee7dd83afd98428a8fd3dfa4232edf45ee6",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial policy/contract/transport; content, dependencies, authorization/money handling and errors reviewed.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/api/src/modules/shared/__tests__/http-exception.filter.test.ts": {
+    "sha256": "d043c8460c67021f48aaecf7761e15d7e8288a48ee686ac052a91723c2737944",
+    "findings": [
+      "F12",
+      "F14"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "purpose": "404/409 allocation and 400 invoice amount error regressions.",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Full content inspected; dependencies, responsibilities and failure/security paths reviewed. Deployed settings and complete dependency closure not certified."
+  },
+  "apps/api/src/modules/shared/http-exception.filter.ts": {
+    "sha256": "f7f76a2b0f45745f0a96589bebb9c0b09a76b0d1d364b7a374d02800613f442f",
+    "findings": [
+      "F12",
+      "F14"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "purpose": "Transport mapping for domain/application failures.",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Full content inspected; dependencies, responsibilities and failure/security paths reviewed. Deployed settings and complete dependency closure not certified."
+  },
+  "apps/customer_app/android/app/build.gradle": {
+    "sha256": "109778bc434fddde354b7df77409615db4ed80abce8f10bdeee0ce0fd7fa6c0b",
+    "findings": [
+      "F07"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/android/app/src/debug/AndroidManifest.xml": {
+    "sha256": "181138d213a7e119e7913e9442151b4f55db62141291b85674d10555ac47cae6",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/android/app/src/development/AndroidManifest.xml": {
+    "sha256": "53c01c7b40f6e1ba705b89674fe73988706e83acc06551723a480055d947afe5",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/android/app/src/main/AndroidManifest.xml": {
+    "sha256": "fa08d67b520ce68305fa665878b5b609f94d073a084d893ba768d464a7ddc805",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/config/development.example.json": {
+    "sha256": "aa05150cdafa13b74687c8e32ff323828b839f546d3a27f53bbc7590a4d8206b",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/config/production.example.json": {
+    "sha256": "763b19a9a32ec31ac5854b7bbc0e96ffbe2ac6d95b5367e9b42ce1fdaf70a887",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/config/staging.example.json": {
+    "sha256": "dba4bddcd27fa2636637df27c727110c137cd9f3a7f5054107a36364e29ad8cb",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Flutter/Debug-development.xcconfig": {
+    "sha256": "77b1ef8212f63b684c7704ce855f325a808367d54cfb07cf6a38278861b687c4",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Flutter/Debug-production.xcconfig": {
+    "sha256": "f6132e1d0a77fb6e368881344cc9f61c96b6abb250f3e1ecf7317de5252cf5f6",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Flutter/Debug-staging.xcconfig": {
+    "sha256": "98d89bd75a403933dd7f3edc5a0e2c9a8152be3595191e65a5597542935aefb5",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Flutter/Profile-development.xcconfig": {
+    "sha256": "07f3a40d34b4af3b28e111b438b6a4597abc45352d87e93fdea8c5bc20562e6b",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Flutter/Profile-production.xcconfig": {
+    "sha256": "2d72a1af29aa6bea1bd615cdf637280512026ac4008a40bf729a4ad90ff804f5",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Flutter/Profile-staging.xcconfig": {
+    "sha256": "e36286065f02e5b4d5858a23627e221b00858297ed7235e20eb6ba901651cba6",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Flutter/Release-development.xcconfig": {
+    "sha256": "247df407f1ff61b9ef2e8b14c6e0bae71aeb019f8da7df39b808bbf8b2dccd01",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Flutter/Release-production.xcconfig": {
+    "sha256": "026c6910488860cb15ac7ce5683dbcd5604d6a37b65008f6f14964149640c0e7",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Flutter/Release-staging.xcconfig": {
+    "sha256": "d8ddc3ee429d7ef42c698a3f021cc103acd8be473dc89b42d06f7c718936e4bb",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Podfile": {
+    "sha256": "51e55da440ca53078eee0c331b7e345bacd963ba23b69dbb484471d4ba4ac8ad",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme": {
+    "sha256": "9fbce429f56243561dd437a527136c9f9ed77165e3b271b923faf236cfcd0484",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Runner.xcodeproj/xcshareddata/xcschemes/development.xcscheme": {
+    "sha256": "5b304b8cdaa40d0b11700fa31d210aa1834346b856da7afaeb7198237f3eaf7f",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Runner.xcodeproj/xcshareddata/xcschemes/production.xcscheme": {
+    "sha256": "7871e9c176f90fc8e36b7d25780cd9a15426fc3bad48f0229fc5f85941b7413c",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Runner.xcodeproj/xcshareddata/xcschemes/staging.xcscheme": {
+    "sha256": "feaaec1bf2669c2539ade1a052ec5db771678cf5da8a3765df7a2e34d0107a0f",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/ios/Runner/Info.plist": {
+    "sha256": "ee96d926ccd92632ee2d2baa7ead94423cef7d4ead7d86e6ab0bd085a84c1d75",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/lib/app/app.dart": {
+    "sha256": "e909879180fb62beca87c5f8637fb65397a6d25531d2febd4f3ee6faa46033d7",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/lib/app/app_config.dart": {
+    "sha256": "d63ce49cdde92b0b648f065c508beeaa7beb08da9eb058c8421ceabb2e9bb631",
+    "findings": [
+      "F01"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/lib/app/bootstrap/app_bootstrap.dart": {
+    "sha256": "7b3f8b2293f4d797913c8eb829b08879e3bfb844426171dd24aefbd8a73b7521",
+    "findings": [
+      "F01"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/lib/data/api_client.dart": {
+    "sha256": "51065980c127664223858e47e624f99fe97e8376d5a1b2e757a35a25df9b5174",
+    "findings": [
+      "F01"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/lib/data/auth_repository.dart": {
+    "sha256": "13d3b9cb29d81df10796f6698113ea5d32ab8a243cc4b201a6542b7c7afd7a0b",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/lib/data/discovery_repository.dart": {
+    "sha256": "2bc3faf0eeee6ae080cc23a7297460d59f34b1960dde03f8290a303469d378ab",
+    "findings": [
+      "F16"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "purpose": "Discovery HTTP/cache adapter currently owns consumer DTO/view types and provider composition.",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Full content inspected; dependencies, responsibilities and failure/security paths reviewed. Deployed settings and complete dependency closure not certified."
+  },
+  "apps/customer_app/lib/data/offline_cache.dart": {
+    "sha256": "69d83b7545fc6d440e93716329708323c6e49c66c57b26e1280fa60817d780f8",
+    "findings": [
+      "F04"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/lib/data/preferences_store.dart": {
+    "sha256": "ead95020732d229e8a6cea5b41095c1416202268e635afd506c4cccf10fb9855",
+    "findings": [
+      "F16"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "purpose": "Preferences abstraction, shared-preferences adapter and composition bundled in data layer.",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Full content inspected; dependencies, responsibilities and failure/security paths reviewed. Deployed settings and complete dependency closure not certified."
+  },
+  "apps/customer_app/lib/data/verification_repository.dart": {
+    "sha256": "1ddb194cd9343f28693557a4e6efc490aed2ff0dd41d004151fdd374bd89b76d",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/lib/features/editorial/domain/editorial_card.dart": {
+    "sha256": "12a40021b1b7718ddc8317db84349e2a3eac5cbed9df759791fe09620bf7d1ef",
+    "findings": [
+      "F05"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/lib/features/explore/application/discovery_feeds.dart": {
+    "sha256": "902c32230ee49565c67cc3dc0a351dfc79c3b49da1ee894cc847f745e30cae76",
+    "findings": [
+      "F16"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "purpose": "Discovery streams currently depend on concrete data providers and shared view models.",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Full content inspected; dependencies, responsibilities and failure/security paths reviewed. Deployed settings and complete dependency closure not certified."
+  },
+  "apps/customer_app/lib/features/explore/application/explore_controller.dart": {
+    "sha256": "abc41a262ce19692c9d69da9cd27abf854155bebbbcdfec042f0d6cd1bf5f94e",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Query-state orchestration delegates query/category rules to domain types.",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Full content inspected; dependencies, responsibilities and failure/security paths reviewed. Deployed settings and complete dependency closure not certified."
+  },
+  "apps/customer_app/lib/features/explore/application/explore_results.dart": {
+    "sha256": "1649056de35a8251973980179773413c6afb74d4322f0572d5c53ed6b9c4a789",
+    "findings": [
+      "F16"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "purpose": "Paged explore state with request generation guards; concrete repository/model coupling remains.",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Full content inspected; dependencies, responsibilities and failure/security paths reviewed. Deployed settings and complete dependency closure not certified."
+  },
+  "apps/customer_app/lib/features/explore/application/search_suggestions.dart": {
+    "sha256": "9ac7a5fb68334b31d5cbe8dbb23cf4f5fc14c9e7993073d0b7c8ec0948ff0476",
+    "findings": [
+      "F16",
+      "F17"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "purpose": "Debounced suggestions and recent search history; stale restore corrected, concrete provider coupling remains.",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Full content inspected; dependencies, responsibilities and failure/security paths reviewed. Deployed settings and complete dependency closure not certified."
+  },
+  "apps/customer_app/lib/features/explore/application/stay_search_state.dart": {
+    "sha256": "17cc399e02ff6a0fae8bc11d074cb6f304dfb9c859eb0407f0ec6c3e5f281637",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/lib/features/explore/domain/explore_query.dart": {
+    "sha256": "d30170a69c4bf4a49b641df32fd293fe5bcbdd97208b3c94fd752b09e9071809",
+    "findings": [
+      "F05"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/lib/features/explore/domain/listing_category.dart": {
+    "sha256": "82e6a85007c785bf27a0649f5fb277cf74bff1ddb0f3fb119fa26f5cfc8417fe",
+    "findings": [
+      "F05"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/lib/features/explore/presentation/explore_icons.dart": {
+    "sha256": "42257fe746ebf3dc12354a0d2cdb426df238c88eeb6a37b8dd56d6f880bdfdfe",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/lib/main.dart": {
+    "sha256": "770c39c18962315fab14ee2058c66c325b68bd9d96dd2ba6e531525b61cbc0fa",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/pubspec.yaml": {
+    "sha256": "bb09899f3f3d1b3abaf57023c45564df457297b9d6f162a7475de5e25fdc3b1a",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/test/app_config_test.dart": {
+    "sha256": "179bee13ba72813a0b7e98f5b4f272d428b5d015c2d471c202d7641535e9f5c9",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/test/architecture_boundaries_test.dart": {
+    "sha256": "57d33e4ae3b3f1d4a18ef14e909d696352544fc295d1c95a452423be43c0d235",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/test/bootstrap_test.dart": {
+    "sha256": "b40789c3fb57aeab5453263e61dc0a7970d4f63c2a9acd28f16c281dd584f23b",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/test/build_config_test.dart": {
+    "sha256": "d78dff51efdc2ad9959ab19855f53d8eb00d3a5fc55a52026bc87463378feea8",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/test/flutter_test_config.dart": {
+    "sha256": "eedf241055344ba460b1306f44eabbaf9a50959c604432797b546fbb78e166b5",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/test/offline_cache_test.dart": {
+    "sha256": "26af81a0ac8441446135898e0060a644f4b690c2c7ef4b2b82585dbd4c062ca1",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/customer_app/test/recent_searches_lifecycle_test.dart": {
+    "sha256": "671709bb006291587c90f8a11dc08d660f839f908bf47b1a7442a9b130743be8",
+    "findings": [
+      "F17"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "purpose": "Clear-versus-restore and disposal regression checks.",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Full content inspected; dependencies, responsibilities and failure/security paths reviewed. Deployed settings and complete dependency closure not certified."
+  },
+  "apps/owner-web/AGENTS.md": {
+    "sha256": "63f2c50380ed6303237cce215ce27af1d620d094c215e28d1b1538a3c070e3bb",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/owner-web/__tests__/helpers/load-store.mjs": {
+    "sha256": "904ec6b7b2320e23b6c33d76398e13710e7ff842dd8793875a964afc8058df19",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/owner-web/__tests__/http-timeout.test.mjs": {
+    "sha256": "f1587a70c7cb98e660e80157ab146e1a971d2dcb3e383b9ee9182cbf0b5bcedb",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/owner-web/__tests__/session-lifetime.test.mjs": {
+    "sha256": "48aba3540815dd150a9ba86ae4f3e81dd295d7b7366ee6d2ab5a5bb411b37911",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/owner-web/application/ports/file-reader.port.ts": {
+    "sha256": "94f43e3a582825a258efc4578874d13a18c652cf7efe3b95a1e309b96021fe84",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Outbound contract for file reader. No concrete SDK/database dependency; uploaded File values stay opaque to orchestration.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/ports/owner-repository.port.ts": {
+    "sha256": "592001ae60d90acda402351c70e129848a50dc09b49e18ca9d4afbcc041a9f33",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Outbound contract for owner repository. No concrete SDK/database dependency; uploaded File values stay opaque to orchestration.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/ports/partner-repository.port.ts": {
+    "sha256": "aa706ee1b878b6c5f6218052e3421c48eb2d99d2302eff1fecb8c0dbead3737f",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Outbound contract for partner repository. No concrete SDK/database dependency; uploaded File values stay opaque to orchestration.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/ports/photo-storage.port.ts": {
+    "sha256": "c08a27c00661995377226fc0f40027f2223f7e475746f3d80f9ddadd8606150d",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Outbound contract for photo storage. No concrete SDK/database dependency; uploaded File values stay opaque to orchestration.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/ports/realtime.port.ts": {
+    "sha256": "c219b196bb9e9897e5d41c76b734f22442adc1191d06c871df6e2e04784f698a",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Outbound contract for realtime. No concrete SDK/database dependency; uploaded File values stay opaque to orchestration.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/ports/session.port.ts": {
+    "sha256": "2b842b7cb03d015a4f6c1f62d9b38788502dca7bbef26dc34f8fd46fda0e002f",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Outbound contract for session. No concrete SDK/database dependency; uploaded File values stay opaque to orchestration.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/use-cases/applications/applications.use-cases.ts": {
+    "sha256": "094aae68d131c709546068ec067341c74ce0a2ea109ddd9bbd687952a3f071b7",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Port-driven applications orchestration, input usability validation and result forwarding; backend remains authorization authority.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/use-cases/bookings/bookings.use-cases.ts": {
+    "sha256": "cc50277c22b8a03ef66e766d62811961904ebc6c60e15e9288174efb5006524b",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Port-driven bookings orchestration, input usability validation and result forwarding; backend remains authorization authority.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/use-cases/dashboard/load-dashboard.use-case.ts": {
+    "sha256": "b66428c5a3338af664aeacc4bc6f9d79cafa1898f4acdd5e2c47a309034a6b0b",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Port-driven dashboard orchestration, input usability validation and result forwarding; backend remains authorization authority.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/use-cases/listings/listings.use-cases.ts": {
+    "sha256": "7b17d0c82db20a9433e7663b7689a66578d84eaa63a455c1aaea9f257aea06d3",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Port-driven listings orchestration, input usability validation and result forwarding; backend remains authorization authority.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/use-cases/messaging/messaging.use-cases.ts": {
+    "sha256": "78ea5749b474800c0a8bf255a67d8d5ea86102c04448c899d139fc383299c28a",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Port-driven messaging orchestration, input usability validation and result forwarding; backend remains authorization authority.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/use-cases/notifications/notifications.use-cases.ts": {
+    "sha256": "83658471f339917568aa3879f55453275ef59c259ff641a31fac87f03347480b",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Port-driven notifications orchestration, input usability validation and result forwarding; backend remains authorization authority.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/use-cases/partner/agents.use-cases.ts": {
+    "sha256": "efe42b65bcb7bff8a89e29f56ef412b3acf12593a9b9ad8c4e7bfc0d181a0064",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Port-driven partner orchestration, input usability validation and result forwarding; backend remains authorization authority.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/use-cases/partner/engagement.use-cases.ts": {
+    "sha256": "651cf230c8514c2a06d63c4a90f8de5096d0a43ff8df24c1ad5a8d7edce02a2b",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Port-driven partner orchestration, input usability validation and result forwarding; backend remains authorization authority.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/use-cases/partner/sale-listings.use-cases.ts": {
+    "sha256": "2daa20996db09c74936a7d4b3224d84abcbcb067110f106d9476a4927f487329",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Port-driven partner orchestration, input usability validation and result forwarding; backend remains authorization authority.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/use-cases/partner/tours.use-cases.ts": {
+    "sha256": "5427cd0e5c8578e1c33e3142d0eb24ec0fc14d1d9950b89c84d98037f65792c4",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Port-driven partner orchestration, input usability validation and result forwarding; backend remains authorization authority.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/application/use-cases/session/session.use-cases.ts": {
+    "sha256": "43c8f696f8913f08f41343298467e22f8d0273290eff7891f04b40c71f3b712e",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Port-driven session orchestration, input usability validation and result forwarding; backend remains authorization authority.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "apps/owner-web/infrastructure/auth/supabase-session.adapter.ts": {
+    "sha256": "b80c9d40240e94cc5829c87887d5efddbc02c879c21e09ad2f5a73a0bb7672d1",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/owner-web/infrastructure/config/env.ts": {
+    "sha256": "beba760b671038ad178c198db2f129a7c1613bb8b4658c8e3794e96ea10acadb",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/owner-web/infrastructure/http/http-client.ts": {
+    "sha256": "65e9f6761eaad2f43aaba7ab46867e924f84acd2661451cf50bb0ebe1ee73cf2",
+    "findings": [
+      "F08"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/owner-web/package.json": {
+    "sha256": "3985fec5f3698b7827bc00ee9a2af2982dad505406e18546ee2d5803551e1d86",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "apps/owner-web/stores/use-session-store.ts": {
+    "sha256": "f3054571e3bfbf3537f3084a64258d83a5541adaced776821314102ee43c4b0e",
+    "findings": [
+      "F03"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "docs/02-architecture/architecture-principles.md": {
+    "sha256": "02074297c68056d99a0a531084dfbd0852b4149a5d0b2d464c3fec0828ecbdc5",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "docs/06-frontend/flutter-toolchain.md": {
+    "sha256": "dea3f9469e7ebe0c6a56f21147ac60059c4701965a7430a1531edfb24d382c6f",
+    "findings": [
+      "F09"
+    ],
+    "severity": "Low",
+    "refactor": "Yes",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "docs/12-adr/0007-identity-and-sessions.md": {
+    "sha256": "1b61eb8f9e78f6d1de581eb581a48b53ac478d8049fd51f8440de45d8ed28194",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "docs/environment-management.md": {
+    "sha256": "b4dce2f27f9da4a3db4c14ba6b98cc4becaf2d36588b91e0417ef3dbb5849ad0",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "scripts/audit-inventory.py": {
+    "sha256": "2529d8ec55c777684524aa03a144f0bfcdaa7d2ea06722b96867671d2c7d2fa6",
+    "findings": [
+      "F15"
+    ],
+    "severity": "Medium",
+    "refactor": "Yes",
+    "purpose": "Audit inventory dependency/symbol extraction and hash-bound review ledger; static candidates are distinct from semantic inspection.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "scripts/check-public-config.py": {
+    "sha256": "66489ca706461592af223e3d3fbb9614c68a81ee6111be97adf041e149ecb2b4",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "tests": "See 06-test-results; per-symbol coverage not measured",
+    "reviewScope": "Content/imports/responsibilities/error and security paths inspected; deployed behavior and complete dependency closure are not certified."
+  },
+  "scripts/test_audit_inventory.py": {
+    "sha256": "3cf537a8062a40b8f5dd7d01e9ac5758cb262e35193f28ef04512e515d1256cb",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Audit inventory dependency/symbol extraction and hash-bound review ledger; static candidates are distinct from semantic inspection.",
+    "tests": "See 06-test-results; review does not imply complete behavior coverage",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "supabase/migrations/20260822000400_money.sql": {
+    "sha256": "657abc4b5f7180962e6bdfd753529f7e189d4095182d2af25d72369ae4bfb584",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial schema/trigger/RLS definition; reviewed source visibility, write scope, transaction locking and invariants. Historical rows were not repaired or read from production.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "supabase/migrations/20260824000100_invoices.sql": {
+    "sha256": "ad2d1b306126d532b4b357af7a64c1d41d776f24989f711b2ef623dd8f1f74e1",
+    "findings": [
+      "F12"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "purpose": "Financial schema/trigger/RLS definition; reviewed source visibility, write scope, transaction locking and invariants. Historical rows were not repaired or read from production.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "supabase/migrations/20261007000900_invoice_policy_nullif.sql": {
+    "sha256": "b119629cbd7b95717afdba1e2630072cb3c6cbbfbb339ded24796409c55d07db",
+    "findings": [],
+    "severity": "None",
+    "refactor": "No",
+    "purpose": "Financial schema/trigger/RLS definition; reviewed source visibility, write scope, transaction locking and invariants. Historical rows were not repaired or read from production.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  },
+  "supabase/migrations/20261022131003_guard_payment_allocations.sql": {
+    "sha256": "13f4c2399f293c2a0df5ab6a1ed41cbb22acab4e5a9d6016a2aced7f8614a099",
+    "findings": [
+      "F12"
+    ],
+    "severity": "High",
+    "refactor": "Yes",
+    "purpose": "Financial schema/trigger/RLS definition; reviewed source visibility, write scope, transaction locking and invariants. Historical rows were not repaired or read from production.",
+    "tests": "continuation-api-full.log: 540 backend tests passed; per-method coverage not measured",
+    "reviewScope": "Full file content inspected; source-layer and relevant failure/security paths reviewed. Cross-application dependency closure and deployed settings remain outside this record."
+  }
+}

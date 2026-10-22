@@ -2,6 +2,13 @@ import { describe, expect, it } from 'vitest';
 import {
   arrearsFrom,
   assertCanApply,
+  invoiceTotalCentavos,
+  assertInvoicePeriod,
+  EmptyInvoiceError,
+  InvalidPeriodError,
+  InvalidInvoiceAmountError,
+  assertPaymentCanCover,
+  PaymentAllocationError,
   balanceOf,
   daysOverdue,
   deriveState,
@@ -195,3 +202,43 @@ describe('arrears', () => {
   });
 });
 
+
+describe('payment allocation budget', () => {
+  const payment = { state: 'SUCCEEDED' as const, amountCentavos: peso(500), allocatedCentavos: peso(400) };
+  it('accepts exactly the unallocated balance', () => {
+    expect(() => assertPaymentCanCover(payment, peso(100))).not.toThrow();
+  });
+  it('rejects even one centavo beyond the payment budget', () => {
+    expect(() => assertPaymentCanCover(payment, (peso(100) + 1) as Centavos)).toThrow(PaymentAllocationError);
+  });
+  it.each(['PENDING', 'FAILED', 'REFUNDED'] as const)('rejects %s money', (state) => {
+    expect(() => assertPaymentCanCover({ ...payment, state }, peso(100))).toThrow(PaymentAllocationError);
+  });
+  it.each([0, -1, 0.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])('rejects invalid allocation %s', (amount) => {
+    expect(() => assertPaymentCanCover(payment, amount as Centavos)).toThrow(PaymentAllocationError);
+  });
+});
+
+describe('invoice issue policy', () => {
+  it('totals a multi-line claim without rounding', () => {
+    expect(invoiceTotalCentavos([{ amountCentavos: peso(100) }, { amountCentavos: peso(50) }])).toBe(peso(150));
+  });
+  it('refuses empty claims and invalid billing periods', () => {
+    expect(() => invoiceTotalCentavos([])).toThrow(EmptyInvoiceError);
+    expect(() => assertInvoicePeriod('2027-02-01', '2027-02-01')).toThrow(InvalidPeriodError);
+    expect(() => assertInvoicePeriod('2027-02-01', '2027-01-01')).toThrow(InvalidPeriodError);
+    expect(() => assertInvoicePeriod('2027-01-01', '2027-02-01')).not.toThrow();
+  });
+  it('refuses a sum that cannot be represented as exact centavos', () => {
+    expect(() => invoiceTotalCentavos([{ amountCentavos: Number.MAX_SAFE_INTEGER as Centavos }, { amountCentavos: 1 as Centavos }])).toThrow(InvalidInvoiceAmountError);
+  });
+});
+
+describe('invoice calendar dates', () => {
+  it.each(['2026-02-30', '2026-04-31', '2026-13-01'])('rejects impossible billing start %s', start => {
+    expect(() => assertInvoicePeriod(start, '2027-01-01')).toThrow(InvalidPeriodError);
+  });
+  it.each(['2026-02-30', '2026-04-31', '2026-13-01'])('rejects impossible billing end %s', end => {
+    expect(() => assertInvoicePeriod('2026-01-01', end)).toThrow(InvalidPeriodError);
+  });
+});

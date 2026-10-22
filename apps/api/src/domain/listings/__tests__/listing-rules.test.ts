@@ -150,3 +150,19 @@ describe('sale listings', () => {
     expect(() => assertValidInternalPrice(null)).not.toThrow();
   });
 });
+
+describe('rental numeric invariants', () => {
+  it.each([
+    { priceCentavos: Number.MAX_SAFE_INTEGER + 1 },
+    { cleaningFeeCentavos: -1 },
+    { cleaningFeeCentavos: Number.NaN },
+    { cleaningFeeCentavos: 0.5 },
+    { minStayNights: 1.5 },
+    { minStayNights: Number.NaN },
+  ])('rejects invalid short-stay amounts or nights %j', changes => {
+    expect(() => assertValidListingDetails({ ...details, ...changes })).toThrow(InvalidListingDetailsError);
+  });
+  it.each([{ advanceMonths: -1 }, { depositMonths: 0.5 }])('rejects invalid monthly multipliers %j', changes => {
+    expect(() => assertValidListingDetails({ ...details, kind: 'LONG_TERM', minStayNights: null, ...changes })).toThrow(InvalidListingDetailsError);
+  });
+});

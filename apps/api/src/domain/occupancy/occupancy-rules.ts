@@ -2,7 +2,7 @@ import type { DateRange, OccupancyState } from './occupancy-state.ts';
 import { OCCUPYING_STATES } from './occupancy-state.ts';
 import { InvalidDateRangeError } from './occupancy-errors.ts';
 
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+import { isCalendarDate } from '@/domain/shared/calendar.ts';
 
 /**
  * Build a range, refusing the shapes that make no sense.
@@ -12,8 +12,8 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
  * nothing would hide it until they arrived.
  */
 export function dateRange(startsOn: string, endsOn: string): DateRange {
-  if (!ISO_DATE.test(startsOn) || !ISO_DATE.test(endsOn)) {
-    throw new InvalidDateRangeError('Dates must be YYYY-MM-DD');
+  if (!isCalendarDate(startsOn) || !isCalendarDate(endsOn)) {
+    throw new InvalidDateRangeError('Dates must be valid calendar dates in YYYY-MM-DD format');
   }
   if (endsOn <= startsOn) {
     throw new InvalidDateRangeError('The end date must be after the start date');

@@ -2,19 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../app_config.dart';
 import 'app_bootstrap_state.dart';
+
+export '../app_config.dart' show AppConfigurationError;
 
 export 'app_bootstrap_error_view.dart';
 export 'app_bootstrap_state.dart';
-
-class AppConfigurationError implements Exception {
-  const AppConfigurationError(this.message);
-
-  final String message;
-
-  @override
-  String toString() => message;
-}
 
 class AppBootstrap {
   AppBootstrap({
@@ -36,8 +30,8 @@ class AppBootstrap {
         _initializeSupabase = initializeSupabase ?? _defaultInitSupabase,
         _onStateChanged = onStateChanged;
 
-  static const configuredApiBaseUrl = String.fromEnvironment('API_BASE_URL');
-  static const configuredAppEnv = String.fromEnvironment('APP_ENV');
+  static const configuredApiBaseUrl = AppConfig.configuredApiBaseUrl;
+  static const configuredAppEnv = AppConfig.configuredAppEnv;
 
   static String? configurationProblem({
     required bool release,
@@ -46,34 +40,22 @@ class AppBootstrap {
     required String supabasePublishableKey,
     String? appEnv,
   }) {
-    if (supabaseUrl.isEmpty || supabasePublishableKey.isEmpty) {
-      return 'This build is missing its Supabase settings.';
+    try {
+      AppConfig.parse(
+        appEnv: appEnv ?? (release ? 'production' : 'development'),
+        apiBaseUrl: apiBaseUrl,
+        supabaseUrl: supabaseUrl,
+        supabasePublishableKey: supabasePublishableKey,
+        release: release,
+      );
+      return null;
+    } on AppConfigurationError catch (error) {
+      return error.message;
     }
-    if (supabasePublishableKey.startsWith('sb_secret_') || supabasePublishableKey.contains('service_role')) {
-      return 'This build was given a secret key. Only the publishable key may ship in the app.';
-    }
-    final normalizedEnv = (appEnv ?? '').trim().toLowerCase();
-    final isProductionEnv = normalizedEnv == 'production' || normalizedEnv == 'prod';
-    final requiresHttps = release || isProductionEnv;
-    if (!requiresHttps) return null;
-    if (apiBaseUrl.isEmpty) {
-      return 'This build has no server address. Rebuild with --dart-define=API_BASE_URL=https://your-api.';
-    }
-    if (!apiBaseUrl.startsWith('https://') || !supabaseUrl.startsWith('https://')) {
-      return 'Release builds must talk to the server over HTTPS.';
-    }
-    return null;
   }
 
-  static const defaultSupabaseUrl = String.fromEnvironment(
-    'SUPABASE_URL',
-    defaultValue: 'https://yoscanunnqbzmlnwzift.supabase.co',
-  );
-
-  static const defaultSupabasePublishableKey = String.fromEnvironment(
-    'SUPABASE_PUBLISHABLE_KEY',
-    defaultValue: 'sb_publishable_kIi6Ltp2MkALYjGHCVeU3g_e5rAJp-q',
-  );
+  static const defaultSupabaseUrl = AppConfig.configuredSupabaseUrl;
+  static const defaultSupabasePublishableKey = AppConfig.configuredSupabaseKey;
 
   final String _supabaseUrl;
   final String _supabasePublishableKey;
@@ -123,9 +105,7 @@ class AppBootstrap {
 
     _setState(const AppBootstrapState.loading());
 
-    final resolvedEnv = _appEnv.isNotEmpty
-        ? _appEnv
-        : (_release ? 'production' : 'development');
+    final resolvedEnv = _appEnv;
 
     if (kDebugMode) {
       final uri = Uri.tryParse(_apiBaseUrl);
@@ -171,7 +151,12 @@ class AppBootstrap {
 }
 
 final appBootstrapProvider = Provider<AppBootstrap>((ref) {
-  return AppBootstrap();
+  return AppBootstrap(
+    initializeSupabase: ({required url, required publishableKey}) async {
+      AppConfig.fromBuild();
+      await AppBootstrap._defaultInitSupabase(url: url, publishableKey: publishableKey);
+    },
+  );
 });
 
 class AppBootstrapNotifier extends Notifier<AppBootstrapState> {

@@ -1,17 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
-String _defaultBaseUrl() {
-  const fromEnv = String.fromEnvironment('API_BASE_URL');
-  if (fromEnv.isNotEmpty) return fromEnv;
-  if (!kIsWebPlatform && Platform.isAndroid) return 'http://10.0.2.2:8080';
-  return 'http://localhost:8080';
-}
-
-const bool kIsWebPlatform = bool.fromEnvironment('dart.library.js_util');
+import '../app/app_config.dart';
 
 typedef TokenSource = String? Function();
 
@@ -50,7 +42,7 @@ const Duration kRequestTimeout = Duration(seconds: 20);
 class ApiClient {
   ApiClient({http.Client? client, String? baseUrl, TokenSource? tokenSource})
       : _client = client ?? http.Client(),
-        _baseUrl = baseUrl ?? _defaultBaseUrl(),
+        _baseUrl = baseUrl ?? AppConfig.configuredApiBaseUrl,
         _tokenSource = tokenSource;
 
   final http.Client _client;
