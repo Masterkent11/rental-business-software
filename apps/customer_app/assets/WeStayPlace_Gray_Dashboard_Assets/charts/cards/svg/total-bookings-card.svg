@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="112" viewBox="0 0 320 112" role="img"><title>Total bookings sample insight card</title><rect x=".6" y=".6" width="318.8" height="110.8" rx="14" fill="#FFFFFF" stroke="#E8EDF5" stroke-width="1.2"/>
+<g transform="translate(24 30)" color="#10234A"><g fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 2v6m10-6v6M3 11h18" /></g></g>
+<g font-family="Arial, Helvetica, sans-serif">
+<text x="73" y="31" font-size="13" fill="#526482">Total bookings</text>
+<text x="73" y="66" font-size="25" font-weight="700" fill="#071632">8</text>
+<text x="89" y="92" font-size="13" fill="#22A95B">33%</text></g>
+<path d="M78 94V82m-4 4 4-4 4 4" fill="none" stroke="#22A95B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<svg x="167" y="35" width="140" height="74" viewBox="0 0 144 80"><defs><linearGradient id="total-bookings-card-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#39B980" stop-opacity="0.24"/><stop offset="1" stop-color="#39B980" stop-opacity="0"/></linearGradient></defs><path d="M 4 70 C 12 68 17 61 25 61 C 34 62 37 37 46 35 C 53 33 58 47 65 49 C 73 51 75 43 83 43 C 90 43 92 47 100 42 C 108 38 109 18 117 13 C 124 8 131 11 140 15 L 140 78 L 4 78 Z" fill="url(#total-bookings-card-fill)"/><path d="M 4 70 C 12 68 17 61 25 61 C 34 62 37 37 46 35 C 53 33 58 47 65 49 C 73 51 75 43 83 43 C 90 43 92 47 100 42 C 108 38 109 18 117 13 C 124 8 131 11 140 15" fill="none" stroke="#39B980" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></svg>

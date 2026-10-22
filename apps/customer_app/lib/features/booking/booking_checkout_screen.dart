@@ -168,13 +168,6 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
               const SizedBox(height: Tokens.s12),
               for (final line in value.lines) _Row(label: line.label, value: Money.peso(line.centavos)),
               const Padding(padding: EdgeInsets.symmetric(vertical: Tokens.s12), child: Divider(height: 1)),
-              Row(
-                children: [
-                  Text('Total (PHP)', style: theme.textTheme.titleMedium),
-                  const Spacer(),
-                  Text(Money.peso(value.totalCentavos), style: theme.textTheme.headlineSmall),
-                ],
-              ),
               const SizedBox(height: Tokens.s20),
               if (!value.available && !_conflict)
                 const _Notice(

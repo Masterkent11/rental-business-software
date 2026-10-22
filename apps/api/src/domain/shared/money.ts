@@ -13,7 +13,7 @@
 export type Centavos = number & { readonly __brand: 'Centavos' };
 
 export const centavos = (value: number): Centavos => {
-  if (!Number.isInteger(value)) {
+  if (!Number.isSafeInteger(value)) {
     throw new RangeError(`Money must be whole centavos, received ${value}`);
   }
   if (value < 0) {

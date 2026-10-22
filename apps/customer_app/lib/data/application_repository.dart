@@ -29,6 +29,7 @@ class ApplicationRepository {
   }
 
   Future<String> submit({
+    required String draftId,
     required String resourceId,
     required DateTime desiredMoveIn,
     required int desiredTermMonths,
@@ -38,6 +39,7 @@ class ApplicationRepository {
       'POST',
       '/applications',
       body: {
+        'draftId': draftId,
         'resourceId': resourceId,
         'desiredMoveIn': _iso(desiredMoveIn),
         'desiredTermMonths': desiredTermMonths,

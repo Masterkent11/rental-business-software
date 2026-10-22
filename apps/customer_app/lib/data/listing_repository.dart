@@ -250,6 +250,9 @@ class ListingRepository {
       cleaningFeeCentavos: (json['cleaningFeeCentavos'] as num?)?.toInt() ?? 0,
       propertyType: json['propertyType'] as String?,
       minStayNights: (json['minStayNights'] as num?)?.toInt(),
+      minLeaseMonths: (json['minLeaseMonths'] as num?)?.toInt(),
+      maxLeaseMonths: (json['maxLeaseMonths'] as num?)?.toInt(),
+      allowPendingIdentityApplication: json['allowPendingIdentityApplication'] == true,
       isPopular: json['hasTour'] as bool? ?? false,
       intent: json['intent'] == 'SALE' ? ListingIntent.sale : ListingIntent.rent,
       saleStatus: json['saleStatus'] as String?,
@@ -257,7 +260,6 @@ class ListingRepository {
       parkingSlots: (json['parkingSlots'] as num?)?.toInt() ?? 0,
       distanceKm: (json['distanceKm'] as num?)?.toDouble(),
       location: _point(json['location']),
-      representative: _representative(json['representative']),
       tourProvider: json['tourProvider'] as String?,
       furnishing: json['furnishing'] as String?,
       petsAllowed: json['intent'] == 'SALE' ? null : json['petsAllowed'] as bool?,
@@ -273,20 +275,6 @@ class ListingRepository {
       latitude: latitude,
       longitude: longitude,
       precision: raw['precision'] == 'EXACT' ? LocationPrecision.exact : LocationPrecision.approximate,
-    );
-  }
-
-  static RepresentativeView? _representative(Object? raw) {
-    if (raw is! Map<String, dynamic>) return null;
-    final agentId = raw['agentId'] as String?;
-    if (agentId == null) return null;
-    final photo = raw['photoUrl'] as String?;
-    return RepresentativeView(
-      agentId: agentId,
-      displayName: raw['displayName'] as String? ?? 'Agent',
-      headline: raw['headline'] as String? ?? '',
-      photoUrl: photo != null && photo.startsWith('http') ? photo : null,
-      verified: raw['verified'] as bool? ?? false,
     );
   }
 }

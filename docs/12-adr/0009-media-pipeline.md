@@ -6,7 +6,7 @@
 
 The interactive virtual tour ships in V1 and is on the critical path (D-07). [product-scope.md](../00-overview/product-scope.md#risk-2--virtual-tour-on-the-critical-path) names the requirement precisely: a viewer that performs on mid-range Android phones over mobile data, or the feature is decorative.
 
-A raw equirectangular panorama is 8–20 MB. Sending that to a phone on mobile data is not a viewer; it is a wait.
+A raw equirectangular panorama is 820 MB. Sending that to a phone on mobile data is not a viewer; it is a wait.
 
 ## Decision
 
@@ -36,7 +36,7 @@ Stored in Supabase Storage, private buckets, served through API-issued signed UR
 
 | Rejected | Why |
 |---|---|
-| **Serve the original, let the client handle it** | 8–20 MB over mobile data. This is precisely the failure that makes the differentiator decorative |
+| **Serve the original, let the client handle it** | 820 MB over mobile data. This is precisely the failure that makes the differentiator decorative |
 | **On-the-fly transformation via an image CDN** | First view still pays full cost, and 360° tiling is not a standard CDN transform |
 | **A third-party 360° hosting service** | Puts the V1 differentiator behind someone else's roadmap and pricing |
 

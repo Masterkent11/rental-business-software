@@ -19,6 +19,8 @@ interface NotificationsState {
   markAllRead: () => Promise<void>;
 }
 
+let lifetime = 0;
+
 export const useNotificationsStore = create<NotificationsState>((set, get) => ({
   scope: null,
   scopeKey: null,
@@ -33,7 +35,9 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     const scopeKey = scope.kind === "OWNER" ? scope.organizationId : `agent:${scope.agentId}`;
     if (get().scopeKey === scopeKey && get().unsubscribe) return;
     get().stop();
+    const generation = lifetime;
     const unsubscribe = container.watchNotificationsUseCase.execute(scope, userId, (notification) => {
+      if (generation !== lifetime) return;
       set((state) => ({
         items: [notification, ...state.items.filter((n) => n.id !== notification.id)].slice(0, 50),
         unreadCount: state.unreadCount + 1,
@@ -43,20 +47,24 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     set({ scope, scopeKey, unsubscribe });
     try {
       const result = await container.loadNotificationsUseCase.execute(scope);
+      if (generation !== lifetime) return;
       set({ items: result.notifications, unreadCount: result.unreadCount, error: null });
     } catch (error) {
+      if (generation !== lifetime) return;
       set({ error: error instanceof Error ? error.message : "Could not load notifications" });
     }
   },
 
   stop: () => {
+    ++lifetime;
     get().unsubscribe?.();
-    set({ unsubscribe: null, scope: null, scopeKey: null, items: [], unreadCount: 0 });
+    set({ unsubscribe: null, scope: null, scopeKey: null, items: [], unreadCount: 0, latest: null, error: null, open: false });
   },
 
   setOpen: (open) => set({ open }),
 
   markAllRead: async () => {
+    const generation = lifetime;
     const scope = get().scope;
     if (!scope || get().unreadCount === 0) return;
     const now = new Date().toISOString();
@@ -64,6 +72,7 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     try {
       await container.markNotificationsReadUseCase.execute(scope);
     } catch (error) {
+      if (generation !== lifetime) return;
       set({ error: error instanceof Error ? error.message : "Could not mark notifications as read" });
     }
   },

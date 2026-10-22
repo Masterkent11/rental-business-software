@@ -40,12 +40,16 @@ export const ViewingDtoSchema = z.object({
   conversationId: z.string(),
   customerId: z.string(),
   customerName: z.string(),
-  scheduledAt: z.string(),
+  preferredDate: z.string().nullable(),
+  preferredTimeWindow: z.enum(["MORNING", "AFTERNOON", "EVENING"]).nullable(),
+  scheduledAt: z.string().nullable(),
   durationMinutes: z.number(),
-  status: z.enum(["REQUESTED", "CONFIRMED", "RESCHEDULE_REQUESTED", "COMPLETED", "CANCELLED"]),
+  status: z.enum(["MATCHING", "REQUESTED", "CONFIRMED", "RESCHEDULE_REQUESTED", "DECLINED", "COMPLETED", "CANCELLED"]),
   customerNote: z.string(),
   partnerNote: z.string(),
   cancelledByRole: z.string().nullable(),
+  assignedAt: z.string().nullable(),
+  responseDueAt: z.string().nullable(),
 });
 
 export const PublicAgentDtoSchema = z.object({
@@ -161,9 +165,11 @@ export const ClientDtoSchema = z.object({
 export const AnalyticsDtoSchema = z.object({
   inquiriesByStatus: pipeline,
   viewingsByStatus: z.object({
+    MATCHING: z.number().default(0),
     REQUESTED: z.number(),
     CONFIRMED: z.number(),
     RESCHEDULE_REQUESTED: z.number(),
+    DECLINED: z.number().default(0),
     COMPLETED: z.number(),
     CANCELLED: z.number(),
   }),

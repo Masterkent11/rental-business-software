@@ -1,0 +1,12 @@
+flutter:
+  assets:
+    - assets/westayplace/animations/
+    - assets/westayplace/backgrounds/
+    - assets/westayplace/categories/png/
+    - assets/westayplace/categories/svg/
+    - assets/westayplace/effects/
+    - assets/westayplace/header/png/
+    - assets/westayplace/header/svg/
+    - assets/westayplace/navigation/png/
+    - assets/westayplace/navigation/svg/
+    - assets/westayplace/viewing/

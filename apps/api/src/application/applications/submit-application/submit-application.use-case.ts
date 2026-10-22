@@ -1,6 +1,7 @@
 import type { ApplicationRepository } from '@/application/ports/repositories/application-repository.port.ts';
 
 export interface SubmitApplicationInput {
+  readonly draftId?: string;
   readonly resourceId: string;
   readonly applicantId: string;
   readonly desiredMoveIn: string;

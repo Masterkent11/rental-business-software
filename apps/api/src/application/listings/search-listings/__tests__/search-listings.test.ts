@@ -52,6 +52,7 @@ const leakyRepo = (rows: Listing[]): ListingRepository => ({
   listProperties: async () => [],
   stayPricing: async () => null,
   createSaleListing: async () => rows[0]!,
+  saleDuplicateCandidates: async () => [],
   updateSaleListing: async () => rows[0] ?? null,
   saleTerms: async () => null,
   saveSaleTerms: async () => ({

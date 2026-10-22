@@ -12,6 +12,9 @@ export const createListingSchema = z.object({
   amenities: textList.default([]),
   houseRules: textList.default([]),
   terms: textList.default([]),
+  minLeaseMonths: z.number().int().min(1).max(60).nullable().optional(),
+  maxLeaseMonths: z.number().int().min(1).max(60).nullable().optional(),
+  allowPendingIdentityApplication: z.boolean().optional(),
   minStayNights: z.number().int().positive().nullable().optional(),
   advanceMonths: z.number().int().nonnegative().default(0),
   depositMonths: z.number().int().nonnegative().default(0),
@@ -27,6 +30,9 @@ const listingDetailsShape = {
   amenities: textList,
   houseRules: textList,
   terms: textList,
+  minLeaseMonths: z.number().int().min(1).max(60).nullable().optional(),
+  maxLeaseMonths: z.number().int().min(1).max(60).nullable().optional(),
+  allowPendingIdentityApplication: z.boolean().optional(),
   minStayNights: z.number().int().min(1).max(90).nullable(),
   advanceMonths: z.number().int().min(0).max(6),
   depositMonths: z.number().int().min(0).max(6),
@@ -94,6 +100,7 @@ export const createSaleListingSchema = z.object({
     availableFrom: saleListingShape.availableFrom.default(null),
   }),
   saleTerms: saleTermsSchema.nullable().default(null),
+  confirmDistinctProperty: z.boolean().default(false),
 });
 
 export const updateSaleListingSchema = z.object({
@@ -166,3 +173,7 @@ export const addBlockSchema = z.object({
 export type CreateListingDto = z.infer<typeof createListingSchema>;
 export type CreatePropertyListingDto = z.infer<typeof createPropertyListingSchema>;
 export type UpdateListingDto = z.infer<typeof updateListingSchema>;
+
+export const proposalDecisionSchema = z.object({
+  approve: z.boolean(),
+});

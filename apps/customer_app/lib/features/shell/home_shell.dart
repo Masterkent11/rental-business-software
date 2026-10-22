@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../app/shell_destination.dart';
 import '../../data/messaging_repository.dart';
-import '../../design/tokens.dart';
+import '../../design/glass_bottom_nav.dart';
 
 class HomeShell extends ConsumerWidget {
   const HomeShell({required this.navigationShell, super.key});
@@ -15,117 +13,19 @@ class HomeShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final unread = ref.watch(inboxProvider.select((inbox) => inbox.valueOrNull?.unreadTotal ?? 0));
-    final theme = Theme.of(context);
-    final current = ShellDestination.ofIndex(navigationShell.currentIndex);
 
     return Scaffold(
+      extendBody: true,
       body: navigationShell,
-      bottomNavigationBar: DecoratedBox(
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          border: Border(top: BorderSide(color: theme.colorScheme.outlineVariant, width: 0.8)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: SizedBox(
-            height: 58,
-            child: Row(
-              children: [
-                for (final destination in ShellDestination.values)
-                  Expanded(
-                    child: _NavItem(
-                      icon: destination.icon,
-                      activeIcon: destination.activeIcon,
-                      label: destination.label,
-                      badge: destination == ShellDestination.messages ? unread : 0,
-                      selected: destination == current,
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        navigationShell.goBranch(destination.index, initialLocation: destination == current);
-                      },
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  const _NavItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-    required this.selected,
-    required this.onTap,
-    this.badge = 0,
-  });
-
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  final int badge;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = selected ? Tokens.primaryNavy : Tokens.muted;
-    return Semantics(
-      selected: selected,
-      button: true,
-      label: badge > 0 ? '$label, $badge unread' : label,
-      excludeSemantics: true,
-      child: InkResponse(
-        onTap: onTap,
-        containedInkWell: true,
-        highlightShape: BoxShape.rectangle,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(selected ? activeIcon : icon, size: Tokens.navIcon, color: color),
-                if (badge > 0)
-                  Positioned(
-                    right: -8,
-                    top: -4,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: Tokens.taken,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        badge > 9 ? '9+' : '$badge',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                color: color,
-                letterSpacing: -0.1,
-              ),
-            ),
-          ],
-        ),
+      bottomNavigationBar: GlassBottomNav(
+        selectedIndex: navigationShell.currentIndex,
+        unreadMessages: unread,
+        onSelected: (index) {
+          navigationShell.goBranch(
+            index,
+            initialLocation: index == navigationShell.currentIndex,
+          );
+        },
       ),
     );
   }

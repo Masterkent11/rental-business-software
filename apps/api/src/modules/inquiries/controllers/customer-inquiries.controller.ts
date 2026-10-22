@@ -51,6 +51,7 @@ export class CustomerInquiriesController {
       questions: parsed.data.questions,
       buyerBudgetCentavos: parsed.data.buyerBudgetCentavos,
       clientRef: parsed.data.clientRef,
+      referralCode: parsed.data.referralCode,
     });
     return toSubmittedInquiryHttpResponse(result);
   }

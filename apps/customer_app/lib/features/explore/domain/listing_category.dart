@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 enum MarketIntent {
   rent('Rent', 'RENT'),
   buy('Buy', 'SALE');
@@ -21,7 +19,6 @@ enum ListingCategory {
     label: 'Apartment',
     plural: 'Apartments',
     apiValue: 'APARTMENT',
-    icon: Icons.apartment_outlined,
     image: 'assets/images/categories/apartment.jpg',
     intents: {MarketIntent.rent},
   ),
@@ -29,7 +26,6 @@ enum ListingCategory {
     label: 'Condo',
     plural: 'Condos',
     apiValue: 'CONDO',
-    icon: Icons.domain_outlined,
     image: 'assets/images/categories/condo.jpg',
     intents: {MarketIntent.rent, MarketIntent.buy},
   ),
@@ -37,7 +33,6 @@ enum ListingCategory {
     label: 'House',
     plural: 'Houses',
     apiValue: 'HOUSE',
-    icon: Icons.house_outlined,
     image: 'assets/images/categories/house.jpg',
     intents: {MarketIntent.rent, MarketIntent.buy},
   ),
@@ -45,7 +40,6 @@ enum ListingCategory {
     label: 'Room',
     plural: 'Rooms',
     apiValue: 'ROOM',
-    icon: Icons.bed_outlined,
     image: 'assets/images/categories/room.jpg',
     intents: {MarketIntent.rent},
   ),
@@ -53,7 +47,6 @@ enum ListingCategory {
     label: 'Boarding House',
     plural: 'Boarding Houses',
     apiValue: 'BOARDING_HOUSE',
-    icon: Icons.groups_2_outlined,
     image: 'assets/images/categories/boarding_house.jpg',
     intents: {MarketIntent.rent},
   ),
@@ -61,7 +54,6 @@ enum ListingCategory {
     label: 'Townhouse',
     plural: 'Townhouses',
     apiValue: 'TOWNHOUSE',
-    icon: Icons.holiday_village_outlined,
     image: 'assets/images/categories/townhouse.jpg',
     intents: {MarketIntent.buy},
   ),
@@ -69,7 +61,6 @@ enum ListingCategory {
     label: 'Lot',
     plural: 'Lots',
     apiValue: 'LOT',
-    icon: Icons.landscape_outlined,
     image: 'assets/images/categories/lot.jpg',
     intents: {MarketIntent.buy},
   ),
@@ -77,7 +68,6 @@ enum ListingCategory {
     label: 'Commercial',
     plural: 'Commercial Properties',
     apiValue: 'COMMERCIAL',
-    icon: Icons.storefront_outlined,
     image: 'assets/images/categories/commercial.jpg',
     intents: {MarketIntent.buy},
   );
@@ -86,7 +76,6 @@ enum ListingCategory {
     required this.label,
     required this.plural,
     required this.apiValue,
-    required this.icon,
     required this.image,
     required this.intents,
   });
@@ -94,7 +83,6 @@ enum ListingCategory {
   final String label;
   final String plural;
   final String apiValue;
-  final IconData icon;
   final String image;
   final Set<MarketIntent> intents;
 

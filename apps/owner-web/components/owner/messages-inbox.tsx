@@ -166,6 +166,8 @@ function Inbox({ basePath }: { basePath: string }) {
   const viewer = scope?.kind === "AGENT" ? "AGENT" : "OWNER";
   const { conversations, loading, loaded, error, activeId, realtime, refresh, open, close } = useMessagesStore();
   const requested = search.get("c");
+  const unreadOnly = viewer === "OWNER" && search.get("unread") === "1";
+  const visibleConversations = unreadOnly ? conversations.filter(item => item.unreadCount > 0) : conversations;
 
   useEffect(() => {
     if (!loaded) return;
@@ -178,6 +180,7 @@ function Inbox({ basePath }: { basePath: string }) {
   return (
     <Page wide>
       <TopBar title="Messages" caption={viewer === "AGENT" ? "Conversations with buyers and renters about the properties you represent." : "Conversations with customers about your listings and bookings."}>
+        {unreadOnly ? <LinkBtn href={basePath} variant="outline">All messages</LinkBtn> : null}
         <Badge tone={realtime === "live" ? "ok" : realtime === "offline" ? "bad" : "neutral"}>
           <span className={cn("size-1.5 rounded-full", realtime === "live" ? "bg-success" : realtime === "offline" ? "bg-danger" : "bg-muted")} />
           {realtime === "live" ? "Live" : realtime === "offline" ? "Offline" : "Connecting"}
@@ -189,18 +192,18 @@ function Inbox({ basePath }: { basePath: string }) {
             <SkeletonRows rows={6} />
           ) : error ? (
             <ErrorState message={error} onRetry={() => void refresh()} />
-          ) : conversations.length === 0 ? (
+          ) : visibleConversations.length === 0 ? (
             <EmptyState
               icon={<MessageSquare className="size-5" aria-hidden />}
-              title="No conversations yet"
+              title={unreadOnly ? "No unread conversations" : "No conversations yet"}
               body="When a customer messages you from a listing or booking, it lands here in real time."
             />
           ) : (
             <ul className="flex-1 overflow-y-auto">
-              {conversations.map((conversation) => (
+              {visibleConversations.map((conversation) => (
                 <li key={conversation.id}>
                   <button
-                    onClick={() => router.push(`${basePath}?c=${conversation.id}`, { scroll: false })}
+                    onClick={() => router.push(`${basePath}?c=${conversation.id}${unreadOnly ? "&unread=1" : ""}`, { scroll: false })}
                     aria-current={conversation.id === activeId ? "true" : undefined}
                     className={cn(
                       "focusable flex w-full items-start gap-3 border-b border-border/70 px-4 py-3.5 text-left transition-colors",

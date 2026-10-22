@@ -116,7 +116,7 @@ Each is a product requirement from the journey that a generic marketplace UI wou
 
 ### The app never computes availability
 
-Availability arrives as **copy the server already decided** — `"Available now"`, `"Dec 26–29 taken"` — and the client renders it. It never receives dates and derives a state from them.
+Availability arrives as **copy the server already decided** — `"Available now"`, `"Dec 2629 taken"` — and the client renders it. It never receives dates and derives a state from them.
 
 This is not laziness. [U-01](../03-domain/occupancy-model.md) gives every resource exactly one occupancy timeline, with the long-term state and the nightly calendar as projections of it. A client that re-derived either would be a second source of truth for the one thing the platform must never be wrong about, and it would be wrong in a way nobody notices until a guest arrives at an occupied condo.
 

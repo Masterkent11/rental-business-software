@@ -20,7 +20,7 @@ void main() {
       expect(
         AppBootstrap.configurationProblem(
           release: false,
-          apiBaseUrl: '',
+          apiBaseUrl: 'http://localhost:8080',
           supabaseUrl: 'https://x.supabase.co',
           supabasePublishableKey: 'sb_publishable_x',
         ),
@@ -31,6 +31,7 @@ void main() {
     test('a release build without an API address refuses to start', () async {
       var supabaseStarted = false;
       final bootstrap = AppBootstrap(
+        appEnv: 'development',
         release: true,
         apiBaseUrl: '',
         supabaseUrl: 'https://x.supabase.co',
@@ -57,6 +58,45 @@ void main() {
       );
     });
 
+    test('a debug build in development environment allows local HTTP', () {
+      expect(
+        AppBootstrap.configurationProblem(
+          release: false,
+          apiBaseUrl: 'http://192.168.1.5:8080',
+          supabaseUrl: 'https://x.supabase.co',
+          supabasePublishableKey: 'sb_publishable_x',
+          appEnv: 'development',
+        ),
+        isNull,
+      );
+    });
+
+    test('a debug build in production environment rejects HTTP', () {
+      expect(
+        AppBootstrap.configurationProblem(
+          release: false,
+          apiBaseUrl: 'http://192.168.1.5:8080',
+          supabaseUrl: 'https://x.supabase.co',
+          supabasePublishableKey: 'sb_publishable_x',
+          appEnv: 'production',
+        ),
+        contains('HTTPS'),
+      );
+    });
+
+    test('a release build rejects HTTP even with development environment', () {
+      expect(
+        AppBootstrap.configurationProblem(
+          release: true,
+          apiBaseUrl: 'http://192.168.1.5:8080',
+          supabaseUrl: 'https://x.supabase.co',
+          supabasePublishableKey: 'sb_publishable_x',
+          appEnv: 'development',
+        ),
+        contains('HTTPS'),
+      );
+    });
+
     test('a secret key is never accepted in the app', () {
       expect(
         AppBootstrap.configurationProblem(
@@ -71,6 +111,7 @@ void main() {
 
     test('a correctly configured release build starts', () async {
       final bootstrap = AppBootstrap(
+        appEnv: 'development',
         release: true,
         apiBaseUrl: 'https://api.example.com',
         supabaseUrl: 'https://x.supabase.co',
@@ -130,11 +171,15 @@ void main() {
     test('successful initialization transitions to ready', () async {
       final stateHistory = <AppBootstrapState>[];
       final bootstrap = AppBootstrap(
+        appEnv: 'development',
+        apiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabasePublishableKey: 'sb_publishable_test',
         initializeSupabase: ({required url, required publishableKey}) async {
-          expect(url, equals(AppBootstrap.defaultSupabaseUrl));
+          expect(url, equals('https://example.supabase.co'));
           expect(
             publishableKey,
-            equals(AppBootstrap.defaultSupabasePublishableKey),
+            equals('sb_publishable_test'),
           );
         },
         onStateChanged: stateHistory.add,
@@ -156,6 +201,10 @@ void main() {
     test('subsequent initialize calls return identical future and do not re-run', () async {
       int initCount = 0;
       final bootstrap = AppBootstrap(
+        appEnv: 'development',
+        apiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabasePublishableKey: 'sb_publishable_test',
         initializeSupabase: ({required url, required publishableKey}) async {
           initCount++;
         },
@@ -176,6 +225,10 @@ void main() {
     test('handles initialization failure gracefully', () async {
       final thrownError = StateError('network failed');
       final bootstrap = AppBootstrap(
+        appEnv: 'development',
+        apiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabasePublishableKey: 'sb_publishable_test',
         initializeSupabase: ({required url, required publishableKey}) async {
           throw thrownError;
         },
@@ -190,6 +243,10 @@ void main() {
     test('retry re-attempts initialization and succeeds after failure', () async {
       int attempts = 0;
       final bootstrap = AppBootstrap(
+        appEnv: 'development',
+        apiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabasePublishableKey: 'sb_publishable_test',
         initializeSupabase: ({required url, required publishableKey}) async {
           attempts++;
           if (attempts == 1) {
@@ -212,6 +269,10 @@ void main() {
   group('AppBootstrap Riverpod integration', () {
     test('Notifier initializes through provider', () async {
       final bootstrap = AppBootstrap(
+        appEnv: 'development',
+        apiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabasePublishableKey: 'sb_publishable_test',
         initializeSupabase: ({required url, required publishableKey}) async {},
       );
 
@@ -237,6 +298,10 @@ void main() {
     test('Notifier retry updates state to loading then ready', () async {
       int attempts = 0;
       final bootstrap = AppBootstrap(
+        appEnv: 'development',
+        apiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabasePublishableKey: 'sb_publishable_test',
         initializeSupabase: ({required url, required publishableKey}) async {
           attempts++;
           if (attempts == 1) {
@@ -263,6 +328,10 @@ void main() {
     test('authRepositoryProvider re-evaluates when bootstrap state becomes ready', () async {
       final completer = Completer<void>();
       final bootstrap = AppBootstrap(
+        appEnv: 'development',
+        apiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabasePublishableKey: 'sb_publishable_test',
         initializeSupabase: ({required url, required publishableKey}) => completer.future,
       );
 
@@ -309,6 +378,10 @@ void main() {
       setupScreen(tester);
       final bootstrapCompleter = Completer<void>();
       final bootstrap = AppBootstrap(
+        appEnv: 'development',
+        apiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabasePublishableKey: 'sb_publishable_test',
         initializeSupabase: ({required url, required publishableKey}) => bootstrapCompleter.future,
       );
 
@@ -334,6 +407,10 @@ void main() {
     testWidgets('waits for splash animation when bootstrap completes first', (tester) async {
       setupScreen(tester);
       final bootstrap = AppBootstrap(
+        appEnv: 'development',
+        apiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabasePublishableKey: 'sb_publishable_test',
         initializeSupabase: ({required url, required publishableKey}) async {},
       );
 
@@ -368,6 +445,10 @@ void main() {
       setupScreen(tester);
       final bootstrapCompleter = Completer<void>();
       final bootstrap = AppBootstrap(
+        appEnv: 'development',
+        apiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabasePublishableKey: 'sb_publishable_test',
         initializeSupabase: ({required url, required publishableKey}) => bootstrapCompleter.future,
       );
 
@@ -403,6 +484,10 @@ void main() {
     testWidgets('shows AppBootstrapErrorView when bootstrap fails', (tester) async {
       setupScreen(tester);
       final bootstrap = AppBootstrap(
+        appEnv: 'development',
+        apiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabasePublishableKey: 'sb_publishable_test',
         initializeSupabase: ({required url, required publishableKey}) async {
           throw StateError('failed to connect');
         },
@@ -440,6 +525,10 @@ void main() {
       setupScreen(tester);
       int attempts = 0;
       final bootstrap = AppBootstrap(
+        appEnv: 'development',
+        apiBaseUrl: 'https://api.example.com',
+        supabaseUrl: 'https://example.supabase.co',
+        supabasePublishableKey: 'sb_publishable_test',
         initializeSupabase: ({required url, required publishableKey}) async {
           attempts++;
           if (attempts == 1) {

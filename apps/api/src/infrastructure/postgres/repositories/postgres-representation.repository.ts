@@ -1,6 +1,12 @@
 import type postgres from 'postgres';
 import type { RepresentationRepository } from '@/application/ports/repositories/representation-repository.port.ts';
-import type { Representation, RepresentationState } from '@/domain/agents/agent.ts';
+import type {
+  Representation,
+  RepresentationActor,
+  RepresentationKind,
+  RepresentationState,
+  RepresentationTerms,
+} from '@/domain/agents/agent.ts';
 import { ListingAlreadyRepresentedError } from '@/domain/agents/agent.ts';
 import { withScope, withUser, withUserAndScope } from '@/infrastructure/postgres/db.ts';
 
@@ -21,6 +27,13 @@ interface RepresentationRow {
   can_edit_listing: boolean;
   can_manage_tour: boolean;
   can_view_commercial: boolean;
+  representation_type: string;
+  is_primary: boolean;
+  accepts_leads: boolean;
+  valid_from: Date | null;
+  valid_until: Date | null;
+  initiated_by: string;
+  end_reason: string | null;
   invited_at: Date;
   responded_at: Date | null;
   ended_at: Date | null;
@@ -31,11 +44,13 @@ const SELECT = (tx: postgres.TransactionSql) => tx`
     r.id, r.organization_id, o.trading_name as organization_name,
     r.listing_id, l.title as listing_title, l.intent as listing_intent, l.state as listing_state,
     (select m.storage_url from media_assets m
-      where m.listing_id = r.listing_id and m.kind = 'PHOTO'
+      where m.listing_id = r.listing_id and m.kind = 'PHOTO' and m.representation_id is null
       order by m.position limit 1) as listing_photo,
     p.area_label, p.city_label,
     r.agent_id, a.display_name as agent_name,
     r.state, r.can_edit_listing, r.can_manage_tour, r.can_view_commercial,
+    r.representation_type, r.is_primary, r.accepts_leads, r.valid_from, r.valid_until,
+    r.initiated_by, r.end_reason,
     r.invited_at, r.responded_at, r.ended_at
   from listing_representations r
   join organizations o on o.id = r.organization_id
@@ -64,6 +79,15 @@ const toRepresentation = (row: RepresentationRow): Representation => ({
     canManageTour: row.can_manage_tour,
     canViewCommercial: row.can_view_commercial,
   },
+  terms: {
+    representationType: row.representation_type as RepresentationKind,
+    isPrimary: row.is_primary,
+    acceptsLeads: row.accepts_leads,
+    validFrom: row.valid_from,
+    validUntil: row.valid_until,
+  },
+  initiatedBy: row.initiated_by as RepresentationActor,
+  endReason: row.end_reason,
   invitedAt: row.invited_at,
   respondedAt: row.responded_at,
   endedAt: row.ended_at,
@@ -76,67 +100,88 @@ async function loadInScope(tx: postgres.TransactionSql, id: string): Promise<Rep
   return toRepresentation(row!);
 }
 
-async function assignAgent(tx: postgres.TransactionSql, listingId: string, agentId: string): Promise<void> {
-  await tx`update conversations set agent_id = ${agentId} where listing_id = ${listingId}`;
-  await tx`
-    update inquiries set agent_id = ${agentId}, updated_at = now()
-     where listing_id = ${listingId} and status not in ('CLOSED', 'LOST')
-  `;
-  await tx`
-    update viewings set agent_id = ${agentId}, updated_at = now()
-     where listing_id = ${listingId} and status in ('REQUESTED', 'CONFIRMED', 'RESCHEDULE_REQUESTED')
-  `;
-}
+const CONFLICTS: Readonly<Record<string, string>> = {
+  listing_representations_agent_current: 'This agent already represents this property or has a pending request.',
+  listing_representations_one_exclusive: 'Another agent already holds the exclusive mandate for this property.',
+  listing_representations_one_primary: 'This property already has a primary representative.',
+};
 
-async function unassignAgent(tx: postgres.TransactionSql, listingId: string, agentId: string): Promise<void> {
-  await tx`update conversations set agent_id = null where listing_id = ${listingId} and agent_id = ${agentId}`;
-  await tx`
-    update inquiries set agent_id = null, updated_at = now()
-     where listing_id = ${listingId} and agent_id = ${agentId} and status not in ('CLOSED', 'LOST')
+const translateConflict = (error: unknown): never => {
+  const failure = error as { code?: string; constraint_name?: string; constraint?: string };
+  if (failure.code === UNIQUE_VIOLATION) {
+    const message = CONFLICTS[failure.constraint_name ?? failure.constraint ?? ''];
+    throw new ListingAlreadyRepresentedError(message ?? 'This property already has a conflicting representation.');
+  }
+  throw error;
+};
+
+async function insertRepresentation(
+  tx: postgres.TransactionSql,
+  input: {
+    readonly organizationId: string;
+    readonly listingId: string;
+    readonly agentId: string;
+    readonly permissions: Representation['permissions'];
+    readonly terms: RepresentationTerms;
+    readonly initiatedBy: RepresentationActor;
+    readonly invitedBy: string;
+  },
+): Promise<Representation> {
+  const [row] = await tx<{ id: string }[]>`
+    insert into listing_representations (
+      organization_id, listing_id, agent_id, state,
+      can_edit_listing, can_manage_tour, can_view_commercial,
+      representation_type, is_primary, accepts_leads, valid_from, valid_until,
+      initiated_by, invited_by
+    ) values (
+      ${input.organizationId}, ${input.listingId}, ${input.agentId}, 'PENDING',
+      ${input.permissions.canEditListing}, ${input.permissions.canManageTour}, ${input.permissions.canViewCommercial},
+      ${input.terms.representationType}, ${input.terms.isPrimary}, ${input.terms.acceptsLeads},
+      ${input.terms.validFrom}, ${input.terms.validUntil},
+      ${input.initiatedBy}, ${input.invitedBy}
+    )
+    returning id
   `;
-  await tx`
-    update viewings set agent_id = null, updated_at = now()
-     where listing_id = ${listingId} and agent_id = ${agentId}
-       and status in ('REQUESTED', 'CONFIRMED', 'RESCHEDULE_REQUESTED')
-  `;
+  return loadInScope(tx, row!.id);
 }
 
 export const postgresRepresentationRepository = (): RepresentationRepository => ({
   async invite(input) {
-    return withScope(input.organizationId, async (tx) => {
-      try {
-        const [row] = await tx<{ id: string }[]>`
-          insert into listing_representations (
-            organization_id, listing_id, agent_id, state,
-            can_edit_listing, can_manage_tour, can_view_commercial, invited_by
-          ) values (
-            ${input.organizationId}, ${input.listingId}, ${input.agentId}, 'PENDING',
-            ${input.permissions.canEditListing}, ${input.permissions.canManageTour},
-            ${input.permissions.canViewCommercial}, ${input.invitedBy}
-          )
-          returning id
-        `;
-        return loadInScope(tx, row!.id);
-      } catch (error) {
-        if ((error as { code?: string }).code === UNIQUE_VIOLATION) {
-          throw new ListingAlreadyRepresentedError(
-            'This listing already has an agent or a pending invitation. End it before inviting someone else.',
-          );
-        }
-        throw error;
-      }
-    });
+    try {
+      return await withScope(input.organizationId, (tx) =>
+        insertRepresentation(tx, { ...input, initiatedBy: 'OWNER' }),
+      );
+    } catch (error) {
+      return translateConflict(error);
+    }
   },
 
-  async currentForListing(organizationId, listingId) {
+  async requestByAgent(input) {
+    try {
+      return await withUserAndScope(input.agentUserId, input.organizationId, (tx) =>
+        insertRepresentation(tx, {
+          organizationId: input.organizationId,
+          listingId: input.listingId,
+          agentId: input.agentId,
+          permissions: input.permissions,
+          terms: input.terms,
+          initiatedBy: 'AGENT',
+          invitedBy: input.agentUserId,
+        }),
+      );
+    } catch (error) {
+      return translateConflict(error);
+    }
+  },
+
+  async listForListing(organizationId, listingId) {
     return withScope(organizationId, async (tx) => {
-      const [row] = await tx<RepresentationRow[]>`
+      const rows = await tx<RepresentationRow[]>`
         ${SELECT(tx)}
         where r.listing_id = ${listingId} and r.organization_id = ${organizationId}
-          and r.state in ('PENDING', 'ACTIVE')
-        limit 1
+        order by (r.state = 'ENDED'), r.is_primary desc, r.invited_at desc
       `;
-      return row ? toRepresentation(row) : null;
+      return rows.map(toRepresentation);
     });
   },
 
@@ -224,20 +269,23 @@ export const postgresRepresentationRepository = (): RepresentationRepository => 
     });
   },
 
-  async respond({ agentUserId, representation, accept }) {
-    return withUserAndScope(agentUserId, representation.organizationId, async (tx) => {
-      await tx`
-        update listing_representations set
-          state = ${accept ? 'ACTIVE' : 'ENDED'},
-          responded_at = now(),
-          ended_at = ${accept ? null : tx`now()`},
-          ended_by = ${accept ? null : agentUserId},
-          end_reason = ${accept ? null : 'Declined by the agent'}
-        where id = ${representation.id} and state = 'PENDING'
-      `;
-      if (accept) await assignAgent(tx, representation.listingId, representation.agentId);
-      return loadInScope(tx, representation.id);
-    });
+  async respond({ responderUserId, representation, accept }) {
+    try {
+      return await withUserAndScope(responderUserId, representation.organizationId, async (tx) => {
+        await tx`
+          update listing_representations set
+            state = ${accept ? 'ACTIVE' : 'ENDED'},
+            responded_at = now(),
+            ended_at = ${accept ? null : tx`now()`},
+            ended_by = ${accept ? null : responderUserId},
+            end_reason = ${accept ? null : 'Declined'}
+          where id = ${representation.id} and state = 'PENDING'
+        `;
+        return loadInScope(tx, representation.id);
+      });
+    } catch (error) {
+      return translateConflict(error);
+    }
   },
 
   async end({ representation, endedBy, reason }) {
@@ -250,9 +298,29 @@ export const postgresRepresentationRepository = (): RepresentationRepository => 
           end_reason = ${reason}
         where id = ${representation.id} and state in ('PENDING', 'ACTIVE')
       `;
-      await unassignAgent(tx, representation.listingId, representation.agentId);
       return loadInScope(tx, representation.id);
     });
+  },
+
+  async updateTerms(organizationId, id, terms) {
+    try {
+      return await withScope(organizationId, async (tx) => {
+        const updated = await tx`
+          update listing_representations set
+            representation_type = ${terms.representationType},
+            is_primary = ${terms.isPrimary},
+            accepts_leads = ${terms.acceptsLeads},
+            valid_from = ${terms.validFrom},
+            valid_until = ${terms.validUntil}
+          where id = ${id} and organization_id = ${organizationId} and state in ('PENDING', 'ACTIVE')
+          returning id
+        `;
+        if (updated.length === 0) return null;
+        return loadInScope(tx, id);
+      });
+    } catch (error) {
+      return translateConflict(error);
+    }
   },
 
   async updatePermissions(organizationId, id, permissions) {

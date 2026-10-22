@@ -110,7 +110,7 @@ The only caching is the listing read path, invalidated by the `tour.published` e
 
 ## Why processing is not optional
 
-A raw equirectangular panorama is 8–20 MB. The V1 requirement is a viewer that performs **on a mid-range Android phone over mobile data** ([product-scope.md](../00-overview/product-scope.md#risk-2--virtual-tour-on-the-critical-path)) — sending the original is not a viewer, it is a wait, and it is exactly what turns the differentiator into decoration.
+A raw equirectangular panorama is 820 MB. The V1 requirement is a viewer that performs **on a mid-range Android phone over mobile data** ([product-scope.md](../00-overview/product-scope.md#risk-2--virtual-tour-on-the-critical-path)) — sending the original is not a viewer, it is a wait, and it is exactly what turns the differentiator into decoration.
 
 So [ADR-0009](../12-adr/0009-media-pipeline.md) processes at upload, never at view time:
 

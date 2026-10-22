@@ -21,8 +21,15 @@ dependencies:
   webview_flutter: 4.14.1
   shared_preferences: 2.5.3
   flutter_svg: 2.3.0
+  camera: 0.11.0+2
+  google_mlkit_text_recognition: 0.15.0
+  google_mlkit_face_detection: 0.13.1
+  google_mlkit_commons: 0.11.0
 
 dev_dependencies:
+  integration_test:
+    sdk: flutter
+  camera_platform_interface: 2.15.0
   flutter_test:
     sdk: flutter
   flutter_lints: 4.0.0
@@ -34,10 +41,22 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/WeStayPlace_Verification_Assets/svg/ocr/
+    - assets/WeStayPlace_Verification_Assets/svg/facial/
+    - assets/WeStayPlace_Verification_Assets/gif/transparent_overlays/
     - assets/images/splash/rental_splash_background.png
     - assets/brand/mark.png
     - assets/images/categories/
     - assets/icons/categories/
+    - assets/raw-file-property-inquire/westayplace-viewing-assets/icons/svg/
+    - assets/raw-file-home-page-icon/assets/westayplace/animations/
+    - assets/raw-file-home-page-icon/assets/westayplace/backgrounds/
+    - assets/raw-file-home-page-icon/assets/westayplace/effects/
+    - assets/raw-file-home-page-icon/assets/westayplace/header/png/
+    - assets/raw-file-home-page-icon/assets/westayplace/header/svg/
+    - assets/raw-file-home-page-icon/assets/westayplace/navigation/png/
+    - assets/raw-file-home-page-icon/assets/westayplace/navigation/svg/
+    - assets/raw-file-home-page-icon/assets/westayplace/viewing/
 
   shaders:
     - shaders/panorama.frag

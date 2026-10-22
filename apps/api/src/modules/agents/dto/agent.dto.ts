@@ -21,9 +21,18 @@ export const permissionsSchema = z.object({
   canViewCommercial: z.boolean(),
 });
 
+export const termsSchema = z.object({
+  representationType: z.enum(['EXCLUSIVE', 'NON_EXCLUSIVE', 'OWNER_DIRECT']),
+  isPrimary: z.boolean(),
+  acceptsLeads: z.boolean(),
+  validFrom: z.iso.datetime({ offset: true }).nullable(),
+  validUntil: z.iso.datetime({ offset: true }).nullable(),
+});
+
 export const inviteAgentSchema = z.object({
   agentId: z.guid(),
   permissions: permissionsSchema.partial().default({}),
+  terms: termsSchema.partial().default({}),
 });
 
 export const respondSchema = z.object({

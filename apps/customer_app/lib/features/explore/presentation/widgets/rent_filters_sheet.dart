@@ -1,3 +1,4 @@
+import '../explore_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -197,7 +198,7 @@ class _RentFiltersSheetState extends ConsumerState<_RentFiltersSheet> {
                   label: 'Check-in → check-out',
                   value: _dates == null
                       ? 'Any dates'
-                      : '${_dayFormat.format(_dates!.start)} – ${_dayFormat.format(_dates!.end)}',
+                      : '${_dayFormat.format(_dates!.start)}  ${_dayFormat.format(_dates!.end)}',
                   icon: Icons.date_range_outlined,
                   onTap: _pickDates,
                 ),

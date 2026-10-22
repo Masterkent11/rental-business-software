@@ -1,0 +1,63 @@
+name: Quality and environment validation
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  node:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [api, owner-web]
+    defaults:
+      run:
+        working-directory: apps/${{ matrix.app }}
+    env:
+      NEXT_PUBLIC_API_BASE_URL: https://api.example.com
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_synthetic_ci
+      NEXT_PUBLIC_APP_ENV: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.19.0'
+          cache: npm
+          cache-dependency-path: apps/${{ matrix.app }}/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - if: matrix.app == 'api'
+        name: Database tests in a disposable PostgreSQL cluster
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          npm run test:isolated
+      - run: npm run build
+      - if: matrix.app == 'api'
+        run: npm run contracts:typecheck && npm run contracts:generate && npm run contracts:validate
+      - if: matrix.app == 'api'
+        run: git diff --exit-code -- ../../docs/api ../../docs/postman
+      - run: python3 ../../scripts/check-public-config.py
+      - run: python3 -m unittest discover -s ../../scripts -p test_audit_inventory.py
+  flutter:
+    runs-on: macos-15
+    strategy:
+      matrix:
+        environment: [development, staging, production]
+    defaults:
+      run:
+        working-directory: apps/customer_app
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Flutter
+        run: |
+          git clone --depth 1 --branch 3.47.6 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - run: flutter pub get
+      - run: flutter analyze lib test
+      - run: flutter test
+      - run: flutter test test/build_config_test.dart --dart-define-from-file=config/${{ matrix.environment }}.example.json
+      - run: flutter build ios --simulator --debug --flavor ${{ matrix.environment }} --dart-define-from-file=config/${{ matrix.environment }}.example.json
+      - run: python3 ../../scripts/check-public-config.py

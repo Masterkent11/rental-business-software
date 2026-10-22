@@ -6,16 +6,8 @@ import type {
   WeeklyCount,
 } from '@/application/ports/repositories/analytics-repository.port.ts';
 import { INQUIRY_STATUSES, type InquiryStatus } from '@/domain/inquiries/inquiry.ts';
-import type { ViewingStatus } from '@/domain/viewings/viewing.ts';
+import { VIEWING_STATUSES, type ViewingStatus } from '@/domain/viewings/viewing.ts';
 import { withScope, withUser } from '@/infrastructure/postgres/db.ts';
-
-const VIEWING_STATUSES: readonly ViewingStatus[] = [
-  'REQUESTED',
-  'CONFIRMED',
-  'RESCHEDULE_REQUESTED',
-  'COMPLETED',
-  'CANCELLED',
-];
 
 const zeroes = <K extends string>(keys: readonly K[]): Record<K, number> =>
   Object.fromEntries(keys.map((key) => [key, 0])) as Record<K, number>;

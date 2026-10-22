@@ -3,9 +3,11 @@ import type {
   MessagingScope,
 } from '@/application/ports/repositories/messaging-repository.port.ts';
 import type { InquiryRepository } from '@/application/ports/repositories/inquiry-repository.port.ts';
+import type { LeadAssignmentRepository } from '@/application/ports/repositories/lead-assignment-repository.port.ts';
 import type { NotificationRepository } from '@/application/ports/repositories/notification-repository.port.ts';
 import type { Clock } from '@/application/ports/providers/clock.port.ts';
 import {
+  assertRentalMessagingAllowed,
   ConversationNotFoundError,
   normaliseMessageBody,
   previewOf,
@@ -34,6 +36,8 @@ async function deliver(
   },
   inquiries?: InquiryRepository,
 ): Promise<Message> {
+  assertRentalMessagingAllowed(input.conversation.listingIntent,
+    input.conversation.listingIntent === 'SALE' || await messaging.customerMayMessageListing(input.conversation.customerId, input.conversation.listingId));
   const body = normaliseMessageBody(input.body);
   const preview = previewOf(body);
   const { message, created } = await messaging.append({
@@ -141,7 +145,13 @@ export const sendOwnerMessage =
   };
 
 export const sendAgentMessage =
-  (messaging: MessagingRepository, notifications: NotificationRepository, clock: Clock, inquiries?: InquiryRepository) =>
+  (
+    messaging: MessagingRepository,
+    notifications: NotificationRepository,
+    clock: Clock,
+    assignments: LeadAssignmentRepository,
+    inquiries?: InquiryRepository,
+  ) =>
   async (input: {
     readonly principal: Principal;
     readonly conversationId: string;
@@ -151,7 +161,7 @@ export const sendAgentMessage =
     if (!hasCapability(input.principal, 'AGENT')) throw new RepresentationForbiddenError('Only agents can do that');
     const conversation = await messaging.findForAgent(input.principal.userId, input.conversationId);
     if (!conversation) throw new ConversationNotFoundError('Conversation not found');
-    return deliver(messaging, notifications, clock, {
+    const message = await deliver(messaging, notifications, clock, {
       conversation,
       senderId: input.principal.userId,
       senderRole: 'AGENT',
@@ -159,4 +169,6 @@ export const sendAgentMessage =
       clientId: input.clientId,
       scope: { agentUserId: input.principal.userId },
     }, inquiries);
+    await assignments.markAccepted(input.principal.userId, conversation.listingId, conversation.customerId, message.createdAt);
+    return message;
   };

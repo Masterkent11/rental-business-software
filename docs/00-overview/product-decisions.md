@@ -67,7 +67,7 @@ Decided not to build now. Not open questions.
 
 **Must not be answered by implementation.** Each names the step that owns it.
 
-*None currently open.* U-01 … U-05 were resolved by Step 2 on 2026-08-20 and are recorded below. New unresolved questions raised by Steps 3–6 are added here.
+*None currently open.* U-01 … U-05 were resolved by Step 2 on 2026-08-20 and are recorded below. New unresolved questions raised by Steps 36 are added here.
 
 ---
 

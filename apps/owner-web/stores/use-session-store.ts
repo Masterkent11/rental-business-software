@@ -60,7 +60,10 @@ const signedOut = {
   agent: null,
 };
 
-export const useSessionStore = create<SessionState>((set, get) => ({
+export const useSessionStore = create<SessionState>((set, get) => {
+  let lifetime = 0;
+  let refreshRequest = 0;
+  return ({
   status: "loading",
   ...signedOut,
   error: null,
@@ -78,15 +81,18 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   setMobileDrawerOpen: (mobileDrawerOpen) => set({ mobileDrawerOpen }),
 
   initialize: async () => {
-    set({ status: "loading", error: null });
+    const request = ++lifetime;
+    set({ status: "loading", error: null, ...signedOut });
     try {
       const session = await container.getCurrentSessionUseCase.execute();
+      if (request !== lifetime) return;
       if (session) {
         set({ status: "authenticated", ...stateFor(session) });
       } else {
         set({ status: "unauthenticated", ...signedOut });
       }
     } catch (error) {
+      if (request !== lifetime) return;
       set({
         status: "error",
         error: error instanceof Error ? error.message : "Could not restore your session",
@@ -95,6 +101,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   submitSignIn: async () => {
+    if (get().signInBusy) return;
     const email = get().signInEmail.trim();
     const password = get().signInPassword;
     if (!EMAIL.test(email)) {
@@ -105,9 +112,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       set({ signInProblem: "Enter your password (at least 6 characters)." });
       return;
     }
+    const request = ++lifetime;
     set({ signInBusy: true, signInProblem: null });
     try {
       const session = await container.signInUseCase.execute(email, password);
+      if (request !== lifetime) return;
       set({
         status: "authenticated",
         ...stateFor(session),
@@ -117,6 +126,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         showPassword: false,
       });
     } catch (error) {
+      if (request !== lifetime) return;
       set({
         signInBusy: false,
         signInProblem: error instanceof Error ? error.message : "Sign-in failed. Please try again.",
@@ -125,18 +135,17 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   signOut: async () => {
-    try {
-      await container.signOutUseCase.execute();
-    } finally {
-      set({
-        status: "unauthenticated",
-        ...signedOut,
-        error: null,
-        signInPassword: "",
-        signInProblem: null,
-        signInBusy: false,
-      });
-    }
+    ++lifetime;
+    set({
+      status: "unauthenticated",
+      ...signedOut,
+      error: null,
+      signInPassword: "",
+      signInProblem: null,
+      signInBusy: false,
+      mobileDrawerOpen: false,
+    });
+    await container.signOutUseCase.execute();
   },
 
   setActiveOrganizationId: (orgId) => {
@@ -156,9 +165,18 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   reload: async () => {
-    const preferred = get().activeWorkspace?.key ?? null;
-    const session = await container.refreshSessionUseCase.execute();
-    const keep = session.workspaces.some((w) => w.key === preferred) ? preferred : session.activeWorkspaceKey;
-    set({ status: "authenticated", ...stateFor(session, keep) });
+    const currentLifetime = lifetime;
+    const request = ++refreshRequest;
+    try {
+      const session = await container.refreshSessionUseCase.execute();
+      if (currentLifetime !== lifetime || request !== refreshRequest) return;
+      const preferred = get().activeWorkspace?.key ?? null;
+      const keep = session.workspaces.some((w) => w.key === preferred) ? preferred : session.activeWorkspaceKey;
+      set({ status: "authenticated", ...stateFor(session, keep) });
+    } catch (error) {
+      if (currentLifetime !== lifetime || request !== refreshRequest) return;
+      throw error;
+    }
   },
-}));
+  });
+});

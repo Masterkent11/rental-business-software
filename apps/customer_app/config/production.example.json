@@ -1,0 +1,6 @@
+{
+  "APP_ENV": "production",
+  "API_BASE_URL": "https://api.production.example.com",
+  "SUPABASE_URL": "https://production.supabase.co",
+  "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_REPLACE_WITH_PUBLIC_PROJECT_KEY"
+}

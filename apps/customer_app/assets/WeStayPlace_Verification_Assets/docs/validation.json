@@ -1,0 +1,133 @@
+{
+  "exact_native_crop_checks": 20,
+  "gif_decode_checks": [
+    {
+      "file": "gif/camera_previews/head_left_pose_demo.gif",
+      "frames": 15,
+      "size": [
+        440,
+        496
+      ],
+      "loop": 0
+    },
+    {
+      "file": "gif/camera_previews/head_right_pose_demo.gif",
+      "frames": 15,
+      "size": [
+        440,
+        496
+      ],
+      "loop": 0
+    },
+    {
+      "file": "gif/camera_previews/head_up_pose_demo.gif",
+      "frames": 15,
+      "size": [
+        440,
+        496
+      ],
+      "loop": 0
+    },
+    {
+      "file": "gif/camera_previews/id_front_scan_demo.gif",
+      "frames": 60,
+      "size": [
+        388,
+        260
+      ],
+      "loop": 0
+    },
+    {
+      "file": "gif/transparent_overlays/face_alignment_pulse.gif",
+      "frames": 35,
+      "size": [
+        328,
+        396
+      ],
+      "loop": 0
+    },
+    {
+      "file": "gif/transparent_overlays/face_guide_look_up.gif",
+      "frames": 40,
+      "size": [
+        440,
+        476
+      ],
+      "loop": 0
+    },
+    {
+      "file": "gif/transparent_overlays/face_guide_tilt_left.gif",
+      "frames": 40,
+      "size": [
+        440,
+        476
+      ],
+      "loop": 0
+    },
+    {
+      "file": "gif/transparent_overlays/face_guide_tilt_right.gif",
+      "frames": 40,
+      "size": [
+        440,
+        476
+      ],
+      "loop": 0
+    },
+    {
+      "file": "gif/transparent_overlays/id_front_scan.gif",
+      "frames": 60,
+      "size": [
+        388,
+        260
+      ],
+      "loop": 0
+    },
+    {
+      "file": "gif/transparent_overlays/look_up.gif",
+      "frames": 39,
+      "size": [
+        80,
+        120
+      ],
+      "loop": 0
+    },
+    {
+      "file": "gif/transparent_overlays/ocr_processing.gif",
+      "frames": 40,
+      "size": [
+        280,
+        16
+      ],
+      "loop": 0
+    },
+    {
+      "file": "gif/transparent_overlays/tilt_head_left.gif",
+      "frames": 40,
+      "size": [
+        208,
+        96
+      ],
+      "loop": 0
+    },
+    {
+      "file": "gif/transparent_overlays/tilt_head_right.gif",
+      "frames": 40,
+      "size": [
+        208,
+        96
+      ],
+      "loop": 0
+    },
+    {
+      "file": "gif/transparent_overlays/verification_success.gif",
+      "frames": 8,
+      "size": [
+        152,
+        152
+      ],
+      "loop": 0
+    }
+  ],
+  "svg_render_checks": 24,
+  "png_exports": 72
+}

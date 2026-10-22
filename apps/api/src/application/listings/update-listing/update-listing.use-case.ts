@@ -42,6 +42,9 @@ export const updateListing =
     if (command.property?.location) assertCoordinates(command.property.location);
     const merged: ListingDetails = {
       kind,
+      minLeaseMonths: command.listing.minLeaseMonths !== undefined ? command.listing.minLeaseMonths : current.minLeaseMonths ?? null,
+      maxLeaseMonths: command.listing.maxLeaseMonths !== undefined ? command.listing.maxLeaseMonths : current.maxLeaseMonths ?? null,
+      allowPendingIdentityApplication: command.listing.allowPendingIdentityApplication ?? current.allowPendingIdentityApplication ?? false,
       title: command.listing.title ?? current.title,
       description: command.listing.description ?? current.description,
       priceCentavos: command.listing.priceCentavos ?? current.priceCentavos,

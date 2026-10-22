@@ -1,16 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
-String _defaultBaseUrl() {
-  const fromEnv = String.fromEnvironment('API_BASE_URL');
-  if (fromEnv.isNotEmpty) return fromEnv;
-  if (!kIsWebPlatform && Platform.isAndroid) return 'http://10.0.2.2:8080';
-  return 'http://localhost:8080';
-}
-
-const bool kIsWebPlatform = bool.fromEnvironment('dart.library.js_util');
+import '../app/app_config.dart';
 
 typedef TokenSource = String? Function();
 
@@ -20,6 +13,7 @@ class ApiException implements Exception {
     this.statusCode,
     this.code,
     this.isNetwork = false,
+    this.isTimeout = false,
     this.cause,
   });
 
@@ -27,6 +21,7 @@ class ApiException implements Exception {
   final int? statusCode;
   final String? code;
   final bool isNetwork;
+  final bool isTimeout;
 
   final Object? cause;
 
@@ -47,7 +42,7 @@ const Duration kRequestTimeout = Duration(seconds: 20);
 class ApiClient {
   ApiClient({http.Client? client, String? baseUrl, TokenSource? tokenSource})
       : _client = client ?? http.Client(),
-        _baseUrl = baseUrl ?? _defaultBaseUrl(),
+        _baseUrl = baseUrl ?? AppConfig.configuredApiBaseUrl,
         _tokenSource = tokenSource;
 
   final http.Client _client;
@@ -80,11 +75,7 @@ class ApiClient {
     try {
       response = await _client.get(uri, headers: _headers()).timeout(kRequestTimeout);
     } catch (error) {
-      throw ApiException(
-        'Could not reach the server. Check your connection and try again.',
-        isNetwork: true,
-        cause: error,
-      );
+      throw _connectionFailure(error);
     }
 
     if (response.statusCode >= 400) throw _failure(response);
@@ -111,14 +102,13 @@ class ApiClient {
 
     late final http.Response response;
     try {
-      final streamed = await _client.send(request).timeout(kRequestTimeout);
-      response = await http.Response.fromStream(streamed);
+      response = await (() async {
+        final streamed = await _client.send(request);
+        return http.Response.fromStream(streamed);
+      })()
+          .timeout(kRequestTimeout);
     } catch (error) {
-      throw ApiException(
-        'Could not reach the server. Check your connection and try again.',
-        isNetwork: true,
-        cause: error,
-      );
+      throw _connectionFailure(error);
     }
 
     if (response.statusCode >= 400) throw _failure(response);
@@ -130,6 +120,14 @@ class ApiClient {
     }
     return decoded;
   }
+
+  ApiException _connectionFailure(Object error) => ApiException(
+      error is TimeoutException
+          ? 'The server took too long to respond. Please try again.'
+          : 'Could not reach the server. Check your connection and try again.',
+      isNetwork: error is! TimeoutException,
+      isTimeout: error is TimeoutException,
+      cause: error);
 
   ApiException _failure(http.Response response) {
     final status = response.statusCode;
@@ -145,7 +143,8 @@ class ApiClient {
     } on FormatException {
       message = null;
     }
-    if (status >= 500 || message == null) {
+    if (status == 401) message = 'Your session expired. Please sign in again.';
+    if ((status >= 500 && code != 'VERIFICATION_UNAVAILABLE') || message == null) {
       message = switch (status) {
         401 => 'Please sign in again.',
         403 => 'You do not have access to that.',

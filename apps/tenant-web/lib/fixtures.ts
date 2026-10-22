@@ -279,7 +279,7 @@ export const documents: TenantDocument[] = [
   { id: "doc-2", name: "Move-in condition report", kind: "Move-in", issuedAt: "2026-01-01", sizeLabel: "1.2 MB" },
   { id: "doc-3", name: "Receipt PAY-2026-08-311", kind: "Receipt", issuedAt: "2026-08-16", sizeLabel: "84 KB" },
   { id: "doc-4", name: "Receipt PAY-2026-07-288", kind: "Receipt", issuedAt: "2026-07-03", sizeLabel: "86 KB" },
-  { id: "doc-5", name: "Notice: water interruption 12–14 May", kind: "Notice", issuedAt: "2026-05-10", sizeLabel: "62 KB" },
+  { id: "doc-5", name: "Notice: water interruption 1214 May", kind: "Notice", issuedAt: "2026-05-10", sizeLabel: "62 KB" },
 ];
 
 /** Outstanding across every unpaid claim — the server's number, not ours. */

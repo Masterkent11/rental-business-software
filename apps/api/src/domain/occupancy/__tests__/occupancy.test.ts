@@ -10,6 +10,14 @@ import {
 } from '@/domain/occupancy/occupancy.ts';
 
 describe('dateRange', () => {
+  it.each(['2026-02-30', '2026-04-31', '2026-13-01'])('rejects an impossible start date %s', start => {
+    expect(() => dateRange(start, '2027-01-01')).toThrow(InvalidDateRangeError);
+  });
+
+  it.each(['2026-02-30', '2026-04-31', '2026-13-01'])('rejects an impossible end date %s', end => {
+    expect(() => dateRange('2026-01-01', end)).toThrow(InvalidDateRangeError);
+  });
+
   it('refuses a zero-night stay rather than normalising it', () => {
     // Someone asking to check in and out on the same day has made a mistake.
     // Quietly booking nothing would hide it until they arrived.

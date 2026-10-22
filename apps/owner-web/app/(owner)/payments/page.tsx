@@ -27,13 +27,14 @@ function exportPayments(collection: Collection) {
 
 export default function PaymentsPage() {
   const organizationId = useSessionStore((s) => s.activeOrganizationId);
-  const { collection, collectionLoading, collectionError, loadCollection } = useDashboardStore();
+  const { collection: storedCollection, organizationId: loadedOrganizationId, collectionLoading, collectionError, loadCollection } = useDashboardStore();
+  const collection = loadedOrganizationId === organizationId ? storedCollection : null;
 
   useEffect(() => {
     if (organizationId) void loadCollection(organizationId);
   }, [organizationId, loadCollection]);
 
-  if (collectionError && !collection) {
+  if (loadedOrganizationId === organizationId && collectionError && !collection) {
     return (
       <Page>
         <TopBar title="Payments" />

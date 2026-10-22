@@ -29,6 +29,14 @@ insert into auth.users (
   ('00000000-0000-0000-0000-000000000000', 'd0000000-0000-4000-8000-0000000000b1', 'authenticated', 'authenticated',
    'demo.agent@example.com', extensions.crypt('DemoAgent!2026', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Maria Santos"}', now(), now(),
+   '', '', '', '', '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000', 'd0000000-0000-4000-8000-0000000000b3', 'authenticated', 'authenticated',
+   'demo.agent2@example.com', extensions.crypt('DemoAgent2!2026', extensions.gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"John Reyes"}', now(), now(),
+   '', '', '', '', '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000', 'd0000000-0000-4000-8000-0000000000b5', 'authenticated', 'authenticated',
+   'demo.agent3@example.com', extensions.crypt('DemoAgent3!2026', extensions.gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Lea Villanueva"}', now(), now(),
    '', '', '', '', '', '', '', '')
 on conflict (id) do update
   set encrypted_password = excluded.encrypted_password,
@@ -45,14 +53,20 @@ values
   ('d0000000-0000-4000-8000-0000000000e2', 'd0000000-0000-4000-8000-0000000000e1', 'd0000000-0000-4000-8000-0000000000e1', 'email',
    '{"sub":"d0000000-0000-4000-8000-0000000000e1","email":"demo.customer2@example.com","email_verified":true}', now(), now(), now()),
   ('d0000000-0000-4000-8000-0000000000b2', 'd0000000-0000-4000-8000-0000000000b1', 'd0000000-0000-4000-8000-0000000000b1', 'email',
-   '{"sub":"d0000000-0000-4000-8000-0000000000b1","email":"demo.agent@example.com","email_verified":true}', now(), now(), now())
+   '{"sub":"d0000000-0000-4000-8000-0000000000b1","email":"demo.agent@example.com","email_verified":true}', now(), now(), now()),
+  ('d0000000-0000-4000-8000-0000000000b4', 'd0000000-0000-4000-8000-0000000000b3', 'd0000000-0000-4000-8000-0000000000b3', 'email',
+   '{"sub":"d0000000-0000-4000-8000-0000000000b3","email":"demo.agent2@example.com","email_verified":true}', now(), now(), now()),
+  ('d0000000-0000-4000-8000-0000000000b6', 'd0000000-0000-4000-8000-0000000000b5', 'd0000000-0000-4000-8000-0000000000b5', 'email',
+   '{"sub":"d0000000-0000-4000-8000-0000000000b5","email":"demo.agent3@example.com","email_verified":true}', now(), now(), now())
 on conflict (provider_id, provider) do nothing;
 
 insert into user_profiles (id, display_name, email) values
   ('d0000000-0000-4000-8000-0000000000a1', 'Dana Reyes', 'demo.owner@example.com'),
   ('d0000000-0000-4000-8000-0000000000c1', 'Carlo Mendoza', 'demo.customer@example.com'),
   ('d0000000-0000-4000-8000-0000000000e1', 'Bea Santos', 'demo.customer2@example.com'),
-  ('d0000000-0000-4000-8000-0000000000b1', 'Maria Santos', 'demo.agent@example.com')
+  ('d0000000-0000-4000-8000-0000000000b1', 'Maria Santos', 'demo.agent@example.com'),
+  ('d0000000-0000-4000-8000-0000000000b3', 'John Reyes', 'demo.agent2@example.com'),
+  ('d0000000-0000-4000-8000-0000000000b5', 'Lea Villanueva', 'demo.agent3@example.com')
 on conflict (id) do update set display_name = excluded.display_name, email = excluded.email;
 
 insert into user_capabilities (user_id, capability, organization_id, source_type)
@@ -64,7 +78,11 @@ select v.user_id::uuid, v.capability, v.organization_id::uuid, v.source_type
     ('d0000000-0000-4000-8000-0000000000e1', 'CUSTOMER', null, 'REGISTRATION'),
     ('d0000000-0000-4000-8000-0000000000b1', 'CUSTOMER', null, 'REGISTRATION'),
     ('d0000000-0000-4000-8000-0000000000b1', 'AGENT', null, 'REGISTRATION'),
-    ('d0000000-0000-4000-8000-0000000000b1', 'OWNER', 'd0000000-0000-4000-8000-000000000002', 'MEMBERSHIP')
+    ('d0000000-0000-4000-8000-0000000000b1', 'OWNER', 'd0000000-0000-4000-8000-000000000002', 'MEMBERSHIP'),
+    ('d0000000-0000-4000-8000-0000000000b3', 'CUSTOMER', null, 'REGISTRATION'),
+    ('d0000000-0000-4000-8000-0000000000b3', 'AGENT', null, 'REGISTRATION'),
+    ('d0000000-0000-4000-8000-0000000000b5', 'CUSTOMER', null, 'REGISTRATION'),
+    ('d0000000-0000-4000-8000-0000000000b5', 'AGENT', null, 'REGISTRATION')
   ) as v(user_id, capability, organization_id, source_type)
  where not exists (
    select 1 from user_capabilities c
@@ -93,6 +111,20 @@ insert into agent_profiles (
   'REB-0045821', 'PRC',
   'VERIFIED', now(), 'Demo verification', '{House & Lot,Condo,Pre-selling,Investment}', '{Cebu City,Mandaue,Lapu-Lapu,Talisay}',
   '{English,Filipino,Cebuano}', 'PUBLIC'
+), (
+  'd6000000-0000-4000-8000-000000000002', 'd0000000-0000-4000-8000-0000000000b3', 'John Reyes',
+  'Property specialist',
+  'Residential sales in northern Cebu City. Demo account for testing lead assignment.',
+  'REB-0051937', 'PRC',
+  'VERIFIED', now(), 'Demo verification', '{House & Lot,Townhouse}', '{Cebu City,Mandaue}',
+  '{English,Filipino,Cebuano}', 'PUBLIC'
+), (
+  'd6000000-0000-4000-8000-000000000003', 'd0000000-0000-4000-8000-0000000000b5', 'Lea Villanueva',
+  'Property specialist',
+  'Condominium and house sales across Metro Cebu. Demo account for testing lead assignment.',
+  'REB-0060412', 'PRC',
+  'VERIFIED', now(), 'Demo verification', '{Condo,House & Lot}', '{Cebu City,Talisay}',
+  '{English,Filipino}', 'PUBLIC'
 )
 on conflict (id) do update
   set display_name = excluded.display_name, headline = excluded.headline, bio = excluded.bio,
@@ -262,7 +294,11 @@ insert into listing_representations (
   ('d7000000-0000-4000-8000-000000000001', 'd0000000-0000-4000-8000-000000000001', 'd3000000-0000-4000-8000-000000000011',
    'd6000000-0000-4000-8000-000000000001', 'ACTIVE', true, true, true, 'd0000000-0000-4000-8000-0000000000a1', now(), now()),
   ('d7000000-0000-4000-8000-000000000002', 'd0000000-0000-4000-8000-000000000001', 'd3000000-0000-4000-8000-000000000012',
-   'd6000000-0000-4000-8000-000000000001', 'ACTIVE', false, true, true, 'd0000000-0000-4000-8000-0000000000a1', now(), now())
+   'd6000000-0000-4000-8000-000000000001', 'ACTIVE', false, true, true, 'd0000000-0000-4000-8000-0000000000a1', now(), now()),
+  ('d7000000-0000-4000-8000-000000000003', 'd0000000-0000-4000-8000-000000000001', 'd3000000-0000-4000-8000-000000000011',
+   'd6000000-0000-4000-8000-000000000002', 'ACTIVE', false, true, false, 'd0000000-0000-4000-8000-0000000000a1', now(), now()),
+  ('d7000000-0000-4000-8000-000000000004', 'd0000000-0000-4000-8000-000000000001', 'd3000000-0000-4000-8000-000000000011',
+   'd6000000-0000-4000-8000-000000000003', 'ACTIVE', false, true, false, 'd0000000-0000-4000-8000-0000000000a1', now(), now())
 on conflict (id) do nothing;
 
 insert into virtual_tours (id, organization_id, resource_id, state, scene_count) values

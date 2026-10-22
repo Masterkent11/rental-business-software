@@ -13,6 +13,8 @@ import { postgresNotificationRepository } from '@/infrastructure/postgres/reposi
 import { postgresTourRepository } from '@/infrastructure/postgres/repositories/postgres-tour.repository.ts';
 import { postgresAgentTaskRepository } from '@/infrastructure/postgres/repositories/postgres-agent-task.repository.ts';
 import { postgresAnalyticsRepository } from '@/infrastructure/postgres/repositories/postgres-analytics.repository.ts';
+import { postgresLeadAssignmentRepository } from '@/infrastructure/postgres/repositories/postgres-lead-assignment.repository.ts';
+import { postgresListingChangeProposalRepository } from '@/infrastructure/postgres/repositories/postgres-listing-change-proposal.repository.ts';
 import { createSaleListing } from '@/application/listings/create-sale-listing/create-sale-listing.use-case.ts';
 import { registerListingPhoto } from '@/application/listings/register-listing-photo/register-listing-photo.use-case.ts';
 import { setListingState } from '@/application/listings/set-listing-state/set-listing-state.use-case.ts';
@@ -44,10 +46,13 @@ import { updateInquiryStatus } from '@/application/inquiries/update-inquiry-stat
 import { sendAgentMessage, sendCustomerMessage } from '@/application/messaging/send-message/send-message.use-case.ts';
 import { getAgentThread, getCustomerThread } from '@/application/messaging/get-conversation-messages/get-conversation-messages.use-case.ts';
 import { listAgentConversations } from '@/application/messaging/list-agent-conversations/list-agent-conversations.use-case.ts';
-import { listViewingSlots } from '@/application/viewings/list-viewing-slots/list-viewing-slots.use-case.ts';
 import { requestViewing } from '@/application/viewings/request-viewing/request-viewing.use-case.ts';
 import { partnerViewingAction } from '@/application/viewings/partner-viewing-action/partner-viewing-action.use-case.ts';
 import { listMyViewings } from '@/application/viewings/list-my-viewings/list-my-viewings.use-case.ts';
+import { decideChangeProposal } from '@/application/listings/review-change-proposal/review-change-proposal.use-case.ts';
+import { resolveLeadAssignment } from '@/application/assignment/resolve-lead-assignment/resolve-lead-assignment.use-case.ts';
+import { reassignLead } from '@/application/assignment/reassign-lead/reassign-lead.use-case.ts';
+import { assignLead } from '@/application/assignment/assign-lead/assign-lead.use-case.ts';
 import { ensureListingTour } from '@/application/tours/ensure-listing-tour/ensure-listing-tour.use-case.ts';
 import { configureTourProvider } from '@/application/tours/configure-tour-provider/configure-tour-provider.use-case.ts';
 import { partnerListingGate, partnerTourGate } from '@/application/identity/partner-access.rules.ts';
@@ -59,9 +64,9 @@ import {
   RepresentationForbiddenError,
 } from '@/domain/agents/agent.ts';
 import { InquiryNotAllowedError } from '@/domain/inquiries/inquiry.ts';
-import { ViewingAlreadyRequestedError, ViewingSlotTakenError } from '@/domain/viewings/viewing.ts';
+import { localDayOf, localInstant } from '@/domain/viewings/viewing.ts';
 import { ConversationNotFoundError } from '@/domain/messaging/conversation.ts';
-import { ListingNotFoundError } from '@/domain/listings/listing.ts';
+import { DuplicatePropertyError, ListingNotFoundError } from '@/domain/listings/listing.ts';
 import type { Principal } from '@/domain/identity/identity.ts';
 import { PUBLIC } from '@/domain/shared/organization-scope.ts';
 import { toListingHttpResponse } from '@/modules/listings/mappers/listing-http.mapper.ts';
@@ -79,6 +84,7 @@ const ADMIN = randomUUID();
 const ANA = randomUUID();
 const BEN = randomUUID();
 const ASKING_PRICE = 1_850_000_000;
+const HOUSE_NUMBER = String(1000 + Math.floor(Math.random() * 8999));
 
 const owner = (userId: string, organizationId: string): Principal => ({
   userId,
@@ -112,6 +118,8 @@ const admin: Principal = {
 };
 
 const clock = { now: () => new Date() };
+const settings = { responseWindowMinutes: 240, sweepIntervalSeconds: 0 };
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const fakeMedia: ListingMediaStorage = {
   publicUrl: (path) => `https://storage.test/${path}`,
@@ -144,8 +152,14 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
   const tours = postgresTourRepository();
   const tasks = postgresAgentTaskRepository();
   const analytics = postgresAnalyticsRepository();
+  const assignments = postgresLeadAssignmentRepository();
+  const proposals = postgresListingChangeProposalRepository();
   const listingGate = partnerListingGate(representations);
   const tourGate = partnerTourGate(representations);
+  const resolve = resolveLeadAssignment(assignments, clock);
+  const reassign = reassignLead({ assignments, viewings, listings, agents, notifications, resolve, clock, settings });
+  const assign = assignLead({ assignments, resolve, reassign, clock, settings });
+  const viewingDay = localDayOf(new Date(Date.now() + 2 * DAY_MS));
 
   let listingId = '';
   let mariaAgentId = '';
@@ -154,6 +168,7 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
   let inquiryId = '';
   let conversationId = '';
   let viewingId = '';
+  let junRepresentationId = '';
 
   beforeAll(async () => {
     for (const [id, name] of [
@@ -177,31 +192,35 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
     await sql.end({ timeout: 5 });
   });
 
+  const talambanHouse = {
+    name: 'Integration Talamban House',
+    propertyType: 'HOUSE' as const,
+    addressLine: `${HOUSE_NUMBER} Sunrise Drive`,
+    areaLabel: 'Brgy. Talamban',
+    cityLabel: 'Cebu City',
+    location: { latitude: 10.359123, longitude: 123.911234, privacy: 'APPROXIMATE' as const },
+  };
+  const talambanDetails = {
+    title: 'Integration modern house and lot',
+    description: 'Two-storey house with a garden, four bedrooms and covered parking.',
+    amenities: ['Garden', 'Garage'],
+    saleStatus: 'READY_FOR_OCCUPANCY' as const,
+    bedrooms: 4,
+    bathrooms: 3,
+    floorAreaSqm: 220,
+    lotAreaSqm: 300,
+    parkingSlots: 2,
+    availableFrom: null,
+  };
+
   it('owner creates a sale listing whose asking price stays in the private table', async () => {
     const created = await createSaleListing(listings)({
       principal: owner(OWNER, SANTOS),
       organizationId: SANTOS,
-      property: {
-        name: 'Integration Talamban House',
-        propertyType: 'HOUSE',
-        addressLine: '8 Sunrise Drive',
-        areaLabel: 'Brgy. Talamban',
-        cityLabel: 'Cebu City',
-        location: { latitude: 10.359123, longitude: 123.911234, privacy: 'APPROXIMATE' },
-      },
-      listing: {
-        title: 'Integration modern house and lot',
-        description: 'Two-storey house with a garden, four bedrooms and covered parking.',
-        amenities: ['Garden', 'Garage'],
-        saleStatus: 'READY_FOR_OCCUPANCY',
-        bedrooms: 4,
-        bathrooms: 3,
-        floorAreaSqm: 220,
-        lotAreaSqm: 300,
-        parkingSlots: 2,
-        availableFrom: null,
-      },
+      property: talambanHouse,
+      listing: talambanDetails,
       saleTerms: { askingPriceInternalCentavos: ASKING_PRICE, priceNegotiable: true, commercialNotes: 'Owner may accept 17.5M' },
+      confirmDistinctProperty: false,
     });
     listingId = created.id;
     expect(created.intent).toBe('SALE');
@@ -224,6 +243,19 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
       action: 'PUBLISH',
     });
     expect(published.state).toBe('PUBLISHED');
+  });
+
+  it('the same physical property cannot be listed twice, even by another organization', async () => {
+    const again = createSaleListing(listings)({
+      principal: owner(RIVAL, SKYLINE),
+      organizationId: SKYLINE,
+      property: { ...talambanHouse, addressLine: `${HOUSE_NUMBER} Sunrise Dr.`, location: { ...talambanHouse.location, latitude: 10.35913 } },
+      listing: { ...talambanDetails, title: 'Rival copy of the same house' },
+      saleTerms: null,
+      confirmDistinctProperty: false,
+    });
+    await expect(again).rejects.toBeInstanceOf(DuplicatePropertyError);
+    await expect(again).rejects.toMatchObject({ existingListingId: listingId });
   });
 
   it('the database refuses to store a public price on a sale listing', async () => {
@@ -319,7 +351,7 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
     await decideAgentVerification(agents, notifications)({ principal: admin, agentId: junAgentId, decision: 'VERIFY', note: null });
   });
 
-  it('the owner assigns an agent who must accept before gaining any access', async () => {
+  it('the owner assigns agents who must accept before gaining any access', async () => {
     const invite = inviteAgentToListing(representations, agents, listings, notifications);
     const rep = await invite({
       principal: owner(OWNER, SANTOS),
@@ -327,16 +359,30 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
       listingId,
       agentId: mariaAgentId,
       permissions: { canEditListing: true },
+      terms: { isPrimary: true },
     });
     representationId = rep.id;
     expect(rep.state).toBe('PENDING');
+    expect(rep.terms).toMatchObject({ representationType: 'NON_EXCLUSIVE', isPrimary: true, acceptsLeads: true });
 
     await expect(
-      invite({ principal: owner(OWNER, SANTOS), organizationId: SANTOS, listingId, agentId: junAgentId, permissions: {} }),
+      invite({ principal: owner(OWNER, SANTOS), organizationId: SANTOS, listingId, agentId: mariaAgentId, permissions: {}, terms: {} }),
     ).rejects.toBeInstanceOf(ListingAlreadyRepresentedError);
     await expect(
-      invite({ principal: owner(RIVAL, SKYLINE), organizationId: SKYLINE, listingId, agentId: junAgentId, permissions: {} }),
+      invite({ principal: owner(RIVAL, SKYLINE), organizationId: SKYLINE, listingId, agentId: junAgentId, permissions: {}, terms: {} }),
     ).rejects.toBeInstanceOf(ListingNotFoundError);
+    const junInvite = await invite({
+      principal: owner(OWNER, SANTOS),
+      organizationId: SANTOS,
+      listingId,
+      agentId: junAgentId,
+      permissions: { canViewCommercial: false, canManageTour: false },
+      terms: {},
+    });
+    junRepresentationId = junInvite.id;
+    await expect(
+      invite({ principal: owner(OWNER, SANTOS), organizationId: SANTOS, listingId, agentId: junAgentId, permissions: {}, terms: {} }),
+    ).rejects.toBeInstanceOf(ListingAlreadyRepresentedError);
 
     await expect(
       getSaleTerms(listings, listingGate)({ principal: agent(MARIA, 'Maria Santos'), organizationId: null, listingId }),
@@ -348,6 +394,13 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
       accept: true,
     });
     expect(accepted.state).toBe('ACTIVE');
+    const junAccepted = await respondToRepresentation(representations, notifications)({
+      principal: agent(JUN, 'Jun Dela Cruz'),
+      representationId: junRepresentationId,
+      accept: true,
+    });
+    expect(junAccepted.state).toBe('ACTIVE');
+    expect((await representations.listForListing(SANTOS, listingId)).filter((r) => r.state === 'ACTIVE')).toHaveLength(2);
 
     const terms = await getSaleTerms(listings, listingGate)({ principal: agent(MARIA, 'Maria Santos'), organizationId: null, listingId });
     expect(terms.askingPriceInternalCentavos).toBe(ASKING_PRICE);
@@ -355,13 +408,23 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
       getSaleTerms(listings, listingGate)({ principal: agent(JUN, 'Jun Dela Cruz'), organizationId: null, listingId }),
     ).rejects.toBeInstanceOf(RepresentationForbiddenError);
 
-    const edited = await updateSaleListing(listings, listingGate)({
+    const edited = await updateSaleListing(listings, listingGate, proposals, notifications)({
       principal: agent(MARIA, 'Maria Santos'),
       organizationId: null,
       listingId,
-      listing: { parkingSlots: 3 },
+      listing: { parkingSlots: 3, description: 'Two-storey house with a garden, four bedrooms, and a covered carport.' },
     });
-    expect(edited.parkingSlots).toBe(3);
+    expect(edited.listing.parkingSlots).toBe(2);
+    expect(edited.listing.description).toContain('covered carport');
+    expect(edited.proposal).toMatchObject({ status: 'PENDING', changes: { listing: { parkingSlots: 3 }, property: {} } });
+    const approved = await decideChangeProposal(proposals, listings)({
+      principal: owner(OWNER, SANTOS),
+      organizationId: SANTOS,
+      proposalId: edited.proposal!.id,
+      approve: true,
+    });
+    expect(approved.status).toBe('APPROVED');
+    expect((await listings.findById(SANTOS, listingId))!.parkingSlots).toBe(3);
     await saveSaleTerms(listings, listingGate)({
       principal: agent(MARIA, 'Maria Santos'),
       organizationId: null,
@@ -370,7 +433,7 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
     });
 
     const listed = await viewListing(listings)(listingId);
-    expect(listed!.representative).toMatchObject({ agentId: mariaAgentId, displayName: 'Maria Santos', verified: true });
+    expect(JSON.stringify(toListingHttpResponse(listed!))).not.toContain(mariaAgentId);
 
     const profile = await viewPublicAgent(agents, listings, clock)({ agentId: mariaAgentId });
     expect(profile.listings.map((l) => l.id)).toContain(listingId);
@@ -378,7 +441,7 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
   });
 
   it('a buyer inquires once, privately, and the assigned agent receives the lead', async () => {
-    const submit = submitInquiry(inquiries, listings, messaging, agents, notifications);
+    const submit = submitInquiry(inquiries, listings, agents, notifications, assign);
     const ref = randomUUID();
     const first = await submit({
       principal: customer(ANA, 'Ana Buyer'),
@@ -387,9 +450,12 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
       questions: ['Is this available?'],
       buyerBudgetCentavos: 1_700_000_000,
       clientRef: ref,
+      referralCode: null,
     });
     expect(first.created).toBe(true);
     expect(first.inquiry.agentId).toBe(mariaAgentId);
+    const lead = await assignments.activeFor(ANA, listingId);
+    expect(lead).toMatchObject({ agentId: mariaAgentId, purpose: 'INQUIRY', status: 'ASSIGNED', reason: 'PRIMARY_REPRESENTATIVE' });
     inquiryId = first.inquiry.id;
     conversationId = first.inquiry.conversationId;
 
@@ -400,6 +466,7 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
       questions: [],
       buyerBudgetCentavos: null,
       clientRef: ref,
+      referralCode: null,
     });
     expect(retried).toMatchObject({ created: false, alreadyOpen: false });
     expect(retried.inquiry.id).toBe(inquiryId);
@@ -411,6 +478,7 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
       questions: [],
       buyerBudgetCentavos: null,
       clientRef: randomUUID(),
+      referralCode: null,
     });
     expect(again).toMatchObject({ created: false, alreadyOpen: true });
 
@@ -435,13 +503,14 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
       select id from listings where intent = 'RENT' and state = 'PUBLISHED' limit 1
     `;
     await expect(
-      submitInquiry(inquiries, listings, messaging, agents, notifications)({
+      submitInquiry(inquiries, listings, agents, notifications, assign)({
         principal: customer(BEN, 'Ben Buyer'),
         listingId: rental!.id,
         message: 'Hello',
         questions: [],
         buyerBudgetCentavos: null,
         clientRef: randomUUID(),
+        referralCode: null,
       }),
     ).rejects.toBeInstanceOf(InquiryNotAllowedError);
   });
@@ -450,7 +519,7 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
     const conversations = await listAgentConversations(messaging)({ principal: agent(MARIA, 'Maria Santos') });
     expect(conversations.map((c) => c.id)).toContain(conversationId);
 
-    const reply = sendAgentMessage(messaging, notifications, clock, inquiries);
+    const reply = sendAgentMessage(messaging, notifications, clock, assignments, inquiries);
     const message = await reply({
       principal: agent(MARIA, 'Maria Santos'),
       conversationId,
@@ -479,46 +548,69 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
     expect(thread.messages.map((m) => m.senderRole)).toEqual(['CUSTOMER', 'AGENT', 'CUSTOMER']);
     const agentView = await getAgentThread(messaging)({ principal: agent(MARIA, 'Maria Santos'), conversationId, before: null });
     expect(agentView.conversation.unreadCount).toBe(1);
+    expect((await assignments.activeFor(ANA, listingId))!.status).toBe('ACCEPTED');
   });
 
-  it('the buyer requests a viewing; the slot cannot be double-booked; the agent confirms', async () => {
-    const days = await listViewingSlots(listings, viewings, clock)({ listingId });
-    const slot = days.flatMap((d) => d.slots).find((s) => s.available && s.startsAt.getTime() > Date.now() + 36 * 3_600_000)!;
-    const request = requestViewing(viewings, listings, inquiries, messaging, agents, notifications, clock);
-
+  it('the buyer requests a viewing with a preferred window; the same specialist continues and confirms', async () => {
+    const request = requestViewing({ viewings, listings, inquiries, agents, notifications, resolve, reassign, clock, settings });
+    const ref = randomUUID();
     const created = await request({
       principal: customer(ANA, 'Ana Buyer'),
       listingId,
-      scheduledAt: slot.startsAt,
+      preferredDate: viewingDay,
+      preferredWindow: 'AFTERNOON',
       note: 'I will bring my partner.',
-      clientRef: randomUUID(),
+      clientRef: ref,
+      referralCode: null,
     });
     viewingId = created.viewing.id;
-    expect(created.viewing.status).toBe('REQUESTED');
-    expect(created.viewing.inquiryId).toBe(inquiryId);
-    expect(created.viewing.agentId).toBe(mariaAgentId);
+    expect(created.created).toBe(true);
+    expect(created.viewing).toMatchObject({
+      status: 'REQUESTED',
+      inquiryId,
+      conversationId,
+      agentId: mariaAgentId,
+      preferredDate: viewingDay,
+      preferredWindow: 'AFTERNOON',
+      scheduledAt: null,
+    });
+    expect(created.agent).toMatchObject({ agentId: mariaAgentId, displayName: 'Maria Santos', verified: true });
 
-    await expect(
-      request({ principal: customer(BEN, 'Ben Buyer'), listingId, scheduledAt: slot.startsAt, note: null, clientRef: randomUUID() }),
-    ).rejects.toBeInstanceOf(ViewingSlotTakenError);
+    const [replayed, doubleTap] = await Promise.all([
+      request({ principal: customer(ANA, 'Ana Buyer'), listingId, preferredDate: viewingDay, preferredWindow: 'AFTERNOON', note: null, clientRef: ref, referralCode: null }),
+      request({ principal: customer(ANA, 'Ana Buyer'), listingId, preferredDate: viewingDay, preferredWindow: 'MORNING', note: null, clientRef: randomUUID(), referralCode: null }),
+    ]);
+    expect(replayed).toMatchObject({ created: false, viewing: { id: viewingId } });
+    expect(doubleTap).toMatchObject({ created: false, viewing: { id: viewingId } });
+    const [counts] = await adminDb<{ viewings: number; leads: number; conversations: number }[]>`
+      select (select count(*)::int from viewings where listing_id = ${listingId} and customer_id = ${ANA}) as viewings,
+             (select count(*)::int from lead_assignments where listing_id = ${listingId} and customer_id = ${ANA}) as leads,
+             (select count(*)::int from conversations where listing_id = ${listingId} and customer_id = ${ANA}) as conversations
+    `;
+    expect(counts).toEqual({ viewings: 1, leads: 1, conversations: 1 });
 
-    const other = days.flatMap((d) => d.slots).find((s) => s.available && s.startsAt.getTime() !== slot.startsAt.getTime())!;
-    await expect(
-      request({ principal: customer(ANA, 'Ana Buyer'), listingId, scheduledAt: other.startsAt, note: null, clientRef: randomUUID() }),
-    ).rejects.toBeInstanceOf(ViewingAlreadyRequestedError);
-
-    const after = await listViewingSlots(listings, viewings, clock)({ listingId });
-    const same = after.flatMap((d) => d.slots).find((s) => s.startsAt.getTime() === slot.startsAt.getTime());
-    expect(same?.available).toBe(false);
-
-    const confirmed = await partnerViewingAction(viewings, inquiries, notifications, clock)({
+    const confirmAt = localInstant(viewingDay, 14, 30);
+    const confirmed = await partnerViewingAction({ viewings, inquiries, assignments, notifications, reassign, clock })({
       principal: agent(MARIA, 'Maria Santos'),
       organizationId: null,
       viewingId,
       action: 'CONFIRM',
+      scheduledAt: confirmAt,
       note: 'See you at the gate.',
     });
     expect(confirmed.status).toBe('CONFIRMED');
+    expect(confirmed.scheduledAt!.toISOString()).toBe(confirmAt.toISOString());
+
+    await expect(
+      partnerViewingAction({ viewings, inquiries, assignments, notifications, reassign, clock })({
+        principal: agent(JUN, 'Jun Dela Cruz'),
+        organizationId: null,
+        viewingId,
+        action: 'CONFIRM',
+        scheduledAt: confirmAt,
+        note: null,
+      }),
+    ).rejects.toThrow();
 
     const buyerSees = await listMyViewings(viewings)({ principal: customer(ANA, 'Ana Buyer') });
     expect(buyerSees.find((v) => v.id === viewingId)!.status).toBe('CONFIRMED');
@@ -568,14 +660,15 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
     });
     const tourId = ensured.tour.id;
     const configure = configureTourProvider(tours, tourGate);
-    const matterport = await configure({
+    const configured = await configure({
       principal: agent(MARIA, 'Maria Santos'),
       organizationId: null,
       tourId,
       provider: 'MATTERPORT',
       matterport: 'https://my.matterport.com/show/?m=SxQL3iGyoDo',
     });
-    expect(matterport.externalModelId).toBe('SxQL3iGyoDo');
+    expect(configured.provider).toBe('PLATFORM');
+    expect(configured.externalModelId).toBeNull();
 
     await expect(
       configure({ principal: agent(JUN, 'Jun Dela Cruz'), organizationId: null, tourId, provider: 'PLATFORM', matterport: null }),
@@ -595,8 +688,8 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
     ).rejects.toBeInstanceOf(RepresentationForbiddenError);
   });
 
-  it('ending the representation removes the agent from the conversation and the lead', async () => {
-    const ended = await endRepresentation(representations, agents, notifications)({
+  it('ending the primary representation hands the engaged lead to the next specialist with an explicit notice', async () => {
+    const ended = await endRepresentation({ representations, agents, assignments, notifications, reassign })({
       principal: owner(OWNER, SANTOS),
       organizationId: SANTOS,
       representationId,
@@ -611,8 +704,21 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
     ).rejects.toBeInstanceOf(RepresentationForbiddenError);
 
     const ownerView = await inquiries.findForOrganization(SANTOS, inquiryId);
-    expect(ownerView!.agentId).toBeNull();
-    const publicView = await listings.findPublicById(PUBLIC, listingId);
-    expect(publicView!.representative).toBeNull();
+    expect(ownerView!.agentId).toBe(junAgentId);
+    expect((await messaging.findForAgent(JUN, conversationId))!.id).toBe(conversationId);
+
+    const handedOver = await viewings.findForCustomer(ANA, viewingId);
+    expect(handedOver).toMatchObject({ agentId: junAgentId, status: 'REQUESTED', conversationId });
+    expect(handedOver!.agentChangeNotice).toBe(
+      "Maria is unavailable for this viewing. We've connected you with Jun from the same property team.",
+    );
+
+    const history = await assignments.historyFor(SANTOS, listingId, ANA);
+    expect(history.map((h) => [h.agentId, h.status, h.releaseReason])).toEqual([
+      [mariaAgentId, 'REASSIGNED', 'REPRESENTATION_ENDED'],
+      [junAgentId, 'ASSIGNED', null],
+    ]);
+    expect(history[1]!.previousAssignmentId).toBe(history[0]!.id);
+    expect(await listings.findPublicById(PUBLIC, listingId)).not.toBeNull();
   });
 });

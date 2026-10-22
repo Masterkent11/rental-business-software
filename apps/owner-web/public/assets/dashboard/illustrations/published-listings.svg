@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"><title>Published Listings</title><defs>
+<linearGradient id="silver" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#F2F5F8"/><stop offset="1" stop-color="#CBD7E3"/></linearGradient>
+<linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#B2C1D1"/><stop offset="1" stop-color="#7E93AA"/></linearGradient>
+<linearGradient id="ink" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#46576B"/><stop offset="1" stop-color="#263448"/></linearGradient>
+<linearGradient id="paper" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFFFFF"/><stop offset="1" stop-color="#EDF1F6"/></linearGradient>
+</defs><path d="M9 82h78" stroke="#45566A" stroke-width="1.6" stroke-linecap="round"/>
+<rect x="12" y="44" width="22" height="37" rx="2" fill="url(#ink)"/>
+<path d="M12 45l7-5h15v41H12z" fill="#596D83"/>
+<rect x="59" y="38" width="21" height="43" rx="2" fill="url(#steel)"/>
+<rect x="30" y="14" width="31" height="67" rx="2.5" fill="url(#silver)"/>
+<path d="M57 16h4v65h-4z" fill="#B6C5D5"/>
+<rect x="37" y="23" width="5" height="7" rx="0.7" fill="#405368" /><rect x="37" y="36" width="5" height="7" rx="0.7" fill="#405368" /><rect x="37" y="49" width="5" height="7" rx="0.7" fill="#405368" /><rect x="37" y="62" width="5" height="7" rx="0.7" fill="#405368" /><rect x="48" y="23" width="5" height="7" rx="0.7" fill="#405368" /><rect x="48" y="36" width="5" height="7" rx="0.7" fill="#405368" /><rect x="48" y="49" width="5" height="7" rx="0.7" fill="#405368" /><rect x="48" y="62" width="5" height="7" rx="0.7" fill="#405368" /><rect x="18" y="51" width="4" height="7" rx="0.6" fill="#F3F6F9" /><rect x="18" y="64" width="4" height="7" rx="0.6" fill="#F3F6F9" /><rect x="67" y="51" width="4" height="7" rx="0.6" fill="#F3F6F9" /><rect x="67" y="64" width="4" height="7" rx="0.6" fill="#F3F6F9" /><rect x="41" y="74" width="10" height="7" rx="0.5" fill="#8C9FB4" /></svg>

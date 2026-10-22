@@ -56,3 +56,8 @@ export function assertRejectionHasReason(reason: string | undefined): string {
   }
   return trimmed;
 }
+
+export function applicationMessageWithOccupants(message: string, occupants: number): string {
+  const summary = `${occupants} ${occupants === 1 ? 'person' : 'people'} expected to live here.`;
+  return message.trim() ? `${summary}\n\n${message.trim()}` : summary;
+}

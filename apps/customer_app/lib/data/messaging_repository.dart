@@ -192,6 +192,7 @@ abstract interface class RealtimeGateway {
   Stream<MessageView> messagesFor(String conversationId);
   Stream<void> conversationChangesFor(String customerId);
   Stream<Map<String, dynamic>> notificationsFor(String userId);
+  Stream<void> viewingChangesFor(String viewingId);
 }
 
 class SupabaseRealtimeGateway implements RealtimeGateway {
@@ -264,6 +265,15 @@ class SupabaseRealtimeGateway implements RealtimeGateway {
         column: 'user_id',
         value: userId,
       );
+
+  @override
+  Stream<void> viewingChangesFor(String viewingId) => _watch(
+        channelName: 'viewing',
+        table: 'viewings',
+        event: supabase.PostgresChangeEvent.update,
+        column: 'id',
+        value: viewingId,
+      ).map((_) {});
 }
 
 class DisconnectedRealtimeGateway implements RealtimeGateway {
@@ -277,6 +287,9 @@ class DisconnectedRealtimeGateway implements RealtimeGateway {
 
   @override
   Stream<Map<String, dynamic>> notificationsFor(String userId) => const Stream.empty();
+
+  @override
+  Stream<void> viewingChangesFor(String viewingId) => const Stream.empty();
 }
 
 final messagingRepositoryProvider = Provider<MessagingRepository>(

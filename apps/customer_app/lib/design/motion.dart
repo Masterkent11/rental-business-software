@@ -136,3 +136,15 @@ class RiseTransitionsBuilder extends PageTransitionsBuilder {
     );
   }
 }
+
+abstract final class Motion {
+  static const Duration selection = Duration(milliseconds: 180);
+  static const Duration state = Duration(milliseconds: 280);
+  static const Duration matching = Duration(milliseconds: 320);
+  static const Curve enter = Curves.easeOutCubic;
+  static const Curve swap = Curves.easeInOutCubic;
+
+  static bool reduced(BuildContext context) => MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+
+  static Duration of(BuildContext context, Duration duration) => reduced(context) ? Duration.zero : duration;
+}

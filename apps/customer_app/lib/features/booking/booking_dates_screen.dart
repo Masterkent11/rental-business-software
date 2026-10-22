@@ -11,12 +11,15 @@ import '../../data/listing_repository.dart';
 import '../../design/money.dart';
 import '../../design/quantity_stepper.dart';
 import '../../design/tokens.dart';
+import '../../fixtures/view_models.dart';
 import 'widgets/date_range_calendar.dart';
 
 class BookingDatesScreen extends ConsumerStatefulWidget {
-  const BookingDatesScreen({required this.listingId, super.key});
+  const BookingDatesScreen({required this.listingId, this.selectionOnly = false, this.initialSelection, super.key});
 
   final String listingId;
+  final bool selectionOnly;
+  final QuoteRequest? initialSelection;
 
   @override
   ConsumerState<BookingDatesScreen> createState() => _BookingDatesScreenState();
@@ -26,6 +29,14 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
   DateTime? _checkIn;
   DateTime? _checkOut;
   int _guests = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIn = widget.initialSelection?.checkIn;
+    _checkOut = widget.initialSelection?.checkOut;
+    _guests = widget.initialSelection?.guests ?? 1;
+  }
 
   int get _nights => (_checkIn != null && _checkOut != null) ? _checkOut!.difference(_checkIn!).inDays : 0;
 
@@ -39,7 +50,7 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final nightly = detail?.card.isSale == false ? detail?.card.priceCentavos : null;
-    if (detail == null || nightly == null) {
+    if (detail == null || nightly == null || detail.card.kind != ListingKind.shortTerm) {
       return Scaffold(
         appBar: AppBar(title: const Text('Select dates')),
         body: Center(
@@ -106,6 +117,14 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
             onChanged: (value) => setState(() => _guests = value),
           ),
           const SizedBox(height: Tokens.s20),
+          if (nightsAsync.hasError) ...[
+            const Text('Could not load available dates. Please retry.'),
+            TextButton(
+                onPressed: () =>
+                    ref.invalidate(availabilityProvider((resourceId: card.resourceId, from: windowFrom, to: windowTo))),
+                child: const Text('Retry availability')),
+          ] else if (!loaded)
+            const Text('Loading available dates…'),
           const DateRangeLegend(),
           const SizedBox(height: Tokens.s16),
           DateRangeCalendar(
@@ -140,15 +159,27 @@ class _BookingDatesScreenState extends ConsumerState<BookingDatesScreen> {
         checkIn: _checkIn,
         checkOut: _checkOut,
         enabled: canBook,
-        onBook: () => context.push(
-          Routes.checkout(
-            listingId: widget.listingId,
-            resourceId: card.resourceId,
-            checkIn: _checkIn!,
-            checkOut: _checkOut!,
-            guests: _guests.clamp(1, card.maxGuests),
-          ),
-        ),
+        buttonLabel: widget.selectionOnly ? 'Use these dates' : 'Review booking',
+        onBook: () {
+          if (widget.selectionOnly) {
+            Navigator.of(context).pop<QuoteRequest>((
+              listingId: widget.listingId,
+              checkIn: _checkIn!,
+              checkOut: _checkOut!,
+              guests: _guests.clamp(1, card.maxGuests)
+            ));
+            return;
+          }
+          context.push(
+            Routes.checkout(
+              listingId: widget.listingId,
+              resourceId: card.resourceId,
+              checkIn: _checkIn!,
+              checkOut: _checkOut!,
+              guests: _guests.clamp(1, card.maxGuests),
+            ),
+          );
+        },
       ),
     );
   }
@@ -188,6 +219,7 @@ class _BookingBar extends StatelessWidget {
     required this.checkOut,
     required this.enabled,
     required this.onBook,
+    required this.buttonLabel,
   });
 
   final int nights;
@@ -196,6 +228,7 @@ class _BookingBar extends StatelessWidget {
   final DateTime? checkOut;
   final bool enabled;
   final VoidCallback onBook;
+  final String buttonLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -221,7 +254,7 @@ class _BookingBar extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        '${format.format(checkIn!)} – ${format.format(checkOut!)} · $nights ${nights == 1 ? "night" : "nights"}',
+                        '${format.format(checkIn!)}  ${format.format(checkOut!)} · $nights ${nights == 1 ? "night" : "nights"}',
                         style: theme.textTheme.bodyMedium,
                       ),
                     ),
@@ -260,7 +293,7 @@ class _BookingBar extends StatelessWidget {
                 ),
               FilledButton(
                 onPressed: enabled && priced != null && priced.available ? onBook : null,
-                child: const Text('Review booking'),
+                child: Text(buttonLabel),
               ),
             ],
           ),

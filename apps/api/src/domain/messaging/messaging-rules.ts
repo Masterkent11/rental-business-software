@@ -1,4 +1,4 @@
-import { InvalidMessageError } from './messaging-errors.ts';
+import { ConversationNotAllowedError, InvalidMessageError } from './messaging-errors.ts';
 import type { ParticipantRole } from './conversation.ts';
 
 const side = (role: ParticipantRole): 'CUSTOMER' | 'PARTNER' => (role === 'CUSTOMER' ? 'CUSTOMER' : 'PARTNER');
@@ -45,4 +45,10 @@ export function shouldNotifyRecipient(input: {
   if (input.previousSenderRole === null || input.previousMessageAt === null) return true;
   if (side(input.previousSenderRole) !== side(input.senderRole)) return true;
   return input.now.getTime() - input.previousMessageAt.getTime() > NOTIFY_GAP_MS;
+}
+
+export function assertRentalMessagingAllowed(intent: 'RENT' | 'SALE', hasTransaction: boolean): void {
+  if (intent === 'RENT' && !hasTransaction) {
+    throw new ConversationNotAllowedError('Messaging becomes available after a confirmed booking or submitted rental application.');
+  }
 }

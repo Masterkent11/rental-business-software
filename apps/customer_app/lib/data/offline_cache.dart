@@ -64,7 +64,11 @@ class OfflineCache {
         await _store.remove(_indexKey);
       });
 
-  Future<void> _serialise(Future<void> Function() action) => _pending = _pending.then((_) => action());
+  Future<void> _serialise(Future<void> Function() action) {
+    final operation = _pending.then((_) => action());
+    _pending = operation.catchError((Object _) {});
+    return operation;
+  }
 }
 
 final offlineCacheProvider = Provider<OfflineCache>(

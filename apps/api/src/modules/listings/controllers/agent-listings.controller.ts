@@ -42,6 +42,7 @@ import {
   updateSaleListingSchema,
 } from '@/modules/listings/dto/owner-listing.dto.ts';
 import {
+  toChangeProposalHttpResponse,
   toOwnerListingHttpResponse,
   toSaleTermsHttpResponse,
 } from '@/modules/listings/mappers/listing-http.mapper.ts';
@@ -114,14 +115,17 @@ export class AgentListingsController {
   async update(@Param('id') listingId: string, @Body() rawBody: unknown, @Headers('authorization') auth?: string) {
     const input = parse(updateSaleListingSchema, rawBody);
     const principal = await this.principal(auth);
-    await this.updateUseCase({
+    const result = await this.updateUseCase({
       principal,
       organizationId: null,
       listingId: guid(listingId, 'listing'),
       listing: defined(input.listing),
       ...(input.property ? { property: defined(input.property) } : {}),
     });
-    return this.view(principal, listingId);
+    return {
+      ...(await this.view(principal, listingId)),
+      pendingChangeProposal: result.proposal ? toChangeProposalHttpResponse(result.proposal) : null,
+    };
   }
 
   @Get(':id/sale-terms')

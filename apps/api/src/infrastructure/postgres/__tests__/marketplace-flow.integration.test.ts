@@ -8,6 +8,12 @@ import { postgresMessagingRepository } from '@/infrastructure/postgres/repositor
 import { postgresNotificationRepository } from '@/infrastructure/postgres/repositories/postgres-notification.repository.ts';
 import { postgresUserRepository } from '@/infrastructure/postgres/repositories/postgres-user.repository.ts';
 import { postgresPaymentRepository } from '@/infrastructure/postgres/repositories/postgres-payment.repository.ts';
+import { postgresAgentRepository } from '@/infrastructure/postgres/repositories/postgres-agent.repository.ts';
+import { postgresViewingRepository } from '@/infrastructure/postgres/repositories/postgres-viewing.repository.ts';
+import { postgresLeadAssignmentRepository } from '@/infrastructure/postgres/repositories/postgres-lead-assignment.repository.ts';
+import { resolveLeadAssignment } from '@/application/assignment/resolve-lead-assignment/resolve-lead-assignment.use-case.ts';
+import { reassignLead } from '@/application/assignment/reassign-lead/reassign-lead.use-case.ts';
+import { assignLead } from '@/application/assignment/assign-lead/assign-lead.use-case.ts';
 import { sandboxPaymentGateway } from '@/infrastructure/payments/sandbox-payment-gateway.adapter.ts';
 import { createPropertyListing } from '@/application/listings/create-property-listing/create-property-listing.use-case.ts';
 import { updateListing } from '@/application/listings/update-listing/update-listing.use-case.ts';
@@ -83,6 +89,20 @@ suite('marketplace vertical flow against real PostgreSQL', { timeout: 60_000 }, 
   const notifications = postgresNotificationRepository();
   const users = postgresUserRepository();
   const payments = postgresPaymentRepository();
+  const assignments = postgresLeadAssignmentRepository();
+  const settings = { responseWindowMinutes: 240, sweepIntervalSeconds: 0 };
+  const resolve = resolveLeadAssignment(assignments, clock);
+  const reassign = reassignLead({
+    assignments,
+    viewings: postgresViewingRepository(),
+    listings,
+    agents: postgresAgentRepository(),
+    notifications,
+    resolve,
+    clock,
+    settings,
+  });
+  const assign = assignLead({ assignments, resolve, reassign, clock, settings });
   const gateway = sandboxPaymentGateway('test-secret');
   const hold = placeHold(occupancies);
   const book = createBooking(listings, hold);
@@ -359,7 +379,7 @@ suite('marketplace vertical flow against real PostgreSQL', { timeout: 60_000 }, 
     let conversationId = '';
 
     it('delivers customer and owner messages with persistent ids and dedupes retries', async () => {
-      const conversation = await startConversation(messaging)({
+      const conversation = await startConversation(messaging, listings, assign)({
         principal: customer(ANA),
         listingId,
         bookingId: null,

@@ -54,7 +54,7 @@ Each step is a separate pass, reviewed and frozen before the next begins.
 | **Step 1 — Product Definition** | Written, awaiting review |
 | **Step 2 — Domain Model** | Written, awaiting review. All five open questions (U-01 … U-05) resolved |
 | **Step 3 — Architecture** | Written, awaiting review. ADR-0001 … ADR-0011 |
-| Steps 4–6 | Not started |
+| Steps 46 | Not started |
 | Application code | Three **shells** — customer mobile, tenant web, owner web. See below |
 
 ### The application code, and its limits

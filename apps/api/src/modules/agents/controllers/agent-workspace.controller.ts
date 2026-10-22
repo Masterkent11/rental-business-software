@@ -27,6 +27,7 @@ import {
   REGISTER_AGENT_PROFILE,
   REMOVE_AGENT_TASK,
   REQUEST_AGENT_VERIFICATION,
+  REQUEST_REPRESENTATION,
   RESPOND_TO_REPRESENTATION,
   SET_AGENT_TASK_DONE,
   UPDATE_AGENT_PROFILE,
@@ -42,6 +43,7 @@ import type {
 import type {
   endRepresentation,
   listAgentRepresentations,
+  requestRepresentation,
   respondToRepresentation,
 } from '@/application/agents/manage-representation/manage-representation.use-case.ts';
 import type { getAgentDashboard } from '@/application/agents/agent-dashboard/agent-dashboard.use-case.ts';
@@ -94,6 +96,7 @@ export class AgentWorkspaceController {
     @Inject(REQUEST_AGENT_VERIFICATION) private readonly requestVerification: ReturnType<typeof requestAgentVerification>,
     @Inject(LIST_AGENT_REPRESENTATIONS) private readonly listRepresentations: ReturnType<typeof listAgentRepresentations>,
     @Inject(RESPOND_TO_REPRESENTATION) private readonly respond: ReturnType<typeof respondToRepresentation>,
+    @Inject(REQUEST_REPRESENTATION) private readonly askToRepresent: ReturnType<typeof requestRepresentation>,
     @Inject(END_REPRESENTATION) private readonly end: ReturnType<typeof endRepresentation>,
     @Inject(GET_AGENT_DASHBOARD) private readonly dashboard: ReturnType<typeof getAgentDashboard>,
     @Inject(LIST_AGENT_TASKS) private readonly listTasks: ReturnType<typeof listAgentTasks>,
@@ -158,6 +161,14 @@ export class AgentWorkspaceController {
     const principal = await this.principal(auth);
     return toRepresentationHttpResponse(
       await this.respond({ principal, representationId: guid(id, 'invitation'), accept: input.accept }),
+    );
+  }
+
+  @Post('listings/:listingId/representation-requests')
+  async requestToRepresent(@Param('listingId') listingId: string, @Headers('authorization') auth?: string) {
+    const principal = await this.principal(auth);
+    return toRepresentationHttpResponse(
+      await this.askToRepresent({ principal, listingId: guid(listingId, 'listing') }),
     );
   }
 

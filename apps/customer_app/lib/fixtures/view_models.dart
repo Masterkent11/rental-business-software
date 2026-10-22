@@ -42,23 +42,6 @@ class FloorPlanView {
   final String label;
 }
 
-@immutable
-class RepresentativeView {
-  const RepresentativeView({
-    required this.agentId,
-    required this.displayName,
-    required this.headline,
-    required this.photoUrl,
-    required this.verified,
-  });
-
-  final String agentId;
-  final String displayName;
-  final String headline;
-  final String? photoUrl;
-  final bool verified;
-}
-
 const String kPriceOnInquiry = 'Price available on inquiry';
 
 enum HotspotKind { navigation, info, image, video }
@@ -135,13 +118,15 @@ class ListingCardView {
     this.cleaningFeeCentavos = 0,
     this.propertyType,
     this.minStayNights,
+    this.minLeaseMonths,
+    this.maxLeaseMonths,
+    this.allowPendingIdentityApplication = false,
     this.intent = ListingIntent.rent,
     this.saleStatus,
     this.lotAreaSqm,
     this.parkingSlots = 0,
     this.distanceKm,
     this.location,
-    this.representative,
     this.tourProvider,
     this.furnishing,
     this.petsAllowed,
@@ -174,13 +159,15 @@ class ListingCardView {
   final int cleaningFeeCentavos;
   final String? propertyType;
   final int? minStayNights;
+  final int? minLeaseMonths;
+  final int? maxLeaseMonths;
+  final bool allowPendingIdentityApplication;
   final ListingIntent intent;
   final String? saleStatus;
   final int? lotAreaSqm;
   final int parkingSlots;
   final double? distanceKm;
   final MapPoint? location;
-  final RepresentativeView? representative;
   final String? tourProvider;
   final String? furnishing;
   final bool? petsAllowed;

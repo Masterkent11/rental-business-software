@@ -37,7 +37,7 @@ Both paths already answer the same question in different words:
 | Path | Asks | Used to be modelled as |
 |---|---|---|
 | Long-term | "Is this unit vacant?" | A status column on the resource |
-| Short-term | "Are Dec 26–29 open?" | A calendar of nights |
+| Short-term | "Are Dec 2629 open?" | A calendar of nights |
 
 A status column cannot express *"occupied until Aug 31"*, and a nightly calendar cannot express *"leased, open-ended within term"*. Neither can answer the other's question. So the model stores neither, and stores the thing underneath both:
 
@@ -202,13 +202,13 @@ Pricing follows the same shape — a resource carries a monthly rate, a nightly 
 | # | Event | Timeline write | Long-term view | Nightly view |
 |---|---|---|---|---|
 | 1 | Owner publishes both listings | — | `VACANT` | all `OPEN` |
-| 2 | Guest books Dec 26–29, unpaid | `HELD [Dec 26, Dec 29)`, expires in 60 min | `RESERVED` on those dates | 26–28 `HELD` |
-| 3 | Guest pays ₱4,500 | interval → `COMMITTED` | `RESERVED` (future) | 26–28 `BOOKED` |
+| 2 | Guest books Dec 2629, unpaid | `HELD [Dec 26, Dec 29)`, expires in 60 min | `RESERVED` on those dates | 2628 `HELD` |
+| 3 | Guest pays ₱4,500 | interval → `COMMITTED` | `RESERVED` (future) | 2628 `BOOKED` |
 | 4 | Ana applies long-term from Dec 1 | nothing — an application is not a hold | unchanged | unchanged |
-| 5 | Owner approves Ana's application | `HELD [Dec 1, →)`, expires in 72h | — | **rejected**: would overlap the committed Dec 26–29 stay |
+| 5 | Owner approves Ana's application | `HELD [Dec 1, →)`, expires in 72h | — | **rejected**: would overlap the committed Dec 2629 stay |
 | 6 | Owner asks Ana to move in Jan 1 instead | `HELD [Jan 1, →)` accepted | `RESERVED` from Jan 1 | Jan onward closed |
 | 7 | Ana pays ₱15,000 advance + ₱30,000 deposit | interval → `COMMITTED`; Lease created; Ana gains Tenant capability | `OCCUPIED` from Jan 1 | Jan onward `LEASED` |
-| 8 | Guest checks out Dec 29 | Stay → `COMPLETED`; interval closes | `VACANT` Dec 29 – Dec 31 | 29–31 `OPEN` again |
+| 8 | Guest checks out Dec 29 | Stay → `COMPLETED`; interval closes | `VACANT` Dec 29  Dec 31 | 2931 `OPEN` again |
 
 Step 5 is the whole point. The owner was stopped by the model, at approval time, with a specific reason — not by a support ticket in December.
 

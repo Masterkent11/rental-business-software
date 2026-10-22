@@ -6,6 +6,7 @@ import { AdminAgentsController } from './controllers/admin-agents.controller.ts'
 import {
   CREATE_AGENT_TASK,
   DECIDE_AGENT_VERIFICATION,
+  DECIDE_REPRESENTATION_REQUEST,
   END_REPRESENTATION,
   GET_AGENT_ANALYTICS,
   GET_AGENT_DASHBOARD,
@@ -20,19 +21,26 @@ import {
   REGISTER_AGENT_PROFILE,
   REMOVE_AGENT_TASK,
   REQUEST_AGENT_VERIFICATION,
+  REQUEST_REPRESENTATION,
   RESPOND_TO_REPRESENTATION,
   SEARCH_ASSIGNABLE_AGENTS,
   SET_AGENT_TASK_DONE,
   UPDATE_AGENT_PROFILE,
   UPDATE_REPRESENTATION_PERMISSIONS,
+  UPDATE_REPRESENTATION_TERMS,
   VIEW_PUBLIC_AGENT,
 } from './agent.tokens.ts';
+import { AssignmentModule } from '@/modules/assignment/assignment.module.ts';
+import { REASSIGN_LEAD } from '@/modules/assignment/assignment.tokens.ts';
+import type { reassignLead } from '@/application/assignment/reassign-lead/reassign-lead.use-case.ts';
+import type { LeadAssignmentRepository } from '@/application/ports/repositories/lead-assignment-repository.port.ts';
 import {
   AGENT_REPOSITORY,
   AGENT_TASK_REPOSITORY,
   ANALYTICS_REPOSITORY,
   CLOCK,
   INQUIRY_REPOSITORY,
+  LEAD_ASSIGNMENT_REPOSITORY,
   NOTIFICATION_REPOSITORY,
   REPRESENTATION_REPOSITORY,
   SHARED_LISTING_REPOSITORY,
@@ -60,12 +68,15 @@ import {
 import { viewPublicAgent } from '@/application/agents/view-public-agent/view-public-agent.use-case.ts';
 import { searchAssignableAgents } from '@/application/agents/search-agents/search-agents.use-case.ts';
 import {
+  decideRepresentationRequest,
   endRepresentation,
   inviteAgentToListing,
   listAgentRepresentations,
   listOrganizationRepresentations,
+  requestRepresentation,
   respondToRepresentation,
   updateRepresentationPermissions,
+  updateRepresentationTerms,
 } from '@/application/agents/manage-representation/manage-representation.use-case.ts';
 import { getAgentDashboard } from '@/application/agents/agent-dashboard/agent-dashboard.use-case.ts';
 import {
@@ -81,6 +92,7 @@ import {
 } from '@/application/agents/partner-analytics/partner-analytics.use-case.ts';
 
 @Module({
+  imports: [AssignmentModule],
   controllers: [PublicAgentsController, AgentWorkspaceController, OrganizationAgentsController, AdminAgentsController],
   providers: [
     { provide: GET_MY_AGENT_PROFILE, inject: [AGENT_REPOSITORY], useFactory: (a: AgentRepository) => getMyAgentProfile(a) },
@@ -115,14 +127,37 @@ import {
       useFactory: (r: RepresentationRepository, n: NotificationRepository) => respondToRepresentation(r, n),
     },
     {
-      provide: END_REPRESENTATION,
+      provide: REQUEST_REPRESENTATION,
+      inject: [REPRESENTATION_REPOSITORY, AGENT_REPOSITORY, SHARED_LISTING_REPOSITORY, NOTIFICATION_REPOSITORY],
+      useFactory: (r: RepresentationRepository, a: AgentRepository, l: ListingRepository, n: NotificationRepository) =>
+        requestRepresentation(r, a, l, n),
+    },
+    {
+      provide: DECIDE_REPRESENTATION_REQUEST,
       inject: [REPRESENTATION_REPOSITORY, AGENT_REPOSITORY, NOTIFICATION_REPOSITORY],
-      useFactory: (r: RepresentationRepository, a: AgentRepository, n: NotificationRepository) => endRepresentation(r, a, n),
+      useFactory: (r: RepresentationRepository, a: AgentRepository, n: NotificationRepository) =>
+        decideRepresentationRequest(r, a, n),
+    },
+    {
+      provide: END_REPRESENTATION,
+      inject: [REPRESENTATION_REPOSITORY, AGENT_REPOSITORY, LEAD_ASSIGNMENT_REPOSITORY, NOTIFICATION_REPOSITORY, REASSIGN_LEAD],
+      useFactory: (
+        representations: RepresentationRepository,
+        agents: AgentRepository,
+        assignments: LeadAssignmentRepository,
+        notifications: NotificationRepository,
+        reassign: ReturnType<typeof reassignLead>,
+      ) => endRepresentation({ representations, agents, assignments, notifications, reassign }),
     },
     {
       provide: UPDATE_REPRESENTATION_PERMISSIONS,
       inject: [REPRESENTATION_REPOSITORY],
       useFactory: (r: RepresentationRepository) => updateRepresentationPermissions(r),
+    },
+    {
+      provide: UPDATE_REPRESENTATION_TERMS,
+      inject: [REPRESENTATION_REPOSITORY],
+      useFactory: (r: RepresentationRepository) => updateRepresentationTerms(r),
     },
     {
       provide: LIST_ORGANIZATION_REPRESENTATIONS,

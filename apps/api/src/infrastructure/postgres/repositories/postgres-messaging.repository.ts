@@ -127,8 +127,8 @@ function inScope<T>(scope: Scope, work: (tx: postgres.TransactionSql) => Promise
 export const postgresMessagingRepository = (): MessagingRepository => ({
   async listingContext(listingId): Promise<ConversationContext | null> {
     return sql.begin(async (tx) => {
-      const [row] = await tx<{ id: string; organization_id: string; title: string; state: string }[]>`
-        select id, organization_id, title, state from listings where id = ${listingId} and state = 'PUBLISHED'
+      const [row] = await tx<{ id: string; organization_id: string; title: string; state: string; intent: 'RENT' | 'SALE' }[]>`
+        select id, organization_id, title, state, intent from listings where id = ${listingId}
       `;
       if (!row) return null;
       return {
@@ -136,7 +136,25 @@ export const postgresMessagingRepository = (): MessagingRepository => ({
         organizationId: row.organization_id,
         listingTitle: row.title,
         listingPublished: row.state === 'PUBLISHED',
+        listingIntent: row.intent,
       };
+    });
+  },
+
+  async customerMayMessageListing(customerId, listingId) {
+    return withUser(customerId, async tx => {
+      const [row] = await tx<{ ok: boolean }[]>`
+        select exists (
+          select 1 from listings l where l.id = ${listingId} and (
+            exists (select 1 from occupancies o where o.resource_id = l.resource_id
+              and o.held_by = ${customerId}
+              and ((o.kind = 'LEASE' and o.state in ('COMMITTED','CANCELLED','RELEASED'))
+                or (o.kind = 'BOOKING' and (o.state = 'COMMITTED' or exists (select 1 from stays s where s.occupancy_id = o.id and s.user_id = ${customerId})))))
+            or exists (select 1 from applications a where a.resource_id = l.resource_id
+              and a.applicant_id = ${customerId})
+          )
+        ) as ok`;
+      return row?.ok === true;
     });
   },
 
@@ -148,6 +166,8 @@ export const postgresMessagingRepository = (): MessagingRepository => ({
             join listings l on l.resource_id = o.resource_id
            where o.id = ${occupancyId}
              and o.held_by = ${customerId}
+             and ((o.kind = 'LEASE' and o.state in ('COMMITTED','CANCELLED','RELEASED'))
+                or (o.kind = 'BOOKING' and (o.state = 'COMMITTED' or exists (select 1 from stays s where s.occupancy_id = o.id and s.user_id = ${customerId}))))
              and l.id = ${listingId}
         ) as ok
       `;
@@ -163,7 +183,7 @@ export const postgresMessagingRepository = (): MessagingRepository => ({
                 ${input.agentId ?? null})
         on conflict (listing_id, customer_id) do update
           set occupancy_id = coalesce(excluded.occupancy_id, conversations.occupancy_id),
-              agent_id = coalesce(conversations.agent_id, excluded.agent_id)
+              agent_id = coalesce(excluded.agent_id, conversations.agent_id)
       `;
       const [row] = await tx<ConversationRow[]>`
         ${SELECT_CONVERSATION(tx, 'CUSTOMER')}
@@ -213,18 +233,6 @@ export const postgresMessagingRepository = (): MessagingRepository => ({
         limit 200
       `;
       return rows.map(toConversation);
-    });
-  },
-
-  async activeAgentForListing(listingId) {
-    return withScope(null, async (tx) => {
-      const [row] = await tx<{ agent_id: string }[]>`
-        select r.agent_id from listing_representations r
-          join agent_profiles a on a.id = r.agent_id
-         where r.listing_id = ${listingId} and r.state = 'ACTIVE' and a.verification_state = 'VERIFIED'
-         limit 1
-      `;
-      return row?.agent_id ?? null;
     });
   },
 

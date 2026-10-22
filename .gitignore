@@ -50,3 +50,10 @@ npm-debug.log*
 
 
 supabase/demo/generated-*.sql
+
+# Local Flutter public build configuration
+apps/customer_app/config/*.local.json
+
+# Python audit tooling
+__pycache__/
+*.py[cod]

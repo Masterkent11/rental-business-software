@@ -1,3 +1,5 @@
+import { InvoiceNotFoundError, PaymentNotInOrganizationError } from '@/application/ports/repositories/invoice-repository.port.ts';
+import { VerificationConflictError, VerificationInputError, VerificationNotFoundError, VerificationRateLimitError, VerificationRequiredError, VerificationUnavailableError } from '@/domain/verification/verification.ts';
 import {
   Catch,
   HttpException,
@@ -41,7 +43,9 @@ import {
 import {
   EmptyInvoiceError,
   InvalidPeriodError,
-} from '@/application/collection/issue-invoice/issue-invoice.use-case.ts';
+  PaymentAllocationError,
+  InvalidInvoiceAmountError,
+} from '@/domain/collection/collection-errors.ts';
 import { InvoiceMissingError } from '@/application/collection/apply-payment-to-invoice/apply-payment-to-invoice.use-case.ts';
 import {
   PaymentNotOwnedError,
@@ -57,6 +61,8 @@ import {
 } from '@/domain/collection/collection.ts';
 import { TourNotPublishableError } from '@/domain/tours/tour.ts';
 import {
+  ChangeProposalNotFoundError,
+  DuplicatePropertyError,
   InvalidListingDetailsError,
   InvalidListingTransitionError,
   ListingNotFoundError,
@@ -121,6 +127,12 @@ type Rule = readonly [
 ];
 
 const RULES: readonly Rule[] = [
+  [[VerificationNotFoundError], 404, 'NOT_FOUND', null],
+  [[VerificationInputError], 400, 'INVALID_REQUEST', null],
+  [[VerificationConflictError], 409, 'VERIFICATION_CHANGED', null],
+  [[VerificationRequiredError], 409, 'VERIFICATION_REQUIRED', null],
+  [[VerificationUnavailableError], 503, 'VERIFICATION_UNAVAILABLE', null],
+  [[VerificationRateLimitError], 429, 'RATE_LIMITED', null],
   [[UnauthenticatedError], HttpStatus.UNAUTHORIZED, 'UNAUTHENTICATED', 'Please sign in again.'],
   [[OrganizationForbiddenError], HttpStatus.FORBIDDEN, 'FORBIDDEN', null],
   [[WebhookVerificationError], HttpStatus.UNAUTHORIZED, 'WEBHOOK_REJECTED', 'Signature check failed'],
@@ -129,6 +141,8 @@ const RULES: readonly Rule[] = [
       ApplicationNotFoundError,
       TourNotFoundError,
       InvoiceMissingError,
+      InvoiceNotFoundError,
+      PaymentNotInOrganizationError,
       BookingNotHeldError,
       DomainBookingNotHeldError,
       PaymentNotOwnedError,
@@ -142,6 +156,7 @@ const RULES: readonly Rule[] = [
       ViewingNotFoundError,
       DomainTourNotFoundError,
       ContentNotFoundError,
+      ChangeProposalNotFoundError,
     ],
     HttpStatus.NOT_FOUND,
     'NOT_FOUND',
@@ -152,12 +167,14 @@ const RULES: readonly Rule[] = [
   [[OutdatedPolicyVersionError], HttpStatus.CONFLICT, 'POLICY_OUTDATED', null],
   [[ViewingAlreadyRequestedError], HttpStatus.CONFLICT, 'ALREADY_REQUESTED', null],
   [[ListingAlreadyRepresentedError], HttpStatus.CONFLICT, 'ALREADY_REPRESENTED', null],
+  [[DuplicatePropertyError], HttpStatus.CONFLICT, 'DUPLICATE_PROPERTY', null],
   [[RepresentationForbiddenError], HttpStatus.FORBIDDEN, 'FORBIDDEN', null],
   [
     [
       ApprovalConflictError,
       TourNotPublishableError,
       InvoiceOverpaidError,
+      PaymentAllocationError,
       InvoiceNotSettleableError,
       InvalidListingTransitionError,
       InvalidStayTransitionError,
@@ -190,6 +207,7 @@ const RULES: readonly Rule[] = [
       InvalidDateRangeError,
       EmptyInvoiceError,
       InvalidPeriodError,
+      InvalidInvoiceAmountError,
       AmountMismatchError,
       SceneNotFoundError,
       InvalidListingDetailsError,
@@ -231,6 +249,21 @@ export class PresentationExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<FastifyReply>();
 
+    const dependencyCode = typeof exception === 'object' && exception !== null && 'code' in exception
+      ? String(exception.code)
+      : '';
+    if (/^08[A-Z0-9]{3}$/.test(dependencyCode) || [
+      '57P01', '57P02', '57P03', '53300', 'ECONNREFUSED', 'ECONNRESET',
+      'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN', 'CONNECT_TIMEOUT', 'CONNECTION_CLOSED',
+      'CONNECTION_DESTROYED',
+    ].includes(dependencyCode)) {
+      this.logger.error(`Request dependency unavailable (${dependencyCode})`);
+      const message = 'The service is temporarily unavailable. Please try again.';
+      return response.status(HttpStatus.SERVICE_UNAVAILABLE).send({
+        statusCode: HttpStatus.SERVICE_UNAVAILABLE, code: 'SERVICE_UNAVAILABLE', title: message, message,
+      });
+    }
+
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
       const res = exception.getResponse();
@@ -254,7 +287,11 @@ export class PresentationExceptionFilter implements ExceptionFilter {
       if (types.some((type) => exception instanceof type)) {
         const message = override ?? (exception as Error).message;
         const extra =
-          exception instanceof ListingNotPublishableError ? { problems: exception.problems } : {};
+          exception instanceof ListingNotPublishableError
+            ? { problems: exception.problems }
+            : exception instanceof DuplicatePropertyError
+              ? { existingListingId: exception.existingListingId }
+              : {};
         return response.status(status).send({ statusCode: status, code, title: message, message, ...extra });
       }
     }

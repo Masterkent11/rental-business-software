@@ -3,6 +3,7 @@ import type { Invoice, InvoiceLineKind } from '@/domain/collection/collection-st
 import type { PaymentOrigin } from '@/domain/payments/payment.ts';
 
 export class InvoiceNotFoundError extends Error {}
+export class PaymentNotInOrganizationError extends Error {}
 export class OccupancyNotInOrganizationError extends Error {}
 
 /** An invoice plus the two names an owner needs to recognise it. */

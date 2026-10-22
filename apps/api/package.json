@@ -10,33 +10,46 @@
     "test": "vitest run",
     "test:integration": "./scripts/test-db.sh up >/dev/null && DATABASE_URL=postgresql://rental_app:rental_app@127.0.0.1:55432/rental_mvp TEST_ADMIN_DATABASE_URL=postgresql://postgres@127.0.0.1:55432/rental_mvp vitest run",
     "lint": "eslint src",
-    "demo:media": "tsx --env-file-if-exists=.env.local scripts/demo/seed-demo-media.mts"
+    "demo:media": "tsx --env-file-if-exists=.env.local scripts/demo/seed-demo-media.mts",
+    "contracts:generate": "tsx scripts/contracts/generate.mts",
+    "contracts:validate": "tsx scripts/contracts/validate.mts",
+    "contracts:smoke": "tsx scripts/contracts/run.mts",
+    "test:isolated": "./scripts/test-isolated-db.sh",
+    "contracts:typecheck": "tsc --noEmit --module nodenext --moduleResolution nodenext --target es2023 --skipLibCheck --esModuleInterop scripts/contracts/*.mts"
   },
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@nestjs/common": "^11.2.1",
-    "@nestjs/core": "^11.2.1",
-    "@nestjs/platform-fastify": "^11.2.1",
-    "fastify": "^5.12.1",
+    "@nestjs/common": "11.2.7",
+    "@nestjs/core": "11.2.7",
+    "@nestjs/platform-fastify": "11.2.7",
+    "fastify": "5.12.7",
     "jose": "^6.2.10",
     "postgres": "^3.4.9",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "sharp": "^0.35.3",
+    "sharp": "0.35.5",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
+    "ajv": "8.20.0",
+    "ajv-draft-04": "1.0.0",
+    "chai": "6.2.2",
     "esbuild": "0.28.2",
     "eslint": "^9.39.5",
     "tsx": "^4.23.12",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.67.0",
-    "vitest": "^4.1.11"
+    "vitest": "4.1.12"
   },
   "private": true,
   "engines": {
     "node": ">=24.19.0 <25"
+  },
+  "overrides": {
+    "@nestjs/platform-fastify": {
+      "fastify": "5.12.7"
+    }
   }
 }

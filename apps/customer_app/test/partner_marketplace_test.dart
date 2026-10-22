@@ -4,16 +4,19 @@ import 'package:customer_app/app/app.dart';
 import 'package:customer_app/data/api_client.dart';
 import 'package:customer_app/data/auth_repository.dart';
 import 'package:customer_app/data/listing_repository.dart';
+import 'package:customer_app/app/clock.dart';
 import 'package:customer_app/data/tour_repository.dart';
+import 'package:customer_app/data/viewing_repository.dart';
+import 'package:customer_app/features/viewing/request_viewing_controller.dart';
 import 'package:customer_app/features/discovery/discovery_screen.dart';
 import 'package:customer_app/features/inquiry/inquiry_screen.dart';
 import 'package:customer_app/features/listing/listing_price.dart';
 import 'package:customer_app/features/tour/tour_screen.dart';
-import 'package:customer_app/features/viewing/schedule_viewing_screen.dart';
 import 'package:customer_app/fixtures/view_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
@@ -45,13 +48,6 @@ Map<String, dynamic> _saleJson({Object? priceCentavos}) => {
       'parkingSlots': 2,
       'location': {'latitude': 10.35, 'longitude': 123.91, 'precision': 'APPROXIMATE'},
       'distanceKm': 2.4,
-      'representative': {
-        'agentId': 'agent-1',
-        'displayName': 'Maria Santos',
-        'headline': 'Licensed broker',
-        'photoUrl': null,
-        'verified': true,
-      },
       'availabilityLabel': 'Ready for occupancy',
       'isAvailable': true,
       'amenities': ['Garage', 'Garden'],
@@ -103,10 +99,8 @@ void main() {
       expect(listingPriceShort(card), isNot(contains('₱')));
     });
 
-    test('sale details map agent, floor plans, lot area and approximate location', () {
+    test('sale details map floor plans, lot area and approximate location', () {
       final card = ListingRepository.toCard(_saleJson());
-      expect(card.representative?.displayName, 'Maria Santos');
-      expect(card.representative?.verified, isTrue);
       expect(card.lotAreaSqm, 300);
       expect(card.parkingSlots, 2);
       expect(card.typeLabel, 'House & Lot');
@@ -135,9 +129,15 @@ void main() {
       expect(composeInquiryMessage('', const []), isEmpty);
     });
 
-    test('viewing slots are shown in Philippine time regardless of device zone', () {
-      expect(slotTimeLabel(DateTime.utc(2026, 10, 9, 1)), '9:00 AM');
-      expect(slotTimeLabel(DateTime.utc(2026, 10, 9, 8)), '4:00 PM');
+    test('time windows follow Manila time and close an hour before they end', () {
+      final day = DateTime.utc(2026, 10, 8);
+      expect(ViewingTimeWindow.afternoon.rangeLabel, '12:00 PM  4:00 PM');
+      expect(ViewingTimeWindow.morning.isOpenOn(day, DateTime.utc(2026, 10, 8, 2, 59)), isTrue);
+      expect(ViewingTimeWindow.morning.isOpenOn(day, DateTime.utc(2026, 10, 8, 3, 1)), isFalse);
+      expect(ViewingTimeWindow.evening.isOpenOn(day, DateTime.utc(2026, 10, 8, 10)), isTrue);
+      final days = requestableDays(DateTime.utc(2026, 10, 8, 12));
+      expect(isoDay(days.first), '2026-10-09');
+      expect(days.length, 30);
     });
   });
 
@@ -194,65 +194,194 @@ void main() {
     });
   });
 
-  group('Buy flow', () {
-    testWidgets('a buyer browses for sale, sees no price and sends an inquiry', (tester) async {
-      final requests = <http.Request>[];
-      await _pumpApp(tester, requests);
+  group('Request a viewing', () {
+    testWidgets('detail shows no agent and one CTA; the request goes to the API and the assigned agent comes back',
+        (tester) async {
+      final api = _FakeApi();
+      await _pumpApp(tester, api);
 
       await tester.dragUntilVisible(find.text('Buy'), find.byType(HomeCategoryRow), const Offset(-200, 0));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Buy'));
       await tester.pumpAndSettle();
-
-      expect(find.text('Properties for sale'), findsOneWidget);
-      expect(find.text('Rent'), findsNothing);
-      expect(find.text('Modern house and lot in Talamban'), findsWidgets);
       expect(find.text(kPriceOnInquiry), findsWidgets);
       expect(find.textContaining('₱'), findsNothing);
-      final search = requests.lastWhere((r) => r.url.path == '/listings' && r.url.queryParameters['intent'] == 'SALE');
+      final search =
+          api.requests.lastWhere((r) => r.url.path == '/listings' && r.url.queryParameters['intent'] == 'SALE');
       expect(search.url.queryParameters.containsKey('maxPrice'), isFalse);
 
       await tester.ensureVisible(find.text('Modern house and lot in Talamban'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Modern house and lot in Talamban'));
       await tester.pumpAndSettle();
-      await tester.drag(find.byType(CustomScrollView), const Offset(0, -500));
-      await tester.pumpAndSettle();
 
       for (final tab in ['Overview', 'Photos', '360° Tour', 'Floor Plan', 'Map']) {
         expect(find.text(tab, skipOffstage: false), findsOneWidget);
       }
-      expect(find.text('Maria Santos'), findsOneWidget);
+      expect(find.text('Request a viewing'), findsOneWidget);
+      expect(find.text('Message'), findsNothing);
+      expect(find.text('Inquire Now'), findsNothing);
+      expect(find.text('Schedule a viewing'), findsNothing);
+      expect(find.text('Your agent'), findsNothing);
+      expect(find.text('Jun Reyes'), findsNothing);
+      expect(find.textContaining('Maria'), findsNothing);
       expect(find.textContaining('₱'), findsNothing);
 
-      await tester.ensureVisible(find.text('Floor Plan', skipOffstage: false));
+      await tester.tap(find.text('Request a viewing'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Floor Plan'));
-      await tester.pumpAndSettle();
-      expect(find.text('Ground floor'), findsOneWidget);
+      expect(find.text('Select a date'), findsOneWidget);
+      expect(find.text('Preferred time'), findsOneWidget);
+      expect(find.text('0/300'), findsOneWidget);
+      expect(find.byType(DropdownButton<String>), findsNothing);
+      expect(find.byType(CircleAvatar), findsNothing);
+      final send = find.widgetWithText(FilledButton, 'Send viewing request');
+      expect(tester.widget<FilledButton>(send).onPressed, isNull);
 
-      await tester.tap(find.text('Inquire Now'));
+      await tester.tap(find.text('Afternoon'));
       await tester.pumpAndSettle();
-      expect(find.text('What would you like to know?'), findsOneWidget);
-
-      await tester.tap(find.text('Can I schedule a viewing?'));
+      await tester.enterText(find.byType(TextField), 'Coming with my partner.');
+      await tester.pumpAndSettle();
+      expect(find.text('23/300'), findsOneWidget);
+      await tester.tap(send);
       await tester.pump();
-      await tester.drag(find.byType(ListView).first, const Offset(0, -300));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Send Inquiry'));
+      expect(find.text('Finding the best available agent for you…'), findsOneWidget);
+      expect(find.text('Checking agent availability'), findsOneWidget);
       await tester.pumpAndSettle();
 
-      expect(find.text('Inquiry sent'), findsOneWidget);
-      final submitted = requests.singleWhere((r) => r.method == 'POST' && r.url.path == '/listings/sale-1/inquiries');
-      final body = jsonDecode(submitted.body) as Map<String, dynamic>;
-      expect(body['questions'], ['Is this available?', 'Can I schedule a viewing?']);
-      expect(body['buyerBudgetCentavos'], isNull);
-      expect(body['clientRef'], matches(RegExp(r'^[0-9a-f-]{36}$')));
+      expect(find.text('Viewing request sent'), findsOneWidget);
+      expect(find.text('Jun Reyes'), findsOneWidget);
+      expect(find.text('Property specialist'), findsOneWidget);
+      expect(find.text('Santos Realty'), findsOneWidget);
+      expect(find.bySemanticsLabel('Verified agent'), findsOneWidget);
+      expect(find.textContaining('Maria'), findsNothing);
+      expect(find.text('Thursday, October 8'), findsWidgets);
+      expect(find.text('Afternoon (12:00 PM  4:00 PM)'), findsWidgets);
+      expect(find.text('Request sent'), findsOneWidget);
+      expect(find.text('Agent confirming'), findsOneWidget);
+      expect(find.text('Viewing confirmed'), findsOneWidget);
+      expect(find.text('Open conversation'), findsOneWidget);
+      expect(find.text('View my requests'), findsOneWidget);
+      expect(find.textContaining('₱'), findsNothing);
+
+      final posted =
+          api.requests.where((r) => r.method == 'POST' && r.url.path == '/listings/sale-1/viewings').toList();
+      expect(posted, hasLength(1));
+      final body = jsonDecode(posted.single.body) as Map<String, dynamic>;
+      expect(body['preferredDate'], '2026-10-08');
+      expect(body['preferredTimeWindow'], 'AFTERNOON');
+      expect(body['note'], 'Coming with my partner.');
+      expect(body['idempotencyKey'], matches(RegExp(r'^[0-9a-f-]{36}$')));
+      expect(body.containsKey('agentId'), isFalse);
+
+      api.status = 'CONFIRMED';
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(find.text('Viewing confirmed'), findsWidgets);
+      expect(find.text('Thursday, October 8'), findsWidgets);
+      expect(find.text('2:30 PM'), findsWidgets);
+      expect(find.text('Jun Reyes'), findsOneWidget);
+      await _unmount(tester);
+    });
+
+    testWidgets('a failed send is recoverable and the retry reuses the same idempotency key', (tester) async {
+      final api = _FakeApi()..failNextViewing = true;
+      await _pumpApp(tester, api, home: '/discover/listing/sale-1/viewing');
+
+      await tester.tap(find.text('Morning'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Send viewing request'));
+      await tester.pumpAndSettle();
+      expect(find.text('We couldn\u2019t complete your viewing request.'), findsOneWidget);
+      expect(find.text('Try again'), findsOneWidget);
+
+      await tester.tap(find.text('Try again'));
+      await tester.pumpAndSettle();
+      expect(find.text('Viewing request sent'), findsOneWidget);
+      final keys = api.requests
+          .where((r) => r.method == 'POST' && r.url.path == '/listings/sale-1/viewings')
+          .map((r) => (jsonDecode(r.body) as Map<String, dynamic>)['idempotencyKey'])
+          .toList();
+      expect(keys, hasLength(2));
+      expect(keys.toSet(), hasLength(1));
+      await _unmount(tester);
+    });
+
+    testWidgets('when no specialist is free yet the screen says so instead of inventing an agent', (tester) async {
+      final api = _FakeApi()..matching = true;
+      await _pumpApp(tester, api, home: '/discover/listing/sale-1/viewing', reduceMotion: true);
+
+      await tester.tap(find.text('Evening'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Send viewing request'));
+      await tester.pumpAndSettle();
+      expect(find.text('Viewing request sent'), findsOneWidget);
+      expect(find.text('Finding a specialist'), findsOneWidget);
+      expect(find.textContaining('All specialists for this property are busy'), findsOneWidget);
+      expect(find.byIcon(Icons.verified_rounded), findsNothing);
+      expect(find.textContaining('Maria'), findsNothing);
+      await _unmount(tester);
     });
   });
 }
 
-Future<void> _pumpApp(WidgetTester tester, List<http.Request> requests) async {
+Future<void> _unmount(WidgetTester tester) async {
+  await tester.pumpWidget(const SizedBox.shrink());
+  await tester.pump();
+}
+
+class _FakeApi {
+  final List<http.Request> requests = [];
+  bool failNextViewing = false;
+  bool matching = false;
+  String status = 'REQUESTED';
+
+  Map<String, dynamic> viewing(Map<String, dynamic>? posted) => {
+        'id': 'viewing-1',
+        'listingId': 'sale-1',
+        'listingTitle': 'Modern house and lot in Talamban',
+        'listingPhoto': null,
+        'areaLabel': 'Talamban',
+        'cityLabel': 'Cebu City',
+        'organizationName': 'Santos Realty',
+        'agentId': matching ? null : 'agent-77',
+        'agentName': matching ? null : 'Jun Reyes',
+        'inquiryId': null,
+        'conversationId': 'conv-9',
+        'preferredDate': posted?['preferredDate'] ?? '2026-10-08',
+        'preferredTimeWindow': posted?['preferredTimeWindow'] ?? 'AFTERNOON',
+        'timeZone': 'Asia/Manila',
+        'scheduledAt': status == 'CONFIRMED' ? '2026-10-08T06:30:00.000Z' : null,
+        'durationMinutes': 60,
+        'status': matching ? 'MATCHING' : status,
+        'customerNote': posted?['note'] ?? '',
+        'partnerNote': '',
+        'agentChangeNotice': null,
+        'confirmedAt': null,
+        'declinedAt': null,
+        'cancelledAt': null,
+        'cancelledByRole': null,
+        'createdAt': '2026-10-08T02:00:00.000Z',
+        'updatedAt': status == 'CONFIRMED' ? '2026-10-08T02:10:00.000Z' : '2026-10-08T02:00:00.000Z',
+      };
+
+  Map<String, dynamic> request(Map<String, dynamic>? posted) => {
+        'viewingRequest': viewing(posted),
+        'assignmentState': matching ? 'MATCHING' : 'ASSIGNED',
+        'assignedAgent': matching
+            ? null
+            : {
+                'id': 'agent-77',
+                'displayName': 'Jun Reyes',
+                'role': 'Property specialist',
+                'photoUrl': null,
+                'verified': true,
+                'organizationName': 'Santos Realty',
+              },
+      };
+}
+
+Future<void> _pumpApp(WidgetTester tester, _FakeApi api, {String? home, bool reduceMotion = false}) async {
   final original = FlutterError.onError;
   FlutterError.onError = (details) {
     if (details.exception is NetworkImageLoadException) return;
@@ -263,27 +392,38 @@ Future<void> _pumpApp(WidgetTester tester, List<http.Request> requests) async {
     ..physicalSize = const Size(390, 844)
     ..devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
+  if (reduceMotion) {
+    tester.platformDispatcher.accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+  }
 
-  final client = ApiClient(client: _transport(requests), baseUrl: 'http://test');
+  final client = ApiClient(client: _transport(api), baseUrl: 'http://test');
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         authRepositoryProvider.overrideWithValue(FakeAuth.signedIn()),
         apiClientProvider.overrideWithValue(client),
         listingRepositoryProvider.overrideWithValue(ListingRepository(client)),
+        clockProvider.overrideWithValue(() => DateTime.utc(2026, 10, 8, 2)),
+        viewingStepMinimumProvider.overrideWithValue(const Duration(milliseconds: 40)),
+        viewingReconcileIntervalProvider.overrideWithValue(const Duration(hours: 1)),
       ],
       child: const CustomerApp(showSplash: false),
     ),
   );
   await tester.pumpAndSettle();
+  if (home != null) {
+    GoRouter.of(tester.element(find.byType(Scaffold).first)).push(home);
+    await tester.pumpAndSettle();
+  }
 }
 
-MockClient _transport(List<http.Request> requests) {
+MockClient _transport(_FakeApi api) {
   http.Response json(Object body, [int status = 200]) =>
       http.Response(jsonEncode(body), status, headers: {'content-type': 'application/json; charset=utf-8'});
 
   return MockClient((request) async {
-    requests.add(request);
+    api.requests.add(request);
     final path = request.url.path;
     final query = request.url.queryParameters;
     if (path == '/listings') {
@@ -292,32 +432,16 @@ MockClient _transport(List<http.Request> requests) {
     }
     if (path == '/listings/sale-1') return json(_saleJson());
     if (path == '/listings/rent-1') return json(_rentJson());
-    if (path == '/me/listings/sale-1/inquiry') return json({'inquiry': null});
-    if (path == '/listings/sale-1/inquiries' && request.method == 'POST') {
+    if (path == '/listings/sale-1/viewings' && request.method == 'POST') {
+      if (api.failNextViewing) {
+        api.failNextViewing = false;
+        return json({'title': 'Busy right now — try again', 'message': 'Busy right now — try again'}, 503);
+      }
       final body = jsonDecode(request.body) as Map<String, dynamic>;
-      return json({
-        'inquiry': {
-          'id': 'inq-1',
-          'listingId': 'sale-1',
-          'listingTitle': 'Modern house and lot in Talamban',
-          'listingPhoto': null,
-          'areaLabel': 'Talamban',
-          'cityLabel': 'Cebu City',
-          'organizationName': 'Santos Realty',
-          'agentId': 'agent-1',
-          'agentName': 'Maria Santos',
-          'conversationId': 'conv-1',
-          'message': body['message'],
-          'questions': body['questions'],
-          'buyerBudgetCentavos': body['buyerBudgetCentavos'],
-          'status': 'SENT',
-          'responded': false,
-          'createdAt': '2026-10-08T02:00:00.000Z',
-        },
-        'created': true,
-        'alreadyOpen': false,
-      }, 201);
+      return json({...api.request(body), 'created': true}, 201);
     }
+    if (path == '/me/viewings/viewing-1') return json(api.request(null));
+    if (path == '/me/viewings') return json({'items': <dynamic>[]});
     if (path == '/me') {
       return json({
         'id': 'user-test',

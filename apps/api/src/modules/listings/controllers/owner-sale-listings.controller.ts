@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Headers,
   Inject,
   Param,
@@ -20,6 +21,8 @@ import {
   REMOVE_FLOOR_PLAN,
   SAVE_SALE_TERMS,
   UPDATE_SALE_LISTING,
+  DECIDE_CHANGE_PROPOSAL,
+  LIST_CHANGE_PROPOSALS,
 } from '@/modules/listings/listing.tokens.ts';
 import { RESOLVE_PRINCIPAL } from '@/modules/me/me.tokens.ts';
 import type { resolvePrincipal } from '@/application/identity/resolve-principal/resolve-principal.use-case.ts';
@@ -35,11 +38,17 @@ import {
   registerFloorPlanSchema,
   saleTermsSchema,
   updateSaleListingSchema,
+  proposalDecisionSchema,
 } from '@/modules/listings/dto/owner-listing.dto.ts';
 import {
+  toChangeProposalHttpResponse,
   toOwnerListingHttpResponse,
   toSaleTermsHttpResponse,
 } from '@/modules/listings/mappers/listing-http.mapper.ts';
+import type {
+  decideChangeProposal,
+  listChangeProposals,
+} from '@/application/listings/review-change-proposal/review-change-proposal.use-case.ts';
 
 const parse = <T>(schema: z.ZodType<T>, raw: unknown): T => {
   const parsed = schema.safeParse(raw ?? {});
@@ -78,9 +87,35 @@ export class OwnerSaleListingsController {
     private readonly removeFloorPlanUseCase: ReturnType<typeof removeFloorPlan>,
     @Inject(GET_OWNER_LISTING)
     private readonly getListingUseCase: ReturnType<typeof getOwnerListing>,
+    @Inject(LIST_CHANGE_PROPOSALS)
+    private readonly listProposals: ReturnType<typeof listChangeProposals>,
+    @Inject(DECIDE_CHANGE_PROPOSAL)
+    private readonly decideProposal: ReturnType<typeof decideChangeProposal>,
     @Inject(RESOLVE_PRINCIPAL)
     private readonly resolve: ReturnType<typeof resolvePrincipal>,
   ) {}
+
+  @Get('listing-change-proposals')
+  async proposals(@Param('organizationId') organizationId: string, @Headers('authorization') auth?: string) {
+    const principal = await this.principal(organizationId, auth);
+    const rows = await this.listProposals({ principal, organizationId });
+    return { items: rows.map(toChangeProposalHttpResponse) };
+  }
+
+  @Post('listing-change-proposals/:id/decision')
+  @HttpCode(200)
+  async decide(
+    @Param('organizationId') organizationId: string,
+    @Param('id') id: string,
+    @Body() rawBody: unknown,
+    @Headers('authorization') auth?: string,
+  ) {
+    const input = parse(proposalDecisionSchema, rawBody);
+    const principal = await this.principal(organizationId, auth);
+    return toChangeProposalHttpResponse(
+      await this.decideProposal({ principal, organizationId, proposalId: guid(id, 'proposal'), approve: input.approve }),
+    );
+  }
 
   private principal(organizationId: string, auth: string | undefined) {
     return this.resolve({ authorization: auth, organizationId: guid(organizationId, 'organization') });
@@ -100,6 +135,7 @@ export class OwnerSaleListingsController {
       property: input.property,
       listing: input.listing,
       saleTerms: input.saleTerms,
+      confirmDistinctProperty: input.confirmDistinctProperty,
     });
     const view = await this.getListingUseCase({ principal, organizationId, listingId: created.id });
     return toOwnerListingHttpResponse(view.listing, view.publishProblems);

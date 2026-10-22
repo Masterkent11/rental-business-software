@@ -1,15 +1,17 @@
-import type { Centavos } from '@/domain/shared/money.ts';
+import { isCalendarDate } from '@/domain/shared/calendar.ts';
+import { centavos, type Centavos } from '@/domain/shared/money.ts';
 import type { Invoice, InvoiceState } from './collection-state.ts';
-import { InvoiceNotSettleableError, InvoiceOverpaidError } from './collection-errors.ts';
+import type { PaymentState } from '@/domain/payments/payment-state.ts';
+import { InvoiceNotSettleableError, InvoiceOverpaidError, PaymentAllocationError, EmptyInvoiceError, InvalidPeriodError, InvalidInvoiceAmountError } from './collection-errors.ts';
 
 /** What is still owed on this claim. Never negative. */
-export function balanceOf(invoice: Invoice): Centavos {
+export function balanceOf(invoice: Pick<Invoice, 'totalCentavos' | 'amountPaidCentavos'>): Centavos {
   const balance = invoice.totalCentavos - invoice.amountPaidCentavos;
   return (balance > 0 ? balance : 0) as Centavos;
 }
 
 /** A claim that is still asking for money. */
-export function isOutstanding(invoice: Invoice): boolean {
+export function isOutstanding(invoice: Pick<Invoice, 'state'>): boolean {
   return (
     invoice.state === 'ISSUED' ||
     invoice.state === 'PARTIALLY_PAID' ||
@@ -24,7 +26,7 @@ export function isOutstanding(invoice: Invoice): boolean {
  * aggregate refuses with a sentence an owner can act on, and the constraint
  * makes it true even for a write that never passed through this code.
  */
-export function assertCanApply(invoice: Invoice, amount: Centavos): void {
+export function assertCanApply(invoice: Pick<Invoice, 'state' | 'totalCentavos' | 'amountPaidCentavos'>, amount: Centavos): void {
   if (!isOutstanding(invoice)) {
     throw new InvoiceNotSettleableError(invoice.state);
   }
@@ -119,4 +121,35 @@ export function arrearsFrom(
   return [...byTenant.values()].sort(
     (a, b) => b.daysOverdue - a.daysOverdue || b.owedCentavos - a.owedCentavos,
   );
+}
+
+export function assertPaymentCanCover(
+  payment: { state: PaymentState; amountCentavos: Centavos; allocatedCentavos: Centavos },
+  amount: Centavos,
+): void {
+  if (!Number.isSafeInteger(amount) || amount <= 0) {
+    throw new PaymentAllocationError('An allocation must be a positive whole-centavo amount.');
+  }
+  if (payment.state !== 'SUCCEEDED') {
+    throw new PaymentAllocationError('Only settled payments can be allocated.');
+  }
+  if (amount > payment.amountCentavos - payment.allocatedCentavos) {
+    throw new PaymentAllocationError('That is more than the payment has left to allocate.');
+  }
+}
+
+export function invoiceTotalCentavos(lines: readonly { amountCentavos: Centavos }[]): Centavos {
+  if (lines.length === 0) throw new EmptyInvoiceError();
+  try {
+    return centavos(lines.reduce((sum, line) => sum + centavos(line.amountCentavos), 0));
+  } catch (error) {
+    if (error instanceof RangeError) {
+      throw new InvalidInvoiceAmountError('The invoice total is too large or contains an invalid amount.');
+    }
+    throw error;
+  }
+}
+
+export function assertInvoicePeriod(periodStart: string, periodEnd: string): void {
+  if (!isCalendarDate(periodStart) || !isCalendarDate(periodEnd) || periodEnd <= periodStart) throw new InvalidPeriodError();
 }

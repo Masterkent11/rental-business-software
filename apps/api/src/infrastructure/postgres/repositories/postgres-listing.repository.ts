@@ -42,14 +42,6 @@ interface MediaRow {
   label?: string;
 }
 
-interface RepresentativeRow {
-  agent_id: string;
-  display_name: string;
-  headline: string;
-  photo_url: string | null;
-  verified: boolean;
-}
-
 interface Row {
   id: string;
   organization_id: string;
@@ -74,6 +66,9 @@ interface Row {
   amenities: string[] | null;
   house_rules: string[] | null;
   terms: string[] | null;
+  min_lease_months: number | null;
+  max_lease_months: number | null;
+  allow_pending_identity_application: boolean;
   min_stay_nights: number | null;
   advance_months: number;
   deposit_months: number;
@@ -97,7 +92,6 @@ interface Row {
   public_latitude: number | null;
   public_longitude: number | null;
   floor_plans: MediaRow[] | null;
-  representative: RepresentativeRow | null;
   tour_provider: string | null;
   furnishing: string | null;
   pets_allowed: boolean | null;
@@ -150,6 +144,9 @@ const toListing = (row: Row): Listing => {
     houseRules: row.house_rules ?? [],
     terms: row.terms ?? [],
     minStayNights: row.min_stay_nights,
+    minLeaseMonths: row.min_lease_months,
+    maxLeaseMonths: row.max_lease_months,
+    allowPendingIdentityApplication: row.allow_pending_identity_application,
     advanceMonths: row.advance_months,
     depositMonths: row.deposit_months,
     maxOccupants: row.max_occupants,
@@ -187,15 +184,6 @@ const toListing = (row: Row): Listing => {
         position: m.position,
         label: m.label ?? '',
       })),
-    representative: row.representative
-      ? {
-          agentId: row.representative.agent_id,
-          displayName: row.representative.display_name,
-          headline: row.representative.headline,
-          photoUrl: row.representative.photo_url,
-          verified: row.representative.verified,
-        }
-      : null,
   };
 };
 
@@ -216,20 +204,13 @@ const SELECT = sql`
                 'id', m.id, 'url', m.storage_url, 'path', m.storage_path, 'position', m.position, 'label', m.label
               ) order by m.position, m.created_at)
          from media_assets m
-        where m.listing_id = l.id and m.kind = 'FLOOR_PLAN'),
+        where m.listing_id = l.id and m.kind = 'FLOOR_PLAN' and m.representation_id is null),
       '[]'::json
     ) as floor_plans,
-    (select json_build_object(
-              'agent_id', a.id, 'display_name', a.display_name, 'headline', a.headline,
-              'photo_url', a.photo_url, 'verified', a.verification_state = 'VERIFIED')
-       from listing_representations rp
-       join agent_profiles a on a.id = rp.agent_id
-      where rp.listing_id = l.id and rp.state = 'ACTIVE' and a.public_state = 'PUBLIC'
-      limit 1) as representative,
     l.price_centavos::text as price_centavos,
     l.cleaning_fee_centavos::text as cleaning_fee_centavos,
     l.state,
-    l.amenities, l.house_rules, l.terms, l.min_stay_nights,
+    l.amenities, l.house_rules, l.terms, l.min_stay_nights, l.min_lease_months, l.max_lease_months, l.allow_pending_identity_application,
     l.advance_months, l.deposit_months,
     l.max_occupants, l.bedrooms, l.bathrooms, l.floor_area_sqm,
     to_char(l.available_from, 'YYYY-MM-DD') as available_from,
@@ -243,7 +224,7 @@ const SELECT = sql`
                 'id', m.id, 'url', m.storage_url, 'path', m.storage_path, 'position', m.position
               ) order by m.position, m.created_at)
          from media_assets m
-        where m.listing_id = l.id and m.kind = 'PHOTO'),
+        where m.listing_id = l.id and m.kind = 'PHOTO' and m.representation_id is null),
       '[]'::json
     ) as media,
     case
@@ -515,12 +496,12 @@ export const postgresListingRepository = (): ListingRepository => ({
         insert into listings (
           organization_id, resource_id, kind, title, description,
           price_centavos, amenities, house_rules, terms,
-          min_stay_nights, advance_months, deposit_months, state
+          min_stay_nights, min_lease_months, max_lease_months, allow_pending_identity_application, advance_months, deposit_months, state
         ) values (
           ${input.organizationId}, ${input.resourceId}, ${input.kind},
           ${input.title}, ${input.description}, ${input.priceCentavos},
           ${textArray(tx, input.amenities)}, ${textArray(tx, input.houseRules)},
-          ${textArray(tx, input.terms)}, ${input.minStayNights},
+          ${textArray(tx, input.terms)}, ${input.minStayNights}, ${input.minLeaseMonths ?? null}, ${input.maxLeaseMonths ?? null}, ${input.allowPendingIdentityApplication ?? false},
           ${input.advanceMonths}, ${input.depositMonths}, 'DRAFT'
         )
         returning id
@@ -548,13 +529,13 @@ export const postgresListingRepository = (): ListingRepository => ({
       const [listing] = await tx<{ id: string }[]>`
         insert into listings (
           organization_id, resource_id, kind, title, description, price_centavos,
-          amenities, house_rules, terms, min_stay_nights, advance_months, deposit_months,
+          amenities, house_rules, terms, min_stay_nights, min_lease_months, max_lease_months, allow_pending_identity_application, advance_months, deposit_months,
           max_occupants, bedrooms, bathrooms, floor_area_sqm, cleaning_fee_centavos,
           available_from, furnishing, pets_allowed, state
         ) values (
           ${input.organizationId}, ${resource!.id}, ${l.kind}, ${l.title.trim()}, ${l.description.trim()},
           ${l.priceCentavos}, ${textArray(tx, l.amenities)}, ${textArray(tx, l.houseRules)},
-          ${textArray(tx, l.terms)}, ${l.minStayNights}, ${l.advanceMonths}, ${l.depositMonths},
+          ${textArray(tx, l.terms)}, ${l.minStayNights}, ${l.minLeaseMonths ?? null}, ${l.maxLeaseMonths ?? null}, ${l.allowPendingIdentityApplication ?? false}, ${l.advanceMonths}, ${l.depositMonths},
           ${l.maxOccupants}, ${l.bedrooms}, ${l.bathrooms}, ${l.floorAreaSqm}, ${l.cleaningFeeCentavos},
           ${l.availableFrom}, ${l.furnishing ?? null}, ${l.petsAllowed ?? null}, 'DRAFT'
         )
@@ -580,6 +561,9 @@ export const postgresListingRepository = (): ListingRepository => ({
           amenities = ${l.amenities ? textArray(tx, l.amenities) : tx`amenities`},
           house_rules = ${l.houseRules ? textArray(tx, l.houseRules) : tx`house_rules`},
           terms = ${l.terms ? textArray(tx, l.terms) : tx`terms`},
+          min_lease_months = ${l.minLeaseMonths !== undefined ? l.minLeaseMonths : tx`min_lease_months`},
+          max_lease_months = ${l.maxLeaseMonths !== undefined ? l.maxLeaseMonths : tx`max_lease_months`},
+          allow_pending_identity_application = coalesce(${l.allowPendingIdentityApplication ?? null}, allow_pending_identity_application),
           min_stay_nights = ${l.minStayNights !== undefined ? l.minStayNights : tx`min_stay_nights`},
           advance_months = coalesce(${l.advanceMonths ?? null}, advance_months),
           deposit_months = coalesce(${l.depositMonths ?? null}, deposit_months),
@@ -794,6 +778,49 @@ export const postgresListingRepository = (): ListingRepository => ({
     });
   },
 
+  async saleDuplicateCandidates(query) {
+    return withScope(null, async (tx) => {
+      const rows = await tx<
+        {
+          listing_id: string;
+          organization_id: string;
+          property_name: string;
+          address_line: string;
+          area_label: string;
+          city_label: string;
+          property_type: string;
+          latitude: number | null;
+          longitude: number | null;
+          bedrooms: number;
+          bathrooms: number;
+          floor_area_sqm: number | null;
+          lot_area_sqm: number | null;
+        }[]
+      >`
+        select * from app_private.sale_listing_duplicate_candidates(
+          ${query.cityLabel}, ${query.propertyType},
+          ${query.location?.latitude ?? null}::float8, ${query.location?.longitude ?? null}::float8,
+          ${query.radiusMeters}::float8
+        )
+      `;
+      return rows.map((row) => ({
+        listingId: row.listing_id,
+        organizationId: row.organization_id,
+        name: row.property_name,
+        addressLine: row.address_line,
+        areaLabel: row.area_label,
+        cityLabel: row.city_label,
+        propertyType: row.property_type,
+        location:
+          row.latitude !== null && row.longitude !== null ? { latitude: row.latitude, longitude: row.longitude } : null,
+        bedrooms: row.bedrooms,
+        bathrooms: row.bathrooms,
+        floorAreaSqm: row.floor_area_sqm,
+        lotAreaSqm: row.lot_area_sqm,
+      }));
+    });
+  },
+
   async createSaleListing(input: CreateSaleListingInput) {
     return withScope(input.organizationId, async (tx) => {
       const property = await insertProperty(tx, input.organizationId, input.property);
@@ -812,12 +839,13 @@ export const postgresListingRepository = (): ListingRepository => ({
           organization_id, resource_id, intent, kind, title, description, price_centavos,
           amenities, house_rules, terms, min_stay_nights, advance_months, deposit_months,
           max_occupants, bedrooms, bathrooms, floor_area_sqm, cleaning_fee_centavos,
-          available_from, sale_status, lot_area_sqm, parking_slots, furnishing, state
+          available_from, sale_status, lot_area_sqm, parking_slots, furnishing, state, possible_duplicate_of
         ) values (
           ${input.organizationId}, ${resource!.id}, 'SALE', null, ${l.title.trim()}, ${l.description.trim()}, 0,
           ${textArray(tx, l.amenities)}, ${textArray(tx, [])}, ${textArray(tx, [])}, null, 0, 0,
           1, ${l.bedrooms}, ${l.bathrooms}, ${l.floorAreaSqm}, 0,
-          ${l.availableFrom}, ${l.saleStatus}, ${l.lotAreaSqm}, ${l.parkingSlots}, ${l.furnishing ?? null}, 'DRAFT'
+          ${l.availableFrom}, ${l.saleStatus}, ${l.lotAreaSqm}, ${l.parkingSlots}, ${l.furnishing ?? null}, 'DRAFT',
+          ${input.possibleDuplicateOf}
         )
         returning id
       `;

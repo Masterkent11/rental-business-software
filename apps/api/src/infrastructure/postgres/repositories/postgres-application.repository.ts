@@ -1,3 +1,5 @@
+import { loadRentalApplicationPolicy } from '@/infrastructure/postgres/repositories/rental-application-policy.repository.ts';
+import { assertApplicationPolicy, validateApplicationDraft, VerificationRequiredError, VerificationConflictError } from '@/domain/verification/verification.ts';
 import type postgres from 'postgres';
 import { sql } from '@/infrastructure/postgres/db.ts';
 import {
@@ -13,6 +15,7 @@ import {
 } from '@/application/ports/repositories/application-repository.port.ts';
 import {
   APPROVAL_HOLD_HOURS,
+  applicationMessageWithOccupants,
   assertApplicantMayWithdraw,
   assertOwnerMayDecide,
   ledgerTypeFor,
@@ -73,20 +76,30 @@ export function postgresApplicationRepository(): ApplicationRepository {
         return await sql.begin(async (tx) => {
           await tx`select set_config('app.user_id', ${input.applicantId}, true)`;
 
-          // Long-term only (D-06), and only inventory actually on the market.
-          const [resource] = await tx<{ organization_id: string }[]>`
-            select r.organization_id
-              from rentable_resources r
-              join listings l
-                on l.resource_id = r.id
-               and l.state = 'PUBLISHED'
-               and l.kind = 'LONG_TERM'
-             where r.id = ${input.resourceId}
-             limit 1
-          `;
-          if (!resource) {
-            throw new NotApplicableError('That place is not accepting applications');
+          if (!input.draftId) throw new VerificationRequiredError('Verify your identity before submitting.');
+          const [draft] = await tx<{
+            id: string; resource_id: string; desired_move_in: string; desired_term_months: number;
+            occupants: number; message: string; application_id: string | null;
+          }[]>`select *, to_char(desired_move_in, 'YYYY-MM-DD') as desired_move_in from application_drafts
+            where id = ${input.draftId} and user_id = ${input.applicantId} for update`;
+          if (!draft || draft.resource_id !== input.resourceId) throw new VerificationRequiredError('No verified application draft.');
+          if (draft.application_id) {
+            const [existing] = await tx<ApplicationRow[]>`select *, to_char(desired_move_in, 'YYYY-MM-DD') as desired_move_in
+              from applications where id = ${draft.application_id} and applicant_id = ${input.applicantId}`;
+            if (existing) return toApplication(existing);
           }
+          if (draft.desired_move_in !== input.desiredMoveIn || draft.desired_term_months !== input.desiredTermMonths || draft.message !== input.message) {
+            throw new VerificationConflictError('Your application details changed. Review them again.');
+          }
+          validateApplicationDraft({ ...input, occupants: draft.occupants }, new Date());
+          const policy = await loadRentalApplicationPolicy(tx, input.resourceId);
+          assertApplicationPolicy({ ...input, occupants: draft.occupants }, policy);
+          const [verification] = await tx`select id from identity_verification_sessions
+            where draft_id = ${draft.id} and user_id = ${input.applicantId} and ((status = 'VERIFIED' and (data->'review'->>'approved' is distinct from 'true' or (data->'review'->>'validUntil')::timestamptz > now())) or (status = 'MANUAL_REVIEW' and ${policy!.allowPendingIdentityApplication}))
+              and expires_at > now() for update`;
+          if (!verification) throw new VerificationRequiredError('Complete identity verification before submitting.');
+
+          const resource = { organization_id: policy!.organizationId };
 
           await tx`select set_config('app.organization_id', ${resource.organization_id}, true)`;
 
@@ -96,13 +109,17 @@ export function postgresApplicationRepository(): ApplicationRepository {
               desired_move_in, desired_term_months, message
             ) values (
               ${resource.organization_id}, ${input.resourceId}, ${input.applicantId},
-              ${input.desiredMoveIn}::date, ${input.desiredTermMonths}, ${input.message}
+              ${input.desiredMoveIn}::date, ${input.desiredTermMonths}, ${applicationMessageWithOccupants(input.message, draft.occupants)}
             )
             returning id, organization_id, resource_id, applicant_id,
                       to_char(desired_move_in, 'YYYY-MM-DD') as desired_move_in,
                       desired_term_months, message, state, decision_reason,
                       decided_at, created_at
           `;
+          await tx`update application_drafts set application_id = ${row!.id}, updated_at = now() where id = ${draft.id}`;
+          await tx`insert into notifications(organization_id, kind, title, body, link)
+            values (${resource.organization_id}, 'APPLICATION_RECEIVED', 'New rental application',
+              'A customer submitted an application.', ${'/applications/' + row!.id})`;
           return toApplication(row!);
         }) as Application;
       } catch (error) {
@@ -175,12 +192,22 @@ export function postgresApplicationRepository(): ApplicationRepository {
                  desired_term_months, message, state, decision_reason,
                  decided_at, created_at
             from applications
-           where id = ${applicationId} and organization_id = ${organizationId}
+           where id = ${applicationId} and organization_id = ${organizationId} for update
         `;
         if (!current) throw new ApplicationNotFoundError('No such application');
 
         assertOwnerMayDecide(current.state, next);
 
+        if (next === 'APPROVED') {
+          await tx`select set_config('app.user_id', ${current.applicant_id}, true)`;
+          const [identity] = await tx`select 1 from application_drafts d
+            join identity_verification_sessions s on s.draft_id = d.id and s.user_id = d.user_id
+            where d.application_id = ${applicationId} and (
+              (s.status = 'VERIFIED' and s.expires_at > now()
+                and (s.data->'review'->>'approved' is distinct from 'true' or (s.data->'review'->>'validUntil')::timestamptz > now())) or
+              (s.data->'review'->>'approved' = 'true' and (s.data->'review'->>'validUntil')::timestamptz > now()))`;
+          if (!identity) throw new VerificationRequiredError('The applicant must complete identity verification before approval.');
+        }
         const decided = next === 'APPROVED' || next === 'REJECTED';
         const [row] = await tx<ApplicationRow[]>`
           update applications

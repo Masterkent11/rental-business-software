@@ -1,5 +1,8 @@
 "use client";
 
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+
 import Link from "next/link";
 import { Inbox, MessageSquare, Wallet, X } from "lucide-react";
 
@@ -153,12 +156,15 @@ function LeadDetail({ inquiry, messagesPath, agent }: { inquiry: Inquiry; messag
   );
 }
 
-export function InquiryBoard() {
+function InquiryBoardContent() {
+  const search = useSearchParams();
   const scope = useSessionStore((s) => s.scope);
-  const { inquiries, inquiriesLoaded, inquiriesError, selectedInquiryId, view, selectInquiry, setView, loadInquiries } = useEngagementStore();
+  const { inquiries: allInquiries, inquiriesLoaded, inquiriesError, selectedInquiryId, view, selectInquiry, setView, loadInquiries } = useEngagementStore();
   if (!scope) return null;
   const agent = scope.kind === "AGENT";
   const messagesPath = agent ? "/agent/messages" : "/messages";
+  const newOnly = !agent && search.get("status") === "NEW";
+  const inquiries = newOnly ? allInquiries.filter(item => item.status === "NEW") : allInquiries;
   const groups = groupByStatus(inquiries);
   const selected = inquiries.find((i) => i.id === selectedInquiryId) ?? null;
 
@@ -168,6 +174,7 @@ export function InquiryBoard() {
         title={agent ? "Leads" : "Inquiries"}
         caption={agent ? "Buyers and renters who asked about properties you represent." : "Questions from buyers and renters about your listings, tracked from first message to close."}
       >
+        {newOnly ? <LinkBtn href="/inquiries" variant="outline">All inquiries</LinkBtn> : null}
         <SegmentedTabs<"board" | "list">
           label="Layout"
           value={view}
@@ -240,3 +247,5 @@ export function InquiryBoard() {
     </Page>
   );
 }
+
+export function InquiryBoard() { return <Suspense fallback={null}><InquiryBoardContent /></Suspense>; }

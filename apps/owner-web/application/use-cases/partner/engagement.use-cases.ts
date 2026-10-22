@@ -1,7 +1,7 @@
-import type { PartnerRepositoryPort } from "../../ports/partner-repository.port";
+import type { PartnerRepositoryPort, ViewingCommand } from "../../ports/partner-repository.port";
 import type { PartnerScope } from "../../../domain/workspace/workspace";
 import { nextStatuses, type Inquiry, type InquiryStatus } from "../../../domain/inquiries/inquiry";
-import type { PartnerViewingAction, Viewing } from "../../../domain/viewings/viewing";
+import type { Viewing } from "../../../domain/viewings/viewing";
 
 export class LoadInquiriesUseCase {
   constructor(private readonly repository: PartnerRepositoryPort) {}
@@ -27,8 +27,9 @@ export class LoadViewingsUseCase {
 
 export class ViewingActionUseCase {
   constructor(private readonly repository: PartnerRepositoryPort) {}
-  execute(scope: PartnerScope, viewingId: string, action: PartnerViewingAction, note: string | null): Promise<Viewing> {
-    if (note && note.length > 1000) throw new Error("Keep the note under 1,000 characters");
-    return this.repository.viewingAction(scope, viewingId, action, note?.trim() || null);
+  execute(scope: PartnerScope, viewingId: string, command: ViewingCommand): Promise<Viewing> {
+    if (command.note && command.note.length > 1000) throw new Error("Keep the note under 1,000 characters");
+    if (command.action === "CONFIRM" && !command.scheduledAt) throw new Error("Choose the exact viewing time");
+    return this.repository.viewingAction(scope, viewingId, { ...command, note: command.note?.trim() || null });
   }
 }

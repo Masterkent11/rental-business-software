@@ -12,13 +12,15 @@ import '../../design/app_image.dart';
 import '../../design/glass.dart';
 import '../../design/osm_map.dart';
 import '../../design/tokens.dart';
+import '../../design/virtual_tour_action.dart';
 import '../../fixtures/view_models.dart';
 import '../auth/auth_guard.dart';
 import '../saved/saved_controller.dart';
-import 'listing_price.dart';
 import 'sale/sale_listing_screen.dart';
+import 'listing_price.dart';
 import 'widgets/tour_callout_card.dart';
-import 'widgets/move_in_cost_card.dart';
+import '../booking/booking_dates_screen.dart';
+import 'widgets/rental_action_bar.dart';
 import '../tour/tour_intro_screen.dart';
 import 'widgets/listing_attributes.dart';
 
@@ -47,6 +49,26 @@ class ListingDetailScreen extends ConsumerStatefulWidget {
 class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
   RentalTab _tab = RentalTab.overview;
   int _photoIndex = 0;
+  QuoteRequest? _stay;
+  bool _descriptionExpanded = false;
+  final _scroll = ScrollController();
+  final _tabOffsets = <RentalTab, double>{};
+
+  void _selectTab(RentalTab tab) {
+    _tabOffsets[_tab] = _scroll.hasClients ? _scroll.offset : 0;
+    setState(() => _tab = tab);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scroll.hasClients) {
+        _scroll.jumpTo((_tabOffsets[tab] ?? 0).clamp(0, _scroll.position.maxScrollExtent));
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -88,14 +110,39 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     }
   }
 
-  void _messageOwner(ListingCardView card) {
-    final target = Routes.startConversation(listingId: card.id);
-    if (!requireSignIn(context, ref, resumeTo: target, reason: 'Sign in to message the owner.')) return;
-    context.push(target);
+  Future<void> _shareListing(ListingCardView card) async {
+    await Clipboard.setData(
+        ClipboardData(text: [card.title, card.place, if (card.hasListedPrice) listingPriceLabel(card)].join('\n')));
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Listing details copied')));
+  }
+
+  Future<void> _selectDates(ListingCardView card) async {
+    final selected = await showModalBottomSheet<QuoteRequest>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => FractionallySizedBox(
+        heightFactor: .95,
+        child: BookingDatesScreen(listingId: card.id, selectionOnly: true, initialSelection: _stay),
+      ),
+    );
+    if (mounted && selected != null) setState(() => _stay = selected);
   }
 
   void _commit(ListingCardView card, bool isLongTerm) {
-    final target = isLongTerm ? Routes.apply(card.id) : Routes.book(card.id);
+    final stay = _stay;
+    if (!isLongTerm && stay == null) {
+      _selectDates(card);
+      return;
+    }
+    final target = isLongTerm
+        ? Routes.apply(card.id)
+        : Routes.checkout(
+            listingId: card.id,
+            resourceId: card.resourceId,
+            checkIn: stay!.checkIn,
+            checkOut: stay.checkOut,
+            guests: stay.guests);
     if (!requireSignIn(
       context,
       ref,
@@ -138,9 +185,8 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     final theme = Theme.of(context);
     final isLongTerm = card.kind == ListingKind.longTerm;
     final saved = ref.watch(isSavedProvider(card.id));
-    final price = card.priceCentavos;
 
-    if (card.isSale || price == null) {
+    if (card.isSale) {
       return SaleListingView(detail: detail, saved: saved, onToggleSave: () => _toggleSave(card.id));
     }
 
@@ -157,6 +203,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
     return Scaffold(
       backgroundColor: Tokens.canvas,
       body: CustomScrollView(
+        controller: _scroll,
         physics: Tokens.scroll,
         slivers: [
           SliverToBoxAdapter(
@@ -168,6 +215,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
               fallbackIcon: Icons.apartment_outlined,
               saved: saved,
               onToggleSave: () => _toggleSave(card.id),
+              onShare: () => _shareListing(card),
               hasTour: card.hasTour,
               onTapTour: () => _openTour(card),
             ),
@@ -193,26 +241,18 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
                       Expanded(
                         child: Text(
                           [card.place, if (card.propertyName.isNotEmpty) card.propertyName].join(' · '),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 12.5,
                             color: Tokens.muted,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: Tokens.s12),
-                  Text(
-                    listingPriceLabel(card),
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      color: Tokens.primaryNavy,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
                   const SizedBox(height: Tokens.s16),
-                  ListingAttributeStrip(card: card),
+                  ListingAttributeStrip(card: card, detailLayout: true, amenities: detail.amenities.take(3).toList()),
                 ],
               ),
             ),
@@ -222,7 +262,7 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
             delegate: _RentalTabsHeader(
               tabs: availableTabs,
               selected: activeTab,
-              onSelect: (t) => setState(() => _tab = t),
+              onSelect: _selectTab,
             ),
           ),
           SliverPadding(
@@ -240,10 +280,14 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: _RentalActionBar(
+      bottomNavigationBar: RentalActionBar(
         card: card,
         isLongTerm: isLongTerm,
-        onMessage: () => _messageOwner(card),
+        quote: _stay == null ? null : ref.watch(stayQuoteProvider(_stay!)),
+        onSelectDates: () => _selectDates(card),
+        onRetryQuote: () {
+          if (_stay != null) ref.invalidate(stayQuoteProvider(_stay!));
+        },
         onCommit: () => _commit(card, isLongTerm),
       ),
     );
@@ -251,10 +295,23 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
 
   Widget _buildOverview(BuildContext context, ListingDetailView detail, ListingCardView card, bool isLongTerm) {
     final theme = Theme.of(context);
-    final showAvailability = isLongTerm || !card.isAvailable;
+    final showAvailability = !card.isAvailable;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (detail.description.isNotEmpty) ...[
+          Text(detail.description,
+              maxLines: _descriptionExpanded ? null : 3,
+              overflow: _descriptionExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+              style: theme.textTheme.bodyLarge?.copyWith(color: Tokens.muted)),
+          TextButton(
+              onPressed: () => setState(() => _descriptionExpanded = !_descriptionExpanded),
+              child: Text(_descriptionExpanded ? 'Read less' : 'Read more  ›')),
+        ],
+        if (showAvailability) ...[
+          const SizedBox(height: Tokens.s16),
+          _AvailabilityRow(card: card),
+        ],
         if (card.hasTour) ...[
           TourCalloutCard(
             card: card,
@@ -262,35 +319,10 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
           ),
           const SizedBox(height: Tokens.s16),
         ],
-        _CheckDatesButton(
-          onTap: () => context.push(Routes.book(card.id)),
-        ),
-        const SizedBox(height: Tokens.s20),
-        _Section(
-          title: 'About this place',
-          child: Text(
-            detail.description.isNotEmpty
-                ? detail.description
-                : 'An 18th-floor studio a short walk from Cebu IT Park. Floor-to-ceiling windows, a queen bed, a proper work space, and a beautiful city view.',
-            style: theme.textTheme.bodyLarge,
-          ),
-        ),
-        if (showAvailability) ...[
-          const SizedBox(height: Tokens.s16),
-          _AvailabilityRow(card: card),
-        ],
-        if (card.moveInCost != null) ...[
-          const SizedBox(height: Tokens.s16),
-          MoveInCostCard(
-            cost: card.moveInCost!,
-            monthlyCentavos: card.priceCentavos ?? 0,
-          ),
-        ],
         const _SectionGap(),
         if (detail.sharedFacilities.isNotEmpty)
           _Section(
             title: 'What you share',
-            caption: 'For a bed space this is the whole question, so it is spelled out.',
             child: Column(
               children: [
                 for (final item in detail.sharedFacilities) _Bullet(item, icon: Icons.group_outlined),
@@ -476,48 +508,13 @@ class _ListingDetailScreenState extends ConsumerState<ListingDetailScreen> {
   }
 
   Widget _buildReviews(ListingCardView card) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Icon(Icons.star_rounded, size: 24, color: Color(0xFFF59E0B)),
-            const SizedBox(width: 6),
-            Text(
-              '${card.rating ?? 4.8}',
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: Tokens.primaryNavy,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '· ${card.reviewCount ?? 120} reviews',
-              style: const TextStyle(
-                fontSize: 15,
-                color: Tokens.muted,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        const _ReviewItem(
-          author: 'Sarah K.',
-          date: 'September 2026',
-          rating: 5,
-          comment: 'Incredible view and very clean! Everything was exactly as described. The virtual tour was spot on.',
-        ),
-        const Divider(height: 32, color: Tokens.hairline),
-        const _ReviewItem(
-          author: 'Miguel R.',
-          date: 'August 2026',
-          rating: 5,
-          comment: 'Perfect location right next to IT Park. Fast wifi and quiet aircon. Highly recommend!',
-        ),
-      ],
-    );
+    if (card.rating == null || (card.reviewCount ?? 0) == 0) {
+      return const _TabEmpty(
+          icon: Icons.rate_review_outlined,
+          title: 'No reviews yet',
+          message: 'Reviews will appear here after verified stays.');
+    }
+    return Text('${card.rating} · ${card.reviewCount} reviews', style: Theme.of(context).textTheme.titleMedium);
   }
 }
 
@@ -530,6 +527,7 @@ class _Gallery extends StatelessWidget {
     required this.fallbackIcon,
     required this.saved,
     required this.onToggleSave,
+    required this.onShare,
     this.hasTour = false,
     this.onTapTour,
   });
@@ -541,13 +539,14 @@ class _Gallery extends StatelessWidget {
   final IconData fallbackIcon;
   final bool saved;
   final VoidCallback onToggleSave;
+  final VoidCallback onShare;
   final bool hasTour;
   final VoidCallback? onTapTour;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 340,
+      height: (MediaQuery.sizeOf(context).height * .35).clamp(240.0, 340.0),
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -568,6 +567,14 @@ class _Gallery extends StatelessWidget {
               },
             ),
           const IgnorePointer(child: PhotoScrim(top: 0.3, bottom: 0.25)),
+          const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 16,
+              child: DecoratedBox(
+                  decoration: BoxDecoration(
+                      color: Tokens.canvas, borderRadius: BorderRadius.vertical(top: Radius.circular(20))))),
           Positioned(
             top: 0,
             left: 0,
@@ -579,22 +586,26 @@ class _Gallery extends StatelessWidget {
                 child: Row(
                   children: [
                     Glass.circle(
+                      color: Colors.white,
                       onTap: () => Navigator.of(context).maybePop(),
-                      child: const Icon(Icons.arrow_back_ios_new, size: 16, color: Colors.white),
+                      child: const Icon(Icons.arrow_back_ios_new, size: 16, color: Tokens.primaryNavy),
                     ),
                     const Spacer(),
                     Semantics(
                       button: true,
                       label: saved ? 'Remove from saved' : 'Save property',
                       child: Glass.circle(
+                        color: Colors.white,
                         onTap: onToggleSave,
-                        child: Icon(saved ? Icons.favorite : Icons.favorite_border, size: 18, color: Colors.white),
+                        child:
+                            Icon(saved ? Icons.favorite : Icons.favorite_border, size: 18, color: Tokens.primaryNavy),
                       ),
                     ),
                     const SizedBox(width: Tokens.s8),
                     Glass.circle(
-                      onTap: () {},
-                      child: const Icon(Icons.share_outlined, size: 18, color: Colors.white),
+                      color: Colors.white,
+                      onTap: onShare,
+                      child: const Icon(Icons.share_outlined, size: 18, color: Tokens.primaryNavy),
                     ),
                   ],
                 ),
@@ -604,43 +615,16 @@ class _Gallery extends StatelessWidget {
           if (hasTour)
             Positioned(
               left: Tokens.s16,
-              bottom: Tokens.s16,
-              child: GestureDetector(
+              bottom: Tokens.s24,
+              child: VirtualTourAction(
+                title: '360°\u200b Tour',
+                variant: VirtualTourActionVariant.dark,
                 onTap: onTapTour,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.55),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.4),
-                      width: 1.2,
-                    ),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.view_in_ar, size: 16, color: Colors.white),
-                      SizedBox(width: 6),
-                      Text.rich(
-                        TextSpan(
-                          text: '360°\u200b Tour',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
             ),
           Positioned(
             right: Tokens.s16,
-            bottom: Tokens.s16,
+            bottom: Tokens.s24,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
@@ -653,7 +637,7 @@ class _Gallery extends StatelessWidget {
                   const Icon(Icons.photo_library_outlined, size: 13, color: Colors.white),
                   const SizedBox(width: 5),
                   Text(
-                    '${index + 1}/${photos.isEmpty ? 1 : photos.length}',
+                    photos.isEmpty ? 'No photos' : '${index + 1}/${photos.length}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12.5,
@@ -661,7 +645,7 @@ class _Gallery extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 2),
-                  const Icon(Icons.arrow_drop_down, size: 16, color: Colors.white),
+                  const Icon(Icons.arrow_drop_down, size: 16, color: Tokens.primaryNavy),
                 ],
               ),
             ),
@@ -710,53 +694,6 @@ class _AvailabilityRow extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-
-class _CheckDatesButton extends StatelessWidget {
-  const _CheckDatesButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 52,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEBF7EE),
-          borderRadius: BorderRadius.circular(Tokens.rSm),
-        ),
-        child: const Row(
-          children: [
-            Icon(
-              Icons.calendar_today_outlined,
-              size: 18,
-              color: Color(0xFF1B7A55),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Check dates',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1B7A55),
-                ),
-              ),
-            ),
-            Icon(
-              Icons.chevron_right_rounded,
-              size: 20,
-              color: Color(0xFF1B7A55),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -899,67 +836,6 @@ class _RentalTabsHeader extends SliverPersistentHeaderDelegate {
       oldDelegate.selected != selected || oldDelegate.tabs != tabs;
 }
 
-class _RentalActionBar extends StatelessWidget {
-  const _RentalActionBar({
-    required this.card,
-    required this.isLongTerm,
-    required this.onMessage,
-    required this.onCommit,
-  });
-
-  final ListingCardView card;
-  final bool isLongTerm;
-  final VoidCallback onMessage;
-  final VoidCallback onCommit;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Tokens.hairline)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s12, Tokens.gutter, Tokens.s12),
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: onMessage,
-                  icon: const Icon(Icons.chat_bubble_outline, size: 18),
-                  label: const Text('Message'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Tokens.primaryNavy,
-                    minimumSize: const Size.fromHeight(50),
-                    side: const BorderSide(color: Tokens.hairline),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.rSm)),
-                  ),
-                ),
-              ),
-              const SizedBox(width: Tokens.s12),
-              Expanded(
-                child: FilledButton(
-                  onPressed: card.isAvailable ? onCommit : null,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Tokens.primaryNavy,
-                    minimumSize: const Size.fromHeight(50),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.rSm)),
-                  ),
-                  child: Text(
-                    card.isAvailable ? (isLongTerm ? 'Apply to rent' : 'Book Now') : 'Not available',
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _TabEmpty extends StatelessWidget {
   const _TabEmpty({required this.icon, required this.title, required this.message});
 
@@ -988,10 +864,9 @@ class _TabEmpty extends StatelessWidget {
 }
 
 class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child, this.caption});
+  const _Section({required this.title, required this.child});
 
   final String title;
-  final String? caption;
   final Widget child;
 
   @override
@@ -1004,10 +879,6 @@ class _Section extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title, style: theme.textTheme.headlineSmall),
-          if (caption != null) ...[
-            const SizedBox(height: Tokens.s6),
-            Text(caption!, style: theme.textTheme.bodySmall),
-          ],
           const SizedBox(height: Tokens.s16),
           child,
         ],
@@ -1206,81 +1077,6 @@ class _DetailFailed extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _ReviewItem extends StatelessWidget {
-  const _ReviewItem({
-    required this.author,
-    required this.date,
-    required this.rating,
-    required this.comment,
-  });
-
-  final String author;
-  final String date;
-  final int rating;
-  final String comment;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: Tokens.softBlue,
-              child: Text(
-                author.isNotEmpty ? author[0] : 'U',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: Tokens.primaryBlue,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    author,
-                    style: const TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w700,
-                      color: Tokens.primaryNavy,
-                    ),
-                  ),
-                  Text(
-                    date,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Tokens.muted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Row(
-              children: [
-                for (int i = 0; i < rating; i++) const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF59E0B)),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          comment,
-          style: const TextStyle(
-            fontSize: 13.5,
-            color: Tokens.primaryNavy,
-            height: 1.4,
-          ),
-        ),
-      ],
     );
   }
 }

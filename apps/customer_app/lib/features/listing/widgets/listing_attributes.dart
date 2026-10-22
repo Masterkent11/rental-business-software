@@ -34,14 +34,23 @@ List<ListingAttribute> listingHighlights(ListingCardView card) {
 }
 
 class ListingAttributeStrip extends StatelessWidget {
-  const ListingAttributeStrip({required this.card, super.key});
+  const ListingAttributeStrip({required this.card, this.detailLayout = false, this.amenities = const [], super.key});
 
   final ListingCardView card;
+  final bool detailLayout;
+  final List<String> amenities;
 
   @override
   Widget build(BuildContext context) {
-    final attributes = listingAttributes(card);
-    final highlights = listingHighlights(card);
+    final attributes = detailLayout
+        ? [...listingSpecs(card), (icon: Icons.apartment_outlined, label: card.typeLabel)]
+        : listingAttributes(card);
+    final candidates = [
+      ...listingHighlights(card),
+      for (final amenity in amenities) (icon: Icons.check_circle_outline, label: amenity)
+    ];
+    final labels = <String>{};
+    final highlights = candidates.where((item) => labels.add(item.label.trim().toLowerCase())).toList();
     if (attributes.isEmpty && highlights.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,11 +74,17 @@ class ListingAttributeStrip extends StatelessWidget {
           ),
         if (highlights.isNotEmpty) ...[
           if (attributes.isNotEmpty) const SizedBox(height: Tokens.s12),
-          Wrap(
-            spacing: Tokens.s8,
-            runSpacing: Tokens.s8,
-            children: [for (final highlight in highlights) _HighlightPill(attribute: highlight)],
-          ),
+          LayoutBuilder(
+              builder: (context, constraints) => Wrap(
+                    spacing: Tokens.s8,
+                    runSpacing: Tokens.s8,
+                    children: [
+                      for (final highlight in highlights)
+                        ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: constraints.maxWidth),
+                            child: _HighlightPill(attribute: highlight))
+                    ],
+                  )),
         ],
       ],
     );
@@ -112,7 +127,7 @@ class _HighlightPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: Tokens.chipHeight,
-      padding: const EdgeInsets.symmetric(horizontal: Tokens.s12),
+      padding: const EdgeInsets.symmetric(horizontal: Tokens.s8),
       decoration: BoxDecoration(
         color: Tokens.softBlue,
         borderRadius: BorderRadius.circular(Tokens.chipHeight / 2),
@@ -121,12 +136,15 @@ class _HighlightPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(attribute.icon, size: 16, color: Tokens.primaryNavy),
-          const SizedBox(width: Tokens.s4 + 2),
-          Text(
+          Icon(attribute.icon, size: 14, color: Tokens.primaryNavy),
+          const SizedBox(width: Tokens.s4),
+          Flexible(
+              child: Text(
             attribute.label,
-            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Tokens.primaryNavy),
-          ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Tokens.primaryNavy),
+          )),
         ],
       ),
     );

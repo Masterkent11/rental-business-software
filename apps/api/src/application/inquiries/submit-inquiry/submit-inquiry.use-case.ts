@@ -1,8 +1,9 @@
 import type { InquiryRepository, SubmittedInquiry } from '@/application/ports/repositories/inquiry-repository.port.ts';
 import type { ListingRepository } from '@/application/ports/repositories/listing-repository.port.ts';
-import type { MessagingRepository } from '@/application/ports/repositories/messaging-repository.port.ts';
 import type { NotificationRepository } from '@/application/ports/repositories/notification-repository.port.ts';
 import type { AgentRepository } from '@/application/ports/repositories/agent-repository.port.ts';
+import type { assignLead } from '@/application/assignment/assign-lead/assign-lead.use-case.ts';
+import { assignableListing } from '@/application/assignment/assignable-listing.rules.ts';
 import {
   InquiryNotAllowedError,
   assertBuyerBudget,
@@ -23,15 +24,16 @@ export interface SubmitInquiryCommand {
   readonly questions: readonly string[];
   readonly buyerBudgetCentavos: number | null;
   readonly clientRef: string;
+  readonly referralCode: string | null;
 }
 
 export const submitInquiry =
   (
     inquiries: InquiryRepository,
     listings: ListingRepository,
-    messaging: MessagingRepository,
     agents: AgentRepository,
     notifications: NotificationRepository,
+    assign: ReturnType<typeof assignLead>,
   ) =>
   async (command: SubmitInquiryCommand): Promise<SubmittedInquiry> => {
     const listing = await listings.findPublicById(PUBLIC, command.listingId);
@@ -43,7 +45,12 @@ export const submitInquiry =
     const questions = normaliseInquiryQuestions(command.questions);
     assertBuyerBudget(command.buyerBudgetCentavos);
     const opening = composeInquiryOpening(message, questions);
-    const agentId = await messaging.activeAgentForListing(listing.id);
+    const assignment = await assign({
+      listing: assignableListing(listing),
+      customerId: command.principal.userId,
+      referralCode: command.referralCode,
+    });
+    const agentId = assignment?.agentId ?? null;
 
     const result = await inquiries.submit({
       organizationId: listing.organizationId,
@@ -70,7 +77,7 @@ export const submitInquiry =
         },
       ];
       if (agentId) {
-        const agent = await agents.findPublic(agentId);
+        const agent = await agents.findAssigned(command.principal.userId, agentId);
         if (agent) {
           outgoing.push({
             audience: { userId: agent.userId },

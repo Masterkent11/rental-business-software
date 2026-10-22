@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Readable } from 'node:stream';
+import { readWebhookBody } from './infrastructure/http/webhook-body.adapter.ts';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import { loadEnvironmentConfig } from './infrastructure/config/environment-config.ts';
@@ -29,21 +29,11 @@ const { sql } = await import('./infrastructure/postgres/db.ts');
  */
 const adapter = new FastifyAdapter({ bodyLimit: 40 * 1024 * 1024 });
 
-/**
- * Keep the raw request body.
- *
- * A webhook signature is computed over bytes. Re-serialising the parsed JSON
- * does not reliably reproduce them — key order and whitespace are not
- * guaranteed — so verification has to see what actually arrived.
- */
 adapter.getInstance().addHook('preParsing', async (request, _reply, payload) => {
-  const chunks: Buffer[] = [];
-  for await (const chunk of payload) {
-    chunks.push(Buffer.from(chunk as Buffer));
-  }
-  const raw = Buffer.concat(chunks);
-  (request as typeof request & { rawBody?: string }).rawBody = raw.toString('utf8');
-  return Readable.from(raw);
+  if (request.method !== 'POST' || request.url.split('?')[0] !== '/webhooks/payments') return payload;
+  const result = await readWebhookBody(payload, 1024 * 1024);
+  (request as typeof request & { rawBody?: string }).rawBody = result.rawBody;
+  return result.payload;
 });
 
 const app = await NestFactory.create<NestFastifyApplication>(

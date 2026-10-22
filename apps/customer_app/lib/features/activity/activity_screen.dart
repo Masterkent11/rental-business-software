@@ -7,9 +7,9 @@ import '../../app/router.dart';
 import '../../data/api_client.dart';
 import '../../data/auth_repository.dart';
 import '../../data/marketplace_repository.dart';
+import '../../data/viewing_repository.dart';
 import '../../design/app_image.dart';
 import '../../design/tokens.dart';
-import '../viewing/schedule_viewing_screen.dart';
 
 class ActivityScreen extends ConsumerStatefulWidget {
   const ActivityScreen({super.key});
@@ -36,7 +36,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
     if (confirmed != true) return;
     setState(() => _busyId = viewing.id);
     try {
-      await ref.read(marketplaceRepositoryProvider).cancelViewing(viewing.id);
+      await ref.read(viewingRepositoryProvider).cancel(viewing.id);
       ref.invalidate(myViewingsProvider);
     } on ApiException catch (error) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.message)));
@@ -84,7 +84,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                 AsyncData(:final value) when value.isEmpty => const _Empty(
                     icon: Icons.event_available_outlined,
                     title: 'No viewings yet',
-                    message: 'Schedule a viewing from any property for sale.',
+                    message: 'Request a viewing from any property for sale.',
                   ),
                 AsyncData(:final value) => ListView.separated(
                     padding: const EdgeInsets.all(Tokens.gutter),
@@ -97,6 +97,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                       onReschedule: () =>
                           context.push('${Routes.viewing(value[i].listingId)}?reschedule=${value[i].id}'),
                       onMessage: () => context.push(Routes.conversation(value[i].conversationId)),
+                      onOpen: () => context.push(Routes.viewingRequest(value[i].listingId, value[i].id)),
                     ),
                   ),
                 _ => const Center(child: CircularProgressIndicator()),
@@ -109,7 +110,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                 AsyncData(:final value) when value.isEmpty => const _Empty(
                     icon: Icons.mark_email_unread_outlined,
                     title: 'No inquiries yet',
-                    message: 'Tap Inquire Now on a property to ask about price and availability.',
+                    message: 'Questions you send about a property appear here.',
                   ),
                 AsyncData(:final value) => ListView.separated(
                     padding: const EdgeInsets.all(Tokens.gutter),
@@ -152,6 +153,7 @@ class _ViewingTile extends StatelessWidget {
     required this.onCancel,
     required this.onReschedule,
     required this.onMessage,
+    required this.onOpen,
   });
 
   final ViewingView viewing;
@@ -159,66 +161,76 @@ class _ViewingTile extends StatelessWidget {
   final VoidCallback onCancel;
   final VoidCallback onReschedule;
   final VoidCallback onMessage;
+  final VoidCallback onOpen;
 
   @override
   Widget build(BuildContext context) {
-    final when = DateFormat("EEE, MMM d · h:mm a").format(manilaWallClock(viewing.scheduledAt));
+    final scheduled = viewing.scheduledAt;
+    final when = scheduled != null
+        ? DateFormat("EEE, MMM d · h:mm a").format(manilaWallClock(scheduled))
+        : viewing.preferredLabel;
     final color = switch (viewing.status) {
       ViewingStatus.confirmed => Tokens.available,
-      ViewingStatus.cancelled => Tokens.taken,
+      ViewingStatus.cancelled || ViewingStatus.declined => Tokens.taken,
       _ => Tokens.primaryNavy,
     };
-    return Container(
-      padding: const EdgeInsets.all(Tokens.s12),
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(Tokens.rMd),
-          border: Border.all(color: Tokens.hairline)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _Thumb(url: viewing.listingPhoto),
-              const SizedBox(width: Tokens.s12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(viewing.listingTitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
-                    Text(when, style: const TextStyle(fontSize: 13)),
-                    Text(viewing.statusLabel,
-                        style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: color)),
-                  ],
+    return GestureDetector(
+      onTap: onOpen,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.all(Tokens.s12),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(Tokens.rMd),
+            border: Border.all(color: Tokens.hairline)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                _Thumb(url: viewing.listingPhoto),
+                const SizedBox(width: Tokens.s12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(viewing.listingTitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
+                      Text(when, style: const TextStyle(fontSize: 13)),
+                      Text(viewing.statusLabel,
+                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: color)),
+                    ],
+                  ),
                 ),
-              ),
+              ],
+            ),
+            if (viewing.partnerNote.isNotEmpty) ...[
+              const SizedBox(height: Tokens.s8),
+              Text('${viewing.partnerName}: ${viewing.partnerNote}',
+                  style: const TextStyle(fontSize: 12.5, color: Tokens.muted)),
             ],
-          ),
-          if (viewing.partnerNote.isNotEmpty) ...[
             const SizedBox(height: Tokens.s8),
-            Text('${viewing.partnerName}: ${viewing.partnerNote}',
-                style: const TextStyle(fontSize: 12.5, color: Tokens.muted)),
+            Wrap(
+              spacing: Tokens.s8,
+              children: [
+                TextButton(onPressed: onOpen, child: const Text('Details')),
+                TextButton(onPressed: onMessage, child: const Text('Message')),
+                if (viewing.isActive)
+                  TextButton(onPressed: busy ? null : onReschedule, child: const Text('Change time')),
+                if (viewing.isActive)
+                  TextButton(
+                    onPressed: busy ? null : onCancel,
+                    style: TextButton.styleFrom(foregroundColor: Tokens.taken),
+                    child: busy
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Text('Cancel'),
+                  ),
+              ],
+            ),
           ],
-          const SizedBox(height: Tokens.s8),
-          Wrap(
-            spacing: Tokens.s8,
-            children: [
-              TextButton(onPressed: onMessage, child: const Text('Message')),
-              if (viewing.isActive) TextButton(onPressed: busy ? null : onReschedule, child: const Text('Change time')),
-              if (viewing.isActive)
-                TextButton(
-                  onPressed: busy ? null : onCancel,
-                  style: TextButton.styleFrom(foregroundColor: Tokens.taken),
-                  child: busy
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Cancel'),
-                ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }

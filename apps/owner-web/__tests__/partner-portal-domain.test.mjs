@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { chooseWorkspace, pathBelongsTo, scopeOf, workspaceHome, workspacesFor } from "../domain/workspace/workspace.ts";
 import { isActivePath, navigationFor } from "../domain/workspace/navigation.ts";
 import { groupByStatus, nextStatuses } from "../domain/inquiries/inquiry.ts";
-import { actionsFor, dayKey } from "../domain/viewings/viewing.ts";
+import { actionsFor, confirmationTimes, dayKey, expectedStart, localInstant } from "../domain/viewings/viewing.ts";
 import { directionFromScreen, panoramaProblem, panoramaShapeProblem, screenFromDirection } from "../domain/tours/tour.ts";
 import { emptyForm, locationFrom, saleTermsFrom, stepsFor, validateStep } from "../domain/listings/listing-form.ts";
 import { canRequestVerification, validateAgentForm, emptyAgentForm } from "../domain/agents/agent.ts";
@@ -61,12 +61,26 @@ test("Inquiries: closed leads cannot move, others never go back to New", () => {
   assert.equal(groups.QUALIFIED.length, 0);
 });
 
-test("Viewings: partner actions depend on status and whether the slot has started", () => {
+test("Viewings: partner actions depend on status, role and whether the viewing has started", () => {
   const now = new Date("2026-10-08T02:00:00Z");
-  assert.deepEqual(actionsFor({ status: "REQUESTED", scheduledAt: "2026-10-09T02:00:00Z" }, now), ["CONFIRM", "REQUEST_RESCHEDULE", "CANCEL"]);
-  assert.deepEqual(actionsFor({ status: "CONFIRMED", scheduledAt: "2026-10-07T02:00:00Z" }, now), ["COMPLETE", "CANCEL"]);
-  assert.deepEqual(actionsFor({ status: "COMPLETED", scheduledAt: "2026-10-07T02:00:00Z" }, now), []);
+  const requested = { status: "REQUESTED", scheduledAt: null, preferredDate: "2026-10-09", preferredTimeWindow: "AFTERNOON" };
+  assert.deepEqual(actionsFor(requested, now, "AGENT"), ["CONFIRM", "REQUEST_RESCHEDULE", "DECLINE", "CANCEL"]);
+  assert.deepEqual(actionsFor(requested, now, "OWNER"), ["CONFIRM", "REQUEST_RESCHEDULE", "CANCEL"]);
+  const past = { status: "CONFIRMED", scheduledAt: "2026-10-07T02:00:00Z", preferredDate: null, preferredTimeWindow: null };
+  assert.deepEqual(actionsFor(past, now, "AGENT"), ["COMPLETE", "CANCEL"]);
+  assert.deepEqual(actionsFor({ ...past, status: "COMPLETED" }, now, "AGENT"), []);
+  assert.deepEqual(actionsFor({ ...requested, status: "MATCHING" }, now, "OWNER"), ["CANCEL"]);
   assert.equal(dayKey("2026-10-08T17:00:00Z"), "2026-10-09");
+});
+
+test("Viewings: confirmation times stay inside the preferred window in 15-minute steps, Manila time", () => {
+  const afternoon = confirmationTimes("AFTERNOON");
+  assert.equal(afternoon[0], "12:00");
+  assert.equal(afternoon.at(-1), "15:45");
+  assert.equal(afternoon.length, 16);
+  assert.equal(confirmationTimes(null).length, 48);
+  assert.equal(localInstant("2026-10-09", "14:30"), "2026-10-09T06:30:00.000Z");
+  assert.equal(expectedStart({ scheduledAt: null, preferredDate: "2026-10-09", preferredTimeWindow: "EVENING" }), "2026-10-09T08:00:00.000Z");
 });
 
 test("Tour studio: a clicked point maps to a direction that projects back to the same pixel", () => {

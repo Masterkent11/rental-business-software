@@ -1,4 +1,4 @@
-platform :ios, '15.0'
+platform :ios, '15.5'
 
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
@@ -6,6 +6,15 @@ project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
   'Release' => :release,
+  'Debug-development' => :debug,
+  'Profile-development' => :release,
+  'Release-development' => :release,
+  'Debug-staging' => :debug,
+  'Profile-staging' => :release,
+  'Release-staging' => :release,
+  'Debug-production' => :debug,
+  'Profile-production' => :release,
+  'Release-production' => :release,
 }
 
 def flutter_root
@@ -22,6 +31,8 @@ def flutter_root
 end
 
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
+require_relative 'scripts/mlkit_apple_silicon/apple_silicon_simulator'
 
 flutter_ios_podfile_setup
 
@@ -40,7 +51,9 @@ post_install do |installer|
     flutter_additional_ios_build_settings(target)
 
     target.build_configurations.each do |config|
-     config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+     config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'
     end
   end
+  mlkit_apple_silicon_simulator_patch(installer)
+
 end

@@ -4,13 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
-import '../../../data/marketplace_repository.dart';
+import '../../../data/viewing_repository.dart';
 import '../../../design/app_image.dart';
 import '../../../design/glass.dart';
 import '../../../design/osm_map.dart';
 import '../../../design/tokens.dart';
+import '../../../design/virtual_tour_action.dart';
 import '../../../fixtures/view_models.dart';
 import '../../auth/auth_guard.dart';
+import '../../viewing/widgets/viewing_buttons.dart';
+import '../../viewing/widgets/viewing_icon.dart';
 import '../widgets/listing_attributes.dart';
 import '../widgets/tour_callout_card.dart';
 
@@ -53,20 +56,16 @@ class _SaleListingViewState extends ConsumerState<SaleListingView> {
     context.push(target);
   }
 
-  void _message() => _guarded(
-        Routes.startConversation(listingId: _card.id),
-        'Sign in to message the agent or owner.',
+  void _requestViewing(ViewingView? active) => _guarded(
+        active == null ? Routes.viewing(_card.id) : Routes.viewingRequest(_card.id, active.id),
+        'Sign in to request a viewing.',
       );
-
-  void _inquire() => _guarded(Routes.inquire(_card.id), 'Sign in to send an inquiry.');
-
-  void _scheduleViewing() => _guarded(Routes.viewing(_card.id), 'Sign in to schedule a viewing.');
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final card = _card;
-    final openInquiry = ref.watch(openInquiryProvider(card.id)).valueOrNull;
+    final activeViewing = ref.watch(activeViewingForListingProvider(card.id));
     final availableTabs = [
       SaleTab.overview,
       SaleTab.photos,
@@ -132,14 +131,7 @@ class _SaleListingViewState extends ConsumerState<SaleListingView> {
             padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s20, Tokens.gutter, 140),
             sliver: SliverToBoxAdapter(
               child: switch (activeTab) {
-                SaleTab.overview => _Overview(
-                    detail: widget.detail,
-                    openInquiry: openInquiry,
-                    onScheduleViewing: _scheduleViewing,
-                    onOpenInquiry: openInquiry == null
-                        ? null
-                        : () => context.push(Routes.conversation(openInquiry.conversationId)),
-                  ),
+                SaleTab.overview => _Overview(detail: widget.detail),
                 SaleTab.photos => _PhotosTab(photos: card.photos),
                 SaleTab.tour => _TourTab(card: card),
                 SaleTab.floorPlan => _FloorPlanTab(plans: widget.detail.floorPlans),
@@ -150,9 +142,8 @@ class _SaleListingViewState extends ConsumerState<SaleListingView> {
         ],
       ),
       bottomNavigationBar: _ActionBar(
-        inquired: openInquiry != null,
-        onMessage: _message,
-        onInquire: openInquiry == null ? _inquire : () => context.push(Routes.conversation(openInquiry.conversationId)),
+        label: activeViewing == null ? 'Request a viewing' : 'View my viewing request',
+        onPressed: () => _requestViewing(activeViewing),
       ),
     );
   }
@@ -230,37 +221,10 @@ class _Hero extends StatelessWidget {
             Positioned(
               left: Tokens.s16,
               bottom: Tokens.s16,
-              child: GestureDetector(
+              child: VirtualTourAction(
+                title: '360°\u200b Tour',
+                variant: VirtualTourActionVariant.dark,
                 onTap: () => context.push(Routes.tour(card.id)),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.55),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.4),
-                      width: 1.2,
-                    ),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.view_in_ar, size: 16, color: Colors.white),
-                      SizedBox(width: 6),
-                      Text.rich(
-                        TextSpan(
-                          text: '360°\u200b Tour',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ),
             ),
           if (photos.isNotEmpty)
@@ -292,25 +256,75 @@ class _Hero extends StatelessWidget {
 class _PriceOnInquiry extends StatelessWidget {
   const _PriceOnInquiry();
 
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(Icons.lock_outline, size: 18, color: Tokens.primaryNavy),
-        SizedBox(width: 6),
-        Flexible(
-          child: Text(
-            kPriceOnInquiry,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: Tokens.primaryNavy,
-              letterSpacing: -0.3,
-            ),
+  void _showInfo(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: Tokens.canvas,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(Tokens.rMd)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(Tokens.gutter, 0, Tokens.gutter, Tokens.s24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Private Pricing',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Tokens.primaryNavy,
+                ),
+              ),
+              const SizedBox(height: Tokens.s8),
+              const Text(
+                'Sale prices are shared privately by the agent or owner after you submit a viewing request or inquiry.',
+                style: TextStyle(fontSize: 14, height: 1.45, color: Tokens.muted),
+              ),
+              const SizedBox(height: Tokens.s20),
+              ViewingPrimaryButton(
+                label: 'Got it',
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _showInfo(context),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Flexible(
+            child: Text(
+              kPriceOnInquiry,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Tokens.muted,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          InkResponse(
+            onTap: () => _showInfo(context),
+            radius: 16,
+            child: const Padding(
+              padding: EdgeInsets.all(2),
+              child: ViewingIcon(ViewingGlyph.info, size: 15, color: Tokens.muted),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -387,23 +401,25 @@ class _TabsHeader extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant _TabsHeader oldDelegate) => oldDelegate.selected != selected;
 }
 
-class _Overview extends StatelessWidget {
-  const _Overview({
-    required this.detail,
-    required this.openInquiry,
-    required this.onScheduleViewing,
-    required this.onOpenInquiry,
-  });
+class _Overview extends StatefulWidget {
+  const _Overview({required this.detail});
 
   final ListingDetailView detail;
-  final InquiryView? openInquiry;
-  final VoidCallback onScheduleViewing;
-  final VoidCallback? onOpenInquiry;
+
+  @override
+  State<_Overview> createState() => _OverviewState();
+}
+
+class _OverviewState extends State<_Overview> {
+  bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final card = detail.card;
+    final card = widget.detail.card;
+    final description = widget.detail.description.isEmpty ? 'No description yet.' : widget.detail.description;
+    final isLong = description.length > 180;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -411,30 +427,42 @@ class _Overview extends StatelessWidget {
           TourCalloutCard(card: card),
           const SizedBox(height: Tokens.s20),
         ],
-        const SizedBox(height: Tokens.s20),
-        if (openInquiry != null)
-          _InquiryNotice(inquiry: openInquiry!, onOpen: onOpenInquiry)
-        else
-          const SizedBox.shrink(),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: onScheduleViewing,
-            icon: const Icon(Icons.event_available_outlined, size: 18),
-            label: const Text('Schedule a viewing'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Tokens.primaryNavy,
-              minimumSize: const Size.fromHeight(48),
-              side: const BorderSide(color: Tokens.primaryNavy),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.rSm)),
-            ),
-          ),
-        ),
         const SizedBox(height: Tokens.s24),
         Text('About this property', style: theme.textTheme.titleLarge),
         const SizedBox(height: Tokens.s8),
-        Text(detail.description.isEmpty ? 'No description yet.' : detail.description, style: theme.textTheme.bodyLarge),
-        if (detail.amenities.isNotEmpty) ...[
+        Text(
+          description,
+          maxLines: _expanded || !isLong ? null : 3,
+          overflow: _expanded || !isLong ? TextOverflow.clip : TextOverflow.ellipsis,
+          style: theme.textTheme.bodyLarge,
+        ),
+        if (isLong) ...[
+          const SizedBox(height: Tokens.s6),
+          GestureDetector(
+            onTap: () => setState(() => _expanded = !_expanded),
+            behavior: HitTestBehavior.opaque,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _expanded ? 'Read less' : 'Read more',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Tokens.primaryNavy,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  _expanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                  size: 18,
+                  color: Tokens.primaryNavy,
+                ),
+              ],
+            ),
+          ),
+        ],
+        if (widget.detail.amenities.isNotEmpty) ...[
           const SizedBox(height: Tokens.s24),
           Text('Features', style: theme.textTheme.titleLarge),
           const SizedBox(height: Tokens.s12),
@@ -442,7 +470,7 @@ class _Overview extends StatelessWidget {
             spacing: Tokens.s8,
             runSpacing: Tokens.s8,
             children: [
-              for (final feature in detail.amenities)
+              for (final feature in widget.detail.amenities)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
@@ -455,122 +483,7 @@ class _Overview extends StatelessWidget {
             ],
           ),
         ],
-        const SizedBox(height: Tokens.s24),
-        Text(card.representative == null ? 'Listed by' : 'Your agent', style: theme.textTheme.titleLarge),
-        const SizedBox(height: Tokens.s12),
-        _PartnerCard(card: card, ownerName: detail.ownerName, ownerVerified: detail.ownerVerified),
       ],
-    );
-  }
-}
-
-
-class _InquiryNotice extends StatelessWidget {
-  const _InquiryNotice({required this.inquiry, required this.onOpen});
-
-  final InquiryView inquiry;
-  final VoidCallback? onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: Tokens.s12),
-      child: Material(
-        color: Tokens.softBlue,
-        borderRadius: BorderRadius.circular(Tokens.rSm),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(Tokens.rSm),
-          onTap: onOpen,
-          child: Padding(
-            padding: const EdgeInsets.all(Tokens.s12),
-            child: Row(
-              children: [
-                const Icon(Icons.mark_email_read_outlined, color: Tokens.primaryNavy, size: 20),
-                const SizedBox(width: Tokens.s12),
-                Expanded(
-                  child: Text(
-                    'You inquired about this property · ${inquiry.progressLabel}',
-                    style: const TextStyle(fontWeight: FontWeight.w600, color: Tokens.primaryNavy),
-                  ),
-                ),
-                const Icon(Icons.chevron_right, color: Tokens.primaryNavy),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PartnerCard extends StatelessWidget {
-  const _PartnerCard({required this.card, required this.ownerName, required this.ownerVerified});
-
-  final ListingCardView card;
-  final String ownerName;
-  final bool ownerVerified;
-
-  @override
-  Widget build(BuildContext context) {
-    final agent = card.representative;
-    final name = agent?.displayName ?? (ownerName.isEmpty ? 'Property owner' : ownerName);
-    final subtitle = agent == null ? 'Owner' : (agent.headline.isEmpty ? 'Real estate agent' : agent.headline);
-    final verified = agent?.verified ?? ownerVerified;
-    final initials =
-        name.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).take(2).map((w) => w[0].toUpperCase()).join();
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(Tokens.rMd),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(Tokens.rMd),
-        onTap: agent == null ? null : () => context.push(Routes.agent(agent.agentId)),
-        child: Container(
-          padding: const EdgeInsets.all(Tokens.s16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Tokens.rMd),
-            border: Border.all(color: Tokens.hairline),
-          ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: Tokens.softBlue,
-                foregroundImage: agent?.photoUrl == null ? null : NetworkImage(agent!.photoUrl!),
-                child: Text(initials, style: const TextStyle(fontWeight: FontWeight.w700, color: Tokens.primaryNavy)),
-              ),
-              const SizedBox(width: Tokens.s12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w700, fontSize: 15.5, color: Tokens.primaryNavy)),
-                        ),
-                        if (verified) ...[
-                          const SizedBox(width: 4),
-                          const Icon(Icons.verified, size: 16, color: Tokens.primaryBlue, semanticLabel: 'Verified'),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(subtitle,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12.5, color: Tokens.muted)),
-                  ],
-                ),
-              ),
-              if (agent != null) const Icon(Icons.chevron_right, color: Tokens.muted),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
@@ -806,11 +719,10 @@ class _TabEmpty extends StatelessWidget {
 }
 
 class _ActionBar extends StatelessWidget {
-  const _ActionBar({required this.inquired, required this.onMessage, required this.onInquire});
+  const _ActionBar({required this.label, required this.onPressed});
 
-  final bool inquired;
-  final VoidCallback onMessage;
-  final VoidCallback onInquire;
+  final String label;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -823,34 +735,10 @@ class _ActionBar extends StatelessWidget {
         top: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(Tokens.gutter, Tokens.s12, Tokens.gutter, Tokens.s12),
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: onMessage,
-                  icon: const Icon(Icons.chat_bubble_outline, size: 18),
-                  label: const Text('Message'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Tokens.primaryNavy,
-                    minimumSize: const Size.fromHeight(50),
-                    side: const BorderSide(color: Tokens.hairline),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.rSm)),
-                  ),
-                ),
-              ),
-              const SizedBox(width: Tokens.s12),
-              Expanded(
-                child: FilledButton(
-                  onPressed: onInquire,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Tokens.primaryNavy,
-                    minimumSize: const Size.fromHeight(50),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Tokens.rSm)),
-                  ),
-                  child: Text(inquired ? 'View inquiry' : 'Inquire Now'),
-                ),
-              ),
-            ],
+          child: ViewingPrimaryButton(
+            label: label,
+            glyph: ViewingGlyph.calendar,
+            onPressed: onPressed,
           ),
         ),
       ),

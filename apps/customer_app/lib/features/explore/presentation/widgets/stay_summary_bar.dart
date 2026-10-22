@@ -18,7 +18,7 @@ class StaySummaryBar extends ConsumerWidget {
 
   static String describe(StaySearch? stay) => switch (stay) {
         ShortStaySearch(:final checkIn, :final checkOut, :final guests) =>
-          '${_day.format(checkIn)} – ${_day.format(checkOut)} · $guests ${guests == 1 ? 'guest' : 'guests'}',
+          '${_day.format(checkIn)}  ${_day.format(checkOut)} · $guests ${guests == 1 ? 'guest' : 'guests'}',
         MonthlySearch(:final moveIn, :final occupants) =>
           'Move in ${_day.format(moveIn)} · $occupants ${occupants == 1 ? 'occupant' : 'occupants'}',
         null => 'Any dates',

@@ -1,6 +1,3 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-
 import 'listing_category.dart';
 
 enum RentMode {
@@ -17,16 +14,15 @@ extension ListingCategoryStays on ListingCategory {
 }
 
 enum QuickFilter {
-  furnished('Furnished', Icons.chair_outlined, {MarketIntent.rent, MarketIntent.buy}),
-  petFriendly('Pet-friendly', Icons.pets_outlined, {MarketIntent.rent}),
-  virtualTour('360° tour', Icons.threed_rotation, {MarketIntent.rent, MarketIntent.buy}),
-  pool('With pool', Icons.pool_outlined, {MarketIntent.rent, MarketIntent.buy}),
-  preSelling('Pre-selling', Icons.construction_outlined, {MarketIntent.buy});
+  furnished('Furnished', {MarketIntent.rent, MarketIntent.buy}),
+  petFriendly('Pet-friendly', {MarketIntent.rent}),
+  virtualTour('360° tour', {MarketIntent.rent, MarketIntent.buy}),
+  pool('With pool', {MarketIntent.rent, MarketIntent.buy}),
+  preSelling('Pre-selling', {MarketIntent.buy});
 
-  const QuickFilter(this.label, this.icon, this.intents);
+  const QuickFilter(this.label, this.intents);
 
   final String label;
-  final IconData icon;
   final Set<MarketIntent> intents;
 
   static List<QuickFilter> forIntent(MarketIntent intent) =>
@@ -51,12 +47,10 @@ enum ExploreSort {
       };
 }
 
-@immutable
 sealed class StaySearch {
   const StaySearch();
 }
 
-@immutable
 final class ShortStaySearch extends StaySearch {
   const ShortStaySearch({required this.checkIn, required this.checkOut, required this.guests});
 
@@ -74,7 +68,6 @@ final class ShortStaySearch extends StaySearch {
   int get hashCode => Object.hash(checkIn, checkOut, guests);
 }
 
-@immutable
 final class MonthlySearch extends StaySearch {
   const MonthlySearch({required this.moveIn, required this.occupants});
 
@@ -88,7 +81,6 @@ final class MonthlySearch extends StaySearch {
   int get hashCode => Object.hash(moveIn, occupants);
 }
 
-@immutable
 class BuyRefinement {
   const BuyRefinement({this.minBedrooms, this.minBathrooms, this.minFloorAreaSqm});
 
@@ -111,7 +103,6 @@ class BuyRefinement {
   int get hashCode => Object.hash(minBedrooms, minBathrooms, minFloorAreaSqm);
 }
 
-@immutable
 class ExploreQuery {
   const ExploreQuery({
     this.intent = MarketIntent.rent,
@@ -190,7 +181,8 @@ class ExploreQuery {
       other.category == category &&
       other.text == text &&
       other.area == area &&
-      setEquals(other.quickFilters, quickFilters) &&
+      other.quickFilters.length == quickFilters.length &&
+      other.quickFilters.containsAll(quickFilters) &&
       other.rentMode == rentMode &&
       other.stay == stay &&
       other.buy == buy &&

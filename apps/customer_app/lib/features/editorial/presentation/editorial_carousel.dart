@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../design/controls.dart';
 import '../../../design/tokens.dart';
 import '../../../design/typography.dart';
-import '../../../fixtures/view_models.dart';
 import '../domain/editorial_card.dart';
 
 class EditorialCarousel extends StatefulWidget {
@@ -12,7 +11,6 @@ class EditorialCarousel extends StatefulWidget {
     required this.onAction,
     this.aspectRatio = Tokens.heroAspectRatio,
     this.titleStyle = AppText.heroCardTitle,
-    this.agents = const [],
     this.footnote,
     super.key,
   });
@@ -21,7 +19,6 @@ class EditorialCarousel extends StatefulWidget {
   final ValueChanged<EditorialAction> onAction;
   final double aspectRatio;
   final TextStyle titleStyle;
-  final List<RepresentativeView> agents;
   final String? footnote;
 
   @override
@@ -55,7 +52,6 @@ class _EditorialCarouselState extends State<EditorialCarousel> {
               child: _EditorialSlide(
                 card: cards[index],
                 titleStyle: widget.titleStyle,
-                agents: cards[index].action == EditorialAction.homesForSale ? widget.agents : const [],
                 footnote: index == 0 ? widget.footnote : null,
                 onAction: () => widget.onAction(cards[index].action),
               ),
@@ -106,14 +102,12 @@ class _EditorialSlide extends StatelessWidget {
   const _EditorialSlide({
     required this.card,
     required this.titleStyle,
-    required this.agents,
     required this.onAction,
     this.footnote,
   });
 
   final EditorialCard card;
   final TextStyle titleStyle;
-  final List<RepresentativeView> agents;
   final VoidCallback onAction;
   final String? footnote;
 
@@ -158,10 +152,6 @@ class _EditorialSlide extends StatelessWidget {
                 Text(card.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: titleStyle),
                 const SizedBox(height: Tokens.s4),
                 Text(card.body, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppText.onPhotoSupporting),
-                if (agents.isNotEmpty) ...[
-                  const SizedBox(height: Tokens.s8),
-                  _AgentAvatars(agents: agents),
-                ],
                 const Spacer(),
                 Row(
                   children: [
@@ -190,46 +180,6 @@ class _EditorialSlide extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _AgentAvatars extends StatelessWidget {
-  const _AgentAvatars({required this.agents});
-
-  final List<RepresentativeView> agents;
-
-  @override
-  Widget build(BuildContext context) {
-    final shown = agents.take(3).toList(growable: false);
-    return Semantics(
-      label: shown.map((agent) => agent.displayName).join(', '),
-      excludeSemantics: true,
-      child: SizedBox(
-        height: Tokens.avatarSm + Tokens.s4,
-        width: Tokens.avatarSm + Tokens.s4 + (shown.length - 1) * Tokens.avatarOverlap,
-        child: Stack(
-          children: [
-            for (var i = 0; i < shown.length; i++)
-              Positioned(
-                left: i * Tokens.avatarOverlap,
-                child: Container(
-                  padding: const EdgeInsets.all(Tokens.s2),
-                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                  child: CircleAvatar(
-                    radius: Tokens.avatarSm / 2,
-                    backgroundColor: Tokens.softBlue,
-                    foregroundImage: shown[i].photoUrl == null ? null : NetworkImage(shown[i].photoUrl!),
-                    child: Text(
-                      shown[i].displayName.isEmpty ? '?' : shown[i].displayName[0].toUpperCase(),
-                      style: AppText.captionStrong.copyWith(color: Tokens.primaryNavy),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
       ),
     );
   }

@@ -10,6 +10,12 @@ import type {
 } from "../../domain/listings/listing";
 import type { Inquiry, InquiryStatus } from "../../domain/inquiries/inquiry";
 import type { PartnerViewingAction, Viewing } from "../../domain/viewings/viewing";
+
+export interface ViewingCommand {
+  readonly action: PartnerViewingAction;
+  readonly scheduledAt: string | null;
+  readonly note: string | null;
+}
 import type { Conversation, Message } from "../../domain/messaging/conversation";
 import type { AppNotification } from "../../domain/notifications/notification";
 import type { AgentProfile, AgentProfileForm, PublicAgent, Representation } from "../../domain/agents/agent";
@@ -38,7 +44,7 @@ export interface PartnerRepositoryPort {
   getInquiries(scope: PartnerScope, filters: { status?: InquiryStatus; listingId?: string }): Promise<readonly Inquiry[]>;
   updateInquiryStatus(scope: PartnerScope, inquiryId: string, status: InquiryStatus, lostReason: string | null): Promise<Inquiry>;
   getViewings(scope: PartnerScope, range: { from?: string; to?: string }): Promise<readonly Viewing[]>;
-  viewingAction(scope: PartnerScope, viewingId: string, action: PartnerViewingAction, note: string | null): Promise<Viewing>;
+  viewingAction(scope: PartnerScope, viewingId: string, command: ViewingCommand): Promise<Viewing>;
 
   getConversations(scope: PartnerScope): Promise<{ conversations: readonly Conversation[]; unreadTotal: number }>;
   getThread(scope: PartnerScope, conversationId: string, before?: string): Promise<PartnerThreadPage>;
