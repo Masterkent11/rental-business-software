@@ -1,0 +1,276 @@
+{
+  "name": "WeStayPlace Gray Dashboard Assets",
+  "version": 1,
+  "reference": "image(20261021-133822).png",
+  "illustrationPalette": {
+    "graphite": "#344457",
+    "slate": "#8498AE",
+    "paleSteel": "#C7D3E0",
+    "silver": "#E8EDF3",
+    "white": "#FFFFFF"
+  },
+  "uiIconColor": "#10234A",
+  "assets": [
+    {
+      "id": "published-listings",
+      "kind": "illustration",
+      "svg": "illustrations/svg/published-listings.svg",
+      "png": "illustrations/png/published-listings.png",
+      "viewBox": "0 0 96 96",
+      "pngSize": 512,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "upcoming-stays",
+      "kind": "illustration",
+      "svg": "illustrations/svg/upcoming-stays.svg",
+      "png": "illustrations/png/upcoming-stays.png",
+      "viewBox": "0 0 96 96",
+      "pngSize": 512,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "unread-messages",
+      "kind": "illustration",
+      "svg": "illustrations/svg/unread-messages.svg",
+      "png": "illustrations/png/unread-messages.png",
+      "viewBox": "0 0 96 96",
+      "pngSize": 512,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "received-this-month",
+      "kind": "illustration",
+      "svg": "illustrations/svg/received-this-month.svg",
+      "png": "illustrations/png/received-this-month.png",
+      "viewBox": "0 0 96 96",
+      "pngSize": 512,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "new-inquiries",
+      "kind": "illustration",
+      "svg": "illustrations/svg/new-inquiries.svg",
+      "png": "illustrations/png/new-inquiries.png",
+      "viewBox": "0 0 96 96",
+      "pngSize": 512,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "viewing-requests",
+      "kind": "illustration",
+      "svg": "illustrations/svg/viewing-requests.svg",
+      "png": "illustrations/png/viewing-requests.png",
+      "viewBox": "0 0 96 96",
+      "pngSize": 512,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "dashboard",
+      "kind": "icon",
+      "svg": "icons/svg/dashboard.svg",
+      "png": "icons/png/dashboard.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "properties",
+      "kind": "icon",
+      "svg": "icons/svg/properties.svg",
+      "png": "icons/png/properties.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "bookings",
+      "kind": "icon",
+      "svg": "icons/svg/bookings.svg",
+      "png": "icons/png/bookings.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "inquiries",
+      "kind": "icon",
+      "svg": "icons/svg/inquiries.svg",
+      "png": "icons/png/inquiries.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "viewings",
+      "kind": "icon",
+      "svg": "icons/svg/viewings.svg",
+      "png": "icons/png/viewings.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "messages",
+      "kind": "icon",
+      "svg": "icons/svg/messages.svg",
+      "png": "icons/png/messages.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "applications",
+      "kind": "icon",
+      "svg": "icons/svg/applications.svg",
+      "png": "icons/png/applications.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "payments",
+      "kind": "icon",
+      "svg": "icons/svg/payments.svg",
+      "png": "icons/png/payments.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "virtual-tours",
+      "kind": "icon",
+      "svg": "icons/svg/virtual-tours.svg",
+      "png": "icons/png/virtual-tours.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "analytics",
+      "kind": "icon",
+      "svg": "icons/svg/analytics.svg",
+      "png": "icons/png/analytics.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "account",
+      "kind": "icon",
+      "svg": "icons/svg/account.svg",
+      "png": "icons/png/account.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "bell",
+      "kind": "icon",
+      "svg": "icons/svg/bell.svg",
+      "png": "icons/png/bell.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "plus",
+      "kind": "icon",
+      "svg": "icons/svg/plus.svg",
+      "png": "icons/png/plus.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "arrow-right",
+      "kind": "icon",
+      "svg": "icons/svg/arrow-right.svg",
+      "png": "icons/png/arrow-right.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "chevron-down",
+      "kind": "icon",
+      "svg": "icons/svg/chevron-down.svg",
+      "png": "icons/png/chevron-down.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "chevron-right",
+      "kind": "icon",
+      "svg": "icons/svg/chevron-right.svg",
+      "png": "icons/png/chevron-right.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "calendar",
+      "kind": "icon",
+      "svg": "icons/svg/calendar.svg",
+      "png": "icons/png/calendar.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "moon",
+      "kind": "icon",
+      "svg": "icons/svg/moon.svg",
+      "png": "icons/png/moon.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "info",
+      "kind": "icon",
+      "svg": "icons/svg/info.svg",
+      "png": "icons/png/info.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "eye",
+      "kind": "icon",
+      "svg": "icons/svg/eye.svg",
+      "png": "icons/png/eye.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "arrow-up",
+      "kind": "icon",
+      "svg": "icons/svg/arrow-up.svg",
+      "png": "icons/png/arrow-up.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "check",
+      "kind": "icon",
+      "svg": "icons/svg/check.svg",
+      "png": "icons/png/check.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    },
+    {
+      "id": "status-dot",
+      "kind": "icon",
+      "svg": "icons/svg/status-dot.svg",
+      "png": "icons/png/status-dot.png",
+      "viewBox": "0 0 24 24",
+      "pngSize": 96,
+      "source": "recreated-vector"
+    }
+  ]
+}

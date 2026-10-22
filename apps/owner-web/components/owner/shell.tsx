@@ -34,6 +34,12 @@ import { useEngagementStore } from "@/stores/use-engagement-store";
 import { cn } from "@/lib/utils";
 import { isActivePath, navigationFor, type NavIcon } from "@/domain/workspace/navigation";
 import { pathBelongsTo, workspaceHome, type Workspace } from "@/domain/workspace/workspace";
+import { useAnalyticsStore } from "@/stores/use-analytics-store";
+import { useBookingsStore } from "@/stores/use-bookings-store";
+import { useListingsStore } from "@/stores/use-listings-store";
+import { useDashboardStore } from "@/stores/use-dashboard-store";
+import { Photo } from "./photo";
+import { DashboardIcon } from "./dashboard-icon";
 import { BrandMark } from "./brand";
 import { SignIn } from "./sign-in";
 import { AgentSetupCard } from "./agent-setup";
@@ -64,18 +70,21 @@ function timeAgo(iso: string) {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
-function useBadgeCounts() {
+function useBadgeCounts(workspace: Workspace) {
+  const messageScope = useMessagesStore(s => s.scope);
+  const engagementScope = useEngagementStore(s => s.scope);
+  const matches = (scope: typeof messageScope) => workspace.kind === "OWNER" ? scope?.kind === "OWNER" && scope.organizationId === workspace.organizationId : scope?.kind === "AGENT" && scope.agentId === workspace.agentId;
   const messages = useMessagesStore((s) => s.unreadTotal);
   const inquiries = useEngagementStore((s) => s.inquiries.filter((i) => i.status === "NEW").length);
   const viewings = useEngagementStore((s) => s.viewings.filter((v) => v.status === "REQUESTED").length);
-  return { messages, inquiries, viewings };
+  return { messages: matches(messageScope) ? messages : 0, inquiries: matches(engagementScope) ? inquiries : 0, viewings: matches(engagementScope) ? viewings : 0 };
 }
 
 function NavLinks({ workspace, onNavigate }: { workspace: Workspace; onNavigate?: () => void }) {
   const pathname = usePathname();
-  const counts = useBadgeCounts();
+  const counts = useBadgeCounts(workspace);
   return (
-    <nav aria-label="Main" className="flex flex-col gap-0.5">
+    <nav aria-label="Main" className={workspace.kind === "OWNER" ? "owner-navigation" : "flex flex-col gap-0.5"}>
       {navigationFor(workspace).map(({ href, label, icon, badge }) => {
         const Icon = ICONS[icon];
         const active = isActivePath(pathname, href);
@@ -91,7 +100,7 @@ function NavLinks({ workspace, onNavigate }: { workspace: Workspace; onNavigate?
               active ? "bg-surface-secondary text-foreground" : "text-muted hover:bg-surface-secondary/70 hover:text-foreground",
             )}
           >
-            <Icon className="size-[18px]" aria-hidden />
+            <>{workspace.kind === "OWNER" ? <DashboardIcon name={icon} className="size-6 shrink-0" /> : <Icon className="size-[18px]" aria-hidden />}</>
             <span className="flex-1">{label}</span>
             {count > 0 ? (
               <span className="tabular rounded-full bg-foreground px-1.5 py-0.5 text-[11px] font-semibold text-white" aria-label={`${count} need attention`}>
@@ -105,7 +114,7 @@ function NavLinks({ workspace, onNavigate }: { workspace: Workspace; onNavigate?
   );
 }
 
-function NotificationsButton() {
+export function NotificationsButton() {
   const router = useRouter();
   const { items, unreadCount, open, setOpen, markAllRead } = useNotificationsStore();
   return (
@@ -172,6 +181,7 @@ function WorkspaceSwitcher({ workspace }: { workspace: Workspace }) {
     <label className="relative min-w-0 flex-1">
       <span className="sr-only">Workspace</span>
       <select
+        aria-label="Workspace"
         value={workspace.key}
         onChange={(event) => {
           const next = workspaces.find((w) => w.key === event.target.value);
@@ -183,7 +193,7 @@ function WorkspaceSwitcher({ workspace }: { workspace: Workspace }) {
       >
         {workspaces.map((w) => (
           <option key={w.key} value={w.key}>
-            {w.kind === "AGENT" ? `Agent · ${w.title}` : `Owner · ${w.title}`}
+            {w.kind === "AGENT" ? `Agent · ${w.title}` : w.title}
           </option>
         ))}
       </select>
@@ -196,7 +206,6 @@ function WorkspaceSwitcher({ workspace }: { workspace: Workspace }) {
 function LiveSubscriptions({ workspace }: { workspace: Workspace }) {
   const pathname = usePathname();
   const router = useRouter();
-  const scope = useSessionStore((s) => s.scope);
   const userId = useSessionStore((s) => s.user?.id ?? null);
   const startMessages = useMessagesStore((s) => s.start);
   const stopMessages = useMessagesStore((s) => s.stop);
@@ -212,6 +221,7 @@ function LiveSubscriptions({ workspace }: { workspace: Workspace }) {
   const messagesPath = workspace.kind === "AGENT" ? "/agent/messages" : "/messages";
 
   React.useEffect(() => {
+    const scope = useSessionStore.getState().scope;
     if (!scope || !userId) return;
     void startMessages(scope);
     void startNotifications(scope, userId);
@@ -220,8 +230,12 @@ function LiveSubscriptions({ workspace }: { workspace: Workspace }) {
       stopMessages();
       stopNotifications();
       stopEngagement();
+      useDashboardStore.getState().reset();
+      useAnalyticsStore.getState().reset();
+      useBookingsStore.getState().reset();
+      useListingsStore.getState().reset();
     };
-  }, [scope, userId, startMessages, stopMessages, startNotifications, stopNotifications, startEngagement, stopEngagement]);
+  }, [workspace.key, userId, startMessages, stopMessages, startNotifications, stopNotifications, startEngagement, stopEngagement]);
 
   React.useEffect(() => {
     if (!lastIncoming || seen.current === lastIncoming.id) return;
@@ -336,9 +350,30 @@ function NoWorkspace() {
 export function OwnerShell({ children }: { children: React.ReactNode }) {
   const { status, user, error, workspaces, activeWorkspace, initialize, signOut, mobileDrawerOpen, setMobileDrawerOpen } = useSessionStore();
 
+  const dashboardOrganizationId = useDashboardStore(s => s.organizationId);
+  const dashboardListings = useDashboardStore(s => s.listings);
+
   React.useEffect(() => {
     void initialize();
   }, [initialize]);
+
+  React.useEffect(() => {
+    if (!mobileDrawerOpen) return;
+    const drawer = document.querySelector<HTMLElement>('.owner-drawer');
+    const focusable = () => Array.from(drawer?.querySelectorAll<HTMLElement>('a[href], button, select') ?? []);
+    const previous = document.activeElement as HTMLElement | null;
+    focusable()[0]?.focus();
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { setMobileDrawerOpen(false); return; }
+      if (event.key !== 'Tab') return;
+      const items = focusable();
+      const first = items[0], last = items.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    document.addEventListener('keydown', keydown);
+    return () => { document.removeEventListener('keydown', keydown); previous?.focus(); };
+  }, [mobileDrawerOpen, setMobileDrawerOpen]);
 
   if (status === "loading") {
     return (
@@ -364,23 +399,29 @@ export function OwnerShell({ children }: { children: React.ReactNode }) {
   if (workspaces.length === 0) return <NoWorkspace />;
   if (!activeWorkspace) return <WorkspaceChooser />;
   const workspace = activeWorkspace;
+  const owner = workspace.kind === "OWNER";
+  const workspacePhoto = owner && dashboardOrganizationId === workspace.organizationId ? dashboardListings.find(item => item.photos.length > 0)?.photos[0] : null;
 
   const sidebar = (
-    <div className="flex h-full flex-col gap-4 p-4">
+    <div className={owner ? "owner-sidebar-content" : "flex h-full flex-col gap-4 p-4"}>
       <Link href={workspaceHome(workspace)} className="focusable flex items-center gap-2.5 rounded-xl px-1 py-1" aria-label="Partner Portal home">
-        <BrandMark className="size-9" />
+        <BrandMark className={owner ? "size-[54px]" : "size-9"} />
         <div>
-          <p className="text-[14px] font-bold tracking-tight">Westayplace</p>
-          <p className="text-[11.5px] text-muted">Partner Portal</p>
+          <p className={owner ? "owner-wordmark" : "text-[14px] font-bold tracking-tight"}>{owner ? "WeStayPlace" : "Westayplace"}</p>
+          <p className={owner ? "owner-brand-subtitle" : "text-[11.5px] text-muted"}>Partner Portal</p>
         </div>
       </Link>
-      <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-3 py-2.5">
+      <div className={owner ? "owner-workspace-selector" : "flex items-center gap-3 rounded-2xl border border-border bg-surface px-3 py-2.5"}>
+        {owner ? <span className="owner-workspace-image">{workspacePhoto ? <Photo src={workspacePhoto} alt="" className="size-full" sizes="52px" /> : <Building2 size={24} aria-hidden />}</span> : null}
         <WorkspaceSwitcher workspace={workspace} />
       </div>
       <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1">
         <NavLinks workspace={workspace} onNavigate={() => setMobileDrawerOpen(false)} />
       </div>
-      <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-3 py-2.5">
+      {owner ? <Link href="/account" className="owner-profile focusable">
+        <span className="owner-profile-avatar" aria-hidden>{user.displayName.trim().slice(0, 1).toUpperCase() || "O"}</span>
+        <span className="min-w-0"><strong>{user.displayName}</strong><span>{user.email}</span></span>
+      </Link> : <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-3 py-2.5">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-foreground text-[12px] font-semibold text-white" aria-hidden>
           {user.displayName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "O"}
         </div>
@@ -395,18 +436,18 @@ export function OwnerShell({ children }: { children: React.ReactNode }) {
         >
           <LogOut className="size-4" aria-hidden />
         </button>
-      </div>
+      </div>}
     </div>
   );
 
   return (
-    <div className="flex min-h-dvh bg-background text-foreground">
+    <div className={cn("flex min-h-dvh bg-background text-foreground", owner && "owner-workspace")}>
       <LiveSubscriptions workspace={workspace} />
-      <aside className="sticky top-0 hidden h-dvh w-[264px] shrink-0 border-r border-border bg-background lg:block">{sidebar}</aside>
+      <aside className={cn("sticky top-0 hidden h-dvh w-[264px] shrink-0 border-r border-border bg-background lg:block", owner && "owner-sidebar")}>{sidebar}</aside>
       {mobileDrawerOpen ? (
         <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation">
           <div className="absolute inset-0 bg-black/30" onClick={() => setMobileDrawerOpen(false)} />
-          <div className="absolute inset-y-0 left-0 w-[280px] bg-background shadow-2xl">{sidebar}</div>
+          <div className="owner-drawer absolute inset-y-0 left-0 w-[280px] bg-background shadow-2xl">{sidebar}</div>
         </div>
       ) : null}
       <div className="flex min-w-0 flex-1 flex-col">

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 import { Building2, ImageOff, Plus, Rotate3d, Search } from "lucide-react";
 
 import { Page, TopBar } from "@/components/owner/shell";
@@ -52,18 +53,21 @@ const actionCopy: Record<ListingAction, { label: string; title: string; body: st
   },
 };
 
-export default function PropertiesPage() {
+function Properties() {
+  const search = useSearchParams();
+  const requestedState = search.get("state");
   const organizationId = useSessionStore((s) => s.activeOrganizationId);
   const {
-    listings,
-    loading,
-    loaded,
-    error,
+    listings: storedListings,
+    organizationId: loadedOrganizationId,
+    loading: storeLoading,
+    loaded: storeLoaded,
+    error: storedError,
     filter,
     query,
     busyId,
-    pending,
-    actionError,
+    pending: storedPending,
+    actionError: storedActionError,
     load,
     setFilter,
     setQuery,
@@ -71,10 +75,21 @@ export default function PropertiesPage() {
     cancelConfirm,
     runAction,
   } = useListingsStore();
+  const matches = loadedOrganizationId === organizationId;
+  const listings = matches ? storedListings : [];
+  const loading = !matches || storeLoading;
+  const loaded = matches && storeLoaded;
+  const error = matches ? storedError : null;
+  const pending = matches ? storedPending : null;
+  const actionError = matches ? storedActionError : null;
 
   useEffect(() => {
     if (organizationId) void load(organizationId);
   }, [organizationId, load]);
+
+  useEffect(() => {
+    setFilter(requestedState === "PUBLISHED" ? "PUBLISHED" : "ALL");
+  }, [requestedState, setFilter]);
 
   const text = query.trim().toLowerCase();
   const visible = listings.filter(
@@ -217,3 +232,5 @@ export default function PropertiesPage() {
     </Page>
   );
 }
+
+export default function PropertiesPage() { return <Suspense fallback={null}><Properties /></Suspense>; }

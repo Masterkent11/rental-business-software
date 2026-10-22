@@ -1,5 +1,8 @@
 "use client";
 
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+
 import { CalendarClock, MessageSquare } from "lucide-react";
 
 import { Page, TopBar } from "@/components/owner/shell";
@@ -164,29 +167,34 @@ function ViewingRow({ viewing, messagesPath, agent }: { viewing: Viewing; messag
   );
 }
 
-export function ViewingSchedule() {
+function ViewingScheduleContent() {
+  const search = useSearchParams();
   const scope = useSessionStore((s) => s.scope);
   const { viewings, viewingsLoaded, viewingsError, viewingFilter, now, setViewingFilter, loadViewings } = useEngagementStore();
   if (!scope) return null;
   const agent = scope.kind === "AGENT";
   const messagesPath = agent ? "/agent/messages" : "/messages";
   const today = dayKey(new Date(now).toISOString());
-  const filtered = viewings.filter((v) => (viewingFilter === "upcoming" ? isUpcoming(v, now) : !isUpcoming(v, now)));
+  const requestedOnly = !agent && search.get("status") === "REQUESTED";
+  const filtered = viewings.filter((v) => requestedOnly ? v.status === "REQUESTED" : viewingFilter === "upcoming" ? isUpcoming(v, now) : !isUpcoming(v, now));
   const days = viewingFilter === "upcoming" ? groupByDay(filtered) : groupByDay(filtered).reverse();
   const pending = viewings.filter((v) => v.status === "REQUESTED").length;
 
   return (
     <Page>
-      <TopBar title="Viewings" caption={pending > 0 ? `${pending} request${pending === 1 ? "" : "s"} waiting for your confirmation.` : "Property visits requested from the customer app."}>
-        <SegmentedTabs<"upcoming" | "past">
-          label="Show"
-          value={viewingFilter}
-          onChange={setViewingFilter}
-          options={[
-            { value: "upcoming", label: "Upcoming" },
-            { value: "past", label: "Past & cancelled" },
-          ]}
-        />
+      {requestedOnly ? <LinkBtn href="/viewings" variant="outline" className="mb-3">All viewings</LinkBtn> : null}
+      <TopBar title={requestedOnly ? "Viewing requests" : "Viewings"} caption={pending > 0 ? `${pending} request${pending === 1 ? "" : "s"} waiting for your confirmation.` : "Property visits requested from the customer app."}>
+        {!requestedOnly ? (
+          <SegmentedTabs<"upcoming" | "past">
+            label="Show"
+            value={viewingFilter}
+            onChange={setViewingFilter}
+            options={[
+              { value: "upcoming", label: "Upcoming" },
+              { value: "past", label: "Past & cancelled" },
+            ]}
+          />
+        ) : null}
       </TopBar>
       {!viewingsLoaded ? (
         <Card>
@@ -226,3 +234,5 @@ export function ViewingSchedule() {
     </Page>
   );
 }
+
+export function ViewingSchedule() { return <Suspense fallback={null}><ViewingScheduleContent /></Suspense>; }

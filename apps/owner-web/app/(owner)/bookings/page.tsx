@@ -29,7 +29,12 @@ const bucketTone = (bucket: OwnerBooking["bucket"]) =>
   bucket === "UPCOMING" ? "info" : bucket === "CURRENT" ? "ok" : bucket === "PENDING_PAYMENT" ? "pending" : bucket === "CANCELLED" ? "bad" : "neutral";
 
 function BookingDetail({ organizationId, onClose }: { organizationId: string; onClose: () => void }) {
-  const { selected, selectedLoading, selectedError, actionBusy, actionError, act } = useBookingsStore();
+  const { selected: storedSelected, organizationId: loadedOrganizationId, selectedLoading,
+    selectedError: storedError, actionBusy, actionError: storedActionError, act } = useBookingsStore();
+  const matches = loadedOrganizationId === organizationId;
+  const selected = matches ? storedSelected : null;
+  const selectedError = matches ? storedError : null;
+  const actionError = matches ? storedActionError : null;
   return (
     <aside className="fixed inset-y-0 right-0 z-40 flex w-full max-w-md flex-col border-l border-border bg-surface shadow-2xl" aria-label="Booking details">
       <div className="flex items-center justify-between border-b border-border px-5 py-4">
@@ -108,9 +113,17 @@ function Bookings() {
   const router = useRouter();
   const search = useSearchParams();
   const organizationId = useSessionStore((s) => s.activeOrganizationId);
-  const { items, total, bucket, query, page, loading, loaded, error, load, setBucket, setQuery, search: runSearch, goToPage, select } =
-    useBookingsStore();
+  const { items: storedItems, total: storedTotal, organizationId: loadedOrganizationId,
+    bucket, query, page, loading: storeLoading, loaded: storeLoaded, error: storedError,
+    load, setBucket, setQuery, search: runSearch, goToPage, select } = useBookingsStore();
+  const matches = loadedOrganizationId === organizationId;
+  const items = matches ? storedItems : [];
+  const total = matches ? storedTotal : 0;
+  const loading = !matches || storeLoading;
+  const loaded = matches && storeLoaded;
+  const error = matches ? storedError : null;
   const selectedId = search.get("b");
+  const requestedBucket = search.get("bucket");
   const latest = useNotificationsStore((s) => s.latest);
 
   useEffect(() => {
@@ -120,8 +133,11 @@ function Bookings() {
   }, [latest, organizationId, load]);
 
   useEffect(() => {
-    if (organizationId) void load(organizationId);
-  }, [organizationId, load]);
+    if (!organizationId) return;
+    const desired = requestedBucket === "UPCOMING" ? "UPCOMING" : "ALL";
+    if (useBookingsStore.getState().bucket !== desired) void setBucket(organizationId, desired);
+    else void load(organizationId);
+  }, [organizationId, requestedBucket, load, setBucket]);
 
   useEffect(() => {
     if (organizationId) void select(organizationId, selectedId);

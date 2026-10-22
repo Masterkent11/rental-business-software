@@ -10,6 +10,7 @@ interface PendingAction {
 }
 
 interface ListingsState {
+  organizationId: string | null;
   listings: readonly OwnerListing[];
   loading: boolean;
   loaded: boolean;
@@ -20,6 +21,7 @@ interface ListingsState {
   pending: PendingAction | null;
   actionError: string | null;
 
+  reset: () => void;
   load: (organizationId: string) => Promise<void>;
   setFilter: (filter: ListingFilter) => void;
   setQuery: (query: string) => void;
@@ -29,7 +31,11 @@ interface ListingsState {
   replace: (listing: OwnerListing) => void;
 }
 
+let request = 0;
+let actionRequest = 0;
+
 export const useListingsStore = create<ListingsState>((set, get) => ({
+  organizationId: null,
   listings: [],
   loading: false,
   loaded: false,
@@ -40,12 +46,26 @@ export const useListingsStore = create<ListingsState>((set, get) => ({
   pending: null,
   actionError: null,
 
+  reset: () => {
+    ++request;
+    ++actionRequest;
+    set({ organizationId: null, listings: [], loading: false, loaded: false, error: null,
+      filter: "ALL", query: "", busyId: null, pending: null, actionError: null });
+  },
   load: async (organizationId) => {
-    set({ loading: true, error: null });
+    if (get().organizationId !== organizationId) {
+      const filter = get().filter;
+      get().reset();
+      set({ filter });
+    }
+    const version = ++request;
+    set({ organizationId, loading: true, error: null });
     try {
       const listings = await container.loadListingsUseCase.execute(organizationId);
+      if (version !== request || get().organizationId !== organizationId) return;
       set({ listings, loading: false, loaded: true });
     } catch (error) {
+      if (version !== request || get().organizationId !== organizationId) return;
       set({ loading: false, error: error instanceof Error ? error.message : "Could not load your properties" });
     }
   },
@@ -56,13 +76,17 @@ export const useListingsStore = create<ListingsState>((set, get) => ({
   cancelConfirm: () => set({ pending: null, actionError: null }),
 
   runAction: async (organizationId, listing, action) => {
+    if (get().organizationId !== organizationId) return false;
+    const version = ++actionRequest;
     set({ busyId: listing.id, actionError: null });
     try {
       const updated = await container.changeListingStateUseCase.execute(organizationId, listing.id, action);
+      if (version !== actionRequest || get().organizationId !== organizationId) return false;
       get().replace(updated);
       set({ busyId: null, pending: null });
       return true;
     } catch (error) {
+      if (version !== actionRequest || get().organizationId !== organizationId) return false;
       set({ busyId: null, actionError: error instanceof Error ? error.message : "That change didn't go through" });
       return false;
     }
