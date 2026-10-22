@@ -176,7 +176,8 @@ function ViewingScheduleContent() {
   const messagesPath = agent ? "/agent/messages" : "/messages";
   const today = dayKey(new Date(now).toISOString());
   const requestedOnly = !agent && search.get("status") === "REQUESTED";
-  const filtered = viewings.filter((v) => requestedOnly ? v.status === "REQUESTED" : viewingFilter === "upcoming" ? isUpcoming(v, now) : !isUpcoming(v, now));
+  const listingId = search.get("listingId");
+  const filtered = viewings.filter(v => !listingId || v.listingId === listingId).filter((v) => requestedOnly ? v.status === "REQUESTED" : viewingFilter === "upcoming" ? isUpcoming(v, now) : !isUpcoming(v, now));
   const days = viewingFilter === "upcoming" ? groupByDay(filtered) : groupByDay(filtered).reverse();
   const pending = viewings.filter((v) => v.status === "REQUESTED").length;
 

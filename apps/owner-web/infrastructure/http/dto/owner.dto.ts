@@ -26,6 +26,7 @@ export const PermissionsDtoSchema = z.object({
 });
 
 const OwnerListingBase = z.object({
+  activity: z.object({ views: z.number().int().nonnegative(), inquiries: z.number().int().nonnegative(), viewings: z.number().int().nonnegative() }).nullable().default(null),
   id: z.string(),
   resourceId: z.string(),
   propertyId: z.string().nullable().default(null),

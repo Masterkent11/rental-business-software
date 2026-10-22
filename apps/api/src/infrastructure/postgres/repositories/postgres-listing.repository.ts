@@ -482,7 +482,15 @@ export const postgresListingRepository = (): ListingRepository => ({
           and l.state <> 'ARCHIVED'
         order by l.updated_at desc, l.created_at desc
       `;
-      return rows.map(toListing);
+      const activity = await tx<{ id: string; views: number; inquiries: number; viewings: number }[]>`
+        select l.id,
+          (select count(*)::int from listing_view_events e where e.listing_id = l.id) as views,
+          (select count(*)::int from inquiries i where i.listing_id = l.id and i.organization_id = ${organizationId}) as inquiries,
+          (select count(*)::int from viewings v where v.listing_id = l.id and v.organization_id = ${organizationId}) as viewings
+        from listings l where l.organization_id = ${organizationId} and l.state <> 'ARCHIVED'
+      `;
+      const byId = new Map(activity.map(({ id, ...counts }) => [id, counts]));
+      return rows.map(row => ({ ...toListing(row), activity: byId.get(row.id)! }));
     });
   },
 

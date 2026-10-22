@@ -1,3 +1,4 @@
+import postgres from 'postgres';
 import { afterAll, describe, expect, it } from 'vitest';
 import { postgresListingRepository } from '@/infrastructure/postgres/repositories/postgres-listing.repository.ts';
 import { sql, withScope } from '@/infrastructure/postgres/db.ts';
@@ -25,6 +26,31 @@ suite('listings against real PostgreSQL', { timeout: 30_000 }, () => {
 
   afterAll(async () => {
     await sql.end({ timeout: 5 });
+  });
+
+  it('returns real owner activity and isolates view-event reads by organization', async () => {
+    const admin = postgres(process.env.TEST_ADMIN_DATABASE_URL!);
+    const organizationId = '11111111-1111-1111-1111-111111111111';
+    const otherOrganizationId = '33333333-3333-3333-3333-333333333333';
+    const [listing] = await repo.forOrganization(organizationId);
+    expect(listing).toBeDefined();
+    const [user] = await admin<{ id: string }[]>`select id from user_profiles limit 1`;
+    const [event] = await admin<{ id: string }[]>`insert into listing_view_events(user_id, listing_id) values (${user!.id}, ${listing!.id}) returning id::text`;
+    try {
+      const own = await withScope(organizationId, tx => tx`select id from listing_view_events where id = ${event!.id}`);
+      const other = await withScope(otherOrganizationId, tx => tx`select id from listing_view_events where id = ${event!.id}`);
+      const publicRows = await withScope(null, tx => tx`select id from listing_view_events where id = ${event!.id}`);
+      expect(own).toHaveLength(1);
+      expect(other).toHaveLength(0);
+      expect(publicRows).toHaveLength(0);
+      const refreshed = (await repo.forOrganization(organizationId)).find(row => row.id === listing!.id)!;
+      expect(refreshed.activity!.views).toBeGreaterThanOrEqual(1);
+      expect(refreshed.activity!.inquiries).toBeGreaterThanOrEqual(0);
+      expect(refreshed.activity!.viewings).toBeGreaterThanOrEqual(0);
+    } finally {
+      await admin`delete from listing_view_events where id = ${event!.id}`;
+      await admin.end();
+    }
   });
 
   it('returns only published listings', async () => {

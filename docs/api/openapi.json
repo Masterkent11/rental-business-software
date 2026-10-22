@@ -41973,6 +41973,32 @@
                         "type": "string"
                       }
                     },
+                    "activity": {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "views": {
+                              "type": "number"
+                            },
+                            "inquiries": {
+                              "type": "number"
+                            },
+                            "viewings": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "views",
+                            "inquiries",
+                            "viewings"
+                          ]
+                        }
+                      ]
+                    },
                     "exactLocation": {
                       "anyOf": [
                         {
@@ -42664,6 +42690,7 @@
                   "required": [
                     "organizationId",
                     "permissions",
+                    "activity",
                     "exactLocation",
                     "floorPlanMedia",
                     "state",
@@ -42728,6 +42755,11 @@
                     "canEditListing": false,
                     "canManageTour": false,
                     "canViewCommercial": false
+                  },
+                  "activity": {
+                    "views": 1,
+                    "inquiries": 1,
+                    "viewings": 1
                   },
                   "exactLocation": {
                     "latitude": 1,
@@ -43472,6 +43504,32 @@
                         "type": "string"
                       }
                     },
+                    "activity": {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "views": {
+                              "type": "number"
+                            },
+                            "inquiries": {
+                              "type": "number"
+                            },
+                            "viewings": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "views",
+                            "inquiries",
+                            "viewings"
+                          ]
+                        }
+                      ]
+                    },
                     "exactLocation": {
                       "anyOf": [
                         {
@@ -44164,6 +44222,7 @@
                     "pendingChangeProposal",
                     "organizationId",
                     "permissions",
+                    "activity",
                     "exactLocation",
                     "floorPlanMedia",
                     "state",
@@ -44242,6 +44301,11 @@
                     "canEditListing": false,
                     "canManageTour": false,
                     "canViewCommercial": false
+                  },
+                  "activity": {
+                    "views": 1,
+                    "inquiries": 1,
+                    "viewings": 1
                   },
                   "exactLocation": {
                     "latitude": 1,
@@ -46408,6 +46472,32 @@
                         "type": "string"
                       }
                     },
+                    "activity": {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "views": {
+                              "type": "number"
+                            },
+                            "inquiries": {
+                              "type": "number"
+                            },
+                            "viewings": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "views",
+                            "inquiries",
+                            "viewings"
+                          ]
+                        }
+                      ]
+                    },
                     "exactLocation": {
                       "anyOf": [
                         {
@@ -47099,6 +47189,7 @@
                   "required": [
                     "organizationId",
                     "permissions",
+                    "activity",
                     "exactLocation",
                     "floorPlanMedia",
                     "state",
@@ -47163,6 +47254,11 @@
                     "canEditListing": false,
                     "canManageTour": false,
                     "canViewCommercial": false
+                  },
+                  "activity": {
+                    "views": 1,
+                    "inquiries": 1,
+                    "viewings": 1
                   },
                   "exactLocation": {
                     "latitude": 1,
@@ -48702,6 +48798,32 @@
                               "type": "string"
                             }
                           },
+                          "activity": {
+                            "anyOf": [
+                              {
+                                "type": "null"
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "views": {
+                                    "type": "number"
+                                  },
+                                  "inquiries": {
+                                    "type": "number"
+                                  },
+                                  "viewings": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "views",
+                                  "inquiries",
+                                  "viewings"
+                                ]
+                              }
+                            ]
+                          },
                           "exactLocation": {
                             "anyOf": [
                               {
@@ -49391,6 +49513,7 @@
                           }
                         },
                         "required": [
+                          "activity",
                           "exactLocation",
                           "floorPlanMedia",
                           "state",
@@ -49952,6 +50075,32 @@
                         "type": "string"
                       }
                     },
+                    "activity": {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "views": {
+                              "type": "number"
+                            },
+                            "inquiries": {
+                              "type": "number"
+                            },
+                            "viewings": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "views",
+                            "inquiries",
+                            "viewings"
+                          ]
+                        }
+                      ]
+                    },
                     "exactLocation": {
                       "anyOf": [
                         {
@@ -50641,6 +50790,7 @@
                     }
                   },
                   "required": [
+                    "activity",
                     "exactLocation",
                     "floorPlanMedia",
                     "state",
@@ -50700,6 +50850,11 @@
                   ]
                 },
                 "example": {
+                  "activity": {
+                    "views": 1,
+                    "inquiries": 1,
+                    "viewings": 1
+                  },
                   "exactLocation": {
                     "latitude": 1,
                     "longitude": 1,
@@ -51137,6 +51292,32 @@
                         "type": "string"
                       }
                     },
+                    "activity": {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "views": {
+                              "type": "number"
+                            },
+                            "inquiries": {
+                              "type": "number"
+                            },
+                            "viewings": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "views",
+                            "inquiries",
+                            "viewings"
+                          ]
+                        }
+                      ]
+                    },
                     "exactLocation": {
                       "anyOf": [
                         {
@@ -51826,6 +52007,7 @@
                     }
                   },
                   "required": [
+                    "activity",
                     "exactLocation",
                     "floorPlanMedia",
                     "state",
@@ -51885,6 +52067,11 @@
                   ]
                 },
                 "example": {
+                  "activity": {
+                    "views": 1,
+                    "inquiries": 1,
+                    "viewings": 1
+                  },
                   "exactLocation": {
                     "latitude": 1,
                     "longitude": 1,
@@ -52570,6 +52757,32 @@
                         "type": "string"
                       }
                     },
+                    "activity": {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "views": {
+                              "type": "number"
+                            },
+                            "inquiries": {
+                              "type": "number"
+                            },
+                            "viewings": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "views",
+                            "inquiries",
+                            "viewings"
+                          ]
+                        }
+                      ]
+                    },
                     "exactLocation": {
                       "anyOf": [
                         {
@@ -53259,6 +53472,7 @@
                     }
                   },
                   "required": [
+                    "activity",
                     "exactLocation",
                     "floorPlanMedia",
                     "state",
@@ -53318,6 +53532,11 @@
                   ]
                 },
                 "example": {
+                  "activity": {
+                    "views": 1,
+                    "inquiries": 1,
+                    "viewings": 1
+                  },
                   "exactLocation": {
                     "latitude": 1,
                     "longitude": 1,
@@ -54891,6 +55110,32 @@
                         "type": "string"
                       }
                     },
+                    "activity": {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "views": {
+                              "type": "number"
+                            },
+                            "inquiries": {
+                              "type": "number"
+                            },
+                            "viewings": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "views",
+                            "inquiries",
+                            "viewings"
+                          ]
+                        }
+                      ]
+                    },
                     "exactLocation": {
                       "anyOf": [
                         {
@@ -55580,6 +55825,7 @@
                     }
                   },
                   "required": [
+                    "activity",
                     "exactLocation",
                     "floorPlanMedia",
                     "state",
@@ -55639,6 +55885,11 @@
                   ]
                 },
                 "example": {
+                  "activity": {
+                    "views": 1,
+                    "inquiries": 1,
+                    "viewings": 1
+                  },
                   "exactLocation": {
                     "latitude": 1,
                     "longitude": 1,
@@ -56904,6 +57155,32 @@
                         "type": "string"
                       }
                     },
+                    "activity": {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "views": {
+                              "type": "number"
+                            },
+                            "inquiries": {
+                              "type": "number"
+                            },
+                            "viewings": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "views",
+                            "inquiries",
+                            "viewings"
+                          ]
+                        }
+                      ]
+                    },
                     "exactLocation": {
                       "anyOf": [
                         {
@@ -57593,6 +57870,7 @@
                     }
                   },
                   "required": [
+                    "activity",
                     "exactLocation",
                     "floorPlanMedia",
                     "state",
@@ -57652,6 +57930,11 @@
                   ]
                 },
                 "example": {
+                  "activity": {
+                    "views": 1,
+                    "inquiries": 1,
+                    "viewings": 1
+                  },
                   "exactLocation": {
                     "latitude": 1,
                     "longitude": 1,
@@ -58108,6 +58391,32 @@
                         "type": "string"
                       }
                     },
+                    "activity": {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "views": {
+                              "type": "number"
+                            },
+                            "inquiries": {
+                              "type": "number"
+                            },
+                            "viewings": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "views",
+                            "inquiries",
+                            "viewings"
+                          ]
+                        }
+                      ]
+                    },
                     "exactLocation": {
                       "anyOf": [
                         {
@@ -58797,6 +59106,7 @@
                     }
                   },
                   "required": [
+                    "activity",
                     "exactLocation",
                     "floorPlanMedia",
                     "state",
@@ -58856,6 +59166,11 @@
                   ]
                 },
                 "example": {
+                  "activity": {
+                    "views": 1,
+                    "inquiries": 1,
+                    "viewings": 1
+                  },
                   "exactLocation": {
                     "latitude": 1,
                     "longitude": 1,
@@ -59309,6 +59624,32 @@
                         "type": "string"
                       }
                     },
+                    "activity": {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "views": {
+                              "type": "number"
+                            },
+                            "inquiries": {
+                              "type": "number"
+                            },
+                            "viewings": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "views",
+                            "inquiries",
+                            "viewings"
+                          ]
+                        }
+                      ]
+                    },
                     "exactLocation": {
                       "anyOf": [
                         {
@@ -59998,6 +60339,7 @@
                     }
                   },
                   "required": [
+                    "activity",
                     "exactLocation",
                     "floorPlanMedia",
                     "state",
@@ -60057,6 +60399,11 @@
                   ]
                 },
                 "example": {
+                  "activity": {
+                    "views": 1,
+                    "inquiries": 1,
+                    "viewings": 1
+                  },
                   "exactLocation": {
                     "latitude": 1,
                     "longitude": 1,
@@ -62955,6 +63302,32 @@
                         "type": "string"
                       }
                     },
+                    "activity": {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "views": {
+                              "type": "number"
+                            },
+                            "inquiries": {
+                              "type": "number"
+                            },
+                            "viewings": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "views",
+                            "inquiries",
+                            "viewings"
+                          ]
+                        }
+                      ]
+                    },
                     "exactLocation": {
                       "anyOf": [
                         {
@@ -63644,6 +64017,7 @@
                     }
                   },
                   "required": [
+                    "activity",
                     "exactLocation",
                     "floorPlanMedia",
                     "state",
@@ -63703,6 +64077,11 @@
                   ]
                 },
                 "example": {
+                  "activity": {
+                    "views": 1,
+                    "inquiries": 1,
+                    "viewings": 1
+                  },
                   "exactLocation": {
                     "latitude": 1,
                     "longitude": 1,
@@ -64320,6 +64699,32 @@
                         "type": "string"
                       }
                     },
+                    "activity": {
+                      "anyOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "views": {
+                              "type": "number"
+                            },
+                            "inquiries": {
+                              "type": "number"
+                            },
+                            "viewings": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "views",
+                            "inquiries",
+                            "viewings"
+                          ]
+                        }
+                      ]
+                    },
                     "exactLocation": {
                       "anyOf": [
                         {
@@ -65009,6 +65414,7 @@
                     }
                   },
                   "required": [
+                    "activity",
                     "exactLocation",
                     "floorPlanMedia",
                     "state",
@@ -65068,6 +65474,11 @@
                   ]
                 },
                 "example": {
+                  "activity": {
+                    "views": 1,
+                    "inquiries": 1,
+                    "viewings": 1
+                  },
                   "exactLocation": {
                     "latitude": 1,
                     "longitude": 1,

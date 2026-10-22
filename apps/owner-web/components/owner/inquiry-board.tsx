@@ -165,8 +165,10 @@ function InquiryBoardContent() {
   const messagesPath = agent ? "/agent/messages" : "/messages";
   const newOnly = !agent && search.get("status") === "NEW";
   const inquiries = newOnly ? allInquiries.filter(item => item.status === "NEW") : allInquiries;
-  const groups = groupByStatus(inquiries);
-  const selected = inquiries.find((i) => i.id === selectedInquiryId) ?? null;
+  const listingId = search.get("listingId");
+  const filteredInquiries = listingId ? inquiries.filter(item => item.listingId === listingId) : inquiries;
+  const groups = groupByStatus(filteredInquiries);
+  const selected = filteredInquiries.find((i) => i.id === selectedInquiryId) ?? null;
 
   return (
     <Page wide>
@@ -189,11 +191,11 @@ function InquiryBoardContent() {
         <Card>
           <SkeletonRows rows={5} />
         </Card>
-      ) : inquiriesError && inquiries.length === 0 ? (
+      ) : inquiriesError && filteredInquiries.length === 0 ? (
         <Card>
           <ErrorState message={inquiriesError} onRetry={() => void loadInquiries()} />
         </Card>
-      ) : inquiries.length === 0 ? (
+      ) : filteredInquiries.length === 0 ? (
         <Card>
           <EmptyState
             icon={<Inbox className="size-5" aria-hidden />}
@@ -222,7 +224,7 @@ function InquiryBoardContent() {
           ) : (
             <Card>
               <ul className="divide-y divide-border">
-                {inquiries.map((inquiry) => (
+                {filteredInquiries.map((inquiry) => (
                   <li key={inquiry.id}>
                     <button
                       type="button"
