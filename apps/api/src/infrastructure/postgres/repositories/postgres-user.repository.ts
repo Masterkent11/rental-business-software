@@ -111,29 +111,22 @@ export function postgresUserRepository(): UserRepository {
       // The row may already exist from a concurrent first request, so this is
       // an upsert rather than an insert. Two requests arriving together for a
       // brand-new user is ordinary, not exceptional.
-      const rows = await withUser(id, (tx) =>
-        tx<ProfileRow[]>`
+      return withUser(id, async (tx) => {
+        const rows = await tx<ProfileRow[]>`
           insert into user_profiles (id, email, mobile, display_name)
           values (${id}, ${email}, ${mobile}, ${displayName?.trim() || email?.split('@')[0] || mobile || ''})
           on conflict (id) do update set
-            email  = coalesce(user_profiles.email, excluded.email),
+            email = coalesce(user_profiles.email, excluded.email),
             mobile = coalesce(user_profiles.mobile, excluded.mobile)
           returning id, display_name, email, mobile
-        `,
-      );
-
-      // Registration is what makes CUSTOMER true — D-15's "one account for
-      // life" starts here, and the capability records its own reason so it can
-      // be revoked by cause later.
-      await withUser(id, (tx) =>
-        tx`
+        `;
+        await tx`
           insert into user_capabilities (user_id, capability, source_type)
           values (${id}, 'CUSTOMER', 'REGISTRATION')
           on conflict do nothing
-        `,
-      );
-
-      return toProfile(rows[0]!);
+        `;
+        return toProfile(rows[0]!);
+      });
     },
 
     async capabilitiesFor(userId) {

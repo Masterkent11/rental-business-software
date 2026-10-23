@@ -211,7 +211,7 @@ export interface ListingRepository {
     listingId: string,
     photoIds: readonly string[],
   ): Promise<void>;
-  setListingState(organizationId: string, listingId: string, state: ListingState): Promise<Listing | null>;
+  setListingState(organizationId: string, listingId: string, expected: ListingState, state: ListingState): Promise<Listing | null>;
   isOrganizationVerified(organizationId: string): Promise<boolean>;
   listResources(organizationId: string): Promise<readonly OrganizationResource[]>;
   listProperties(organizationId: string): Promise<readonly OwnerProperty[]>;
@@ -240,3 +240,5 @@ export interface ListingRepository {
   ): Promise<{ readonly storagePath: string | null } | null>;
   findRepresented(agentUserId: string, listingId: string): Promise<Listing | null>;
 }
+
+export type SaleListingWriter = Pick<ListingRepository, 'findById' | 'updateSaleListing'>;

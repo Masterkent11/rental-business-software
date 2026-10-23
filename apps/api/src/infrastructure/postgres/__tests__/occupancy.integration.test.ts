@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { postgresOccupancyRepository } from '@/infrastructure/postgres/repositories/postgres-occupancy.repository.ts';
 import { sql, withScope } from '@/infrastructure/postgres/db.ts';
@@ -97,6 +98,20 @@ suite('occupancy against real PostgreSQL', { timeout: 30_000 }, () => {
 
     expect(result.state).toBe('HELD');
     expect(result.expiresAt).toBeInstanceOf(Date);
+  });
+
+  it('replays concurrent duplicate booking requests without creating a second hold', async () => {
+    const input = { heldBy: GUEST, resourceId: BED, startsOn: '2028-05-01', endsOn: '2028-05-03', guests: 1, clientRef: randomUUID() };
+    const results = await Promise.all([hold(input), hold(input)]);
+    expect(results[0]!.id).toBe(results[1]!.id);
+  });
+
+  it.each(['dates', 'guests'])('rejects reusing a booking request for different %s', async field => {
+    const input = { heldBy: GUEST, resourceId: BED, startsOn: '2028-05-01', endsOn: '2028-05-03', guests: 1, clientRef: randomUUID() };
+    await hold(input);
+    const change = field === 'dates' ? { startsOn: '2028-05-05', endsOn: '2028-05-07' }
+      : { guests: 2 };
+    await expect(hold({ ...input, ...change })).rejects.toBeInstanceOf(OccupancyConflictError);
   });
 
   it('refuses the same nights twice', async () => {

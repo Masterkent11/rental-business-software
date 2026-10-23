@@ -272,6 +272,7 @@ suite('lead assignment: one canonical property, several representing agents', { 
   it('an engaged lead is never silently swapped when its response window lapses', async () => {
     const second = (await viewings.findForCustomer(BUYERS[1], viewingIds[1]!))!;
     const index = agentIndexOf(second.agentId);
+    const stale = (await assignments.activeFor(BUYERS[1], listingId))!;
     await sendAgentMessage(messaging, notifications, clock, assignments, inquiries)({
       principal: agentPrincipal(index),
       conversationId: second.conversationId,
@@ -279,6 +280,9 @@ suite('lead assignment: one canonical property, several representing agents', { 
       clientId: randomUUID(),
     });
     expect((await assignments.activeFor(BUYERS[1], listingId))!.status).toBe('ACCEPTED');
+    await assignments.reassign({ organizationId: SANTOS, current: stale, releaseReason: 'RESPONSE_TIMEOUT',
+      next: null, viewingStatusWithoutAgent: 'MATCHING', notice: null, at: new Date() });
+    expect((await assignments.activeFor(BUYERS[1], listingId))?.status).toBe('ACCEPTED');
   });
 
   it('the SLA sweep silently hands an unanswered request to the next specialist and keeps history', async () => {
@@ -382,4 +386,15 @@ suite('lead assignment: one canonical property, several representing agents', { 
       purpose: 'INQUIRY',
     });
   });
+  it('does not create a lead when its target viewing is no longer matching', async () => {
+    const representation = (await representations.listForAgent(AGENT_USERS[0])).find(rep => rep.listingId === listingId)!;
+    const result = await assignments.attachToViewing(SANTOS, viewingIds[0]!, {
+      organizationId: SANTOS, listingId, customerId: BUYERS[0], representationId: representation.id, agentId: agentIds[0]!,
+      purpose: 'VIEWING', reason: 'BEST_AVAILABLE', score: null, breakdown: null, considered: 3,
+      previousAssignmentId: null, responseDueAt: new Date(Date.now() + HOUR_MS), assignedAt: new Date(),
+    });
+    expect(result).toBeNull();
+    expect(await assignments.activeFor(BUYERS[0], listingId)).toBeNull();
+  });
+
 });

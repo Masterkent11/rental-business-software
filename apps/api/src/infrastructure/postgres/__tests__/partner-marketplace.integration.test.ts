@@ -1,3 +1,4 @@
+import { applySaleListingChanges } from '@/application/listings/sale-listing-changes.rules.ts';
 import { randomUUID } from 'node:crypto';
 import postgres from 'postgres';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -61,6 +62,8 @@ import { TourNotFoundError } from '@/application/ports/repositories/tour-reposit
 import type { ListingMediaStorage } from '@/application/ports/storage/listing-media.port.ts';
 import {
   ListingAlreadyRepresentedError,
+  InvalidRepresentationTransitionError,
+  type Representation,
   RepresentationForbiddenError,
 } from '@/domain/agents/agent.ts';
 import { InquiryNotAllowedError } from '@/domain/inquiries/inquiry.ts';
@@ -165,6 +168,7 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
   let mariaAgentId = '';
   let junAgentId = '';
   let representationId = '';
+  let pendingRepresentation: Representation;
   let inquiryId = '';
   let conversationId = '';
   let viewingId = '';
@@ -362,6 +366,7 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
       terms: { isPrimary: true },
     });
     representationId = rep.id;
+    pendingRepresentation = rep;
     expect(rep.state).toBe('PENDING');
     expect(rep.terms).toMatchObject({ representationType: 'NON_EXCLUSIVE', isPrimary: true, acceptsLeads: true });
 
@@ -417,7 +422,7 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
     expect(edited.listing.parkingSlots).toBe(2);
     expect(edited.listing.description).toContain('covered carport');
     expect(edited.proposal).toMatchObject({ status: 'PENDING', changes: { listing: { parkingSlots: 3 }, property: {} } });
-    const approved = await decideChangeProposal(proposals, listings)({
+    const approved = await decideChangeProposal(proposals)({
       principal: owner(OWNER, SANTOS),
       organizationId: SANTOS,
       proposalId: edited.proposal!.id,
@@ -438,6 +443,31 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
     const profile = await viewPublicAgent(agents, listings, clock)({ agentId: mariaAgentId });
     expect(profile.listings.map((l) => l.id)).toContain(listingId);
     expect(profile.stats.activeListings).toBeGreaterThanOrEqual(1);
+  });
+
+  it('rejects a stale representation response after another request has accepted it', async () => {
+    await expect(representations.respond({ responderUserId: MARIA, representation: pendingRepresentation, accept: false }))
+      .rejects.toBeInstanceOf(InvalidRepresentationTransitionError);
+    expect((await representations.findForAgent(MARIA, representationId))!.state).toBe('ACTIVE');
+  });
+
+  it('rolls back proposed facts with the decision and serializes conflicting owner decisions', async () => {
+    const before = (await listings.findById(SANTOS, listingId))!.parkingSlots!;
+    const proposal = await proposals.propose({ organizationId: SANTOS, listingId, agentUserId: MARIA,
+      changes: { listing: { parkingSlots: before + 1 }, property: {} } });
+    await expect(proposals.decide(SANTOS, proposal.id, 'APPROVED', OWNER, async (pending, boundListings) => {
+      await applySaleListingChanges(boundListings, { organizationId: SANTOS, listingId: pending.listingId,
+        listing: { parkingSlots: before + 1 } });
+      throw new Error('Injected decision failure after fact update');
+    })).rejects.toThrow('Injected decision failure');
+    expect((await listings.findById(SANTOS, listingId))!.parkingSlots).toBe(before);
+    expect((await proposals.findInOrganization(SANTOS, proposal.id))!.status).toBe('PENDING');
+    const decide = decideChangeProposal(proposals);
+    const input = { principal: owner(OWNER, SANTOS), organizationId: SANTOS, proposalId: proposal.id };
+    const outcomes = await Promise.allSettled([decide({ ...input, approve: true }), decide({ ...input, approve: false })]);
+    expect(outcomes.filter(outcome => outcome.status === 'fulfilled')).toHaveLength(1);
+    const final = (await proposals.findInOrganization(SANTOS, proposal.id))!;
+    expect((await listings.findById(SANTOS, listingId))!.parkingSlots).toBe(final.status === 'APPROVED' ? before + 1 : before);
   });
 
   it('a buyer inquires once, privately, and the assigned agent receives the lead', async () => {
@@ -721,4 +751,34 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
     expect(history[1]!.previousAssignmentId).toBe(history[0]!.id);
     expect(await listings.findPublicById(PUBLIC, listingId)).not.toBeNull();
   });
+  it('does not reopen a closed inquiry through a stale reply or pipeline update', async () => {
+    const scope = { organizationId: SANTOS };
+    await inquiries.setStatus(scope, inquiryId, 'CLOSED', null);
+    await inquiries.recordFirstResponse(scope, inquiryId, new Date());
+    expect((await inquiries.findForOrganization(SANTOS, inquiryId))!.status).toBe('CLOSED');
+    await expect(inquiries.setStatus(scope, inquiryId, 'QUALIFIED', null)).rejects.toThrow();
+  });
+
+  it('invalidates pending and verified license reviews when credentials change, preserving suspension', async () => {
+    const userId = randomUUID();
+    await users.createProfile({ id: userId, email: `${userId}@example.test`, mobile: null });
+    const profile = { displayName: 'Credential Test', headline: 'Agent', bio: '', photoUrl: null,
+      licenseNumber: 'LICENSE-A', licenseAuthority: 'Authority A', specialties: [], areasServed: [],
+      languages: [], publicState: 'PUBLIC' as const };
+    const created = await agents.create(userId, profile);
+    await agents.requestVerification(userId);
+    await agents.decideVerification({ adminUserId: ADMIN, agentId: created.id, current: 'PENDING', next: 'VERIFIED', note: 'Reviewed' });
+    expect((await agents.update(userId, { ...profile, bio: 'New marketing copy' })).verificationState).toBe('VERIFIED');
+    const changed = await agents.update(userId, { ...profile, licenseNumber: 'LICENSE-B' });
+    expect(changed.verificationState).toBe('UNVERIFIED');
+    expect(changed.verifiedAt).toBeNull();
+    await agents.requestVerification(userId);
+    await agents.update(userId, { ...profile, licenseNumber: 'LICENSE-B', licenseAuthority: 'Authority B' });
+    expect(await agents.decideVerification({ adminUserId: ADMIN, agentId: created.id, current: 'PENDING', next: 'VERIFIED', note: 'Stale review' })).toBeNull();
+    await agents.requestVerification(userId);
+    await agents.decideVerification({ adminUserId: ADMIN, agentId: created.id, current: 'PENDING', next: 'VERIFIED', note: null });
+    await agents.decideVerification({ adminUserId: ADMIN, agentId: created.id, current: 'VERIFIED', next: 'SUSPENDED', note: 'Suspended' });
+    expect((await agents.update(userId, { ...profile, licenseNumber: 'LICENSE-C' })).verificationState).toBe('SUSPENDED');
+  });
+
 });

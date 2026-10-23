@@ -29,7 +29,7 @@ export const reorderListingPhotos =
 
     const existing = new Set((listing.media ?? []).map((photo) => photo.id));
     const requested = new Set(command.photoIds);
-    if (existing.size !== requested.size || [...requested].some((id) => !existing.has(id))) {
+    if (command.photoIds.length !== existing.size || existing.size !== requested.size || [...requested].some((id) => !existing.has(id))) {
       throw new ListingPhotoRejectedError('The photo order must include every photo exactly once');
     }
 

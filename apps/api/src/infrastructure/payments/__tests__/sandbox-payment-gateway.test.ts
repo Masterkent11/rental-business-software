@@ -1,3 +1,5 @@
+import { unavailablePaymentGateway } from '@/infrastructure/payments/unavailable-payment-gateway.adapter.ts';
+import { PaymentProviderUnavailableError } from '@/application/ports/providers/payment-gateway.port.ts';
 import { describe, expect, it } from 'vitest';
 import { sandboxPaymentGateway, signSandboxWebhook } from '@/infrastructure/payments/sandbox-payment-gateway.adapter.ts';
 import { WebhookVerificationError } from '@/application/ports/providers/payment-gateway.port.ts';
@@ -112,5 +114,29 @@ describe('starting a payment', () => {
     const b = await gateway.startPayment({ amountCentavos: 1 as never, reference: 'x' });
 
     expect(a.providerRef).not.toBe(b.providerRef);
+  });
+});
+
+describe('malformed signed event contracts', () => {
+  it.each(['null', '[]', 'true', '42'])('rejects non-object event %s with a verification error', rawBody => {
+    expect(() => gateway.verifyWebhook({ rawBody, signature: signSandboxWebhook(rawBody, 'test-secret') })).toThrow(WebhookVerificationError);
+  });
+  it.each([{amountCentavos:-1},{amountCentavos:Number.MAX_SAFE_INTEGER+1},{occurredAt:'not-a-date'},{eventId:''},{providerRef:''}])('rejects invalid event fields %j', changes => {
+    const rawBody = body(changes);
+    expect(() => gateway.verifyWebhook({rawBody,signature:signSandboxWebhook(rawBody,'test-secret')})).toThrow(WebhookVerificationError);
+  });
+});
+
+describe('unavailable provider contract', () => {
+  const unavailable = unavailablePaymentGateway();
+  it('rejects starting a payment instead of fabricating an intent', async () => {
+    await expect(unavailable.startPayment({amountCentavos:100 as never,reference:'hold'})).rejects.toBeInstanceOf(PaymentProviderUnavailableError);
+  });
+  it('rejects refunds instead of claiming success', async () => {
+    await expect(unavailable.refund({amountCentavos:100 as never,providerRef:'payment'})).rejects.toBeInstanceOf(PaymentProviderUnavailableError);
+  });
+  it('rejects callbacks and exposes no simulation capability', () => {
+    expect(()=>unavailable.verifyWebhook({rawBody:'{}',signature:undefined})).toThrow(WebhookVerificationError);
+    expect(unavailable.simulateSuccess).toBeUndefined();
   });
 });

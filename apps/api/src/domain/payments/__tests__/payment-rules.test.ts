@@ -17,3 +17,12 @@ describe('stayTotalCentavos', () => {
     expect(() => stayTotalCentavos(centavos(45_000), 0)).toThrow();
   });
 });
+
+describe('stay amount precision', () => {
+  it.each([0.5, Number.NaN, Number.POSITIVE_INFINITY])('rejects invalid night count %s', nights => {
+    expect(() => stayTotalCentavos(centavos(100), nights)).toThrow();
+  });
+  it('rejects a total beyond exact integer precision', () => {
+    expect(() => stayTotalCentavos(centavos(Number.MAX_SAFE_INTEGER), 2)).toThrow();
+  });
+});

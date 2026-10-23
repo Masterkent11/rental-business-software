@@ -1,5 +1,5 @@
 import type {
-  ListingRepository,
+  SaleListingWriter,
   PropertyDetails,
   SaleListingDetails,
 } from '@/application/ports/repositories/listing-repository.port.ts';
@@ -12,7 +12,7 @@ import {
 import { assertCoordinates } from '@/domain/shared/geo.ts';
 
 export async function applySaleListingChanges(
-  listings: ListingRepository,
+  listings: SaleListingWriter,
   input: {
     readonly organizationId: string;
     readonly listingId: string;

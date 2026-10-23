@@ -8,7 +8,7 @@ import {
   deriveState,
   isOutstanding,
 } from '@/domain/collection/collection-rules.ts';
-import type { Centavos } from '@/domain/shared/money.ts';
+import { centavos, type Centavos } from '@/domain/shared/money.ts';
 import { assertMaySeeMoney } from '@/application/identity/application-authorization.rules.ts';
 import type {
   GetOwnerCollectionInput,
@@ -39,10 +39,10 @@ export function getOwnerCollection(invoices: InvoiceRepository) {
       .map((invoice) => ({ ...invoice, state: deriveState(invoice, today) }))
       .filter(isOutstanding);
 
-    const outstandingCentavos = live.reduce(
+    const outstandingCentavos = centavos(live.reduce(
       (sum, invoice) => sum + balanceOf(invoice),
       0,
-    ) as Centavos;
+    ));
 
     return {
       month,
@@ -58,7 +58,7 @@ export function getOwnerCollection(invoices: InvoiceRepository) {
 }
 
 export function offlineShareOf(payments: readonly CollectedPayment[]): number {
-  const total = payments.reduce((sum, p) => sum + p.amountCentavos, 0);
+  const total = centavos(payments.reduce((sum, p) => sum + p.amountCentavos, 0));
   if (total === 0) return 0;
 
   const offline = payments

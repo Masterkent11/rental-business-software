@@ -1,7 +1,8 @@
+import { getMyApplication } from '@/application/applications/get-my-application/get-my-application.use-case.ts';
 import { VerificationInputError } from '@/domain/verification/verification.ts';
 import { verifiedDraft } from '@/infrastructure/postgres/__tests__/helpers/verified-draft.ts';
 import { randomUUID } from 'node:crypto';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { postgresApplicationRepository } from '@/infrastructure/postgres/repositories/postgres-application.repository.ts';
 import { postgresUserRepository } from '@/infrastructure/postgres/repositories/postgres-user.repository.ts';
 import { sql, withScope } from '@/infrastructure/postgres/db.ts';
@@ -357,6 +358,30 @@ suite('applications against real PostgreSQL', { timeout: 30_000 }, () => {
       expect(detail!.documents).toHaveLength(1);
       // Only the path is stored. The bytes are behind a signed URL.
       expect(detail!.documents[0]!.storagePath).toContain(application.id);
+    });
+
+    it.each(['foreign-organization', 'foreign-application', 'traversal', 'encoded-traversal'])('rejects an attachment path for %s', async variant => {
+      const application = await submit();
+      const prefix = `${SANTOS_ORG}/${application.id}`;
+      const storagePath = variant === 'foreign-organization' ? `${randomUUID()}/${application.id}/id.jpg`
+        : variant === 'foreign-application' ? `${SANTOS_ORG}/${randomUUID()}/id.jpg`
+        : variant === 'traversal' ? `${prefix}/../id.jpg` : `${prefix}/%2e%2e%2fid.jpg`;
+      await expect(applications.attachDocument({ applicantId: APPLICANT, applicationId: application.id,
+        kind: 'GOVERNMENT_ID', storagePath, fileName: 'id.jpg', contentType: 'image/jpeg', sizeBytes: 1000 })).rejects.toThrow();
+      expect((await applications.forApplicantById(APPLICANT, application.id))!.documents).toHaveLength(0);
+    });
+
+    it('never signs a foreign path persisted by an older attachment flow', async () => {
+      const application = await submit();
+      const storagePath = `${SKYLINE_ORG}/${randomUUID()}/id.jpg`;
+      await withScope(SANTOS_ORG, tx => tx`insert into application_documents
+        (organization_id, application_id, kind, storage_path, file_name, content_type, size_bytes)
+        values (${SANTOS_ORG}, ${application.id}, 'GOVERNMENT_ID', ${storagePath}, 'id.jpg', 'image/jpeg', 1000)`);
+      const sign = vi.fn(async () => 'https://private.test/foreign');
+      const result = await getMyApplication(applications, { createReadUrl: sign,
+        createUploadTicket: async () => { throw new Error('Unused'); } })(APPLICANT, application.id);
+      expect(result!.documents[0]!.url).toBeNull();
+      expect(sign).not.toHaveBeenCalled();
     });
 
     it('refuses an attachment after a decision', async () => {

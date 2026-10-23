@@ -1,3 +1,9 @@
+import { reorderListingPhotos } from '@/application/listings/reorder-listing-photos/reorder-listing-photos.use-case.ts';
+import { ListingPhotoRejectedError } from '@/domain/listings/listing-errors.ts';
+import { randomUUID } from 'node:crypto';
+import { postgresUserRepository } from '@/infrastructure/postgres/repositories/postgres-user.repository.ts';
+import { setListingState } from '@/application/listings/set-listing-state/set-listing-state.use-case.ts';
+import { centavos } from '@/domain/shared/money.ts';
 import postgres from 'postgres';
 import { afterAll, describe, expect, it } from 'vitest';
 import { postgresListingRepository } from '@/infrastructure/postgres/repositories/postgres-listing.repository.ts';
@@ -28,14 +34,75 @@ suite('listings against real PostgreSQL', { timeout: 30_000 }, () => {
     await sql.end({ timeout: 5 });
   });
 
+  const draftListing = () => repo.createPropertyListing({
+    organizationId: '11111111-1111-1111-1111-111111111111',
+    property: { name: 'Concurrency fixture', propertyType: 'APARTMENT', addressLine: '1 Test Street', areaLabel: 'Test', cityLabel: 'Cebu City' },
+    resource: { label: 'Unit', resourceType: 'UNIT', rentalMode: 'LONG_TERM' },
+    listing: { kind: 'LONG_TERM', title: 'Concurrency fixture', description: 'A listing for concurrent policy tests.',
+      priceCentavos: centavos(100000), amenities: [], houseRules: [], terms: [], minStayNights: null,
+      advanceMonths: 0, depositMonths: 0, maxOccupants: 2, bedrooms: 1, bathrooms: 1,
+      floorAreaSqm: 30, cleaningFeeCentavos: centavos(0), availableFrom: null },
+  });
+
+  it('does not apply two lifecycle decisions based on the same draft state', async () => {
+    const listing = await draftListing();
+    await repo.addPhoto(listing.organizationId, listing.id, { storagePath: `${listing.organizationId}/listings/${listing.id}/front.jpg`,
+      url: 'https://storage.test/front.jpg', contentType: 'image/jpeg', sizeBytes: 1000 });
+    const input = { principal: { userId: 'test-owner', displayName: 'Owner', organizationId: listing.organizationId,
+      capabilities: [{ capability: 'OWNER' as const, organizationId: listing.organizationId }] }, organizationId: listing.organizationId, listingId: listing.id };
+    let reads = 0;
+    let release!: () => void;
+    const ready = new Promise<void>(resolve => { release = resolve; });
+    const contenders = { ...repo, findById: async (organizationId: string, id: string) => {
+      const snapshot = await repo.findById(organizationId, id);
+      if (++reads === 2) release();
+      await ready;
+      return snapshot;
+    } };
+    const results = await Promise.allSettled([
+      setListingState(contenders)({ ...input, action: 'ARCHIVE' }),
+      setListingState(contenders)({ ...input, action: 'PUBLISH' }),
+    ]);
+    expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1);
+  });
+
+  it('rejects a photo ordering that repeats an identifier', async () => {
+    const listing = await draftListing();
+    const photos = await Promise.all([0, 1].map(index => repo.addPhoto(listing.organizationId, listing.id, {
+      storagePath: `${listing.organizationId}/listings/${listing.id}/${index}.jpg`,
+      url: `https://storage.test/${index}.jpg`, contentType: 'image/jpeg', sizeBytes: 1000,
+    })));
+    await expect(reorderListingPhotos(repo)({ principal: { userId: 'test-owner', displayName: 'Owner', organizationId: listing.organizationId,
+      capabilities: [{ capability: 'OWNER', organizationId: listing.organizationId }] }, organizationId: listing.organizationId,
+      listingId: listing.id, photoIds: [photos[0]!.id, photos[0]!.id, photos[1]!.id] })).rejects.toBeInstanceOf(ListingPhotoRejectedError);
+    expect((await repo.findById(listing.organizationId, listing.id))!.media!.map(photo => photo.position)).toEqual([0, 1]);
+  });
+
+  it.each(['PHOTO', 'FLOOR_PLAN'] as const)('enforces the %s limit when two uploads race for the last slot', async kind => {
+    const listing = await draftListing();
+    const maximum = kind === 'PHOTO' ? 12 : 6;
+    const add = (index: number) => {
+      const media = { storagePath: `${listing.organizationId}/listings/${listing.id}/${index}.jpg`,
+        url: `https://storage.test/${listing.id}/${index}.jpg`, contentType: 'image/jpeg', sizeBytes: 1000 };
+      return kind === 'PHOTO' ? repo.addPhoto(listing.organizationId, listing.id, media)
+        : repo.addFloorPlan(listing.organizationId, listing.id, media, 'Ground floor');
+    };
+    for (let index = 0; index < maximum - 1; index++) await add(index);
+    const results = await Promise.allSettled([add(maximum), add(maximum + 1)]);
+    expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1);
+    const refreshed = await repo.findById(listing.organizationId, listing.id);
+    expect(kind === 'PHOTO' ? refreshed!.photos.length : refreshed!.floorPlans!.length).toBe(maximum);
+  });
+
   it('returns real owner activity and isolates view-event reads by organization', async () => {
     const admin = postgres(process.env.TEST_ADMIN_DATABASE_URL!);
     const organizationId = '11111111-1111-1111-1111-111111111111';
     const otherOrganizationId = '33333333-3333-3333-3333-333333333333';
     const [listing] = await repo.forOrganization(organizationId);
     expect(listing).toBeDefined();
-    const [user] = await admin<{ id: string }[]>`select id from user_profiles limit 1`;
-    const [event] = await admin<{ id: string }[]>`insert into listing_view_events(user_id, listing_id) values (${user!.id}, ${listing!.id}) returning id::text`;
+    const userId = randomUUID();
+    await postgresUserRepository().createProfile({ id: userId, email: 'listing-viewer@example.test', mobile: null });
+    const [event] = await admin<{ id: string }[]>`insert into listing_view_events(user_id, listing_id) values (${userId}, ${listing!.id}) returning id::text`;
     try {
       const own = await withScope(organizationId, tx => tx`select id from listing_view_events where id = ${event!.id}`);
       const other = await withScope(otherOrganizationId, tx => tx`select id from listing_view_events where id = ${event!.id}`);

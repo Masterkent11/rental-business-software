@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Inject, Logger, Module, type OnApplicationBootstrap, type OnModuleDestroy } from '@nestjs/common';
+import { IntervalJobScheduler } from '@/infrastructure/system/interval-job-scheduler.adapter.ts';
+import type { JobScheduler, RecurringJob } from '@/application/ports/providers/job-scheduler.port.ts';
+import { postgresPaymentNotificationOutbox } from '@/infrastructure/postgres/repositories/postgres-payment-notification-outbox.repository.ts';
+import type { PaymentNotificationOutbox } from '@/application/ports/repositories/payment-notification-outbox.port.ts';
+import { deliverPaymentNotifications } from '@/application/notifications/deliver-payment-notifications/deliver-payment-notifications.use-case.ts';
 import { StartBookingPaymentController } from './controllers/start-booking-payment.controller.ts';
 import { ConfirmBookingPaymentController } from './controllers/confirm-booking-payment.controller.ts';
 import { SimulateBookingPaymentController } from './controllers/simulate-booking-payment.controller.ts';
@@ -12,8 +17,6 @@ import {
 import { sandboxPaymentGateway } from '@/infrastructure/payments/sandbox-payment-gateway.adapter.ts';
 import { unavailablePaymentGateway } from '@/infrastructure/payments/unavailable-payment-gateway.adapter.ts';
 import { loadEnvironmentConfig } from '@/infrastructure/config/environment-config.ts';
-import { NOTIFICATION_REPOSITORY } from '@/modules/shared/shared.tokens.ts';
-import type { NotificationRepository } from '@/application/ports/repositories/notification-repository.port.ts';
 import { postgresPaymentRepository } from '@/infrastructure/postgres/repositories/postgres-payment.repository.ts';
 import { startBookingPayment } from '@/application/payments/start-booking-payment/start-booking-payment.use-case.ts';
 import { confirmBookingPayment } from '@/application/payments/confirm-booking-payment/confirm-booking-payment.use-case.ts';
@@ -27,6 +30,10 @@ import { resolvePrincipal } from '@/application/identity/resolve-principal/resol
 import type { IdentityProvider } from '@/application/ports/providers/identity-provider.port.ts';
 import type { UserRepository } from '@/application/ports/repositories/user-repository.port.ts';
 
+const OUTBOX = Symbol('PAYMENT_NOTIFICATION_OUTBOX');
+const DELIVER = Symbol('DELIVER_PAYMENT_NOTIFICATIONS');
+const SCHEDULER = Symbol('PAYMENT_NOTIFICATION_SCHEDULER');
+
 @Module({
   controllers: [
     StartBookingPaymentController,
@@ -34,6 +41,9 @@ import type { UserRepository } from '@/application/ports/repositories/user-repos
     SimulateBookingPaymentController,
   ],
   providers: [
+    { provide: OUTBOX, useFactory: (): PaymentNotificationOutbox => postgresPaymentNotificationOutbox() },
+    { provide: DELIVER, inject: [OUTBOX], useFactory: (outbox: PaymentNotificationOutbox) => deliverPaymentNotifications(outbox) },
+    { provide: SCHEDULER, useFactory: (): JobScheduler => new IntervalJobScheduler(() => new Logger('PaymentNotifications').warn('Pending notifications will retry.')) },
     {
       provide: PAYMENT_GATEWAY,
       useFactory: (): PaymentGateway => {
@@ -52,9 +62,9 @@ import type { UserRepository } from '@/application/ports/repositories/user-repos
     },
     {
       provide: CONFIRM_BOOKING_PAYMENT,
-      inject: [PAYMENT_REPOSITORY, PAYMENT_GATEWAY, NOTIFICATION_REPOSITORY],
-      useFactory: (repo: PaymentRepository, gateway: PaymentGateway, notifications: NotificationRepository) =>
-        confirmBookingPayment(repo, gateway, notifications),
+      inject: [PAYMENT_REPOSITORY, PAYMENT_GATEWAY],
+      useFactory: (repo: PaymentRepository, gateway: PaymentGateway) =>
+        confirmBookingPayment(repo, gateway),
     },
     {
       provide: SIMULATE_BOOKING_PAYMENT,
@@ -75,4 +85,10 @@ import type { UserRepository } from '@/application/ports/repositories/user-repos
     },
   ],
 })
-export class PaymentsModule {}
+export class PaymentsModule implements OnApplicationBootstrap, OnModuleDestroy {
+  private job: RecurringJob | null = null;
+  constructor(@Inject(SCHEDULER) private readonly scheduler: JobScheduler,
+    @Inject(DELIVER) private readonly deliver: ReturnType<typeof deliverPaymentNotifications>) {}
+  onApplicationBootstrap() { this.job = this.scheduler.every(1_000, this.deliver); }
+  onModuleDestroy() { this.job?.stop(); }
+}

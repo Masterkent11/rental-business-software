@@ -1,3 +1,4 @@
+import type { SaleListingWriter } from './listing-repository.port.ts';
 import type {
   CanonicalChanges,
   ChangeProposalStatus,
@@ -18,5 +19,6 @@ export interface ListingChangeProposalRepository {
     id: string,
     status: Exclude<ChangeProposalStatus, 'PENDING'>,
     decidedBy: string,
+    applyApprovedChanges: (proposal: ListingChangeProposal, listings: SaleListingWriter) => Promise<void>,
   ): Promise<ListingChangeProposal | null>;
 }

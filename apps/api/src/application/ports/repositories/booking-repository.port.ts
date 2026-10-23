@@ -58,7 +58,7 @@ export interface BookingRepository {
   findForOrganization(organizationId: string, bookingId: string): Promise<BookingSummary | null>;
   forGuest(userId: string): Promise<readonly BookingSummary[]>;
   findForGuest(userId: string, bookingId: string): Promise<BookingSummary | null>;
-  setStayState(organizationId: string, bookingId: string, state: StayState): Promise<void>;
+  setStayState(organizationId: string, bookingId: string, expected: StayState, state: StayState): Promise<void>;
   blocksFor(organizationId: string, resourceId: string): Promise<readonly AvailabilityBlock[]>;
   addBlock(input: {
     readonly organizationId: string;

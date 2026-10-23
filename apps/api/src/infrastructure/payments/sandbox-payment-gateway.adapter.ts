@@ -52,29 +52,33 @@ export function sandboxPaymentGateway(
         throw new WebhookVerificationError('Body is not JSON');
       }
 
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+        throw new WebhookVerificationError('Unexpected event shape');
+      }
       const body = parsed as Record<string, unknown>;
       const eventId = body.eventId;
       const providerRef = body.providerRef;
       const amount = body.amountCentavos;
 
       if (
-        typeof eventId !== 'string' ||
-        typeof providerRef !== 'string' ||
+        typeof eventId !== 'string' || !eventId.trim() ||
+        typeof providerRef !== 'string' || !providerRef.trim() ||
         typeof amount !== 'number' ||
-        !Number.isInteger(amount)
+        !Number.isSafeInteger(amount) || amount < 0
       ) {
         throw new WebhookVerificationError('Unexpected event shape');
       }
+
+      const occurredAt = body.occurredAt === undefined ? new Date() :
+        typeof body.occurredAt === 'string' ? new Date(body.occurredAt) : new Date(Number.NaN);
+      if (!Number.isFinite(occurredAt.getTime())) throw new WebhookVerificationError('Invalid event time');
 
       return {
         eventId,
         providerRef,
         succeeded: body.status === 'succeeded',
         amountCentavos: amount as Centavos,
-        occurredAt:
-          typeof body.occurredAt === 'string'
-            ? new Date(body.occurredAt)
-            : new Date(),
+        occurredAt,
       };
     },
 

@@ -1,3 +1,4 @@
+import { postgresSaleListingWriter } from '@/infrastructure/postgres/repositories/postgres-listing.repository.ts';
 import type postgres from 'postgres';
 import type { ListingChangeProposalRepository } from '@/application/ports/repositories/listing-change-proposal-repository.port.ts';
 import type { CanonicalChanges, ChangeProposalStatus, ListingChangeProposal } from '@/domain/listings/listing.ts';
@@ -69,8 +70,13 @@ export const postgresListingChangeProposalRepository = (): ListingChangeProposal
     });
   },
 
-  async decide(organizationId, id, status, decidedBy) {
+  async decide(organizationId, id, status, decidedBy, applyApprovedChanges) {
     return withScope(organizationId, async (tx) => {
+      const [pending] = await tx<ProposalRow[]>`${SELECT(tx)}
+        where p.id = ${id} and p.organization_id = ${organizationId} and p.status = 'PENDING'
+        for update of p`;
+      if (!pending) return null;
+      if (status === 'APPROVED') await applyApprovedChanges(toProposal(pending), postgresSaleListingWriter(tx));
       const updated = await tx<{ id: string }[]>`
         update listing_change_proposals set status = ${status}, decided_at = now(), decided_by = ${decidedBy}
          where id = ${id} and organization_id = ${organizationId} and status = 'PENDING'

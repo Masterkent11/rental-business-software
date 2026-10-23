@@ -30,7 +30,7 @@ export const setListingState =
       assertPublishable(current, verified);
     }
 
-    const updated = await listings.setListingState(input.organizationId, input.listingId, next);
+    const updated = await listings.setListingState(input.organizationId, input.listingId, current.state, next);
     if (!updated) throw new ListingNotFoundError('Listing not found');
     return updated;
   };

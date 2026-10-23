@@ -46,9 +46,11 @@ describe('custom verification lifecycle', () => {
     expect(storage.put).toHaveBeenCalledTimes(1);
   });
   it('invalidates previous verification on recapture', async () => {
-    const { repo, storage } = setup(session({ status: 'VERIFIED', captureId: 'old', frontPath: 'u1/old.jpg', reviewed: details }));
+    const { repo, storage } = setup(session({ status: 'VERIFIED', captureId: 'old', frontPath: 'u1/old.jpg', reviewed: details,
+      review: { reviewerId: 'admin', decidedAt: '2026-01-01T00:00:00Z', approved: true, validUntil: '2099-01-01T00:00:00Z' } }));
     const next = await captureIdFront(repo, { validate: async bytes => bytes }, storage)('u1','s1','new',new Uint8Array([1]), details);
     expect(next.status).toBe('OCR_REVIEW'); expect(next.reviewed).toBeNull();
+    expect(next.review).toBeNull();
     expect(storage.remove).toHaveBeenCalledWith('u1',['u1/old.jpg']);
   });
   it('cannot confirm missing fields or edit a verified identity', async () => {

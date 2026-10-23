@@ -1,3 +1,7 @@
+import { postgresBookingRepository } from '@/infrastructure/postgres/repositories/postgres-booking.repository.ts';
+import postgres from 'postgres';
+import { postgresPaymentNotificationOutbox } from '@/infrastructure/postgres/repositories/postgres-payment-notification-outbox.repository.ts';
+import { postgresNotificationRepository } from '@/infrastructure/postgres/repositories/postgres-notification.repository.ts';
 import { randomUUID } from 'node:crypto';
 import { amountDue } from '@/application/payments/start-booking-payment/start-booking-payment.use-case.ts';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
@@ -110,6 +114,125 @@ suite('payments against real PostgreSQL', { timeout: 30_000 }, () => {
       return { booking, providerRef, amount: amountDue(payable!).amountCentavos };
     };
 
+    it.each(['CANCELLED', 'EXPIRED', 'RELEASED'])('cannot create a confirmed stay from a %s occupancy', async state => {
+      const { booking, providerRef, amount } = await started('2028-01-01', '2028-01-03');
+      await withScope(VILLA_ORG, tx => tx`update occupancies set state = ${state} where id = ${booking.id}`);
+      const eventId = `evt_${randomUUID()}`;
+      await expect(confirm(providerRef, eventId, amount)).rejects.toThrow();
+      const events = await sql`select provider_event_id from provider_events where provider_event_id = ${eventId}`;
+      expect(events).toHaveLength(0);
+      const [counts] = await withScope(VILLA_ORG, tx => tx<{ stays: number; ledger: number; state: string }[]>`
+        select (select count(*)::int from stays where occupancy_id = ${booking.id}) as stays,
+          (select count(*)::int from ledger_entries where cause_id = p.id) as ledger,
+          p.state from payments p where p.provider_ref = ${providerRef}
+      `);
+      expect(counts).toMatchObject({ stays: 0, ledger: 0, state: 'PENDING' });
+    });
+
+    it('rejects reuse of an event id for a different pending payment', async () => {
+      const first = await started('2028-02-01', '2028-02-03');
+      const second = await started('2028-02-05', '2028-02-07');
+      const event = `evt_${randomUUID()}`;
+      await confirm(first.providerRef, event, first.amount);
+      await expect(confirm(second.providerRef, event, second.amount)).rejects.toThrow();
+    });
+
+    it('settles concurrent distinct callbacks for the same payment only once', async () => {
+      const { booking, providerRef, amount } = await started('2028-03-01', '2028-03-03');
+      const results = await Promise.all([
+        confirm(providerRef, `evt_${randomUUID()}`, amount),
+        confirm(providerRef, `evt_${randomUUID()}`, amount),
+      ]);
+      expect(results.filter(result => result.applied)).toHaveLength(1);
+      const [counts] = await withScope(VILLA_ORG, tx => tx<{ stays: number; ledger: number }[]>`
+        select (select count(*)::int from stays where occupancy_id = ${booking.id}) as stays,
+          (select count(*)::int from ledger_entries where cause_id = ${results[0]!.payment.id}) as ledger
+      `);
+      expect(counts).toEqual({ stays: 1, ledger: 1 });
+    });
+
+    it('keeps expiry and replacement atomic when racing a late payment confirmation', async () => {
+      const { booking, providerRef, amount } = await started('2028-06-01', '2028-06-03');
+      await withScope(VILLA_ORG, tx => tx`update occupancies set expires_at = now() - interval '1 minute' where id = ${booking.id}`);
+      const [confirmation, replacement] = await Promise.allSettled([
+        confirm(providerRef, `evt_${randomUUID()}`, amount),
+        heldBooking('2028-06-01', '2028-06-03'),
+      ]);
+      const [counts] = await withScope(VILLA_ORG, tx => tx`
+        select (select count(*)::int from occupancies where resource_id = ${BED}
+          and during && daterange('2028-06-01','2028-06-03','[)') and state in ('HELD','COMMITTED')) as active,
+          (select count(*)::int from stays where occupancy_id = ${booking.id}) as stays,
+          (select count(*)::int from ledger_entries where cause_id in (select id from payments where provider_ref = ${providerRef})) as ledger
+      `);
+      expect(counts!.active).toBe(1);
+      if (confirmation.status === 'fulfilled') {
+        expect(confirmation.value.applied).toBe(true);
+        expect(replacement.status).toBe('rejected');
+        expect(counts).toMatchObject({ stays: 1, ledger: 1 });
+      } else {
+        expect(replacement.status).toBe('fulfilled');
+        expect(counts).toMatchObject({ stays: 0, ledger: 0 });
+      }
+    });
+
+    it('rejects stale and concurrent stay transitions without regressing a completed stay', async () => {
+      const { booking, providerRef, amount } = await started('2028-07-01', '2028-07-03');
+      await confirm(providerRef, randomUUID(), amount);
+      const bookings = postgresBookingRepository();
+      const results = await Promise.allSettled([
+        bookings.setStayState(VILLA_ORG, booking.id, 'CONFIRMED', 'IN_PROGRESS'),
+        bookings.setStayState(VILLA_ORG, booking.id, 'CONFIRMED', 'IN_PROGRESS'),
+      ]);
+      expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1);
+      await bookings.setStayState(VILLA_ORG, booking.id, 'IN_PROGRESS', 'COMPLETED');
+      await expect(bookings.setStayState(VILLA_ORG, booking.id, 'CONFIRMED', 'IN_PROGRESS')).rejects.toThrow();
+      expect((await bookings.findForOrganization(VILLA_ORG, booking.id))!.stayState).toBe('COMPLETED');
+    });
+
+    it('recovers durable notifications after delivery failure and restart without repeating money effects', async () => {
+      const { providerRef, amount } = await started('2028-04-01', '2028-04-03');
+      const settled = await confirm(providerRef, `evt_${randomUUID()}`, amount);
+      const pending = await sql.begin(async tx => {
+        await tx`select set_config('app.notification_delivery', 'true', true)`;
+        return tx<{ id: string; payment_id: string; organization_id: string; user_id: string | null; kind: string; title: string; body: string; link: string | null }[]>`
+          select * from payment_notification_outbox where payment_id = ${settled.payment.id}`;
+      });
+      expect(pending).toHaveLength(2);
+      const scoped = await withScope(SANTOS_ORG, tx => tx`select id from payment_notification_outbox where payment_id = ${settled.payment.id}`);
+      expect(scoped).toHaveLength(0);
+      const [privileges] = await sql`select has_table_privilege('anon', 'payment_notification_outbox', 'select') as anonymous,
+        has_table_privilege('authenticated', 'payment_notification_outbox', 'select') as authenticated`;
+      expect(privileges).toMatchObject({ anonymous: false, authenticated: false });
+      const admin = postgres(process.env.TEST_ADMIN_DATABASE_URL!);
+      const blocked = pending[0]!.id;
+      expect(blocked).toMatch(/^[0-9a-f-]{36}$/);
+      try {
+        await admin.unsafe(`alter table notifications add constraint notification_failure_injection check (id <> '${blocked}'::uuid) not valid`);
+        await expect(postgresPaymentNotificationOutbox().deliverPending(100)).rejects.toThrow();
+        const [payment] = await withScope(VILLA_ORG, tx => tx`select state from payments where id = ${settled.payment.id}`);
+        expect(payment!.state).toBe('SUCCEEDED');
+      } finally {
+        await admin`alter table notifications drop constraint if exists notification_failure_injection`;
+        await admin.end();
+      }
+      const restarted = postgresPaymentNotificationOutbox();
+      for (let batch = 0; batch < 10; batch++) if (await restarted.deliverPending(100) === 0) break;
+      const notifications = postgresNotificationRepository();
+      const ownerIds = (await notifications.forOrganization(VILLA_ORG, 100)).map(n => n.id);
+      const guestIds = (await notifications.forUser(GUEST, 100)).map(n => n.id);
+      for (const row of pending) expect(row.user_id ? guestIds : ownerIds).toContain(row.id);
+      const foreign = (await notifications.forOrganization(SANTOS_ORG, 100)).map(n => n.id);
+      expect(foreign.some(id => pending.some(row => row.id === id))).toBe(false);
+      const retry = pending[0]!;
+      await withScope(VILLA_ORG, tx => tx`insert into payment_notification_outbox(id,payment_id,organization_id,user_id,kind,title,body,link)
+        values (${retry.id},${retry.payment_id},${retry.organization_id},${retry.user_id},${retry.kind},${retry.title},${retry.body},${retry.link})`);
+      await Promise.all([restarted.deliverPending(100), postgresPaymentNotificationOutbox().deliverPending(100)]);
+      const combined = [...await notifications.forOrganization(VILLA_ORG,100), ...await notifications.forUser(GUEST,100)];
+      expect(combined.filter(n => n.id === retry.id)).toHaveLength(1);
+      const [ledger] = await withScope(VILLA_ORG, tx => tx`select count(*)::int as n from ledger_entries where cause_id = ${settled.payment.id}`);
+      expect(ledger!.n).toBe(1);
+    });
+
     it('commits the hold, creates the stay, and writes the ledger', async () => {
       const { booking, providerRef, amount } = await started('2027-07-01', '2027-07-03');
 
@@ -117,6 +240,7 @@ suite('payments against real PostgreSQL', { timeout: 30_000 }, () => {
 
       expect(result.applied).toBe(true);
       expect(result.payment.state).toBe('SUCCEEDED');
+      expect(result.payment.receivedAt).toEqual(new Date('2027-06-01T10:00:00Z'));
       expect(result.stayId).not.toBe('');
 
       const [occupancy] = await withScope(VILLA_ORG, (tx) => tx<{ state: string }[]>`

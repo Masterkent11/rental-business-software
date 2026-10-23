@@ -51,6 +51,15 @@ npm-debug.log*
 
 supabase/demo/generated-*.sql
 
+# Generated Postman collections, environments, reports, and packages
+/docs/postman/
+/docs/api/contract-validation.json
+/docs/api/endpoint-inventory.md
+/docs/api/openapi.json
+/docs/api/registered-routes.json
+/docs/api/postman-http-results.json
+/docs/api/request-example-validation.json
+
 # Local Flutter public build configuration
 apps/customer_app/config/*.local.json
 

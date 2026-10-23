@@ -31,7 +31,7 @@ export const updateBookingStatus =
     }
 
     const next = nextStayState(booking.stayState, input.action, booking.startsOn, localDay(clock.now()));
-    await bookings.setStayState(input.organizationId, input.bookingId, next);
+    await bookings.setStayState(input.organizationId, input.bookingId, booking.stayState, next);
 
     if (booking.guestId) {
       await notifications.publish([

@@ -61,3 +61,11 @@ export function applicationMessageWithOccupants(message: string, occupants: numb
   const summary = `${occupants} ${occupants === 1 ? 'person' : 'people'} expected to live here.`;
   return message.trim() ? `${summary}\n\n${message.trim()}` : summary;
 }
+
+export function assertApplicationDocumentPath(path: string, organizationId: string, applicationId: string): void {
+  const prefix = `${organizationId}/${applicationId}/`;
+  const name = path.slice(prefix.length);
+  if (!path.startsWith(prefix) || name.length > 255 || !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(name)) {
+    throw new InvalidTransitionError('That document does not belong to this application.');
+  }
+}
