@@ -1,3 +1,4 @@
+import { InquiryNotFoundError, nextInquiryStatus, statusAfterPartnerReply } from '@/domain/inquiries/inquiry.ts';
 import type postgres from 'postgres';
 import type {
   ClientSummary,
@@ -98,6 +99,12 @@ const filtersFor = (tx: postgres.TransactionSql, filters: InquiryFilters) => tx`
   ${filters.status ? tx`and i.status = ${filters.status}` : tx``}
   ${filters.listingId ? tx`and i.listing_id = ${filters.listingId}` : tx``}
 `;
+
+async function lockStatus(tx: postgres.TransactionSql, scope: PartyScope, id: string): Promise<InquiryStatus | null> {
+  const [row] = await tx<{ status: InquiryStatus }[]>`select i.status from inquiries i
+    where i.id = ${id} ${scopeFilter(tx, scope)} for update`;
+  return row?.status ?? null;
+}
 
 const UNIQUE_VIOLATION = '23505';
 
@@ -242,6 +249,9 @@ export const postgresInquiryRepository = (): InquiryRepository => ({
 
   async setStatus(scope, id, status, lostReason) {
     return inScope(scope, async (tx) => {
+      const current = await lockStatus(tx, scope, id);
+      if (!current) throw new InquiryNotFoundError('Inquiry not found');
+      nextInquiryStatus(current, status);
       await tx`
         update inquiries i set
           status = ${status},
@@ -267,11 +277,14 @@ export const postgresInquiryRepository = (): InquiryRepository => ({
     });
   },
 
-  async recordFirstResponse(scope, id, at, status) {
+  async recordFirstResponse(scope, id, at) {
     await inScope(scope, async (tx) => {
+      const current = await lockStatus(tx, scope, id);
+      if (!current) return;
+      const status = statusAfterPartnerReply(current);
       await tx`
         update inquiries i set
-          first_response_at = coalesce(i.first_response_at, ${at}),
+          first_response_at = least(i.first_response_at, ${at}),
           status_changed_at = case when i.status <> ${status} then now() else i.status_changed_at end,
           status = ${status},
           updated_at = now()

@@ -97,6 +97,7 @@ export const toListingHttpResponse = (listing: Listing) => ({
 
 export const toOwnerListingHttpResponse = (listing: Listing, publishProblems?: readonly string[]) => ({
   ...toListingHttpResponse(listing),
+  activity: listing.activity ?? null,
   exactLocation: listing.location
     ? { latitude: listing.location.latitude, longitude: listing.location.longitude, privacy: listing.location.privacy }
     : null,

@@ -48,6 +48,6 @@ export interface InquiryRepository {
   listForAgent(agentUserId: string, filters: InquiryFilters): Promise<readonly Inquiry[]>;
   setStatus(scope: PartyScope, id: string, status: InquiryStatus, lostReason: string | null): Promise<Inquiry>;
   openForConversation(scope: PartyScope, conversationId: string): Promise<Inquiry | null>;
-  recordFirstResponse(scope: PartyScope, id: string, at: Date, status: InquiryStatus): Promise<void>;
+  recordFirstResponse(scope: PartyScope, id: string, at: Date): Promise<void>;
   clientsForAgent(agentUserId: string): Promise<readonly ClientSummary[]>;
 }

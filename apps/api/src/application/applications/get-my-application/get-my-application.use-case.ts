@@ -1,3 +1,4 @@
+import { assertApplicationDocumentPath } from '@/domain/applications/application-rules.ts';
 import type { ApplicationRepository, ApplicationDetail } from '@/application/ports/repositories/application-repository.port.ts';
 import type { DocumentStorage } from '@/application/ports/storage/document-storage.port.ts';
 
@@ -24,13 +25,22 @@ export const getMyApplication =
     if (!application) return null;
 
     const documents = await Promise.all(
-      application.documents.map(async (doc) => ({
-        id: doc.id,
-        kind: doc.kind,
-        fileName: doc.fileName,
-        sizeBytes: doc.sizeBytes,
-        url: await storage.createReadUrl(doc.storagePath).catch(() => null),
-      })),
+      application.documents.map(async (doc) => {
+        let url: string | null = null;
+        try {
+          assertApplicationDocumentPath(doc.storagePath, application.organizationId, application.id);
+          url = await storage.createReadUrl(doc.storagePath);
+        } catch {
+          url = null;
+        }
+        return {
+          id: doc.id,
+          kind: doc.kind,
+          fileName: doc.fileName,
+          sizeBytes: doc.sizeBytes,
+          url,
+        };
+      }),
     );
 
     return {

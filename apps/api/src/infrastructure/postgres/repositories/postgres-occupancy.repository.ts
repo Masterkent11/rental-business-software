@@ -137,8 +137,8 @@ export function postgresOccupancyRepository(): OccupancyRepository {
           `;
 
           if (clientRef) {
-            const [previous] = await tx<OccupancyRow[]>`
-              select id, organization_id, resource_id, kind, state,
+            const [previous] = await tx<(OccupancyRow & { guests: number | null })[]>`
+              select id, organization_id, resource_id, kind, state, guests,
                      to_char(lower(during), 'YYYY-MM-DD') as starts_on,
                      to_char(upper(during), 'YYYY-MM-DD') as ends_on,
                      expires_at
@@ -146,7 +146,13 @@ export function postgresOccupancyRepository(): OccupancyRepository {
                where held_by = ${heldBy} and client_ref = ${clientRef}
                limit 1
             `;
-            if (previous) return toOccupancy(previous);
+            if (previous) {
+              if (previous.resource_id !== resourceId || previous.starts_on !== during.startsOn
+                || previous.ends_on !== during.endsOn || previous.guests !== (guests ?? null)) {
+                throw new OccupancyConflictError('This booking request was already used for different details');
+              }
+              return toOccupancy(previous);
+            }
           }
 
           const [inserted] = await tx<OccupancyRow[]>`

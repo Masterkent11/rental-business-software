@@ -91,6 +91,7 @@ export interface ListingPhoto {
 }
 
 export interface OwnerListing {
+  readonly activity?: { readonly views: number; readonly inquiries: number; readonly viewings: number } | null;
   readonly id: string;
   readonly resourceId: string;
   readonly propertyId: string | null;

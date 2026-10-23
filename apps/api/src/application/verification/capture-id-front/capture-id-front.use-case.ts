@@ -11,7 +11,7 @@ export const captureIdFront = (repo: VerificationRepository, images: Verificatio
     const bytes = await images.validate(image);
     const path = await storage.put({ userId, sessionId: id, captureId, evidenceId: 'front', bytes, expiresAt: s.expiresAt });
     const next = await repo.save({ ...s, captureId, frontPath: path, status: 'OCR_REVIEW', extracted,
-        confidence, reviewed: null, challenge: null, evidence: [], failure: null }, s.version);
+        confidence, reviewed: null, review: null, challenge: null, evidence: [], failure: null }, s.version);
     await storage.remove(userId, [s.frontPath, ...s.evidence.map(e => e.path)].filter((p): p is string => p !== null)).catch(() => undefined);
     return next;
   };

@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { container } from "../infrastructure/composition/owner-web-container";
 import type { ListingAction, ListingState, OwnerListing } from "../domain/listings/listing";
 
+import { DEFAULT_PROPERTY_FILTERS, type PropertyFilters } from "../domain/listings/property-filters";
+
 export type ListingFilter = "ALL" | ListingState;
 
 interface PendingAction {
@@ -9,7 +11,22 @@ interface PendingAction {
   readonly action: ListingAction;
 }
 
-interface ListingsState {
+interface ListingsPresentation {
+  page: number;
+  pageSize: number;
+  view: "list" | "grid" | "map";
+  filtersOpen: boolean;
+  draftFilters: PropertyFilters;
+  appliedFilters: PropertyFilters;
+  mappedId: string;
+}
+const initialPresentation: ListingsPresentation = { page: 1, pageSize: 6, view: "list", filtersOpen: false, draftFilters: DEFAULT_PROPERTY_FILTERS, appliedFilters: DEFAULT_PROPERTY_FILTERS, mappedId: "" };
+
+interface ListingsState extends ListingsPresentation {
+  setPresentation: (patch: Partial<ListingsPresentation>) => void;
+  setDraftFilters: (patch: Partial<PropertyFilters>) => void;
+  applyFilters: () => void;
+  clearFilters: () => void;
   organizationId: string | null;
   listings: readonly OwnerListing[];
   loading: boolean;
@@ -35,6 +52,11 @@ let request = 0;
 let actionRequest = 0;
 
 export const useListingsStore = create<ListingsState>((set, get) => ({
+  ...initialPresentation,
+  setPresentation: patch => set(patch),
+  setDraftFilters: patch => set(state => ({ draftFilters: { ...state.draftFilters, ...patch } })),
+  applyFilters: () => set(state => ({ appliedFilters: { ...state.draftFilters }, page: 1 })),
+  clearFilters: () => set({ draftFilters: DEFAULT_PROPERTY_FILTERS, appliedFilters: DEFAULT_PROPERTY_FILTERS, page: 1 }),
   organizationId: null,
   listings: [],
   loading: false,
@@ -49,7 +71,7 @@ export const useListingsStore = create<ListingsState>((set, get) => ({
   reset: () => {
     ++request;
     ++actionRequest;
-    set({ organizationId: null, listings: [], loading: false, loaded: false, error: null,
+    set({ ...initialPresentation, organizationId: null, listings: [], loading: false, loaded: false, error: null,
       filter: "ALL", query: "", busyId: null, pending: null, actionError: null });
   },
   load: async (organizationId) => {
@@ -76,13 +98,13 @@ export const useListingsStore = create<ListingsState>((set, get) => ({
   cancelConfirm: () => set({ pending: null, actionError: null }),
 
   runAction: async (organizationId, listing, action) => {
-    if (get().organizationId !== organizationId) return false;
+    if (get().organizationId !== organizationId || get().busyId !== null) return false;
     const version = ++actionRequest;
     set({ busyId: listing.id, actionError: null });
     try {
       const updated = await container.changeListingStateUseCase.execute(organizationId, listing.id, action);
       if (version !== actionRequest || get().organizationId !== organizationId) return false;
-      get().replace(updated);
+      get().replace({ ...updated, activity: updated.activity ?? listing.activity });
       set({ busyId: null, pending: null });
       return true;
     } catch (error) {

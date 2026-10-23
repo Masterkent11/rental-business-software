@@ -196,6 +196,58 @@ suite('reservations against real PostgreSQL', { timeout: 30_000 }, () => {
     expect(Number(stays[0]!.n)).toBe(0);
   });
 
+  it('accepts only one of two concurrent payments for the same reservation fee', async () => {
+    const application = await applyFor();
+    const reservation = await applications.reserve({ applicantId: APPLICANT, applicationId: application.id, holdMinutes: 60 });
+    const providerRefs = [randomUUID(), randomUUID()];
+    await Promise.all(providerRefs.map(providerRef => payments.startPayment({ occupancyId: reservation.occupancyId!, amountCentavos: reservation.feeCentavos, providerRef })));
+    const results = await Promise.allSettled(providerRefs.map(providerRef => payments.confirmPayment({
+      providerEventId: randomUUID(), provider: 'sandbox', providerRef, amountCentavos: reservation.feeCentavos,
+      occurredAt: new Date(), rawPayload: '{}',
+    })));
+    expect(results.filter(result => result.status === 'fulfilled' && result.value.applied)).toHaveLength(1);
+    expect(results.filter(result => result.status === 'rejected')).toHaveLength(1);
+    expect(await reservationState(application.id)).toBe('ACTIVE');
+    expect((await ledgerFor(reservation.id)).filter(entry => entry.entry_type === 'PAYMENT_RECEIVED')).toHaveLength(1);
+  });
+
+  it('settles a payment racing owner rejection without losing the fee outcome', async () => {
+    const application = await applyFor();
+    const reservation = await applications.reserve({ applicantId: APPLICANT, applicationId: application.id, holdMinutes: 60 });
+    const providerRef = randomUUID();
+    await payments.startPayment({ occupancyId: reservation.occupancyId!, amountCentavos: reservation.feeCentavos, providerRef });
+    const [confirmation, decision] = await Promise.allSettled([
+      payments.confirmPayment({ providerEventId: randomUUID(), provider: 'sandbox', providerRef,
+        amountCentavos: reservation.feeCentavos, occurredAt: new Date(), rawPayload: '{}' }),
+      applications.decide({ organizationId: SANTOS_ORG, applicationId: application.id, deciderId: OWNER, next: 'REJECTED', reason: 'Unavailable' }),
+    ]);
+    expect(decision.status).toBe('fulfilled');
+    expect(await occupancyState(reservation.occupancyId!)).toBe('RELEASED');
+    const entries = await ledgerFor(reservation.id);
+    if (confirmation.status === 'fulfilled') {
+      expect(await reservationState(application.id)).toBe('REFUNDED');
+      expect(entries.filter(entry => entry.entry_type === 'PAYMENT_RECEIVED')).toHaveLength(1);
+      expect(entries.filter(entry => entry.entry_type === 'REFUND_ISSUED')).toHaveLength(1);
+    } else {
+      expect(await reservationState(application.id)).toBe('EXPIRED');
+      expect(entries).toHaveLength(0);
+    }
+  });
+
+  it('allows only one terminal application decision when withdrawal races rejection', async () => {
+    const { application, reservation } = await reserveAndPay();
+    const results = await Promise.allSettled([
+      applications.withdraw(APPLICANT, application.id),
+      applications.decide({ organizationId: SANTOS_ORG, applicationId: application.id, deciderId: OWNER, next: 'REJECTED', reason: 'Unavailable' }),
+    ]);
+    expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1);
+    const [row] = await withScope(SANTOS_ORG, tx => tx`select state from applications where id = ${application.id}`);
+    expect(['WITHDRAWN', 'REJECTED']).toContain(row!.state);
+    expect(await reservationState(application.id)).toBe(row!.state === 'WITHDRAWN' ? 'FORFEITED' : 'REFUNDED');
+    const outcomes = (await ledgerFor(reservation.id)).filter(entry => ['RESERVATION_FEE_FORFEITED', 'REFUND_ISSUED'].includes(entry.entry_type));
+    expect(outcomes).toHaveLength(1);
+  });
+
   describe('the three outcomes', () => {
     it('credits the fee on approval and keeps the place', async () => {
       const { application, reservation } = await reserveAndPay();

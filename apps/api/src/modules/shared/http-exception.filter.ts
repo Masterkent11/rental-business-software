@@ -1,3 +1,4 @@
+import { PaymentNotPendingError, InvalidPaymentOccupancyError } from '@/domain/payments/payment-errors.ts';
 import { InvoiceNotFoundError, PaymentNotInOrganizationError } from '@/application/ports/repositories/invoice-repository.port.ts';
 import { VerificationConflictError, VerificationInputError, VerificationNotFoundError, VerificationRateLimitError, VerificationRequiredError, VerificationUnavailableError } from '@/domain/verification/verification.ts';
 import {
@@ -52,7 +53,6 @@ import {
   SimulationUnavailableError,
 } from '@/application/payments/simulate-booking-payment/simulate-booking-payment.use-case.ts';
 import { PaymentNotYoursError } from '@/application/payments/start-booking-payment/start-booking-payment.use-case.ts';
-import { StayTooLongError } from '@/application/bookings/place-hold/place-hold.use-case.ts';
 import { InvalidTransitionError } from '@/domain/applications/application.ts';
 import { InvalidDateRangeError } from '@/domain/occupancy/occupancy.ts';
 import {
@@ -175,6 +175,8 @@ const RULES: readonly Rule[] = [
       TourNotPublishableError,
       InvoiceOverpaidError,
       PaymentAllocationError,
+      PaymentNotPendingError,
+      InvalidPaymentOccupancyError,
       InvoiceNotSettleableError,
       InvalidListingTransitionError,
       InvalidStayTransitionError,
@@ -200,7 +202,6 @@ const RULES: readonly Rule[] = [
       ReservationNotOfferedError,
       NotApplicableError,
       InvalidTransitionError,
-      StayTooLongError,
       DomainStayTooLongError,
       StayTooShortError,
       GuestLimitExceededError,

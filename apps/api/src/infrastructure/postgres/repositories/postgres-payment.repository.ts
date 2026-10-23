@@ -1,3 +1,5 @@
+import type { ReservationState } from '@/domain/reservations/reservation-state.ts';
+import { bookingConfirmationNotifications } from '@/domain/notifications/booking-notifications.ts';
 import type postgres from 'postgres';
 import { sql } from '@/infrastructure/postgres/db.ts';
 import {
@@ -8,8 +10,9 @@ import {
   type PaymentRepository,
   type PendingPayment,
 } from '@/application/ports/repositories/payment-repository.port.ts';
-import type { Payment } from '@/domain/payments/payment.ts';
-import type { Centavos } from '@/domain/shared/money.ts';
+import { assertReservationMayReceivePayment, assertPaymentMayConfirm, PaymentNotPendingError, type Payment } from '@/domain/payments/payment.ts';
+import type { OccupancyState } from '@/domain/occupancy/occupancy-state.ts';
+import { centavos } from '@/domain/shared/money.ts';
 import { RESERVATION_DAYS } from '@/domain/applications/application.ts';
 
 interface PaymentRow {
@@ -29,7 +32,7 @@ const toPayment = (row: PaymentRow): Payment => ({
   organizationId: row.organization_id,
   occupancyId: row.occupancy_id,
   // bigint arrives as a string; parsing it is not optional.
-  amountCentavos: Number(row.amount_centavos) as Centavos,
+  amountCentavos: centavos(Number(row.amount_centavos)),
   origin: row.origin,
   state: row.state,
   providerRef: row.provider_ref,
@@ -74,7 +77,7 @@ export function postgresPaymentRepository(): PaymentRepository {
             occupancyId,
             organizationId: occupancy.organization_id,
             heldBy: occupancy.held_by,
-            pricing: { kind: 'FIXED', amountCentavos: Number(reservation.fee) as Centavos },
+            pricing: { kind: 'FIXED', amountCentavos: centavos(Number(reservation.fee)) },
           } satisfies BookingForPayment;
         }
 
@@ -115,8 +118,8 @@ export function postgresPaymentRepository(): PaymentRepository {
             startsOn: booking.starts_on,
             endsOn: booking.ends_on,
             guests: booking.guests ?? 1,
-            nightlyCentavos: Number(booking.price_centavos) as Centavos,
-            cleaningFeeCentavos: Number(booking.cleaning_fee_centavos) as Centavos,
+            nightlyCentavos: centavos(Number(booking.price_centavos)),
+            cleaningFeeCentavos: centavos(Number(booking.cleaning_fee_centavos)),
             minStayNights: booking.min_stay_nights ?? 1,
             maxOccupants: Math.max(booking.max_occupants, booking.guests ?? 1),
           },
@@ -152,7 +155,7 @@ export function postgresPaymentRepository(): PaymentRepository {
         return {
           occupancyId,
           providerRef: payment.provider_ref,
-          amountCentavos: Number(payment.amount_centavos) as Centavos,
+          amountCentavos: centavos(Number(payment.amount_centavos)),
           heldBy: occupancy.held_by,
         } satisfies PendingPayment;
       }) as Promise<PendingPayment | null>;
@@ -214,9 +217,10 @@ export function postgresPaymentRepository(): PaymentRepository {
         if (claimed.length === 0) {
           const existing = await alreadyApplied(tx, input.providerRef);
           if (existing) return existing;
+          throw new PaymentNotPendingError('That provider event has already been used');
         }
 
-        const [payment] = await tx<PaymentRow[]>`
+        let [payment] = await tx<PaymentRow[]>`
           select id, organization_id, occupancy_id, amount_centavos::text,
                  origin, state, provider_ref, received_at, recorded_at
             from payments where provider_ref = ${input.providerRef}
@@ -224,6 +228,15 @@ export function postgresPaymentRepository(): PaymentRepository {
         if (!payment) {
           throw new BookingNotHeldError('No payment for that reference');
         }
+
+        await tx`select set_config('app.organization_id', ${payment.organization_id}, true)`;
+        const [lockedPayment] = await tx<PaymentRow[]>`
+          select id, organization_id, occupancy_id, amount_centavos::text,
+                 origin, state, provider_ref, received_at, recorded_at
+          from payments where id = ${payment.id} for update
+        `;
+        if (!lockedPayment) throw new BookingNotHeldError('No payment for that reference');
+        payment = lockedPayment;
 
         // The provider's amount must match what we asked for. A mismatch is
         // not something to reconcile quietly later — it means the two sides
@@ -234,28 +247,20 @@ export function postgresPaymentRepository(): PaymentRepository {
           );
         }
 
-        await tx`select set_config('app.organization_id', ${payment.organization_id}, true)`;
+        if (payment.state === 'SUCCEEDED') {
+          const existing = await alreadyApplied(tx, input.providerRef);
+          if (existing) return existing;
+        }
+        const [reservation] = await tx<{ id: string; state: ReservationState }[]>`
+          select id, state from reservations where occupancy_id = ${payment.occupancy_id} for update
+        `;
+        if (reservation) assertReservationMayReceivePayment(reservation.state);
+        const [occupancy] = await tx<{ kind: string; state: OccupancyState }[]>`
+          select kind, state from occupancies where id = ${payment.occupancy_id} for update
+        `;
+        if (!occupancy) throw new BookingNotHeldError('That hold no longer exists');
+        assertPaymentMayConfirm(payment.state, occupancy.state);
 
-        // Guards a second race the event-id claim above does not: two
-        // confirmations carrying *different* event ids (a provider retry with
-        // a fresh id, or — since this repository also backs the client-
-        // triggered sandbox confirmation — a double-tapped button) can both
-        // read this payment as PENDING before either commits. Conditioning
-        // the update on the state still being PENDING, and checking the row
-        // count, turns the second one into an ordinary replay instead of a
-        // second stay and a second ledger entry: whichever transaction's
-        // update loses the race sees zero rows change and reports what the
-        // winner already did, exactly like the identical-event-id path above.
-        // Guards a second race the event-id claim above does not: two
-        // confirmations carrying *different* event ids (a provider retry with
-        // a fresh id, or — since this repository also backs the client-
-        // triggered sandbox confirmation — a double-tapped button) can both
-        // read this payment as PENDING before either commits. Conditioning
-        // the update on the state still being PENDING, and checking the row
-        // count, turns the second one into an ordinary replay instead of a
-        // second stay and a second ledger entry: whichever transaction's
-        // update loses the race sees zero rows change and reports what the
-        // winner already did, exactly like the identical-event-id path above.
         const settled = await tx<{ id: string }[]>`
           update payments
              set state = 'SUCCEEDED', received_at = ${input.occurredAt}
@@ -265,13 +270,11 @@ export function postgresPaymentRepository(): PaymentRepository {
         if (settled.length === 0) {
           const existing = await alreadyApplied(tx, input.providerRef);
           if (existing) return existing;
+          throw new PaymentNotPendingError('That payment changed before confirmation');
         }
 
-        const [occupancy] = await tx<{ kind: string }[]>`
-          select kind from occupancies where id = ${payment.occupancy_id}
-        `;
-
-        if (occupancy?.kind === 'RESERVATION') {
+        if (occupancy.kind === 'RESERVATION') {
+          if (!reservation) throw new BookingNotHeldError('No reservation for that hold');
           // A paid reservation is not a confirmed stay. It stays HELD — the
           // owner has not decided yet — but now for the full seven days rather
           // than the short window that covered the payment itself.
@@ -288,10 +291,6 @@ export function postgresPaymentRepository(): PaymentRepository {
              where occupancy_id = ${payment.occupancy_id}
           `;
 
-          const [reservationRow] = await tx<{ id: string }[]>`
-            select id from reservations where occupancy_id = ${payment.occupancy_id}
-          `;
-
           await tx`
             insert into ledger_entries (
               organization_id, entry_type, amount_centavos, origin,
@@ -300,12 +299,12 @@ export function postgresPaymentRepository(): PaymentRepository {
               ${payment.organization_id}, 'PAYMENT_RECEIVED',
               ${Number(payment.amount_centavos)}, 'ONLINE',
               'PROVIDER', ${input.provider}, 'RESERVATION',
-              ${reservationRow!.id}, ${input.occurredAt}
+              ${reservation.id}, ${input.occurredAt}
             )
           `;
 
           return {
-            payment: toPayment({ ...payment, state: 'SUCCEEDED' }),
+            payment: toPayment({ ...payment, state: 'SUCCEEDED', received_at: input.occurredAt }),
             // A reservation creates no stay: nobody is staying anywhere yet.
             stayId: '',
             applied: true,
@@ -355,8 +354,18 @@ export function postgresPaymentRepository(): PaymentRepository {
            limit 1
         `;
 
+        if (context) {
+          const outgoing = bookingConfirmationNotifications({ organizationId: payment.organization_id, guestId: context.held_by,
+            listingTitle: context.title, startsOn: context.starts_on, endsOn: context.ends_on, occupancyId: payment.occupancy_id });
+          for (const notification of outgoing) {
+            await tx`insert into payment_notification_outbox(payment_id, organization_id, user_id, kind, title, body, link)
+              values (${payment.id}, ${payment.organization_id}, ${notification.audience.userId ?? null}, ${notification.kind},
+                ${notification.title}, ${notification.body}, ${notification.link})`;
+          }
+        }
+
         return {
-          payment: toPayment({ ...payment, state: 'SUCCEEDED' }),
+          payment: toPayment({ ...payment, state: 'SUCCEEDED', received_at: input.occurredAt }),
           stayId: stay!.id,
           applied: true,
           stay: context
@@ -390,7 +399,7 @@ async function alreadyApplied(
            origin, state, provider_ref, received_at, recorded_at
       from payments where provider_ref = ${providerRef}
   `;
-  if (!row) return null;
+  if (!row || row.state !== 'SUCCEEDED') return null;
 
   // The stay is organization-isolated, so the scope has to be set before it is
   // visible. Read after the payment, not joined to it.

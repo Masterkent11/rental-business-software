@@ -17,6 +17,7 @@ import {
   APPROVAL_HOLD_HOURS,
   applicationMessageWithOccupants,
   assertApplicantMayWithdraw,
+  assertApplicationDocumentPath,
   assertOwnerMayDecide,
   ledgerTypeFor,
   outcomeFor,
@@ -25,7 +26,7 @@ import {
   type DocumentKind,
   type Reservation,
 } from '@/domain/applications/application.ts';
-import type { Centavos } from '@/domain/shared/money.ts';
+import { centavos } from '@/domain/shared/money.ts';
 
 const UNIQUE_VIOLATION = '23505';
 const EXCLUSION_VIOLATION = '23P01';
@@ -152,18 +153,23 @@ export function postgresApplicationRepository(): ApplicationRepository {
       return sql.begin(async (tx) => {
         await tx`select set_config('app.user_id', ${applicantId}, true)`;
 
+        const [scope] = await tx<{ organization_id: string }[]>`
+          select organization_id from applications where id = ${applicationId} and applicant_id = ${applicantId}
+        `;
+        if (!scope) throw new ApplicationNotFoundError('No such application');
+        await tx`select set_config('app.organization_id', ${scope.organization_id}, true)`;
+
         const [current] = await tx<ApplicationRow[]>`
           select id, organization_id, resource_id, applicant_id,
                  to_char(desired_move_in, 'YYYY-MM-DD') as desired_move_in,
                  desired_term_months, message, state, decision_reason,
                  decided_at, created_at
             from applications
-           where id = ${applicationId} and applicant_id = ${applicantId}
+           where id = ${applicationId} and applicant_id = ${applicantId} for update
         `;
         if (!current) throw new ApplicationNotFoundError('No such application');
 
         assertApplicantMayWithdraw(current.state);
-        await tx`select set_config('app.organization_id', ${current.organization_id}, true)`;
 
         const [row] = await tx<ApplicationRow[]>`
           update applications set state = 'WITHDRAWN'
@@ -253,13 +259,16 @@ export function postgresApplicationRepository(): ApplicationRepository {
            where id = ${input.applicationId} and applicant_id = ${input.applicantId}
         `;
         if (!app) throw new ApplicationNotFoundError('No such application');
-        if (app.state !== 'SUBMITTED' && app.state !== 'UNDER_REVIEW') {
+        assertApplicationDocumentPath(input.storagePath, app.organization_id, input.applicationId);
+        await tx`select set_config('app.organization_id', ${app.organization_id}, true)`;
+        const [current] = await tx<{ state: ApplicationState }[]>`
+          select state from applications where id = ${input.applicationId} and applicant_id = ${input.applicantId} for update
+        `;
+        if (!current || (current.state !== 'SUBMITTED' && current.state !== 'UNDER_REVIEW')) {
           // Attaching evidence to a decided application would change the
           // record the decision was made on.
           throw new NotApplicableError('This application has already been decided');
         }
-
-        await tx`select set_config('app.organization_id', ${app.organization_id}, true)`;
 
         const [row] = await tx<
           {
@@ -322,7 +331,12 @@ export function postgresApplicationRepository(): ApplicationRepository {
            where a.id = ${applicationId} and a.applicant_id = ${applicantId}
         `;
         if (!app) throw new ApplicationNotFoundError('No such application');
-        if (app.state !== 'SUBMITTED' && app.state !== 'UNDER_REVIEW') {
+        await tx`select set_config('app.organization_id', ${app.organization_id}, true)`;
+        const [current] = await tx<{ state: ApplicationState }[]>`
+          select state from applications where id = ${applicationId} and applicant_id = ${applicantId} for update
+        `;
+        if (!current) throw new ApplicationNotFoundError('No such application');
+        if (current.state !== 'SUBMITTED' && current.state !== 'UNDER_REVIEW') {
           throw new NotApplicableError('This application has already been decided');
         }
         if (!app.fee) {
@@ -333,7 +347,6 @@ export function postgresApplicationRepository(): ApplicationRepository {
           );
         }
 
-        await tx`select set_config('app.organization_id', ${app.organization_id}, true)`;
 
         const [existing] = await tx<{ id: string }[]>`
           select id from reservations
@@ -379,7 +392,7 @@ export function postgresApplicationRepository(): ApplicationRepository {
             organization_id, application_id, occupancy_id, fee_centavos, state
           ) values (
             ${app.organization_id}, ${applicationId}, ${occupancy!.id},
-            ${Number(app.fee)}, 'PENDING_PAYMENT'
+            ${centavos(Number(app.fee))}, 'PENDING_PAYMENT'
           )
           returning id, organization_id, occupancy_id, fee_centavos::text,
                     state, expires_at
@@ -390,7 +403,7 @@ export function postgresApplicationRepository(): ApplicationRepository {
           organizationId: reservation!.organization_id,
           applicationId,
           occupancyId: reservation!.occupancy_id,
-          feeCentavos: Number(reservation!.fee_centavos) as Centavos,
+          feeCentavos: centavos(Number(reservation!.fee_centavos)),
           state: reservation!.state,
           expiresAt: reservation!.expires_at,
         } satisfies Reservation;
@@ -498,6 +511,7 @@ async function settleReservation(
       from reservations
      where application_id = ${applicationId}
        and state in ('PENDING_PAYMENT','ACTIVE')
+     for update
   `;
   if (!reservation) return;
 
@@ -640,7 +654,7 @@ async function detailsFor(
       reference: row.reference,
       listingTitle: row.listing_title,
       photo: row.photo,
-      moveInCostCentavos: Number(row.move_in_cost_centavos) as Centavos,
+      moveInCostCentavos: centavos(Number(row.move_in_cost_centavos)),
       // Whichever hold is live — the reservation the applicant paid for, or
       // the one approval placed. The customer only cares that there is a
       // deadline and when it is.
@@ -649,7 +663,7 @@ async function detailsFor(
       propertyName: row.property_name,
       areaLabel: row.area_label,
       cityLabel: row.city_label,
-      monthlyRentCentavos: Number(row.monthly_rent_centavos) as Centavos,
+      monthlyRentCentavos: centavos(Number(row.monthly_rent_centavos)),
       documents: documents
         .filter((doc) => doc.application_id === row.id)
         .map((doc) => ({
@@ -669,7 +683,7 @@ async function detailsFor(
             organizationId: res.organization_id,
             applicationId: row.id,
             occupancyId: res.occupancy_id,
-            feeCentavos: Number(res.fee_centavos) as Centavos,
+            feeCentavos: centavos(Number(res.fee_centavos)),
             state: res.state,
             expiresAt: res.expires_at,
           }))[0] ?? null,

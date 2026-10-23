@@ -1,3 +1,4 @@
+import { postgresPaymentNotificationOutbox } from '@/infrastructure/postgres/repositories/postgres-payment-notification-outbox.repository.ts';
 import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { sql } from '@/infrastructure/postgres/db.ts';
@@ -317,13 +318,14 @@ suite('marketplace vertical flow against real PostgreSQL', { timeout: 60_000 }, 
       startBookingPayment(payments, gateway)({ occupancyId: created.hold.id, userId: BEN }),
     ).rejects.toThrow(/does not belong/);
 
-    const confirm = confirmBookingPayment(payments, gateway, notifications);
+    const confirm = confirmBookingPayment(payments, gateway);
     const result = await simulateBookingPayment(payments, gateway, confirm)({
       occupancyId: created.hold.id,
       paymentId: intent.paymentId,
       userId: ANA,
     });
     expect(result?.applied).toBe(true);
+    await postgresPaymentNotificationOutbox().deliverPending(100);
 
     const mine = await listMyBookings(bookings, clock)({ principal: customer(ANA) });
     const booking = mine.find((b) => b.id === created.hold.id);

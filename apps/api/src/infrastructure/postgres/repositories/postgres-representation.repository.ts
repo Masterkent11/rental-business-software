@@ -7,7 +7,7 @@ import type {
   RepresentationState,
   RepresentationTerms,
 } from '@/domain/agents/agent.ts';
-import { ListingAlreadyRepresentedError } from '@/domain/agents/agent.ts';
+import { InvalidRepresentationTransitionError, ListingAlreadyRepresentedError } from '@/domain/agents/agent.ts';
 import { withScope, withUser, withUserAndScope } from '@/infrastructure/postgres/db.ts';
 
 interface RepresentationRow {
@@ -272,7 +272,7 @@ export const postgresRepresentationRepository = (): RepresentationRepository => 
   async respond({ responderUserId, representation, accept }) {
     try {
       return await withUserAndScope(responderUserId, representation.organizationId, async (tx) => {
-        await tx`
+        const updated = await tx`
           update listing_representations set
             state = ${accept ? 'ACTIVE' : 'ENDED'},
             responded_at = now(),
@@ -280,7 +280,9 @@ export const postgresRepresentationRepository = (): RepresentationRepository => 
             ended_by = ${accept ? null : responderUserId},
             end_reason = ${accept ? null : 'Declined'}
           where id = ${representation.id} and state = 'PENDING'
+          returning id
         `;
+        if (updated.length !== 1) throw new InvalidRepresentationTransitionError('This invitation has already been answered');
         return loadInScope(tx, representation.id);
       });
     } catch (error) {

@@ -5,7 +5,7 @@ import {
   type BookingRepository,
   type BookingSummary,
 } from '@/application/ports/repositories/booking-repository.port.ts';
-import type { StayState } from '@/domain/bookings/booking.ts';
+import { InvalidStayTransitionError, type StayState } from '@/domain/bookings/booking.ts';
 import { nightsIn } from '@/domain/occupancy/occupancy.ts';
 import { sql, withScope, withUser } from '@/infrastructure/postgres/db.ts';
 
@@ -196,12 +196,14 @@ export const postgresBookingRepository = (): BookingRepository => ({
     });
   },
 
-  async setStayState(organizationId, bookingId, state) {
+  async setStayState(organizationId, bookingId, expected, state) {
     await withScope(organizationId, async (tx) => {
-      await tx`
+      const updated = await tx`
         update stays set state = ${state}, updated_at = now()
-         where occupancy_id = ${bookingId} and organization_id = ${organizationId}
+         where occupancy_id = ${bookingId} and organization_id = ${organizationId} and state = ${expected}
+         returning id
       `;
+      if (updated.length !== 1) throw new InvalidStayTransitionError('The booking changed. Refresh and try again.');
     });
   },
 

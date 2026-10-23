@@ -1,3 +1,4 @@
+import { PaymentNotPendingError, InvalidPaymentOccupancyError } from '@/domain/payments/payment-errors.ts';
 import type { ArgumentsHost } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -35,6 +36,8 @@ describe('allocation error contract', () => {
     [new PaymentNotInOrganizationError('No applicable payment.'), 404, 'NOT_FOUND'],
     [new InvoiceNotFoundError('No applicable invoice.'), 404, 'NOT_FOUND'],
     [new PaymentAllocationError('Payment balance is insufficient.'), 409, 'CONFLICT'],
+    [new PaymentNotPendingError('Not pending.'), 409, 'CONFLICT'],
+    [new InvalidPaymentOccupancyError('Hold ended.'), 409, 'CONFLICT'],
     [new InvalidInvoiceAmountError('The invoice total is too large.'), 400, 'INVALID_REQUEST'],
   ] as const)('maps allocation failures to their public status', (error, expectedStatus, expectedCode) => {
     const send = vi.fn(), status = vi.fn().mockReturnValue({ send });

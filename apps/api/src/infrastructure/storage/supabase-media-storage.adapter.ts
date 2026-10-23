@@ -30,20 +30,24 @@ export function supabaseMediaStorage(
   };
 
   const list = async (prefix: string, headers: Record<string, string>): Promise<string[]> => {
-    const response = await fetch(`${base}/storage/v1/object/list/${BUCKET}`, {
-      method: 'POST',
-      headers: { ...headers, 'content-type': 'application/json' },
-      body: JSON.stringify({ prefix, limit: 1000, offset: 0 }),
-    });
-    if (!response.ok) {
-      throw new Error(`Storage refused to list ${prefix} (${response.status}): ${await response.text()}`);
-    }
-    const entries = (await response.json()) as { name: string; id: string | null }[];
     const files: string[] = [];
-    for (const entry of entries) {
-      const path = `${prefix}/${entry.name}`;
-      if (entry.id === null) files.push(...(await list(path, headers)));
-      else files.push(path);
+    const pageSize = 1000;
+    for (let offset = 0; ; offset += pageSize) {
+      const response = await fetch(`${base}/storage/v1/object/list/${BUCKET}`, {
+        method: 'POST',
+        headers: { ...headers, 'content-type': 'application/json' },
+        body: JSON.stringify({ prefix, limit: pageSize, offset, sortBy: { column: 'name', order: 'asc' } }),
+      });
+      if (!response.ok) {
+        throw new Error(`Storage refused to list ${prefix} (${response.status}): ${await response.text()}`);
+      }
+      const entries = (await response.json()) as { name: string; id: string | null }[];
+      for (const entry of entries) {
+        const path = `${prefix}/${entry.name}`;
+        if (entry.id === null) files.push(...(await list(path, headers)));
+        else files.push(path);
+      }
+      if (entries.length < pageSize) break;
     }
     return files;
   };

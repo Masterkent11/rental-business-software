@@ -34,6 +34,7 @@ export interface PropertyLocation extends Coordinates {
 }
 
 export interface Listing {
+  readonly activity?: { readonly views: number; readonly inquiries: number; readonly viewings: number };
   readonly id: string;
   readonly organizationId: OrganizationId;
   readonly resourceId: string;

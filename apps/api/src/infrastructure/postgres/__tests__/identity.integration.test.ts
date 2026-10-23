@@ -154,4 +154,20 @@ suite('identity against real PostgreSQL', { timeout: 30_000 }, () => {
     );
     expect(Number(leaked[0]!.n)).toBe(0);
   });
+  it.skipIf(!process.env.TEST_ADMIN_DATABASE_URL)('rolls back a newly created profile when its registration capability cannot be written', async () => {
+    const admin = postgres(process.env.TEST_ADMIN_DATABASE_URL!, { max: 1 });
+    const id = randomUUID();
+    try {
+      await admin.unsafe(`alter table user_capabilities add constraint audit_registration_failure check (user_id <> '${id}'::uuid) not valid`);
+      await expect(users.createProfile({ id, email: `${id}@example.test`, mobile: null })).rejects.toThrow();
+      expect(await users.findProfile(id)).toBeNull();
+      await admin`alter table user_capabilities drop constraint audit_registration_failure`;
+      expect((await users.createProfile({ id, email: `${id}@example.test`, mobile: null })).id).toBe(id);
+      expect(await users.capabilitiesFor(id)).toHaveLength(1);
+    } finally {
+      await admin`alter table user_capabilities drop constraint if exists audit_registration_failure`;
+      await admin.end();
+    }
+  });
+
 });

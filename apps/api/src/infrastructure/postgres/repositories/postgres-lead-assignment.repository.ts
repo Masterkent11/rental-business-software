@@ -141,10 +141,15 @@ export async function loadLeadAssignment(tx: postgres.TransactionSql, id: string
   return row ? toAssignment(row) : null;
 }
 
+async function lockLead(tx: postgres.TransactionSql, listingId: string, customerId: string): Promise<void> {
+  await tx`select pg_advisory_xact_lock(hashtext(${'lead:' + listingId + ':' + customerId}))`;
+}
+
 export async function insertLeadAssignment(
   tx: postgres.TransactionSql,
   next: NewLeadAssignment,
 ): Promise<LeadAssignment> {
+  await lockLead(tx, next.listingId, next.customerId);
   const [inserted] = await tx<AssignmentRow[]>`
     insert into lead_assignments (
       organization_id, listing_id, customer_id, representation_id, agent_id, purpose, status,
@@ -369,6 +374,10 @@ export const postgresLeadAssignmentRepository = (): LeadAssignmentRepository => 
 
   async attachToViewing(organizationId, viewingId, next) {
     return withScope(organizationId, async (tx) => {
+      await lockLead(tx, next.listingId, next.customerId);
+      const [matching] = await tx`select id from viewings
+        where id = ${viewingId} and organization_id = ${organizationId} and status = 'MATCHING' for update`;
+      if (!matching) return null;
       const assignment = await insertLeadAssignment(tx, next);
       const updated = await tx<{ id: string }[]>`
         update viewings set
@@ -388,6 +397,7 @@ export const postgresLeadAssignmentRepository = (): LeadAssignmentRepository => 
 
   async reassign(input: Reassignment) {
     return withScope(input.organizationId, async (tx) => {
+      await lockLead(tx, input.current.listingId, input.current.customerId);
       const released = await tx<{ id: string }[]>`
         update lead_assignments set
           status = ${input.next ? 'REASSIGNED' : 'RELEASED'},
@@ -396,6 +406,7 @@ export const postgresLeadAssignmentRepository = (): LeadAssignmentRepository => 
           response_due_at = null,
           updated_at = now()
         where id = ${input.current.id} and organization_id = ${input.organizationId} and status in ${tx(ACTIVE)}
+          and (${input.releaseReason} <> 'RESPONSE_TIMEOUT' or status = 'ASSIGNED')
         returning id
       `;
       if (released.length === 0) return null;

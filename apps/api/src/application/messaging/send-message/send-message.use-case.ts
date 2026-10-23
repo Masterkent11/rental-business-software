@@ -17,7 +17,6 @@ import {
   type ParticipantRole,
 } from '@/domain/messaging/conversation.ts';
 import type { NewNotification } from '@/domain/notifications/notification.ts';
-import { statusAfterPartnerReply } from '@/domain/inquiries/inquiry.ts';
 import { hasCapability, type Principal } from '@/domain/identity/identity.ts';
 import { assertMayManageOrganization } from '@/application/identity/application-authorization.rules.ts';
 import { RepresentationForbiddenError } from '@/domain/agents/agent.ts';
@@ -53,7 +52,7 @@ async function deliver(
   if (created && input.senderRole !== 'CUSTOMER' && inquiries) {
     const open = await inquiries.openForConversation(input.scope, input.conversation.id);
     if (open && open.firstResponseAt === null) {
-      await inquiries.recordFirstResponse(input.scope, open.id, message.createdAt, statusAfterPartnerReply(open.status));
+      await inquiries.recordFirstResponse(input.scope, open.id, message.createdAt);
     }
   }
 

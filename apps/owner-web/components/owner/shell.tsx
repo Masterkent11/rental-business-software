@@ -458,7 +458,7 @@ export function OwnerShell({ children }: { children: React.ReactNode }) {
           <BrandMark className="size-8" />
           <NotificationsButton />
         </div>
-        <div className="pointer-events-none fixed right-6 top-4 z-30 hidden lg:block">
+        <div className="owner-desktop-notifications pointer-events-none fixed right-6 top-4 z-30 hidden lg:block">
           <div className="pointer-events-auto rounded-xl bg-background/80 backdrop-blur">
             <NotificationsButton />
           </div>

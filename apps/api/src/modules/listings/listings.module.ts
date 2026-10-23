@@ -99,8 +99,8 @@ import type { ListingMediaStorage } from '@/application/ports/storage/listing-me
     },
     {
       provide: DECIDE_CHANGE_PROPOSAL,
-      inject: [LISTING_CHANGE_PROPOSAL_REPOSITORY, LISTING_REPOSITORY],
-      useFactory: (p: ListingChangeProposalRepository, repo: ListingRepository) => decideChangeProposal(p, repo),
+      inject: [LISTING_CHANGE_PROPOSAL_REPOSITORY],
+      useFactory: (p: ListingChangeProposalRepository) => decideChangeProposal(p),
     },
     { provide: OCCUPANCY_REPOSITORY, useFactory: (): OccupancyRepository => postgresOccupancyRepository() },
     {

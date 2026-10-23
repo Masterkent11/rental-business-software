@@ -1,3 +1,4 @@
+import { assertApplicationDocumentPath } from '@/domain/applications/application-rules.ts';
 import type { ApplicationRepository } from '@/application/ports/repositories/application-repository.port.ts';
 import { ApplicationNotFoundError } from '@/application/ports/repositories/application-repository.port.ts';
 import type {
@@ -61,6 +62,7 @@ export const attachApplicationDocument =
       throw new ApplicationNotFoundError('No such application');
     }
 
+    assertApplicationDocumentPath(input.storagePath, application.organizationId, input.applicationId);
     const document = await applications.attachDocument({
       applicantId: input.applicantId,
       applicationId: input.applicationId,

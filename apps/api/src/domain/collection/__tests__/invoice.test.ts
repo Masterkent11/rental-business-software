@@ -18,7 +18,7 @@ import {
   type Invoice,
   type InvoiceState,
 } from '@/domain/collection/collection.ts';
-import type { Centavos } from '@/domain/shared/money.ts';
+import { centavos, type Centavos } from '@/domain/shared/money.ts';
 
 const peso = (amount: number) => (amount * 100) as Centavos;
 const TODAY = new Date('2026-08-24T09:00:00Z');
@@ -132,6 +132,11 @@ describe('I-04 — an invoice is never overpaid', () => {
 });
 
 describe('arrears', () => {
+  it('rejects an aggregate debt beyond exact integer precision', () => {
+    const invoice = withContext(anInvoice({ totalCentavos: centavos(Number.MAX_SAFE_INTEGER) }), 'Ana');
+    expect(() => arrearsFrom([invoice, withContext(anInvoice({ id: 'second', totalCentavos: centavos(1) }), 'Ana')], TODAY)).toThrow(RangeError);
+  });
+
   it('groups by tenant, because chasing four invoices is one phone call', () => {
     const rows = arrearsFrom(
       [

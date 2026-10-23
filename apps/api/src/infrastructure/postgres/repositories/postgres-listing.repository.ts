@@ -1,3 +1,5 @@
+import { assertAcceptablePhoto, assertMayAddFloorPlan } from '@/domain/listings/listing-rules.ts';
+import { InvalidListingTransitionError } from '@/domain/listings/listing-errors.ts';
 import type postgres from 'postgres';
 import type {
   AreaSummary,
@@ -10,6 +12,7 @@ import type {
   OwnerProperty,
   PropertyDetails,
   SaleTerms,
+  SaleListingWriter,
   SaleTermsInput,
   StayPricingSource,
   UpdateListingInput,
@@ -266,6 +269,12 @@ async function loadOne(
 }
 
 
+async function mediaCount(tx: postgres.TransactionSql, organizationId: string, listingId: string, kind: 'PHOTO' | 'FLOOR_PLAN'): Promise<number> {
+  const [row] = await tx<{ count: number }[]>`select count(*)::int as count from media_assets
+    where organization_id = ${organizationId} and listing_id = ${listingId} and kind = ${kind} and representation_id is null`;
+  return row!.count;
+}
+
 async function insertProperty(
   tx: postgres.TransactionSql,
   organizationId: string,
@@ -482,7 +491,15 @@ export const postgresListingRepository = (): ListingRepository => ({
           and l.state <> 'ARCHIVED'
         order by l.updated_at desc, l.created_at desc
       `;
-      return rows.map(toListing);
+      const activity = await tx<{ id: string; views: number; inquiries: number; viewings: number }[]>`
+        select l.id,
+          (select count(*)::int from listing_view_events e where e.listing_id = l.id) as views,
+          (select count(*)::int from inquiries i where i.listing_id = l.id and i.organization_id = ${organizationId}) as inquiries,
+          (select count(*)::int from viewings v where v.listing_id = l.id and v.organization_id = ${organizationId}) as viewings
+        from listings l where l.organization_id = ${organizationId} and l.state <> 'ARCHIVED'
+      `;
+      const byId = new Map(activity.map(({ id, ...counts }) => [id, counts]));
+      return rows.map(row => ({ ...toListing(row), activity: byId.get(row.id)! }));
     });
   },
 
@@ -604,6 +621,8 @@ export const postgresListingRepository = (): ListingRepository => ({
       `;
       if (existing) return { id: existing.id, url: existing.url, storagePath: existing.path, position: existing.position };
 
+      assertAcceptablePhoto({ contentType: photo.contentType, sizeBytes: photo.sizeBytes,
+        currentCount: await mediaCount(tx, organizationId, listingId, 'PHOTO') });
       const [inserted] = await tx<MediaRow[]>`
         insert into media_assets (
           organization_id, listing_id, kind, storage_url, storage_path, content_type, size_bytes, position
@@ -659,15 +678,17 @@ export const postgresListingRepository = (): ListingRepository => ({
     });
   },
 
-  async setListingState(organizationId: string, listingId: string, state: ListingState) {
+  async setListingState(organizationId: string, listingId: string, expected: ListingState, state: ListingState) {
     return withScope(organizationId, async (tx) => {
-      await tx`
+      const updated = await tx`
         update listings
            set state = ${state},
                updated_at = now(),
                published_at = case when ${state} = 'PUBLISHED' then coalesce(published_at, now()) else published_at end
-         where organization_id = ${organizationId} and id = ${listingId}
+         where organization_id = ${organizationId} and id = ${listingId} and state = ${expected}
+         returning id
       `;
+      if (updated.length !== 1) throw new InvalidListingTransitionError('The listing changed. Refresh and try again.');
       return loadOne(tx, organizationId, listingId);
     });
   },
@@ -858,37 +879,7 @@ export const postgresListingRepository = (): ListingRepository => ({
   },
 
   async updateSaleListing(input: UpdateSaleListingInput) {
-    return withScope(input.organizationId, async (tx) => {
-      const current = await loadOne(tx, input.organizationId, input.listingId);
-      if (!current || current.intent !== 'SALE') return null;
-      const l = input.listing;
-      await tx`
-        update listings set
-          title = coalesce(${l.title?.trim() ?? null}, title),
-          description = coalesce(${l.description?.trim() ?? null}, description),
-          amenities = ${l.amenities ? textArray(tx, l.amenities) : tx`amenities`},
-          sale_status = coalesce(${l.saleStatus ?? null}, sale_status),
-          bedrooms = coalesce(${l.bedrooms ?? null}, bedrooms),
-          bathrooms = coalesce(${l.bathrooms ?? null}, bathrooms),
-          floor_area_sqm = ${l.floorAreaSqm !== undefined ? l.floorAreaSqm : tx`floor_area_sqm`},
-          lot_area_sqm = ${l.lotAreaSqm !== undefined ? l.lotAreaSqm : tx`lot_area_sqm`},
-          parking_slots = coalesce(${l.parkingSlots ?? null}, parking_slots),
-          available_from = ${l.availableFrom !== undefined ? l.availableFrom : tx`available_from`},
-          furnishing = ${l.furnishing !== undefined ? l.furnishing : tx`furnishing`},
-          updated_at = now()
-        where id = ${input.listingId} and organization_id = ${input.organizationId} and intent = 'SALE'
-      `;
-      if (input.property && current.propertyId) {
-        await updateProperty(tx, input.organizationId, current.propertyId, input.property);
-        if (input.property.name) {
-          await tx`
-            update rentable_resources set label = ${input.property.name.trim()}
-             where id = ${current.resourceId} and organization_id = ${input.organizationId}
-          `;
-        }
-      }
-      return loadOne(tx, input.organizationId, input.listingId);
-    });
+    return withScope(input.organizationId, tx => updateSaleListingInTransaction(tx, input));
   },
 
   async saleTerms(organizationId: string, listingId: string) {
@@ -952,6 +943,8 @@ export const postgresListingRepository = (): ListingRepository => ({
       if (existing) {
         return { id: existing.id, url: existing.url, storagePath: existing.path, position: existing.position, label: existing.label ?? '' };
       }
+      assertMayAddFloorPlan(await mediaCount(tx, organizationId, listingId, 'FLOOR_PLAN'));
+      assertAcceptablePhoto({ contentType: media.contentType, sizeBytes: media.sizeBytes, currentCount: 0 });
       const [inserted] = await tx<MediaRow[]>`
         insert into media_assets (
           organization_id, listing_id, kind, storage_url, storage_path, content_type, size_bytes, position, label
@@ -1003,4 +996,41 @@ export const postgresListingRepository = (): ListingRepository => ({
       return rows[0] ? toListing(rows[0]) : null;
     });
   },
+});
+
+async function updateSaleListingInTransaction(tx: postgres.TransactionSql, input: UpdateSaleListingInput): Promise<Listing | null> {
+  const current = await loadOne(tx, input.organizationId, input.listingId);
+  if (!current || current.intent !== 'SALE') return null;
+  const l = input.listing;
+  await tx`
+    update listings set
+      title = coalesce(${l.title?.trim() ?? null}, title),
+      description = coalesce(${l.description?.trim() ?? null}, description),
+      amenities = ${l.amenities ? textArray(tx, l.amenities) : tx`amenities`},
+      sale_status = coalesce(${l.saleStatus ?? null}, sale_status),
+      bedrooms = coalesce(${l.bedrooms ?? null}, bedrooms),
+      bathrooms = coalesce(${l.bathrooms ?? null}, bathrooms),
+      floor_area_sqm = ${l.floorAreaSqm !== undefined ? l.floorAreaSqm : tx`floor_area_sqm`},
+      lot_area_sqm = ${l.lotAreaSqm !== undefined ? l.lotAreaSqm : tx`lot_area_sqm`},
+      parking_slots = coalesce(${l.parkingSlots ?? null}, parking_slots),
+      available_from = ${l.availableFrom !== undefined ? l.availableFrom : tx`available_from`},
+      furnishing = ${l.furnishing !== undefined ? l.furnishing : tx`furnishing`},
+      updated_at = now()
+    where id = ${input.listingId} and organization_id = ${input.organizationId} and intent = 'SALE'
+  `;
+  if (input.property && current.propertyId) {
+    await updateProperty(tx, input.organizationId, current.propertyId, input.property);
+    if (input.property.name) {
+      await tx`
+        update rentable_resources set label = ${input.property.name.trim()}
+         where id = ${current.resourceId} and organization_id = ${input.organizationId}
+      `;
+    }
+  }
+  return loadOne(tx, input.organizationId, input.listingId);
+}
+
+export const postgresSaleListingWriter = (tx: postgres.TransactionSql): SaleListingWriter => ({
+  findById: (organizationId, listingId) => loadOne(tx, organizationId, listingId),
+  updateSaleListing: input => updateSaleListingInTransaction(tx, input),
 });

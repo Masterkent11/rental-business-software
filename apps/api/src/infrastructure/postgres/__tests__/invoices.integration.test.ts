@@ -263,6 +263,17 @@ suite('invoices against real PostgreSQL', { timeout: 45_000 }, () => {
     expect(other.number).toBe((villaHighest?.n ?? 0) + 1);
   });
 
+  it('allocates consecutive invoice numbers under concurrent issuance', async () => {
+    const occupancyId = await anOccupancy(SANTOS_ORG);
+    const input = { organizationId: SANTOS_ORG, occupancyId,
+      periodStart: day(0), periodEnd: day(30), dueOn: day(5),
+      lines: [{ kind: 'RENT' as const, description: 'Rent', amountCentavos: peso(500) }] };
+    const issued = await Promise.all(Array.from({ length: 8 }, () => invoices.issue(input)));
+    const numbers = issued.map(invoice => invoice.number).sort((a, b) => a - b);
+    expect(new Set(numbers).size).toBe(8);
+    expect(numbers).toEqual(Array.from({ length: 8 }, (_, index) => numbers[0]! + index));
+  });
+
   it('shows one organization nothing of another organization’s money', async () => {
     const santos = await anOccupancy(SANTOS_ORG);
 

@@ -111,7 +111,7 @@ export function arrearsFrom(
     const older = invoice.dueOn < existing.oldestDueOn;
     byTenant.set(key, {
       ...existing,
-      owedCentavos: (existing.owedCentavos + owed) as Centavos,
+      owedCentavos: centavos(existing.owedCentavos + owed),
       oldestDueOn: older ? invoice.dueOn : existing.oldestDueOn,
       daysOverdue: Math.max(existing.daysOverdue, daysOverdue(invoice, today)),
       invoiceCount: existing.invoiceCount + 1,

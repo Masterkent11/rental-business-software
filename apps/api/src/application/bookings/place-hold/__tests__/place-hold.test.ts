@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { StayTooLongError, placeHold } from '@/application/bookings/place-hold/place-hold.use-case.ts';
+import { StayTooLongError } from '@/domain/bookings/booking-errors.ts';
+import { placeHold } from '@/application/bookings/place-hold/place-hold.use-case.ts';
 import {
   OccupancyConflictError,
   SerializationError,
