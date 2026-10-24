@@ -66,3 +66,5 @@ apps/customer_app/config/*.local.json
 # Python audit tooling
 __pycache__/
 *.py[cod]
+
+tools/
