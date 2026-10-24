@@ -55,6 +55,7 @@ import type { NotificationRepository } from '@/application/ports/repositories/no
 import type { Clock } from '@/application/ports/providers/clock.port.ts';
 
 @Module({
+  exports: [START_CONVERSATION, SEND_CUSTOMER_MESSAGE],
   imports: [AssignmentModule],
   controllers: [CustomerConversationsController, OrganizationConversationsController, AgentConversationsController],
   providers: [

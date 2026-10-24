@@ -1,5 +1,11 @@
 import { Module } from '@nestjs/common';
 import { VerificationModule } from './verification.module.ts';
+import { ConfirmTenancyController } from './controllers/confirm-tenancy.controller.ts';
+import { CONFIRM_TENANCY } from './application.tokens.ts';
+import { confirmTenancy } from '@/application/applications/confirm-tenancy/confirm-tenancy.use-case.ts';
+import { postgresTenancyActivationRepository } from '@/infrastructure/postgres/repositories/postgres-tenancy-activation.repository.ts';
+import { CLOCK } from '@/modules/shared/shared.tokens.ts';
+import type { Clock } from '@/application/ports/providers/clock.port.ts';
 import { SubmitApplicationController } from './controllers/submit-application.controller.ts';
 import { GetMyApplicationsController } from './controllers/get-my-applications.controller.ts';
 import { GetMyApplicationController } from './controllers/get-my-application.controller.ts';
@@ -48,6 +54,7 @@ import { decideApplication } from '@/application/applications/decide-application
 @Module({
   imports: [VerificationModule],
   controllers: [
+    ConfirmTenancyController,
     SubmitApplicationController,
     GetMyApplicationsController,
     GetMyApplicationController,
@@ -58,6 +65,7 @@ import { decideApplication } from '@/application/applications/decide-application
     DecideApplicationController,
   ],
   providers: [
+    { provide: CONFIRM_TENANCY, inject: [CLOCK], useFactory: (clock: Clock) => confirmTenancy(postgresTenancyActivationRepository(), clock) },
     // Adapters to Ports
     {
       provide: APPLICATION_REPOSITORY,

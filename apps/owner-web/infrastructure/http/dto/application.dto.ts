@@ -17,6 +17,7 @@ export const OwnerApplicationDtoSchema = z.object({
   id: z.string(),
   reference: z.string(),
   state: ApplicationStateDtoSchema,
+  tenancy: z.object({ id: z.string(), kind: z.string(), state: z.string(), confirmedAt: z.string().nullable() }).nullable().default(null),
   listingTitle: z.string().default(""),
   propertyName: z.string().default(""),
   areaLabel: z.string().default(""),

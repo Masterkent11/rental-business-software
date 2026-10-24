@@ -247,7 +247,7 @@ export function postgresInvoiceRepository(): InvoiceRepository {
     async issue(input) {
       return withScope(input.organizationId, async (tx) => {
         const [occupancy] = await tx<{ id: string; tenant_id: string | null }[]>`
-          select o.id, s.user_id as tenant_id
+          select o.id, case when o.kind = 'LEASE' then o.held_by else s.user_id end as tenant_id
           from occupancies o
           left join stays s on s.occupancy_id = o.id
           where o.id = ${input.occupancyId}

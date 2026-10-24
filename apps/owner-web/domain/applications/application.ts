@@ -24,6 +24,7 @@ export interface ReservationSummary {
 }
 
 export interface OwnerApplication {
+  readonly tenancy?: { readonly id: string; readonly kind: string; readonly state: string; readonly confirmedAt: string | null } | null;
   readonly id: string;
   readonly reference: string;
   readonly state: ApplicationState;

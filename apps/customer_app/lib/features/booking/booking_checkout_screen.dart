@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../data/tenant_home_repository.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -89,6 +90,7 @@ class _BookingCheckoutScreenState extends ConsumerState<BookingCheckoutScreen> {
         throw const ApiException('The payment did not go through. Please try again.');
       }
       ref.invalidate(myBookingsProvider);
+      ref.invalidate(customerExperienceProvider);
       if (!mounted) return;
       HapticFeedback.mediumImpact();
       context.go(Routes.booking(hold.id, confirmed: true));

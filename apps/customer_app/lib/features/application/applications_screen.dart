@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -292,9 +291,8 @@ class _Outcome extends StatelessWidget {
             ),
             const SizedBox(height: Tokens.s4),
             Text(
-              'The place is held for you until '
-              '${date.format(app.holdExpiresAt!)}. Pay the advance and deposit '
-              'before then and it becomes yours.',
+              'Review your move-in requirements with the property manager. My Home becomes available when your confirmed tenancy starts.'
+              '${app.holdExpiresAt == null ? '' : ' Your reservation hold expires ${date.format(app.holdExpiresAt!)}.'}',
               style: theme.textTheme.bodyMedium,
             ),
             if (app.moveInCostCentavos != null) ...[
@@ -318,17 +316,8 @@ class _Outcome extends StatelessWidget {
             ],
             const SizedBox(height: Tokens.s12),
             FilledButton(
-              onPressed: () {
-                HapticFeedback.mediumImpact();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Payment needs the API contracts from Step 5.',
-                    ),
-                  ),
-                );
-              },
-              child: const Text('Pay and sign'),
+              onPressed: () => context.push(Routes.contactSupport(topic: 'application')),
+              child: const Text('Get move-in help'),
             ),
           ],
         );

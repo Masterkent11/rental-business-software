@@ -14,6 +14,8 @@ import {
   UNSAVE_LISTING,
   GET_ME,
   UPDATE_MY_PROFILE,
+  GET_TENANT_HOME,
+  REQUEST_TENANT_MAINTENANCE,
 } from './me.tokens.ts';
 import { getMe } from '@/application/me/get-me/get-me.use-case.ts';
 import { updateMyProfile } from '@/application/me/update-my-profile/update-my-profile.use-case.ts';
@@ -26,10 +28,35 @@ import { saveListing } from '@/application/me/save-listing/save-listing.use-case
 import { unsaveListing } from '@/application/me/unsave-listing/unsave-listing.use-case.ts';
 import type { IdentityProvider } from '@/application/ports/providers/identity-provider.port.ts';
 import type { UserRepository } from '@/application/ports/repositories/user-repository.port.ts';
+import { TenantHomeController } from './controllers/tenant-home.controller.ts';
+import { postgresTenantHomeRepository } from '@/infrastructure/postgres/repositories/postgres-tenant-home.repository.ts';
+import { getTenantHome } from '@/application/me/get-tenant-home/get-tenant-home.use-case.ts';
+import { CLOCK } from '@/modules/shared/shared.tokens.ts';
+import type { Clock } from '@/application/ports/providers/clock.port.ts';
+import { MessagingModule } from '@/modules/messaging/messaging.module.ts';
+import { START_CONVERSATION, SEND_CUSTOMER_MESSAGE } from '@/modules/messaging/messaging.tokens.ts';
+import type { startConversation } from '@/application/messaging/start-conversation/start-conversation.use-case.ts';
+import type { sendCustomerMessage } from '@/application/messaging/send-message/send-message.use-case.ts';
+import { requestTenantMaintenance } from '@/application/me/get-tenant-home/request-tenant-maintenance.use-case.ts';
 
 @Module({
-  controllers: [GetMeController, GetMyStaysController, SavedListingsController],
+  imports: [MessagingModule],
+  controllers: [GetMeController, GetMyStaysController, SavedListingsController, TenantHomeController],
   providers: [
+    {
+      provide: REQUEST_TENANT_MAINTENANCE,
+      inject: [GET_TENANT_HOME, START_CONVERSATION, SEND_CUSTOMER_MESSAGE],
+      useFactory: (
+        home: ReturnType<typeof getTenantHome>,
+        start: ReturnType<typeof startConversation>,
+        send: ReturnType<typeof sendCustomerMessage>,
+      ) => requestTenantMaintenance(home, start, send),
+    },
+    {
+      provide: GET_TENANT_HOME,
+      inject: [CLOCK],
+      useFactory: (clock: Clock) => getTenantHome(postgresTenantHomeRepository(), clock),
+    },
     {
       provide: IDENTITY_PROVIDER,
       useFactory: (): IdentityProvider => jwksIdentityProvider(),

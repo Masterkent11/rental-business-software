@@ -30,6 +30,7 @@ export interface OwnerRepositoryPort {
   updateBookingStatus(organizationId: string, bookingId: string, action: BookingAction): Promise<OwnerBooking>;
 
   getApplications(organizationId: string): Promise<readonly OwnerApplication[]>;
+  confirmTenancy(organizationId: string, applicationId: string): Promise<void>;
   decideApplication(
     organizationId: string,
     applicationId: string,

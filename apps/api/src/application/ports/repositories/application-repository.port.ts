@@ -31,6 +31,14 @@ export interface ApplicationDocument {
 }
 
 export interface ApplicationDetail extends Application {
+  readonly tenancy?: {
+    readonly id: string;
+    readonly kind: string;
+    readonly state: string;
+    readonly startsOn: string | null;
+    readonly endsOn: string | null;
+    readonly confirmedAt: string | null;
+  } | null;
   readonly reference: string;
   readonly listingTitle: string;
   readonly photo: string | null;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../data/application_repository.dart';
+import '../../data/tenant_home_repository.dart';
 import '../../design/tokens.dart';
 import '../../fixtures/view_models.dart';
 import 'application_controller.dart';
@@ -52,6 +53,7 @@ class _ApplicationFlowViewState extends ConsumerState<ApplicationFlowView> with 
     ref.listen(provider, (previous, next) {
       if (previous?.applicationId != next.applicationId && next.applicationId != null) {
         ref.invalidate(applicationsProvider);
+        ref.invalidate(customerExperienceProvider);
       }
     });
     final stage = flow.session?.status;

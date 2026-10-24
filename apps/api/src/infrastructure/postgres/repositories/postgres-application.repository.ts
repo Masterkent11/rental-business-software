@@ -624,9 +624,11 @@ async function detailsFor(
     `;
 
     const holds = await tx<
-      { application_id: string; expires_at: Date | null }[]
+      { application_id: string; expires_at: Date | null; id: string; kind: string; state: string;
+        starts_on: string | null; ends_on: string | null; activation_confirmed_at: Date | null }[]
     >`
-      select application_id, expires_at
+      select application_id, expires_at, id, kind, state,
+        lower(during)::text as starts_on, upper(during)::text as ends_on, activation_confirmed_at
         from occupancies
        where application_id = any(${tx.array(ids)}::uuid[])
          and state in ('HELD','COMMITTED')
@@ -649,7 +651,11 @@ async function detailsFor(
        where application_id = any(${tx.array(ids)}::uuid[])
     `;
 
-    return rows.map<ApplicationDetail>((row) => ({
+    return rows.map<ApplicationDetail>((row) => {
+      const hold = holds.find(hold => hold.application_id === row.id);
+      return {
+      tenancy: hold ? { id: hold.id, kind: hold.kind, state: hold.state, startsOn: hold.starts_on,
+        endsOn: hold.ends_on, confirmedAt: hold.activation_confirmed_at?.toISOString() ?? null } : null,
       ...toApplication(row),
       reference: row.reference,
       listingTitle: row.listing_title,
@@ -659,7 +665,7 @@ async function detailsFor(
       // the one approval placed. The customer only cares that there is a
       // deadline and when it is.
       holdExpiresAt:
-        holds.find((hold) => hold.application_id === row.id)?.expires_at ?? null,
+        hold?.expires_at ?? null,
       propertyName: row.property_name,
       areaLabel: row.area_label,
       cityLabel: row.city_label,
@@ -687,7 +693,8 @@ async function detailsFor(
             state: res.state,
             expiresAt: res.expires_at,
           }))[0] ?? null,
-    }));
+      };
+    });
   };
 
   return sql.begin(run) as Promise<readonly ApplicationDetail[]>;

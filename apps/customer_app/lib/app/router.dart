@@ -37,6 +37,10 @@ import '../features/shell/home_shell.dart';
 import '../features/tour/tour_screen.dart';
 import '../features/tour/tour_intro_screen.dart';
 import 'shell_destination.dart';
+import '../features/my_home/my_home_screen.dart';
+import '../features/my_home/tenancy_detail_screen.dart';
+import '../features/my_home/upcoming_rentals_screen.dart';
+import '../features/my_home/rental_history_screen.dart';
 
 abstract final class Routes {
   static const discover = '/discover';
@@ -46,6 +50,10 @@ abstract final class Routes {
   static const staysPath = '$discover/stays';
   static const saved = '/saved';
   static const bookings = '/bookings';
+  static const trips = '/bookings/trips';
+  static const rentalHistory = '/rental-history';
+  static const upcomingRentals = '/upcoming-rentals';
+  static String tenancy(String id) => '/bookings/home/${Uri.encodeComponent(id)}';
   static const account = '/account';
   static const notifications = '/notifications';
   static const applications = '/applications';
@@ -161,6 +169,8 @@ GoRouter buildRouter() {
     navigatorKey: _rootNavigatorKey,
     initialLocation: Routes.discover,
     routes: [
+      GoRoute(path: Routes.rentalHistory, builder: (context, state) => const RentalHistoryScreen()),
+      GoRoute(path: Routes.upcomingRentals, builder: (context, state) => const UpcomingRentalsScreen()),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => HomeShell(navigationShell: navigationShell),
         branches: [
@@ -406,8 +416,12 @@ final Map<ShellDestination, StatefulShellBranch> _branches = {
     routes: [
       GoRoute(
         path: Routes.bookings,
-        builder: (context, state) => const BookingsScreen(),
+        builder: (context, state) => const TenantLandingScreen(),
         routes: [
+          GoRoute(path: 'trips', builder: (context, state) => const BookingsScreen()),
+          GoRoute(
+              path: 'home/:id',
+              builder: (context, state) => TenancyDetailScreen(tenancyId: state.pathParameters['id']!)),
           GoRoute(
             path: ':id',
             parentNavigatorKey: _rootNavigatorKey,

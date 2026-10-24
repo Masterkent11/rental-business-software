@@ -226,7 +226,8 @@ void main() {
       expect(controlsY, greaterThan(searchY));
     });
 
-    testWidgets('6, 7, 8. Page title scrolls away, search controls remain pinned, result count scrolls', (tester) async {
+    testWidgets('6, 7, 8. Page title scrolls away, search controls remain pinned, result count scrolls',
+        (tester) async {
       tester.view
         ..physicalSize = const Size(390, 844)
         ..devicePixelRatio = 1.0;
@@ -257,7 +258,9 @@ void main() {
       expect(scrolledCountY, greaterThan(pinnedHeaderY));
     });
 
-    testWidgets('9, 10, 11, 12, 13. Filter opens modal bottom sheet not covering 100%, X closes, reset clears, rental filters shown', (tester) async {
+    testWidgets(
+        '9, 10, 11, 12, 13. Filter opens modal bottom sheet not covering 100%, X closes, reset clears, rental filters shown',
+        (tester) async {
       tester.view
         ..physicalSize = const Size(390, 844)
         ..devicePixelRatio = 1.0;
@@ -377,10 +380,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      for (final tab in ['Home', 'Saved', 'Bookings', 'Messages', 'Profile']) {
+      for (final tab in ['Explore', 'Saved', 'Bookings', 'Messages', 'Profile']) {
         expect(find.text(tab), findsWidgets, reason: tab);
       }
-      expect(find.text('Explore'), findsNothing);
+      expect(find.text('My Home'), findsNothing);
     });
 
     testWidgets('18. No duplicate results introduced by filter or search refresh', (tester) async {

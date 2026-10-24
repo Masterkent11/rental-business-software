@@ -4,6 +4,7 @@ export const toApplicationHttpResponse = (application: ApplicationDetail) => ({
   id: application.id,
   reference: application.reference,
   state: application.state,
+  tenancy: application.tenancy ?? null,
   listingTitle: application.listingTitle,
   photo: application.photo,
   moveInCostCentavos: application.moveInCostCentavos,

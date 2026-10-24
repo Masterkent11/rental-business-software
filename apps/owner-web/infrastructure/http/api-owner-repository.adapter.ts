@@ -132,6 +132,12 @@ export class ApiOwnerRepositoryAdapter implements OwnerRepositoryPort {
     });
   }
 
+  async confirmTenancy(organizationId: string, applicationId: string): Promise<void> {
+    await this.http.request(`${org(organizationId)}/applications/${applicationId}/tenancy`, {
+      method: "POST", organizationId, body: { requirementsReviewed: true },
+    });
+  }
+
   async getCollection(organizationId: string): Promise<Collection> {
     const res = await this.http.request<unknown>(`${org(organizationId)}/collection`, { organizationId });
     return CollectionDtoSchema.parse(res);

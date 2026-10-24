@@ -116,6 +116,14 @@ MockClient _fakeTransport() {
       };
 
   final client = MockClient((request) async {
+    if (request.url.path == '/me/home') {
+      return http.Response(
+          jsonEncode({
+            'capabilities': ['EXPLORE', 'TRIPS', 'APPLICATION_TRACKING'],
+            'tenancies': []
+          }),
+          200);
+    }
     if (request.url.path.startsWith('/application-drafts/resource/')) {
       return http.Response(jsonEncode({'draft': null}), 200, headers: {'content-type': 'application/json'});
     }
@@ -565,7 +573,7 @@ void main() {
       expect(find.textContaining('does not reserve the place'), findsOneWidget);
 
       expect(find.text('You have been approved'), findsOneWidget);
-      expect(find.textContaining('held for you until'), findsOneWidget);
+      expect(find.textContaining('confirmed tenancy starts'), findsOneWidget);
 
       final rejected = find.textContaining('accepted an application submitted');
       await tester.scrollUntilVisible(rejected, 250);

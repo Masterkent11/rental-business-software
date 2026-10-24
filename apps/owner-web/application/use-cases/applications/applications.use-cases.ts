@@ -36,3 +36,14 @@ export class DecideApplicationUseCase {
     return this.repository.decideApplication(organizationId, applicationId, input);
   }
 }
+
+export class ConfirmTenancyUseCase {
+  constructor(private readonly repository: OwnerRepositoryPort) {}
+
+  async execute(organizationId: string, applicationId: string, requirementsReviewed: boolean): Promise<void> {
+    if (!organizationId || !applicationId || !requirementsReviewed) {
+      throw new Error("Review the move-in requirements before confirming the tenancy");
+    }
+    return this.repository.confirmTenancy(organizationId, applicationId);
+  }
+}

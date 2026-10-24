@@ -10,6 +10,7 @@ import '../../data/booking_repository.dart';
 import '../../data/listing_repository.dart';
 import '../../data/messaging_repository.dart';
 import '../../data/notification_repository.dart';
+import '../../data/tenant_home_repository.dart';
 import '../../design/components.dart';
 import '../../design/tokens.dart';
 import '../saved/saved_controller.dart';
@@ -148,7 +149,11 @@ class AccountScreen extends ConsumerWidget {
               },
             ),
           const SizedBox(height: Tokens.s24),
-          SettingsRow(icon: Icons.event_note_outlined, label: 'My bookings', onTap: () => context.go(Routes.bookings)),
+          SettingsRow(icon: Icons.event_note_outlined, label: 'My bookings', onTap: () => context.push(Routes.trips)),
+          SettingsRow(icon: Icons.history, label: 'Rental history', onTap: () => context.push(Routes.rentalHistory)),
+          if (ref.watch(customerExperienceProvider).valueOrNull?.capabilities.contains('MOVE_IN') == true)
+            SettingsRow(
+                icon: Icons.key_outlined, label: 'Upcoming rentals', onTap: () => context.push(Routes.upcomingRentals)),
           SettingsRow(
               icon: Icons.event_available_outlined,
               label: 'Inquiries & viewings',

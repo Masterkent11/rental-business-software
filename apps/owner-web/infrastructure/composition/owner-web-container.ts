@@ -77,6 +77,7 @@ import {
 } from "../../application/use-cases/listings/listings.use-cases";
 import {
   DecideApplicationUseCase,
+  ConfirmTenancyUseCase,
   LoadApplicationsUseCase,
 } from "../../application/use-cases/applications/applications.use-cases";
 import {
@@ -182,6 +183,7 @@ export class OwnerWebContainer {
 
   readonly loadApplicationsUseCase = new LoadApplicationsUseCase(this.ownerRepository);
   readonly decideApplicationUseCase = new DecideApplicationUseCase(this.ownerRepository);
+  readonly confirmTenancyUseCase = new ConfirmTenancyUseCase(this.ownerRepository);
 }
 
 export const container = new OwnerWebContainer();

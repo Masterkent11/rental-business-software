@@ -115,8 +115,8 @@ void main() {
       await _pumpApp(tester);
 
       expect(find.byType(SvgPicture), findsNWidgets(6));
-      expect(find.text('Explore'), findsNothing);
-      for (final label in ['Home', 'Saved', 'Bookings', 'Messages', 'Profile']) {
+      expect(find.descendant(of: find.byType(HomeCategoryRow), matching: find.text('Explore')), findsNothing);
+      for (final label in ['Explore', 'Saved', 'Bookings', 'Messages', 'Profile']) {
         expect(find.text(label), findsWidgets, reason: label);
       }
     });

@@ -11,16 +11,18 @@ class GlassBottomNav extends StatelessWidget {
     required this.selectedIndex,
     required this.onSelected,
     this.unreadMessages = 0,
+    this.tenantMode = false,
   });
 
   final int selectedIndex;
   final ValueChanged<int> onSelected;
   final int unreadMessages;
+  final bool tenantMode;
 
   static const _items = [
     (
-      label: 'Home',
-      icon: Icons.home_outlined,
+      label: 'Explore',
+      icon: Icons.search,
       activeAsset: HomeAssets.navHomeActivePng,
       inactiveAsset: HomeAssets.navHomeInactivePng,
     ),
@@ -85,8 +87,11 @@ class GlassBottomNav extends StatelessWidget {
                   for (var i = 0; i < _items.length; i++)
                     Expanded(
                       child: _GlassNavItem(
-                        label: _items[i].label,
-                        icon: _items[i].icon,
+                        label: tenantMode && i == 2 ? 'My Home' : _items[i].label,
+                        icon: tenantMode && i == 2
+                            ? (selectedIndex == i ? Icons.home_rounded : Icons.home_outlined)
+                            : _items[i].icon,
+                        useIcon: tenantMode || i == 0,
                         activeAsset: _items[i].activeAsset,
                         inactiveAsset: _items[i].inactiveAsset,
                         selected: selectedIndex == i,
@@ -118,6 +123,7 @@ class _GlassNavItem extends StatefulWidget {
     required this.reduced,
     required this.onTap,
     this.badge = 0,
+    this.useIcon = false,
   });
 
   final String label;
@@ -128,6 +134,7 @@ class _GlassNavItem extends StatefulWidget {
   final bool reduced;
   final VoidCallback onTap;
   final int badge;
+  final bool useIcon;
 
   @override
   State<_GlassNavItem> createState() => _GlassNavItemState();
@@ -165,7 +172,7 @@ class _GlassNavItemState extends State<_GlassNavItem> {
                 height: 32,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  color: widget.selected
+                  color: widget.selected && !widget.useIcon
                       ? const Color(0xFFDCE6F2).withValues(alpha: 0.88)
                       : Colors.transparent,
                 ),
@@ -177,14 +184,17 @@ class _GlassNavItemState extends State<_GlassNavItem> {
                       Icon(
                         widget.icon,
                         size: 22,
-                        color: Colors.transparent,
+                        color: widget.useIcon
+                            ? (widget.selected ? const Color(0xFF0C2348) : const Color(0xFF8D9DB8))
+                            : Colors.transparent,
                       ),
-                      Image.asset(
-                        asset,
-                        width: 22,
-                        height: 22,
-                        excludeFromSemantics: true,
-                      ),
+                      if (!widget.useIcon)
+                        Image.asset(
+                          asset,
+                          width: 22,
+                          height: 22,
+                          excludeFromSemantics: true,
+                        ),
                       if (widget.badge > 0)
                         Positioned(
                           right: -8,

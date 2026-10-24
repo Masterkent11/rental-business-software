@@ -9,3 +9,5 @@ export const SAVE_LISTING = Symbol('SAVE_LISTING');
 export const UNSAVE_LISTING = Symbol('UNSAVE_LISTING');
 export const GET_ME = Symbol('GET_ME');
 export const UPDATE_MY_PROFILE = Symbol('UPDATE_MY_PROFILE');
+export const GET_TENANT_HOME = Symbol('GET_TENANT_HOME');
+export const REQUEST_TENANT_MAINTENANCE = Symbol('REQUEST_TENANT_MAINTENANCE');

@@ -1,4 +1,5 @@
 import { PaymentNotPendingError, InvalidPaymentOccupancyError } from '@/domain/payments/payment-errors.ts';
+import { TenancyNotFoundError } from '@/domain/occupancy/tenant-home.ts';
 import { InvoiceNotFoundError, PaymentNotInOrganizationError } from '@/application/ports/repositories/invoice-repository.port.ts';
 import { VerificationConflictError, VerificationInputError, VerificationNotFoundError, VerificationRateLimitError, VerificationRequiredError, VerificationUnavailableError } from '@/domain/verification/verification.ts';
 import {
@@ -139,6 +140,7 @@ const RULES: readonly Rule[] = [
   [
     [
       ApplicationNotFoundError,
+      TenancyNotFoundError,
       TourNotFoundError,
       InvoiceMissingError,
       InvoiceNotFoundError,

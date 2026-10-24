@@ -10,8 +10,11 @@ import { useApplicationsStore } from "@/stores/use-applications-store";
 import { useSessionStore } from "@/stores/use-session-store";
 import type { OwnerApplication } from "@/domain/applications/application";
 
-const stateBadge = (state: OwnerApplication["state"]) => {
-  switch (state) {
+const stateBadge = (application: OwnerApplication) => {
+  if (application.tenancy?.kind === "LEASE" && application.tenancy.state === "COMMITTED") {
+    return <Badge tone="ok">Tenancy confirmed</Badge>;
+  }
+  switch (application.state) {
     case "APPROVED":
       return <Badge tone="ok">Approved · held for move-in</Badge>;
     case "REJECTED":
@@ -27,8 +30,9 @@ const stateBadge = (state: OwnerApplication["state"]) => {
 
 export default function ApplicationsPage() {
   const organizationId = useSessionStore((s) => s.activeOrganizationId);
-  const { applications, loading, error, busyId, rejectingApp, rejectReason, loadApplications, setRejectingApp, setRejectReason, decide } =
+  const { applications: loadedApplications, organizationId: loadedOrganizationId, loading, error, busyId, rejectingApp, rejectReason, loadApplications, setRejectingApp, setRejectReason, decide, confirmTenancy, confirmingId, requirementsReviewed, setConfirmingId, setRequirementsReviewed } =
     useApplicationsStore();
+  const applications = loadedOrganizationId === organizationId ? loadedApplications : [];
 
   useEffect(() => {
     if (organizationId) void loadApplications(organizationId);
@@ -80,7 +84,7 @@ export default function ApplicationsPage() {
                     </p>
                     <p className="mt-0.5 font-mono text-[11.5px] text-muted">#{a.reference} · {formatDateTime(a.createdAt)}</p>
                   </div>
-                  {stateBadge(a.state)}
+                  {stateBadge(a)}
                 </div>
                 <dl className="mt-4 grid gap-3 rounded-xl bg-surface-secondary/60 p-4 text-[13px] sm:grid-cols-4">
                   <div><dt className="text-muted">Move-in</dt><dd className="font-semibold">{formatDate(a.desiredMoveIn)} · {a.desiredTermMonths} mo</dd></div>
@@ -101,6 +105,30 @@ export default function ApplicationsPage() {
                     <Btn size="sm" variant="outline" disabled={busyId === a.id} onClick={() => setRejectingApp(a)}>
                       <X className="size-4" aria-hidden /> Decline
                     </Btn>
+                  </div>
+                ) : null}
+                {a.state === "APPROVED" && !(a.tenancy?.kind === "LEASE" && a.tenancy.state === "COMMITTED") ? (
+                  <div className="mt-4 border-t border-border pt-4">
+                    {confirmingId === a.id ? (
+                      <div className="flex flex-col items-start gap-3">
+                        <label className="flex items-start gap-2 text-[13px]">
+                          <input type="checkbox" checked={requirementsReviewed} disabled={busyId === a.id} onChange={(event) => setRequirementsReviewed(event.target.checked)} />
+                          I have reviewed the required payments, documents, and move-in conditions with this applicant.
+                        </label>
+                        <p className="text-[12.5px] text-muted">This confirms the lease. My Home opens for the tenant on the lease start date.</p>
+                        <div className="flex gap-2">
+                          <Btn size="sm" disabled={!requirementsReviewed} busy={busyId === a.id} onClick={async () => {
+                            if (organizationId && await confirmTenancy(organizationId, a.id, requirementsReviewed)) {
+                              setConfirmingId(null);
+                              setRequirementsReviewed(false);
+                            }
+                          }}>Confirm tenancy</Btn>
+                          <Btn size="sm" variant="ghost" disabled={busyId === a.id} onClick={() => setConfirmingId(null)}>Cancel</Btn>
+                        </div>
+                      </div>
+                    ) : (
+                      <Btn size="sm" onClick={() => { setConfirmingId(a.id); setRequirementsReviewed(false); }}>Review and confirm tenancy</Btn>
+                    )}
                   </div>
                 ) : null}
               </Card>
