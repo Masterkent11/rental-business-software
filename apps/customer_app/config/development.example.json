@@ -1,6 +1,6 @@
 {
   "APP_ENV": "development",
-  "API_BASE_URL": "http://localhost:8080",
+  "API_BASE_URL": "http://localhost:3002",
   "SUPABASE_URL": "https://development.supabase.co",
   "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_REPLACE_WITH_PUBLIC_PROJECT_KEY"
 }

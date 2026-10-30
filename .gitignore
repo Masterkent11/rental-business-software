@@ -62,6 +62,7 @@ supabase/demo/generated-*.sql
 
 # Local Flutter public build configuration
 apps/customer_app/config/*.local.json
+apps/customer_app/config/development.json
 
 # Python audit tooling
 __pycache__/

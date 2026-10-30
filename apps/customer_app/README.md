@@ -7,6 +7,16 @@ flutter pub get
 flutter run -d chrome
 ```
 
+For the local iOS development flavor, start the API from `apps/api` with
+`npm run dev:customer`. This uses port 3002 without changing `.env.local`.
+Create the ignored `config/development.json` from `config/development.example.json`
+and supply the existing project's public Supabase configuration.
+
+```bash
+flutter pub get
+flutter run --flavor development --dart-define-from-file=config/development.json -d A9AC2B49-8CE5-49A8-B84A-94F398FE80DD
+```
+
 ## Before you change anything
 
 | Read this | For |
