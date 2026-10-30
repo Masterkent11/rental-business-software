@@ -43,7 +43,11 @@ const SCHEDULER = Symbol('PAYMENT_NOTIFICATION_SCHEDULER');
   providers: [
     { provide: OUTBOX, useFactory: (): PaymentNotificationOutbox => postgresPaymentNotificationOutbox() },
     { provide: DELIVER, inject: [OUTBOX], useFactory: (outbox: PaymentNotificationOutbox) => deliverPaymentNotifications(outbox) },
-    { provide: SCHEDULER, useFactory: (): JobScheduler => new IntervalJobScheduler(() => new Logger('PaymentNotifications').warn('Pending notifications will retry.')) },
+    { provide: SCHEDULER, useFactory: (): JobScheduler => new IntervalJobScheduler(error => {
+      const code = typeof error === 'object' && error !== null && 'code' in error ? error.code : null;
+      const detail = typeof code === 'string' && /^[A-Z0-9_]{3,20}$/.test(code) ? ` (${code})` : '';
+      new Logger('PaymentNotifications').warn(`Payment notification delivery failed${detail}. Pending notifications are retained and will retry with backoff.`);
+    }) },
     {
       provide: PAYMENT_GATEWAY,
       useFactory: (): PaymentGateway => {
