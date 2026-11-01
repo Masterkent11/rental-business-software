@@ -99,7 +99,7 @@ try {
     await page.getByRole("button", { name: "Open navigation", exact: true }).click();
     const drawer = page.getByRole("dialog", { name: "Navigation", exact: true });
     await drawer.locator(".partner-drawer-brand").waitFor();
-    assert.equal(await drawer.getByRole("img", { name: "Westayplace", exact: true }).count(), 1);
+    assert.equal(await drawer.locator(".partner-wordmark").innerText(), "Ana Homes");
     await capture(page, `drawer-${width}`, false);
     await drawer.getByRole("button", { name: "Close navigation" }).click();
     results.push({ width, properties: true, filters: true, pagination: true, tabsKeyboard: true, bookings: true, messagesEmpty: true, analytics: true, drawer: true });

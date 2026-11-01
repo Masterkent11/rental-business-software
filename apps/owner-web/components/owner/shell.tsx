@@ -37,7 +37,7 @@ import { useListingsStore } from "@/stores/use-listings-store";
 import { useDashboardStore } from "@/stores/use-dashboard-store";
 import { FloatingNavigation } from "./floating-navigation";
 import { PartnerIdentity } from "./partner-identity";
-import { PartnerBrandingProvider } from "./partner-branding";
+import { PartnerBrand, PartnerBrandingProvider } from "./partner-branding";
 import { SearchResultFocus } from "./search-result-focus";
 import { PartnerToolbar } from "./partner-toolbar";
 import "./partner-shell.css";
@@ -576,10 +576,7 @@ export function OwnerShell({ children }: { children: React.ReactNode }) {
               />
               <div className="owner-drawer absolute inset-y-0 left-0 w-[280px] bg-background shadow-2xl">
                 <div className="partner-drawer-heading">
-                  <Link href={workspaceHome(workspace)} className="partner-drawer-brand focusable" onClick={() => setMobileDrawerOpen(false)}>
-                    <BrandMark className="size-8" />
-                    <span>WeStayPlace</span>
-                  </Link>
+                  <PartnerBrand workspace={workspace} drawer onNavigate={() => setMobileDrawerOpen(false)} />
                   <button
                     type="button"
                     className="focusable grid size-11 place-items-center rounded-xl"

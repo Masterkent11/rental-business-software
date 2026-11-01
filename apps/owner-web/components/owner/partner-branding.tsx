@@ -7,9 +7,11 @@ import {
   useMemo,
   type ReactNode,
 } from "react";
+import Link from "next/link";
 import { useStore } from "zustand";
 import { ImagePlus, Trash2, Building2 } from "lucide-react";
 import type { Workspace } from "@/domain/workspace/workspace";
+import { workspaceHome } from "@/domain/workspace/workspace";
 import { createPartnerShellStore } from "@/stores/partner-shell-store";
 import { Photo } from "./photo";
 import { Btn, Card } from "./ui";
@@ -64,6 +66,33 @@ export function PartnerLogo({ workspace }: { workspace: Workspace }) {
     </span>
   );
 }
+export function PartnerBrand({
+  workspace,
+  drawer = false,
+  onNavigate,
+}: {
+  workspace: Workspace;
+  drawer?: boolean;
+  onNavigate?: () => void;
+}) {
+  return (
+    <Link
+      href={workspaceHome(workspace)}
+      className={drawer ? "partner-drawer-brand focusable" : "partner-brand focusable"}
+      aria-label={`${workspace.title} workspace home`}
+      onClick={onNavigate}
+    >
+      <PartnerLogo workspace={workspace} />
+      <span className="partner-brand-copy">
+        <span className="partner-wordmark" title={workspace.title}>{workspace.title}</span>
+        <span className="partner-brand-subtitle">
+          {workspace.kind === "AGENT" ? "Agent workspace" : workspace.subtitle}
+        </span>
+      </span>
+    </Link>
+  );
+}
+
 export function PartnerBrandingEditor() {
   const {
       branding: value,

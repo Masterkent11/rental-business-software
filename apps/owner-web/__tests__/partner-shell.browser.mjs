@@ -293,7 +293,7 @@ try {
         assert.equal(geometry.sidebar.y, 72);
         assert.equal(geometry.sidebar.width, 244);
         assert.equal(geometry.header.x, 244);
-        await page.locator(".partner-workspace-name").waitFor();
+        await page.locator(".partner-brand .partner-wordmark").waitFor();
       }
       assert.equal(
         await page.locator(".owner-sidebar .owner-profile").count(),
@@ -475,12 +475,24 @@ try {
       });
     await page.getByText("Workspace logo saved.", { exact: true }).waitFor();
     await page.getByRole("img", { name: "Current workspace logo" }).waitFor();
-    assert.equal(
-      await page.locator(".owner-sidebar .partner-logo img").count(),
-      0,
-    );
+    await page.locator(".partner-brand .partner-logo img").waitFor();
+    const partnerTitle = role === "OWNER" ? "Ana Homes" : "Ana Santos";
+    assert.equal(await page.locator(".partner-brand .partner-wordmark").innerText(), partnerTitle);
+    assert.equal(await page.locator(".partner-brand").innerText(), `${partnerTitle}\n${role === "OWNER" ? "Owner workspace" : "Agent workspace"}`);
+    assert.equal(await page.locator(".partner-workspace-name").count(), 0);
+    assert.equal(await page.locator(".owner-sidebar .partner-logo img").count(), 0);
     await page.reload();
     await page.getByRole("img", { name: "Current workspace logo" }).waitFor();
+    await page.locator(".partner-brand .partner-logo img").waitFor();
+    await page.screenshot({ path: path.join(output, `${role.toLowerCase()}-partner-header-logo.png`) });
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.getByRole("button", { name: "Open navigation", exact: true }).click();
+    const brandedDrawer = page.getByRole("dialog", { name: "Navigation", exact: true });
+    await brandedDrawer.locator(".partner-logo img").waitFor();
+    assert.equal(await brandedDrawer.locator(".partner-wordmark").innerText(), partnerTitle);
+    await page.screenshot({ path: path.join(output, `${role.toLowerCase()}-partner-drawer-logo.png`) });
+    await brandedDrawer.getByRole("button", { name: "Close navigation" }).click();
+    await page.setViewportSize({ width: 1920, height: 1080 });
     await page
       .getByRole("button", { name: "Remove logo", exact: true })
       .click();

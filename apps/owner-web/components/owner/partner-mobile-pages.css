@@ -16,9 +16,23 @@
   min-height: 44px;
   border-radius: 8px;
   color: var(--owner-navy);
-  font-size: 17px;
+  min-width: 0;
+  flex: 1;
+  font-size: 15px;
   font-weight: 750;
   letter-spacing: -0.5px;
+}
+
+.partner-drawer-brand .partner-logo {
+  width: 36px;
+  height: 36px;
+}
+.partner-drawer-brand .partner-wordmark {
+  max-width: 168px;
+  font-size: 14px;
+}
+.partner-drawer-brand .partner-brand-subtitle {
+  font-size: 11px;
 }
 
 @media (max-width: 600px) {
