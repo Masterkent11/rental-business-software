@@ -1,5 +1,5 @@
 {
-  "branch": "codex/partner-mobile-navigation",
+  "branch": "feature/owner-web/dashboard-web-mobile/02-11-2026",
   "base": "9b5689c2d0a0a0079dad83e92ad838d8f708cf65",
   "featureCommits": [
     {
@@ -1136,15 +1136,17 @@
     }
   ],
   "finalEvidenceCommit": {
-    "subject": "#77 Record ticket commit mapping and release blockers",
-    "tickets": [
-      77,
-      32
-    ],
-    "hash": "Recorded by git log; intentionally omitted here to avoid a self referential commit hash"
+    "subject": "#77 Record current branch name after rename",
+    "hash": "Read from git log; omitted here to avoid a self referential hash"
   },
   "pushed": false,
   "remoteMigrationsApplied": false,
   "releaseReady": false,
-  "releaseBlocker": "Issue 32: full disposable database suite has 44 failures, see verification.md"
+  "releaseBlocker": "Issue 32: full disposable database suite has 44 failures, see verification.md",
+  "initialBranch": "codex/partner-mobile-navigation",
+  "verificationCommit": {
+    "commit": "15eb963ee1a6bcee2da1fb47d892333853e27c72",
+    "subject": "#77 Record ticket commit mapping and release blockers"
+  },
+  "totalCommitsIncludingFinalDocumentation": 18
 }

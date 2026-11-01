@@ -1147,5 +1147,17 @@
       "docs/agile/git-organization/evidence/secret-scan-review.json",
       "docs/agile/git-organization/verification.md"
     ]
+  },
+  {
+    "key": "branch-record",
+    "message": "#77 Record current branch name after rename",
+    "tickets": [
+      77
+    ],
+    "paths": [
+      "docs/agile/git-organization/README.md",
+      "docs/agile/git-organization/commit-plan.json",
+      "docs/agile/git-organization/commit-results.json"
+    ]
   }
 ]

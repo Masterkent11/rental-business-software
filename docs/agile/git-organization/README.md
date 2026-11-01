@@ -1,6 +1,6 @@
 # Ticket referenced commit plan
 
-Branch: `codex/partner-mobile-navigation`. Base: `9b5689c2d0a0a0079dad83e92ad838d8f708cf65`. Local commits only. No push.
+Branch: `feature/owner-web/dashboard-web-mobile/02-11-2026`. Base: `9b5689c2d0a0a0079dad83e92ad838d8f708cf65`. Local commits only. No push.
 
 Existing issue numbers were read back from GitHub. No new issue or duplicate Epic is needed. Provisional TEN keys remain planning references, not invented Jira keys. The current sprint is Partner Experience, November 1–14, 2026.
 
@@ -29,3 +29,5 @@ Each entry is a reviewable slice of the existing work. Shared composition regist
 The manifest lists each original path and the few files that recur for composition registration or the final partner branding correction. Generated local node_modules, build caches, credentials and ignored Postman artifacts are excluded. Original staged contents and worktree changes are backed up outside the repository. Full postcommit hashes and tree verification are recorded in commit-results.json.
 
 [Verified commit hashes and file mapping](commit-results.json). No issue was closed automatically; commit bodies use Refs, not closing keywords. The database draft remains a release blocker.
+
+The branch was renamed during preparation from codex/partner-mobile-navigation to feature/owner-web/dashboard-web-mobile/02-11-2026. Git reflog verified the rename at f5b90e7; commit ancestry was preserved. Commit 15eb963 records verification; the final documentation commit corrects the branch name. All 18 commits remain on this one branch, with no push.
