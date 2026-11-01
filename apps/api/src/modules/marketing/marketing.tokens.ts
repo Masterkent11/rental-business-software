@@ -1,0 +1,1 @@
+export const MARKETING_USE_CASES = Symbol("MARKETING_USE_CASES");
