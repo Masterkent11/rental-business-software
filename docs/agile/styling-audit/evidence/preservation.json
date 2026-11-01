@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-11-01T09:53:06.661533+00:00",
+  "initialHead": "9b5689c2d0a0a0079dad83e92ad838d8f708cf65",
+  "initialIndexDiffSha256": "23f1480b8e7b7cf826b2654db41da947b6a3f78a4209e9d49f05f5890748c22d",
+  "currentIndexDiffSha256": "23f1480b8e7b7cf826b2654db41da947b6a3f78a4209e9d49f05f5890748c22d",
+  "indexUnchanged": true,
+  "applicationSourceEditsIssuedByThisTask": false,
+  "concurrentSourceChangesDetected": [
+    "apps/owner-web/components/auth/auth.css"
+  ],
+  "note": "auth.css changed concurrently during the task; no edit to that file was issued here. Preserve it. Baseline captures reflect the production build made before this concurrent change; refresh baseline for resumed audit.",
+  "gitCommitPushMergeDeployPerformed": false
+}

@@ -1,0 +1,30 @@
+{
+  "screenshotMatrix": "8/8",
+  "roleFlows": [
+    "OWNER",
+    "AGENT"
+  ],
+  "checks": [
+    "first visit",
+    "laptop fit",
+    "functional carousel",
+    "registration validation",
+    "immediate signup",
+    "confirmation-required signup",
+    "workspace setup",
+    "private unverified agent",
+    "password visibility",
+    "invalid sign-in",
+    "reset request",
+    "content legal page",
+    "callback rejection",
+    "PKCE code exchange",
+    "recovery token exchange and password update",
+    "solid role surfaces and no promotional text card",
+    "keyboard role selection",
+    "200 percent equivalent viewport reflow",
+    "small-screen reflow"
+  ],
+  "pageErrors": [],
+  "provider": "synthetic intercepted provider; real provider acceptance not run"
+}

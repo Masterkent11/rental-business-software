@@ -1,0 +1,324 @@
+{
+  "generatedOn": "2026-11-01",
+  "publicationStatus": "NOT PUBLISHED",
+  "jiraReconciliation": "UNVERIFIED",
+  "noNewEpic": true,
+  "items": [
+    {
+      "type": "Task",
+      "priority": "P1",
+      "existingIssueId": null,
+      "publicationStatus": "NOT PUBLISHED",
+      "proposedParentIssue": "https://github.com/Masterkent11/rental-business-software/issues/20",
+      "parentLinkVerified": false,
+      "proposedSprint": {
+        "name": "Partner Experience",
+        "start": "2026-11-01",
+        "end": "2026-11-14",
+        "assignmentVerified": false
+      },
+      "publicationGate": "Recheck GitHub and reconcile Jira WSP before creating anything; reuse an exact matching issue and preserve existing parent/sprint history. No new Epic.",
+      "excluded": [
+        "Authentication and authorization logic",
+        "Tenant membership and workspace permissions",
+        "Backend APIs and database/RLS/schema",
+        "SVG replacement or approved UI redesign",
+        "Merge, push, deploy and production data"
+      ],
+      "definitionOfDone": [
+        "All scope specific acceptance criteria have recorded evidence or explicit NOT RUN status.",
+        "Published identity, native parent and Project membership are verified before reporting a ticket as created.",
+        "Existing sprint history and feature acceptance records are preserved.",
+        "No material visual regression and no unrelated source or dependency changes."
+      ],
+      "provisionalId": "STYLE-001",
+      "title": "Audit recent CSS and established styling conventions",
+      "status": "AUDIT DRAFT; MARKETING RERUN FAILURE UNRESOLVED; UNPUBLISHED",
+      "scope": [
+        "Map installed styling stack, imported stylesheets, tokens, reusable primitives and provenance.",
+        "Classify every local style rule and at-rule; distinguish static candidates from approved deletions.",
+        "Reconcile related trackers and capture current source baseline without changing product code."
+      ],
+      "affectedFiles": [
+        "apps/owner-web/package.json",
+        "apps/owner-web/postcss.config.mjs",
+        "apps/owner-web/app/globals.css",
+        "apps/owner-web/components/agent/dashboard.css",
+        "apps/owner-web/components/auth/auth.css",
+        "apps/owner-web/components/marketing/marketing.css",
+        "apps/owner-web/components/owner/partner-shell.css",
+        "docs/agile/styling-audit/"
+      ],
+      "dependencies": [],
+      "acceptanceCriteria": [
+        "All five stylesheets and all 824 inventory records have source locations and classifications.",
+        "Report names valid CSS exceptions and exact first slice; no blanket CSS migration.",
+        "Baseline evidence states synthetic provider/API limitations and no after comparison.",
+        "GitHub records and Jira access limitation are explicitly recorded; no duplicate Epic/ticket claims.",
+        "Application source and existing Git index fingerprints remain unchanged."
+      ],
+      "verificationWalkthrough": [
+        "Read audit and rule inventory.",
+        "Inspect source links and the nine redundant/stale candidates.",
+        "Review tracker reconciliation and preservation evidence.",
+        "Review before screenshots and verification manifest."
+      ],
+      "testEvidence": [
+        "docs/agile/styling-audit/README.md",
+        "docs/agile/styling-audit/rule-inventory.json",
+        "docs/agile/styling-audit/evidence/verification.json",
+        "docs/agile/styling-audit/evidence/preservation.json"
+      ],
+      "approvalGate": "Audit only. Approval required before the proposed shared stylesheet patch."
+    },
+    {
+      "type": "Task",
+      "priority": "P1",
+      "existingIssueId": null,
+      "publicationStatus": "NOT PUBLISHED",
+      "proposedParentIssue": "https://github.com/Masterkent11/rental-business-software/issues/20",
+      "parentLinkVerified": false,
+      "proposedSprint": {
+        "name": "Partner Experience",
+        "start": "2026-11-01",
+        "end": "2026-11-14",
+        "assignmentVerified": false
+      },
+      "publicationGate": "Recheck GitHub and reconcile Jira WSP before creating anything; reuse an exact matching issue and preserve existing parent/sprint history. No new Epic.",
+      "excluded": [
+        "Authentication and authorization logic",
+        "Tenant membership and workspace permissions",
+        "Backend APIs and database/RLS/schema",
+        "SVG replacement or approved UI redesign",
+        "Merge, push, deploy and production data"
+      ],
+      "definitionOfDone": [
+        "All scope specific acceptance criteria have recorded evidence or explicit NOT RUN status.",
+        "Published identity, native parent and Project membership are verified before reporting a ticket as created.",
+        "Existing sprint history and feature acceptance records are preserved.",
+        "No material visual regression and no unrelated source or dependency changes."
+      ],
+      "provisionalId": "STYLE-002",
+      "title": "Consolidate exact repeated presentation tokens",
+      "status": "PROPOSED",
+      "scope": [
+        "Reuse existing tokens within their current scopes.",
+        "If approved, append at most three repeated search semantic values in the existing Owner token block.",
+        "Preserve intentional Owner, Agent, auth, marketing status and verification color differences."
+      ],
+      "affectedFiles": [
+        "apps/owner-web/app/globals.css",
+        "apps/owner-web/components/owner/partner-shell.css"
+      ],
+      "dependencies": [
+        "STYLE-001"
+      ],
+      "acceptanceCriteria": [
+        "No Tailwind upgrade, new token system, palette replacement or font change.",
+        "Every changed consumer has equal before/after resolved values.",
+        "Only repeated semantic values are tokenized; near colors and different dimensions are not merged.",
+        "Shared stylesheet changes are limited to reviewed lines with no mass formatting."
+      ],
+      "verificationWalkthrough": [
+        "Approve exact variable names/values/scope in the diff.",
+        "Compare inherited computed values across both portals, Account and non dashboard toolbar.",
+        "Run app checks and pixel/geometry comparisons from STYLE-005."
+      ],
+      "testEvidence": [],
+      "approvalGate": "Explicit approval required for the bounded globals.css patch; Jira/GitHub ticket reconciliation must precede implementation."
+    },
+    {
+      "type": "Task",
+      "priority": "P1",
+      "existingIssueId": null,
+      "publicationStatus": "NOT PUBLISHED",
+      "proposedParentIssue": "https://github.com/Masterkent11/rental-business-software/issues/20",
+      "parentLinkVerified": false,
+      "proposedSprint": {
+        "name": "Partner Experience",
+        "start": "2026-11-01",
+        "end": "2026-11-14",
+        "assignmentVerified": false
+      },
+      "publicationGate": "Recheck GitHub and reconcile Jira WSP before creating anything; reuse an exact matching issue and preserve existing parent/sprint history. No new Epic.",
+      "excluded": [
+        "Authentication and authorization logic",
+        "Tenant membership and workspace permissions",
+        "Backend APIs and database/RLS/schema",
+        "SVG replacement or approved UI redesign",
+        "Merge, push, deploy and production data"
+      ],
+      "definitionOfDone": [
+        "All scope specific acceptance criteria have recorded evidence or explicit NOT RUN status.",
+        "Published identity, native parent and Project membership are verified before reporting a ticket as created.",
+        "Existing sprint history and feature acceptance records are preserved.",
+        "No material visual regression and no unrelated source or dependency changes."
+      ],
+      "provisionalId": "STYLE-003",
+      "title": "Refactor confirmed partner and marketing leaf styles",
+      "status": "PROPOSED",
+      "scope": [
+        "Move basic search summary/error/kind and marketing summary child presentation to exact installed utilities.",
+        "Remove duplicate workspace-choice-single min-width declaration.",
+        "Remove the eight stale selector blocks only in a separately reviewed deletion patch.",
+        "Preserve header/sidebar/media compositions, SVGs, ARIA, event handlers and portal features."
+      ],
+      "affectedFiles": [
+        "apps/owner-web/components/owner/partner-search.tsx",
+        "apps/owner-web/components/owner/partner-shell.css",
+        "apps/owner-web/components/marketing/marketing-hub.tsx",
+        "apps/owner-web/components/marketing/marketing.css",
+        "apps/owner-web/components/agent/dashboard.css",
+        "apps/owner-web/app/globals.css"
+      ],
+      "dependencies": [
+        "STYLE-001",
+        "STYLE-002"
+      ],
+      "acceptanceCriteria": [
+        "All affected CSS properties and state/media ownership are traced before migration; no !important workaround.",
+        "No remaining consumers exist before a rule is deleted; ambiguous selectors remain.",
+        "No header/search row, metric, sidebar, auth, SVG, focus or responsive geometry regression.",
+        "Existing compatible primitives remain authoritative; no giant role conditional component or needless shared abstraction.",
+        "No functional, security, schema, API or dependency changes."
+      ],
+      "verificationWalkthrough": [
+        "Review bounded diff and source consumers.",
+        "Exercise search keyboard selection, loading/no results/error, query race and clear.",
+        "Exercise Account logo states and Marketing summary/editor navigation with synthetic fixtures.",
+        "Run STYLE-005 comparisons for all affected sizes and states."
+      ],
+      "testEvidence": [],
+      "approvalGate": "Approve first slice and stale deletion subset after audit; publish/reuse the scoped maintenance ticket before code."
+    },
+    {
+      "type": "Task",
+      "priority": "P1",
+      "existingIssueId": null,
+      "publicationStatus": "NOT PUBLISHED",
+      "proposedParentIssue": "https://github.com/Masterkent11/rental-business-software/issues/20",
+      "parentLinkVerified": false,
+      "proposedSprint": {
+        "name": "Partner Experience",
+        "start": "2026-11-01",
+        "end": "2026-11-14",
+        "assignmentVerified": false
+      },
+      "publicationGate": "Recheck GitHub and reconcile Jira WSP before creating anything; reuse an exact matching issue and preserve existing parent/sprint history. No new Epic.",
+      "excluded": [
+        "Authentication and authorization logic",
+        "Tenant membership and workspace permissions",
+        "Backend APIs and database/RLS/schema",
+        "SVG replacement or approved UI redesign",
+        "Merge, push, deploy and production data"
+      ],
+      "definitionOfDone": [
+        "All scope specific acceptance criteria have recorded evidence or explicit NOT RUN status.",
+        "Published identity, native parent and Project membership are verified before reporting a ticket as created.",
+        "Existing sprint history and feature acceptance records are preserved.",
+        "No material visual regression and no unrelated source or dependency changes."
+      ],
+      "provisionalId": "STYLE-004",
+      "title": "Document styling rules and enforce new stylesheet exceptions",
+      "status": "PROPOSED",
+      "scope": [
+        "Append human maintained styling instructions outside generated Next.js AGENTS block.",
+        "Use existing Node architecture tests/quality workflow for a narrow new stylesheet import exception policy.",
+        "Document legitimate current CSS exceptions and review criteria."
+      ],
+      "affectedFiles": [
+        "apps/owner-web/AGENTS.md",
+        "apps/owner-web/__tests__/architecture.test.mjs",
+        "docs/agile/styling-audit/",
+        ".github/workflows/quality.yml"
+      ],
+      "dependencies": [
+        "STYLE-001"
+      ],
+      "acceptanceCriteria": [
+        "Rules mandate inspecting/reusing existing tokens/primitives and Tailwind for straightforward presentation.",
+        "New global component stylesheets/selectors require documented reviewed exception and visual evidence.",
+        "Valid SVG, effects, vendor styling, media rules and exact arbitrary values are not broadly rejected.",
+        "Existing baseline imports are not retrospectively banned; governance does not force whole app migration.",
+        "Policy checks include one accepted legitimate exception and one rejected unreviewed new import.",
+        "No source comments or extra lint framework/Storybook installation are introduced."
+      ],
+      "verificationWalkthrough": [
+        "Review proposed AGENTS text against user boundaries and generated block.",
+        "Run the policy accepted/rejected fixture checks through existing test script.",
+        "Run npm lint/test and inspect workflow result."
+      ],
+      "testEvidence": [],
+      "approvalGate": "Approve governance scope; implementation remains separate from security and business changes."
+    },
+    {
+      "type": "Task",
+      "priority": "P1",
+      "existingIssueId": null,
+      "publicationStatus": "NOT PUBLISHED",
+      "proposedParentIssue": "https://github.com/Masterkent11/rental-business-software/issues/20",
+      "parentLinkVerified": false,
+      "proposedSprint": {
+        "name": "Partner Experience",
+        "start": "2026-11-01",
+        "end": "2026-11-14",
+        "assignmentVerified": false
+      },
+      "publicationGate": "Recheck GitHub and reconcile Jira WSP before creating anything; reuse an exact matching issue and preserve existing parent/sprint history. No new Epic.",
+      "excluded": [
+        "Authentication and authorization logic",
+        "Tenant membership and workspace permissions",
+        "Backend APIs and database/RLS/schema",
+        "SVG replacement or approved UI redesign",
+        "Merge, push, deploy and production data"
+      ],
+      "definitionOfDone": [
+        "All scope specific acceptance criteria have recorded evidence or explicit NOT RUN status.",
+        "Published identity, native parent and Project membership are verified before reporting a ticket as created.",
+        "Existing sprint history and feature acceptance records are preserved.",
+        "No material visual regression and no unrelated source or dependency changes."
+      ],
+      "provisionalId": "STYLE-005",
+      "title": "Verify unchanged UI after targeted styling refactor",
+      "status": "PROPOSED",
+      "scope": [
+        "Preserve current working tree before captures and add separate after captures.",
+        "Compare pixels, computed style and geometry for changed nodes and protected layout sentinels.",
+        "Run app typecheck/lint/unit/build and relevant browser suites."
+      ],
+      "affectedFiles": [
+        "apps/owner-web/__tests__/partner-shell.browser.mjs",
+        "apps/owner-web/__tests__/marketing.browser.mjs",
+        "apps/owner-web/__tests__/partner-auth.browser.mjs",
+        "docs/agile/styling-audit/before/",
+        "docs/agile/styling-audit/evidence/"
+      ],
+      "dependencies": [
+        "STYLE-002",
+        "STYLE-003",
+        "STYLE-004"
+      ],
+      "acceptanceCriteria": [
+        "Owner/Agent dashboard, open search, Account logo and Marketing affected screens use 375x812, 834x1112, 1440x900, 1920x1080.",
+        "Before/after use matching renderer, fonts, DPR, fixtures, states and decoded images.",
+        "Geometry, typography, palette, focus and artwork remain unchanged; material pixel diffs block completion.",
+        "Before evidence is retained; no automatic baseline replacement or masking of regressions.",
+        "Synthetic browser results are not described as real backend, provider, RLS or tenant security validation.",
+        "Commands, actual exit codes, failures and NOT RUN cases are recorded; no completion until after review."
+      ],
+      "verificationWalkthrough": [
+        "Build approved source with same environment and run existing app checks.",
+        "Capture all affected states separately in after/.",
+        "Compare exact geometry and computed properties, then inspect pixel differences.",
+        "Review keyboard, focus, drawer, error/empty and 200 percent zoom/reflow.",
+        "Attach evidence to canonical tickets and preserve remaining approval gates."
+      ],
+      "testEvidence": [
+        "docs/agile/styling-audit/before/",
+        "docs/agile/styling-audit/evidence/verification.json"
+      ],
+      "approvalGate": "After comparison is NOT RUN until implementation is approved; material regressions block completion."
+    }
+  ],
+  "workstreamStatus": "PAUSED AT USER REQUEST; GOOGLE AUTH SETUP TAKES PRIORITY"
+}
