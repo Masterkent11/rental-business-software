@@ -1,0 +1,186 @@
+{
+  "recorded_on": "2026-11-01",
+  "timezone": "Asia/Manila",
+  "auth_original_assets": "missing; user confirmed composite-only",
+  "auth_references": [
+    {
+      "path": "docs/agile/epics/owner-web-auth/assets/auth-mobile-reference.png",
+      "bytes": 1824373,
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "sha256": "f49b2b3e38f1a984fc8c92902860613ed5989cfa94ebb7f828a6a46d5394c7a9"
+    },
+    {
+      "path": "docs/agile/epics/owner-web-auth/assets/auth-responsive-matrix.png",
+      "bytes": 1918377,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "4ae69d1e7b3f7b9e6b66aef79d59c9a397f78d598482abef4f08a19c1cd5bb79"
+    }
+  ],
+  "role_pack": [
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/README.md",
+      "bytes": 2388,
+      "sha256": "e2390688962b2124c5604b18e2444dbee7223d8a719d2da4f02ce1f781d4167d"
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/asset-manifest.json",
+      "bytes": 1291,
+      "sha256": "259f8ad95a438a21cf335b370d5660e401496e422484dc4f1d3cbcc675464182"
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/background/panel-exact-raster-in-svg.svg",
+      "bytes": 934942,
+      "sha256": "bdb72ffe4ee41a43af96e62090793991bd883ca3432e31d81cc51f4d33a8405c"
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/background/panel-pixel-exact-593x992.png",
+      "bytes": 701025,
+      "sha256": "6e0a5d34f5e803f7e55f7691e9935734b0a1fda4b47cf68b6238bf00c212a67b",
+      "dimensions": [
+        593,
+        992
+      ]
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/background/photo-only-raster-in-svg.svg",
+      "bytes": 877684,
+      "sha256": "9c1a2781f7dd482b157e8ad2a2120e7bab8d738ad093a9d256f9c34d9f4f6e55"
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/background/photo-only-reconstructed-593x992.png",
+      "bytes": 658137,
+      "sha256": "4a4168a25fa5cef93d4de63e181c6bfd1a3764ea2ca192d8cc894da186b721bd",
+      "dimensions": [
+        593,
+        992
+      ]
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/preview/property-agent-vector-render.png",
+      "bytes": 4540,
+      "sha256": "ca05098e26d6ea8cbcaf9569aaf56700276d1d09e7e6e14998e7f75613a011a4",
+      "dimensions": [
+        444,
+        364
+      ]
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/preview/property-owner-vector-render.png",
+      "bytes": 5250,
+      "sha256": "6469e7b6262308ac03885549d370e5fec7258c88f24aff453ff6a2fad87d7b73",
+      "dimensions": [
+        628,
+        344
+      ]
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/preview/screen-and-svg-comparison.png",
+      "bytes": 1535898,
+      "sha256": "24f920216fe8fa3ce5d587d1c0b4691d158b7751901bff0c1f9ec608b2bdb031",
+      "dimensions": [
+        1585,
+        1230
+      ]
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/reference/marked-user-reference.png",
+      "bytes": 1507982,
+      "sha256": "48232b7c4aabca7bbaa7d5620418ce2c518010abef053f402c0546ce82254c52",
+      "dimensions": [
+        1585,
+        992
+      ]
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/reference/original-screen-1585x992.png",
+      "bytes": 1503526,
+      "sha256": "bea4c6896166dad8a1fae32a7033fd95f94e19b9a1ae0535b9f46af26ec766bd",
+      "dimensions": [
+        1585,
+        992
+      ]
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/reference/property-agent-pixel-exact-crop.png",
+      "bytes": 10206,
+      "sha256": "b66abd3054bd36b08bea90cb4e0fc46ad09ca962546f03654e8669514a5a2cc6",
+      "dimensions": [
+        111,
+        91
+      ]
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/reference/property-agent-raster-extraction.png",
+      "bytes": 2325,
+      "sha256": "d27d014021687d94b6469e2b1878a4bc6dd9e422cebea50552537e5de5f398f7",
+      "dimensions": [
+        111,
+        91
+      ]
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/reference/property-owner-pixel-exact-crop.png",
+      "bytes": 14552,
+      "sha256": "8b4b174d94118f0ac27766d48592f5b763dc7effed50ea07d2efa1a453d9e22a",
+      "dimensions": [
+        157,
+        86
+      ]
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/reference/property-owner-raster-extraction.png",
+      "bytes": 3846,
+      "sha256": "4a2067877a97538b9f6441ed37798e021b0af945e597449caf929491ded763cf",
+      "dimensions": [
+        157,
+        86
+      ]
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/svg/continue-arrow.svg",
+      "bytes": 250,
+      "sha256": "21b047f31b84e9e194cb077698d92ca8eb6248fb6ce7981514a55b1292f109c9"
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/svg/property-agent-with-tile.svg",
+      "bytes": 1877,
+      "sha256": "3fec6bd52b23358697dd54172f54c85d24c57d5351054543e6e1e67af3df1c84"
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/svg/property-agent.svg",
+      "bytes": 1950,
+      "sha256": "18aa696edbc91e1ecfc23ad2a879613a5cc390da4bec233ef2f2272deaaf4284"
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/svg/property-owner-with-tile.svg",
+      "bytes": 3039,
+      "sha256": "d33e312b7ae0678817ad923ebb989103dc0da70e6a3b83a6ce7607e557cb942a"
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/svg/property-owner.svg",
+      "bytes": 3112,
+      "sha256": "1f47b1419f7e8c5d01705e26dcb7ca3e03dddf15e19a7b220727a181faa67861"
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/svg/radio-selected.svg",
+      "bytes": 295,
+      "sha256": "10c5b3ab0a708b9a59f352cbcf3f3362f266b6017a65b5ead1c0f2e29a9c85b5"
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/svg/radio-unselected.svg",
+      "bytes": 204,
+      "sha256": "1799bcfd4fbd5f619d0528ac31e4b118698ecd2562a3031606604be04b3b8788"
+    },
+    {
+      "path": "apps/owner-web/public/assets/Westayplace_1to1_Role_Selection_Assets 2/svg/westayplace-mark-white.svg",
+      "bytes": 981,
+      "sha256": "fcc8404e7c4da5c7875a98bda044e4a531bca72a9b9685b59f036aa03caae866"
+    }
+  ]
+}

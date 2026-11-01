@@ -43,3 +43,10 @@ export class RefreshSessionUseCase {
     return this.sessionPort.refresh();
   }
 }
+
+export class WatchSessionUseCase {
+  constructor(private readonly sessionPort: SessionPort) {}
+  execute(onChange: (userId: string | null) => void): () => void {
+    return this.sessionPort.watchIdentity(onChange);
+  }
+}

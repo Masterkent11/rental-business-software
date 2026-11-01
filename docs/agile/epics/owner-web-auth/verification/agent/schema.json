@@ -1,0 +1,13 @@
+{
+  "checkedOn": "2026-11-01 Asia/Manila",
+  "readOnly": true,
+  "schema": {
+    "application_role": "rental_app",
+    "agent_profiles_exists": true,
+    "owner_onboarding_column_exists": false,
+    "owner_onboarding_policy_exists": false
+  },
+  "ownerColumnProbeErrorCode": "42703",
+  "userRowsRead": 0,
+  "remoteWrites": 0
+}

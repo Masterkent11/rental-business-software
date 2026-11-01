@@ -1,3 +1,5 @@
+import { SupabasePartnerAccessAdapter } from "../auth/supabase-partner-access.adapter";
+import { RegisterPartnerUseCase, CompletePartnerSetupUseCase, RequestPartnerPasswordResetUseCase, UpdatePartnerPasswordUseCase } from "../../application/use-cases/session/partner-access.use-cases";
 import { HttpClient } from "../http/http-client";
 import { ApiOwnerRepositoryAdapter } from "../http/api-owner-repository.adapter";
 import { SupabaseSessionAdapter } from "../auth/supabase-session.adapter";
@@ -18,6 +20,7 @@ import {
   RefreshSessionUseCase,
   SignOutUseCase,
   SwitchWorkspaceUseCase,
+  WatchSessionUseCase,
 } from "../../application/use-cases/session/session.use-cases";
 import {
   CreateSaleListingUseCase,
@@ -100,6 +103,11 @@ import {
 
 export class OwnerWebContainer {
   readonly httpClient = new HttpClient();
+  readonly partnerAccess = new SupabasePartnerAccessAdapter(this.httpClient);
+  readonly registerPartner = new RegisterPartnerUseCase(this.partnerAccess);
+  readonly completePartnerSetup = new CompletePartnerSetupUseCase(this.partnerAccess);
+  readonly requestPartnerPasswordReset = new RequestPartnerPasswordResetUseCase(this.partnerAccess);
+  readonly updatePartnerPassword = new UpdatePartnerPasswordUseCase(this.partnerAccess);
   readonly ownerRepository: OwnerRepositoryPort = new ApiOwnerRepositoryAdapter(this.httpClient);
   readonly sessionPort: SessionPort = new SupabaseSessionAdapter(this.httpClient);
   readonly realtime: RealtimePort = new SupabaseRealtimeAdapter();
@@ -111,6 +119,7 @@ export class OwnerWebContainer {
   readonly signInUseCase = new SignInUseCase(this.sessionPort);
   readonly signOutUseCase = new SignOutUseCase(this.sessionPort);
   readonly switchWorkspaceUseCase = new SwitchWorkspaceUseCase(this.sessionPort);
+  readonly watchSessionUseCase = new WatchSessionUseCase(this.sessionPort);
   readonly refreshSessionUseCase = new RefreshSessionUseCase(this.sessionPort);
 
   readonly loadDashboardUseCase = new LoadDashboardUseCase(this.ownerRepository);

@@ -1,0 +1,131 @@
+{
+  "repository": "Masterkent11/rental-business-software",
+  "project_url": "https://github.com/users/Masterkent11/projects/3",
+  "recorded_on": "2026-11-01",
+  "approval": "Development authorized by subsequent user instruction; security and visual acceptance pending",
+  "phase": "local implementation under review",
+  "records": [
+    {
+      "key": "WSP-AUTH-EPIC-01",
+      "number": 103,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/103",
+      "parent_number": 12,
+      "status": "In Progress",
+      "project_item_id": "PVTI_lAHOAyP2LM4BphFMzhFCLOo",
+      "classification": "Planned Feature",
+      "surface": "Owner Web",
+      "validation": "Pass"
+    },
+    {
+      "key": "AUTH-001",
+      "number": 104,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/104",
+      "parent_number": 103,
+      "status": "In Review",
+      "project_item_id": "PVTI_lAHOAyP2LM4BphFMzhFCLpM",
+      "classification": "Planned Feature",
+      "surface": "Owner Web",
+      "validation": "Pass"
+    },
+    {
+      "key": "AUTH-002",
+      "number": 105,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/105",
+      "parent_number": 103,
+      "status": "Blocked",
+      "project_item_id": "PVTI_lAHOAyP2LM4BphFMzhFCLps",
+      "classification": "Planned Feature",
+      "surface": "Owner Web",
+      "validation": "Pass"
+    },
+    {
+      "key": "AUTH-003",
+      "number": 106,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/106",
+      "parent_number": 103,
+      "status": "In Review",
+      "project_item_id": "PVTI_lAHOAyP2LM4BphFMzhFCLqs",
+      "classification": "Planned Feature",
+      "surface": "Owner Web",
+      "validation": "Pass"
+    },
+    {
+      "key": "AUTH-004",
+      "number": 107,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/107",
+      "parent_number": 103,
+      "status": "In Review",
+      "project_item_id": "PVTI_lAHOAyP2LM4BphFMzhFCLrU",
+      "classification": "Planned Feature",
+      "surface": "Owner Web",
+      "validation": "Pass"
+    },
+    {
+      "key": "AUTH-005",
+      "number": 108,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/108",
+      "parent_number": 103,
+      "status": "In Review",
+      "project_item_id": "PVTI_lAHOAyP2LM4BphFMzhFCLsI",
+      "classification": "Planned Feature",
+      "surface": "Owner Web",
+      "validation": "Pass"
+    },
+    {
+      "key": "AUTH-006",
+      "number": 109,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/109",
+      "parent_number": 103,
+      "status": "In Review",
+      "project_item_id": "PVTI_lAHOAyP2LM4BphFMzhFCLtE",
+      "classification": "Planned Feature",
+      "surface": "Owner Web",
+      "validation": "Pass"
+    },
+    {
+      "key": "AUTH-007",
+      "number": 110,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/110",
+      "parent_number": 103,
+      "status": "Blocked",
+      "project_item_id": "PVTI_lAHOAyP2LM4BphFMzhFCLt0",
+      "classification": "Planned Feature",
+      "surface": "Owner Web",
+      "validation": "Pass"
+    },
+    {
+      "key": "AUTH-008",
+      "number": 111,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/111",
+      "parent_number": 103,
+      "status": "In Progress",
+      "project_item_id": "PVTI_lAHOAyP2LM4BphFMzhFCLuQ",
+      "classification": "Planned Feature",
+      "surface": "Owner Web",
+      "validation": "Pass"
+    }
+  ],
+  "verification": {
+    "verified_at": "2026-10-31T18:03:12Z",
+    "records": 9,
+    "native_parent_links": 9,
+    "expected_auth_children": 8,
+    "project_total_items": 101,
+    "failures": [],
+    "mutations_this_run": 18,
+    "all_issues_open": true,
+    "story_points_and_iteration": "unassigned"
+  },
+  "implementation_subtask": {
+    "number": 112,
+    "parent_number": 109,
+    "url": "https://github.com/Masterkent11/rental-business-software/issues/112",
+    "status": "In Review"
+  },
+  "implementation_verification": {
+    "project_total_items": 102,
+    "unrelated_project_fields_preserved": true,
+    "all_issues_open": true,
+    "no_done_claim": true
+  }
+}
