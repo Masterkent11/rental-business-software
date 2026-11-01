@@ -1,0 +1,424 @@
+{
+  "mode": "READ ONLY metadata and function definitions",
+  "tableAccess": [
+    {
+      "name": "agent_profiles",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "agent_referral_codes",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "agent_tasks",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "application_documents",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "application_drafts",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "applications",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "content_pages",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": false
+    },
+    {
+      "name": "conversations",
+      "anon_select": false,
+      "auth_select": true,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "identity_capture_limits",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "identity_evidence_uploads",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "identity_verification_sessions",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "inquiries",
+      "anon_select": false,
+      "auth_select": true,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "invoice_lines",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "invoices",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "lead_assignments",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "lead_referrals",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "ledger_entries",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "listing_change_proposals",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "listing_representations",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "listing_sale_terms",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "listing_view_events",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "listings",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "media_assets",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "messages",
+      "anon_select": false,
+      "auth_select": true,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "notifications",
+      "anon_select": false,
+      "auth_select": true,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "occupancies",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "organization_members",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "organizations",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "payment_applications",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "payment_notification_outbox",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "payments",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "policy_acceptances",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "properties",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "provider_events",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "rentable_resources",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "reservations",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "resource_night_status",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "saved_listings",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "stays",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "support_requests",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "tour_hotspots",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "tour_scenes",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "user_capabilities",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "user_profiles",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "viewings",
+      "anon_select": false,
+      "auth_select": true,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    },
+    {
+      "name": "virtual_tours",
+      "anon_select": false,
+      "auth_select": false,
+      "auth_insert": false,
+      "app_select": true,
+      "app_insert": true
+    }
+  ],
+  "helperDefinitions": [
+    {
+      "schema": "app_private",
+      "name": "agent_may_write_listing_media",
+      "definition": "CREATE OR REPLACE FUNCTION app_private.agent_may_write_listing_media(object_name text)\n RETURNS boolean\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare\n  org uuid := app_private.storage_org_from_path(object_name);\n  folder text := split_part(object_name, '/', 2);\n  third text := split_part(object_name, '/', 3);\nbegin\n  if org is null or folder <> 'listings'\n     or third !~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' then\n    return false;\n  end if;\n  return exists (\n    select 1 from public.listing_representations r\n      join public.agent_profiles a on a.id = r.agent_id\n     where r.listing_id = third::uuid\n       and r.organization_id = org\n       and r.state = 'ACTIVE'\n       and r.can_edit_listing\n       and a.user_id = auth.uid()\n  );\nend $function$\n",
+      "anon_execute": false,
+      "auth_execute": true
+    },
+    {
+      "schema": "app_private",
+      "name": "agent_may_write_tour_media",
+      "definition": "CREATE OR REPLACE FUNCTION app_private.agent_may_write_tour_media(object_name text)\n RETURNS boolean\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\ndeclare\n  org uuid := app_private.storage_org_from_path(object_name);\n  second text := split_part(object_name, '/', 2);\nbegin\n  if org is null or second !~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' then\n    return false;\n  end if;\n  return exists (\n    select 1 from public.virtual_tours t\n      join public.listings l on l.resource_id = t.resource_id\n      join public.listing_representations r on r.listing_id = l.id\n      join public.agent_profiles a on a.id = r.agent_id\n     where t.id = second::uuid\n       and t.organization_id = org\n       and r.state = 'ACTIVE'\n       and r.can_manage_tour\n       and a.user_id = auth.uid()\n  );\nend $function$\n",
+      "anon_execute": false,
+      "auth_execute": true
+    },
+    {
+      "schema": "app_private",
+      "name": "agent_represents_listing",
+      "definition": "CREATE OR REPLACE FUNCTION app_private.agent_represents_listing(target uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  select exists (\n    select 1 from public.listing_representations r\n     where r.listing_id = target\n       and r.state = 'ACTIVE'\n       and r.agent_id = app_private.current_app_agent()\n  );\n$function$\n",
+      "anon_execute": false,
+      "auth_execute": false
+    },
+    {
+      "schema": "app_private",
+      "name": "agent_represents_resource",
+      "definition": "CREATE OR REPLACE FUNCTION app_private.agent_represents_resource(target uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  select exists (\n    select 1 from public.listing_representations r\n      join public.listings l on l.id = r.listing_id\n     where l.resource_id = target\n       and r.state in ('PENDING', 'ACTIVE')\n       and r.agent_id = app_private.current_app_agent()\n  );\n$function$\n",
+      "anon_execute": false,
+      "auth_execute": false
+    },
+    {
+      "schema": "app_private",
+      "name": "current_app_agent",
+      "definition": "CREATE OR REPLACE FUNCTION app_private.current_app_agent()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  select a.id from public.agent_profiles a\n   where a.user_id = nullif(current_setting('app.user_id', true), '')::uuid;\n$function$\n",
+      "anon_execute": false,
+      "auth_execute": false
+    },
+    {
+      "schema": "app_private",
+      "name": "current_app_is_platform_admin",
+      "definition": "CREATE OR REPLACE FUNCTION app_private.current_app_is_platform_admin()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  select exists (\n    select 1 from public.user_capabilities c\n     where c.user_id = nullif(current_setting('app.user_id', true), '')::uuid\n       and c.capability = 'PLATFORM_ADMIN'\n       and c.revoked_at is null\n  );\n$function$\n",
+      "anon_execute": false,
+      "auth_execute": false
+    },
+    {
+      "schema": "app_private",
+      "name": "current_auth_agent",
+      "definition": "CREATE OR REPLACE FUNCTION app_private.current_auth_agent()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\n  select a.id from public.agent_profiles a where a.user_id = auth.uid();\n$function$\n",
+      "anon_execute": false,
+      "auth_execute": true
+    }
+  ]
+}

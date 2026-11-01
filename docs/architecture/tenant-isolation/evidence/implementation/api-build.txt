@@ -1,0 +1,8 @@
+
+> api@0.1.0 build
+> esbuild src/main.ts --bundle --platform=node --target=node22 --format=esm --packages=external --tsconfig=tsconfig.json --outfile=dist/main.js
+
+
+  dist/main.js  896.0kb
+
+⚡ Done in 66ms

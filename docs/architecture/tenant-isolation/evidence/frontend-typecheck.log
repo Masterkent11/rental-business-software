@@ -1,0 +1,15 @@
+
+> owner-web@0.1.0 typecheck
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+components/agent/dashboard-view.tsx(43,71): error TS2339: Property 'userId' does not exist on type 'AgentProfile'.
+stores/use-agent-store.ts(92,11): error TS2322: Type '(state: AgentState | ((state: AgentState) => AgentState), replace: true) => void' is not assignable to type '{ (partial: AgentState | Partial<AgentState> | ((state: AgentState) => AgentState | Partial<AgentState>), replace?: false | undefined): void; (state: AgentState | ((state: AgentState) => AgentState), replace: true): void; }'.
+  Types of parameters 'replace' and 'replace' are incompatible.
+    Type 'false | undefined' is not assignable to type 'true'.
+      Type 'undefined' is not assignable to type 'true'.
+stores/use-agent-store.ts(101,13): error TS2322: Type '(state: AgentState | ((state: AgentState) => AgentState), replace: true) => void' is not assignable to type '{ (partial: AgentState | Partial<AgentState> | ((state: AgentState) => AgentState | Partial<AgentState>), replace?: false | undefined): void; (state: AgentState | ((state: AgentState) => AgentState), replace: true): void; }'.
+  Types of parameters 'replace' and 'replace' are incompatible.
+    Type 'false | undefined' is not assignable to type 'true'.
+      Type 'undefined' is not assignable to type 'true'.

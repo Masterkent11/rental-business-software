@@ -1,0 +1,12 @@
+{
+  "userInstruction": "Stop for my approval before security-sensitive code changes or schema migrations.",
+  "branch": "codex/agent-marketing-phase-one",
+  "head": "9b5689c2d0a0a0079dad83e92ad838d8f708cf65",
+  "productFilesHashed": 1633,
+  "productFilesChangedAfterAuditSnapshot": [],
+  "newMigrationForGovernanceTask": false,
+  "remoteDatabaseWrites": false,
+  "newLiveTrackerRecords": 0,
+  "jiraSync": "NOT PUBLISHED / connection and canonical mapping unresolved",
+  "typecheck": "frontend draft fails with three errors; preserved while approval pending"
+}

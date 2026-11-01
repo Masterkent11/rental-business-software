@@ -1,0 +1,802 @@
+[
+  {
+    "file": "apps/api/src/modules/messaging/controllers/agent-conversations.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/agent/conversations"
+      },
+      {
+        "method": "GET",
+        "path": "/agent/conversations/:id/messages"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/conversations/:id/messages"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/conversations/:id/read"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/messaging/controllers/organization-conversations.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/conversations"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/conversations/:id/messages"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/conversations/:id/messages"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/conversations/:id/read"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/marketing/controllers/agent-marketing.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/agent/marketing"
+      },
+      {
+        "method": "GET",
+        "path": "/agent/marketing/drafts"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/marketing/drafts"
+      },
+      {
+        "method": "GET",
+        "path": "/agent/marketing/drafts/:id"
+      },
+      {
+        "method": "PUT",
+        "path": "/agent/marketing/drafts/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/agent/marketing/drafts/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/marketing/drafts/:id/duplicate"
+      },
+      {
+        "method": "GET",
+        "path": "/agent/marketing/media"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/marketing/media"
+      },
+      {
+        "method": "GET",
+        "path": "/agent/marketing/media/:id/read"
+      },
+      {
+        "method": "DELETE",
+        "path": "/agent/marketing/media/:id"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/applications/controllers/submit-application.controller.ts",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/applications"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/applications/controllers/get-my-application.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/me/applications/:id"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/applications/controllers/decide-application.controller.ts",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/applications/:id/decision"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/applications/controllers/reserve-application.controller.ts",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/applications/:id/reservation"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/applications/controllers/get-my-applications.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/me/applications"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/applications/controllers/list-organization-applications.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/applications"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/applications/controllers/withdraw-application.controller.ts",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/applications/:id/withdraw"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/applications/controllers/attach-application-document.controller.ts",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/applications/:id/documents"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/me/controllers/get-my-stays.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/me/stays"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/me/controllers/create-owner-workspace.controller.ts",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/me/owner-workspace"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/me/controllers/saved-listings.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/me/saved-listings"
+      },
+      {
+        "method": "POST",
+        "path": "/me/saved-listings"
+      },
+      {
+        "method": "DELETE",
+        "path": "/me/saved-listings/:listingId"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/me/controllers/get-me.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/me"
+      },
+      {
+        "method": "PATCH",
+        "path": "/me"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/viewings/controllers/partner-viewings.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/viewings"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/viewings/:id/action"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/viewings"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/viewings/:id/action"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/assignment/controllers/agent-referrals.controller.ts",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/agent/listings/:listingId/referral-code"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/agents/controllers/agent-workspace.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/agent/profile"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/profile"
+      },
+      {
+        "method": "PUT",
+        "path": "/agent/profile"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/profile/verification"
+      },
+      {
+        "method": "GET",
+        "path": "/agent/dashboard"
+      },
+      {
+        "method": "GET",
+        "path": "/agent/representations"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/representations/:id/respond"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/listings/:listingId/representation-requests"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/representations/:id/end"
+      },
+      {
+        "method": "GET",
+        "path": "/agent/clients"
+      },
+      {
+        "method": "GET",
+        "path": "/agent/tasks"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/tasks"
+      },
+      {
+        "method": "PATCH",
+        "path": "/agent/tasks/:id"
+      },
+      {
+        "method": "DELETE",
+        "path": "/agent/tasks/:id"
+      },
+      {
+        "method": "GET",
+        "path": "/agent/analytics"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/agents/controllers/organization-agents.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/agents"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/representations"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/listings/:listingId/representation"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/representations/:id/end"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/:organizationId/representations/:id/permissions"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/:organizationId/representations/:id/terms"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/representations/:id/decision"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/analytics"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/agents/controllers/admin-agents.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/admin/agents/pending"
+      },
+      {
+        "method": "POST",
+        "path": "/admin/agents/:id/verification"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/agents/controllers/public-agents.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/agents/:id"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/listings/controllers/search-listings.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/listings"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/listings/controllers/agent-listings.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/agent/listings/:id"
+      },
+      {
+        "method": "PATCH",
+        "path": "/agent/listings/:id/sale"
+      },
+      {
+        "method": "GET",
+        "path": "/agent/listings/:id/sale-terms"
+      },
+      {
+        "method": "PUT",
+        "path": "/agent/listings/:id/sale-terms"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/listings/:id/photos"
+      },
+      {
+        "method": "DELETE",
+        "path": "/agent/listings/:id/photos/:photoId"
+      },
+      {
+        "method": "PUT",
+        "path": "/agent/listings/:id/photos/order"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/listings/:id/floor-plans"
+      },
+      {
+        "method": "DELETE",
+        "path": "/agent/listings/:id/floor-plans/:planId"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/listings/controllers/owner-sale-listings.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/listing-change-proposals"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/listing-change-proposals/:id/decision"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/sale-listings"
+      },
+      {
+        "method": "PATCH",
+        "path": "/organizations/:organizationId/sale-listings/:id"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/listings/:id/sale-terms"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/:organizationId/listings/:id/sale-terms"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/listings/:id/floor-plans"
+      },
+      {
+        "method": "DELETE",
+        "path": "/organizations/:organizationId/listings/:id/floor-plans/:planId"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/listings/controllers/view-listing.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/listings/:id"
+      },
+      {
+        "method": "GET",
+        "path": "/listings/:id/quote"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/listings/controllers/owner-listings.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/listings"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/listings/:id"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/resources"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/properties"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/properties"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/listings"
+      },
+      {
+        "method": "PATCH",
+        "path": "/organizations/:organizationId/listings/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/listings/:id/photos"
+      },
+      {
+        "method": "DELETE",
+        "path": "/organizations/:organizationId/listings/:id/photos/:photoId"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/:organizationId/listings/:id/photos/order"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/listings/:id/state"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/listings/:id/publish"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/listings/:id/calendar"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/listings/:id/blocks"
+      },
+      {
+        "method": "DELETE",
+        "path": "/organizations/:organizationId/blocks/:blockId"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/listings/controllers/locations.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/locations/areas"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/bookings/controllers/my-bookings.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/me/bookings"
+      },
+      {
+        "method": "GET",
+        "path": "/me/bookings/:id"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/bookings/controllers/organization-bookings.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/bookings"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/bookings/:id"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/bookings/:id/status"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/bookings/controllers/view-availability.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/resources/:id/availability"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/bookings/controllers/place-hold.controller.ts",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/bookings"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/inquiries/controllers/partner-inquiries.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/inquiries"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/inquiries/:id"
+      },
+      {
+        "method": "PATCH",
+        "path": "/organizations/:organizationId/inquiries/:id/status"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/inquiries"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/inquiries/:id"
+      },
+      {
+        "method": "PATCH",
+        "path": "/organizations/:organizationId/inquiries/:id/status"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/collection/controllers/apply-payment-to-invoice.controller.ts",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/invoices/:invoiceId/applications"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/collection/controllers/get-owner-collection.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/collection"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/collection/controllers/issue-invoice.controller.ts",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/invoices"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/tours/controllers/agent-tour.controller.ts",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/agent/listings/:listingId/tour"
+      },
+      {
+        "method": "GET",
+        "path": "/agent/tours/:tourId"
+      },
+      {
+        "method": "PUT",
+        "path": "/agent/tours/:tourId/provider"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/tours/:tourId/scenes"
+      },
+      {
+        "method": "PUT",
+        "path": "/agent/tours/:tourId/scenes/order"
+      },
+      {
+        "method": "PUT",
+        "path": "/agent/tours/:tourId/scenes/:sceneId"
+      },
+      {
+        "method": "PUT",
+        "path": "/agent/tours/:tourId/scenes/:sceneId/view"
+      },
+      {
+        "method": "DELETE",
+        "path": "/agent/tours/:tourId/scenes/:sceneId"
+      },
+      {
+        "method": "PUT",
+        "path": "/agent/tours/:tourId/entry"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/tours/:tourId/scenes/:sceneId/hotspots"
+      },
+      {
+        "method": "PATCH",
+        "path": "/agent/tours/:tourId/hotspots/:hotspotId"
+      },
+      {
+        "method": "DELETE",
+        "path": "/agent/tours/:tourId/hotspots/:hotspotId"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/tours/:tourId/publish"
+      },
+      {
+        "method": "POST",
+        "path": "/agent/tours/:tourId/unpublish"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/tours/controllers/author-tour.controller.ts",
+    "routes": [
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/tours"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/listings/:listingId/tour"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/tours"
+      },
+      {
+        "method": "GET",
+        "path": "/organizations/:organizationId/tours/:tourId"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/:organizationId/tours/:tourId/provider"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/tours/:tourId/scenes"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/:organizationId/tours/:tourId/scenes/order"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/:organizationId/tours/:tourId/scenes/:sceneId"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/:organizationId/tours/:tourId/scenes/:sceneId/view"
+      },
+      {
+        "method": "DELETE",
+        "path": "/organizations/:organizationId/tours/:tourId/scenes/:sceneId"
+      },
+      {
+        "method": "PUT",
+        "path": "/organizations/:organizationId/tours/:tourId/entry"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/tours/:tourId/scenes/:sceneId/hotspots"
+      },
+      {
+        "method": "PATCH",
+        "path": "/organizations/:organizationId/tours/:tourId/hotspots/:hotspotId"
+      },
+      {
+        "method": "DELETE",
+        "path": "/organizations/:organizationId/tours/:tourId/hotspots/:hotspotId"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/tours/:tourId/publish"
+      },
+      {
+        "method": "POST",
+        "path": "/organizations/:organizationId/tours/:tourId/unpublish"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/payments/controllers/confirm-booking-payment.controller.ts",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/webhooks/payments"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/payments/controllers/start-booking-payment.controller.ts",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/bookings/:id/payment-intent"
+      }
+    ]
+  },
+  {
+    "file": "apps/api/src/modules/payments/controllers/simulate-booking-payment.controller.ts",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/bookings/:id/payment-intent/confirm-sandbox"
+      }
+    ]
+  }
+]

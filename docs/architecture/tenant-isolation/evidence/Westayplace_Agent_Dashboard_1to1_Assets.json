@@ -1,0 +1,206 @@
+[
+  {
+    "path": "assets/brand/westayplace-logo-raster-reference.svg",
+    "embeddedRaster": true
+  },
+  {
+    "path": "assets/charts/pipeline/donut-color-reference-only.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/charts/pipeline/donut-zero-state.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/charts/pipeline/stages-zero-state.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/header/skyline-couch-screenshot-wrapper.svg",
+    "embeddedRaster": true
+  },
+  {
+    "path": "assets/icons/navigation/account.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/navigation/agent-profile.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/navigation/analytics.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/navigation/clients.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/navigation/dashboard.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/navigation/leads.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/navigation/marketing-hub.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/navigation/messages.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/navigation/represented-properties.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/navigation/tasks.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/navigation/viewings.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/navigation/virtual-tours.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/status/not-verified-outline.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/arrow-right.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/bars-chart.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/calendar-check.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/chevron-down.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/donut-chart.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/external-link.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/filter.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/notification-bell-navy.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/notification-bell-white.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/profile-circle.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/reply-message.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/stacked-layers.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/trend-line.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/verification-shield.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/icons/ui/verification-warning.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/empty-states/latest-inquiries-large.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/empty-states/latest-inquiries.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/empty-states/represented-properties.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/empty-states/response-large.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/empty-states/response.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/empty-states/today-activities-large.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/empty-states/today-activities.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/kpi/active-clients.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/kpi/deals-in-progress.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/kpi/follow-ups-due.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/kpi/new-inquiries.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/kpi/viewings-today.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/owner-originals/new-inquiries.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/owner-originals/published-listings.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/owner-originals/received-this-month.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/owner-originals/unread-messages.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/owner-originals/upcoming-stays.svg",
+    "embeddedRaster": false
+  },
+  {
+    "path": "assets/illustrations/owner-originals/viewing-requests.svg",
+    "embeddedRaster": false
+  }
+]

@@ -1,0 +1,3057 @@
+{
+  "mode": "READ ONLY metadata; no application row queries",
+  "recordedAt": "2026-11-01T01:36:36.681Z",
+  "role": {
+    "name": "rental_app",
+    "rolsuper": false,
+    "rolbypassrls": false
+  },
+  "tables": [
+    {
+      "schema": "public",
+      "name": "agent_profiles",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "agent_referral_codes",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "agent_tasks",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "application_documents",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "application_drafts",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "applications",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "content_pages",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "conversations",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "identity_capture_limits",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "identity_evidence_uploads",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "identity_verification_sessions",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "inquiries",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "invoice_lines",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "invoices",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "lead_assignments",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "lead_referrals",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "ledger_entries",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "listing_change_proposals",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "listing_representations",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "listing_sale_terms",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "listing_view_events",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "listings",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "media_assets",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "messages",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "notifications",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "occupancies",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "organization_members",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "organizations",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "payment_applications",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "payment_notification_outbox",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "payments",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "policy_acceptances",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "properties",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "provider_events",
+      "rls": false,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "rentable_resources",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "reservations",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "resource_night_status",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "saved_listings",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "stays",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "support_requests",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "tour_hotspots",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "tour_scenes",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "user_capabilities",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "user_profiles",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "viewings",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    },
+    {
+      "schema": "public",
+      "name": "virtual_tours",
+      "rls": true,
+      "force_rls": false,
+      "owner": "postgres"
+    }
+  ],
+  "policies": [
+    {
+      "schemaname": "public",
+      "tablename": "agent_profiles",
+      "policyname": "agent_public_read",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(public_state = 'PUBLIC'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "agent_profiles",
+      "policyname": "assigned_agent_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "app_private.customer_assigned_agent(id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "agent_profiles",
+      "policyname": "organization_agent_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "app_private.organization_works_with_agent(id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "agent_profiles",
+      "policyname": "own_agent_profile",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "agent_profiles",
+      "policyname": "platform_admin_manage",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "UPDATE",
+      "qual": "app_private.current_app_is_platform_admin()",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "agent_profiles",
+      "policyname": "platform_admin_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "app_private.current_app_is_platform_admin()",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "agent_referral_codes",
+      "policyname": "agent_own_referral_code",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "(agent_id = app_private.current_app_agent())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "agent_tasks",
+      "policyname": "agent_own_task",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "(agent_id = app_private.current_app_agent())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "application_documents",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "application_documents",
+      "policyname": "own_documents",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM applications a\n  WHERE ((a.id = application_documents.application_id) AND (a.applicant_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "application_drafts",
+      "policyname": "own_draft",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "applications",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "applications",
+      "policyname": "own_application",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(applicant_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "content_pages",
+      "policyname": "content_public_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "(status <> 'RETIRED'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "conversations",
+      "policyname": "agent_conversation",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "((agent_id IS NOT NULL) AND (agent_id = app_private.current_app_agent()))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "conversations",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "conversations",
+      "policyname": "own_conversation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(customer_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "conversations",
+      "policyname": "participant_realtime_read",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "((customer_id = auth.uid()) OR app_private.is_org_member(organization_id) OR ((agent_id IS NOT NULL) AND (agent_id = app_private.current_auth_agent())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "identity_capture_limits",
+      "policyname": "own_capture_limit",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "identity_evidence_uploads",
+      "policyname": "expired_evidence_cleanup",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "((expires_at <= now()) AND (current_setting('app.identity_cleanup'::text, true) = 'true'::text))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "identity_evidence_uploads",
+      "policyname": "own_evidence",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "identity_verification_sessions",
+      "policyname": "expired_session_cleanup",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "((expires_at <= now()) AND (current_setting('app.identity_cleanup'::text, true) = 'true'::text))",
+      "with_check": "((expires_at <= now()) AND (current_setting('app.identity_cleanup'::text, true) = 'true'::text))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "identity_verification_sessions",
+      "policyname": "own_verification",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "inquiries",
+      "policyname": "agent_inquiry",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "((agent_id IS NOT NULL) AND (agent_id = app_private.current_app_agent()))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "inquiries",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "inquiries",
+      "policyname": "own_inquiry",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(customer_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "inquiries",
+      "policyname": "participant_realtime_read",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "((customer_id = auth.uid()) OR app_private.is_org_member(organization_id) OR ((agent_id IS NOT NULL) AND (agent_id = app_private.current_auth_agent())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "invoice_lines",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "invoice_lines",
+      "policyname": "own_invoice_line",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM invoices i\n  WHERE ((i.id = invoice_lines.invoice_id) AND (i.tenant_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "invoices",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "invoices",
+      "policyname": "own_invoice",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(tenant_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lead_assignments",
+      "policyname": "agent_lead_assignment",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "(agent_id = app_private.current_app_agent())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lead_assignments",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lead_assignments",
+      "policyname": "own_lead_assignment",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "(customer_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lead_referrals",
+      "policyname": "agent_lead_referral",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "(agent_id = app_private.current_app_agent())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "lead_referrals",
+      "policyname": "own_lead_referral",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "(customer_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "ledger_entries",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "listing_change_proposals",
+      "policyname": "agent_own_proposal",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "(proposed_by_agent = app_private.current_app_agent())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "listing_change_proposals",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "listing_representations",
+      "policyname": "agent_own_representation",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "(agent_id = app_private.current_app_agent())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "listing_representations",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "listing_representations",
+      "policyname": "representation_public_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "((state = 'ACTIVE'::text) AND (EXISTS ( SELECT 1\n   FROM listings l\n  WHERE ((l.id = listing_representations.listing_id) AND (l.state = 'PUBLISHED'::text)))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "listing_sale_terms",
+      "policyname": "agent_commercial_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "app_private.agent_may_view_commercial(listing_id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "listing_sale_terms",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "listing_view_events",
+      "policyname": "organization_listing_views",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM listings l\n  WHERE ((l.id = listing_view_events.listing_id) AND (l.organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "listing_view_events",
+      "policyname": "own_listing_views",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "listings",
+      "policyname": "agent_represented_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "app_private.agent_invited_to_listing(id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "listings",
+      "policyname": "listings_public_read",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((state = 'PUBLISHED'::text) OR (organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "listings",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "listings",
+      "policyname": "participant_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "app_private.guest_can_see_resource(resource_id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "media_assets",
+      "policyname": "agent_represented_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "((listing_id IS NOT NULL) AND app_private.agent_represents_listing(listing_id))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "media_assets",
+      "policyname": "inventory_public_read",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM listings l\n  WHERE ((l.id = media_assets.listing_id) AND (l.state = 'PUBLISHED'::text))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "media_assets",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "media_assets",
+      "policyname": "participant_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "((listing_id IS NOT NULL) AND app_private.guest_can_see_listing(listing_id))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "messages",
+      "policyname": "agent_messages",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "(EXISTS ( SELECT 1\n   FROM conversations c\n  WHERE ((c.id = messages.conversation_id) AND (c.agent_id IS NOT NULL) AND (c.agent_id = app_private.current_app_agent()))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "messages",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "messages",
+      "policyname": "own_messages",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(EXISTS ( SELECT 1\n   FROM conversations c\n  WHERE ((c.id = messages.conversation_id) AND (c.customer_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "messages",
+      "policyname": "participant_realtime_read",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM conversations c\n  WHERE ((c.id = messages.conversation_id) AND ((c.customer_id = auth.uid()) OR app_private.is_org_member(c.organization_id) OR ((c.agent_id IS NOT NULL) AND (c.agent_id = app_private.current_auth_agent()))))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "notifications",
+      "policyname": "audience_realtime_read",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "((user_id = auth.uid()) OR ((user_id IS NULL) AND app_private.is_org_member(organization_id)))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "notifications",
+      "policyname": "org_notification",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "((user_id IS NULL) AND (organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "notifications",
+      "policyname": "own_notification",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "occupancies",
+      "policyname": "occupancy_public_read",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM (rentable_resources r\n     JOIN listings l ON (((l.resource_id = r.id) AND (l.state = 'PUBLISHED'::text))))\n  WHERE ((r.root_id = occupancies.root_id) AND (r.subtree && occupancies.subtree))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "occupancies",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "occupancies",
+      "policyname": "own_occupancy",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "(held_by = app_private.current_app_user())",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "organization_members",
+      "policyname": "own_membership",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "organizations",
+      "policyname": "organizations_owner_update",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "organizations",
+      "policyname": "organizations_read",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "true",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "payment_applications",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "payment_notification_outbox",
+      "policyname": "acknowledge_payment_notifications",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "DELETE",
+      "qual": "(current_setting('app.notification_delivery'::text, true) = 'true'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "payment_notification_outbox",
+      "policyname": "deliver_payment_notifications",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "(current_setting('app.notification_delivery'::text, true) = 'true'::text)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "payment_notification_outbox",
+      "policyname": "enqueue_owned_payment_notification",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid) AND (EXISTS ( SELECT 1\n   FROM payments p\n  WHERE ((p.id = payment_notification_outbox.payment_id) AND (p.organization_id = payment_notification_outbox.organization_id)))))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "payment_notification_outbox",
+      "policyname": "lock_payment_notifications",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(current_setting('app.notification_delivery'::text, true) = 'true'::text)",
+      "with_check": "(current_setting('app.notification_delivery'::text, true) = 'true'::text)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "payments",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "payments",
+      "policyname": "own_payment",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM stays s\n  WHERE ((s.occupancy_id = payments.occupancy_id) AND (s.user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "payments",
+      "policyname": "payment_by_provider_ref",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((provider_ref IS NOT NULL) AND (provider_ref = NULLIF(current_setting('app.provider_ref'::text, true), ''::text)))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "policy_acceptances",
+      "policyname": "own_policy_acceptances",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "properties",
+      "policyname": "agent_represented_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "app_private.agent_represents_property(id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "properties",
+      "policyname": "inventory_public_read",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM (listings l\n     JOIN rentable_resources r ON ((r.id = l.resource_id)))\n  WHERE ((r.property_id = properties.id) AND (l.state = 'PUBLISHED'::text))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "properties",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "properties",
+      "policyname": "participant_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "app_private.guest_can_see_property(id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "rentable_resources",
+      "policyname": "agent_represented_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "app_private.agent_represents_resource(id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "rentable_resources",
+      "policyname": "inventory_public_read",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM listings l\n  WHERE ((l.resource_id = rentable_resources.id) AND (l.state = 'PUBLISHED'::text))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "rentable_resources",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "rentable_resources",
+      "policyname": "participant_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "app_private.guest_can_see_resource(id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "reservations",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "reservations",
+      "policyname": "own_reservation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM applications a\n  WHERE ((a.id = reservations.application_id) AND (a.applicant_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "resource_night_status",
+      "policyname": "night_status_public_read",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM listings l\n  WHERE ((l.resource_id = resource_night_status.resource_id) AND (l.state = 'PUBLISHED'::text))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "resource_night_status",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "saved_listings",
+      "policyname": "own_saved",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "stays",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "stays",
+      "policyname": "own_stay",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "support_requests",
+      "policyname": "own_support_requests",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "((user_id IS NOT NULL) AND (user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "support_requests",
+      "policyname": "support_request_submit",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((user_id IS NULL) OR (user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid))"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tour_hotspots",
+      "policyname": "hotspot_public_read",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM ((tour_scenes s\n     JOIN virtual_tours t ON (((t.id = s.tour_id) AND (t.state = 'PUBLISHED'::text))))\n     JOIN listings l ON (((l.resource_id = t.resource_id) AND (l.state = 'PUBLISHED'::text))))\n  WHERE ((s.id = tour_hotspots.scene_id) AND (s.state = 'READY'::text))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tour_hotspots",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tour_scenes",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "tour_scenes",
+      "policyname": "scene_public_read",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((state = 'READY'::text) AND (EXISTS ( SELECT 1\n   FROM (virtual_tours t\n     JOIN listings l ON (((l.resource_id = t.resource_id) AND (l.state = 'PUBLISHED'::text))))\n  WHERE ((t.id = tour_scenes.tour_id) AND (t.state = 'PUBLISHED'::text)))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_capabilities",
+      "policyname": "own_capabilities",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(user_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_profiles",
+      "policyname": "agent_customer_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "app_private.agent_has_customer(id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_profiles",
+      "policyname": "organization_customer_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "app_private.organization_has_customer(id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "user_profiles",
+      "policyname": "own_profile",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "viewings",
+      "policyname": "agent_viewing",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "ALL",
+      "qual": "((agent_id IS NOT NULL) AND (agent_id = app_private.current_app_agent()))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "viewings",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "viewings",
+      "policyname": "own_viewing",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(customer_id = (NULLIF(current_setting('app.user_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "viewings",
+      "policyname": "participant_realtime_read",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "((customer_id = auth.uid()) OR app_private.is_org_member(organization_id) OR ((agent_id IS NOT NULL) AND (agent_id = app_private.current_auth_agent())))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "virtual_tours",
+      "policyname": "agent_represented_read",
+      "roles": [
+        "rental_app"
+      ],
+      "cmd": "SELECT",
+      "qual": "app_private.agent_represents_resource(resource_id)",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "virtual_tours",
+      "policyname": "inventory_public_read",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM listings l\n  WHERE ((l.resource_id = virtual_tours.resource_id) AND (l.state = 'PUBLISHED'::text))))",
+      "with_check": null
+    },
+    {
+      "schemaname": "public",
+      "tablename": "virtual_tours",
+      "policyname": "org_isolation",
+      "roles": [
+        "public"
+      ],
+      "cmd": "ALL",
+      "qual": "(organization_id = (NULLIF(current_setting('app.organization_id'::text, true), ''::text))::uuid)",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "listing_media_agent_delete",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "((bucket_id = 'listing-media'::text) AND app_private.agent_may_write_listing_media(name))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "listing_media_agent_insert",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((bucket_id = 'listing-media'::text) AND app_private.agent_may_write_listing_media(name))"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "listing_media_agent_select",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "((bucket_id = 'listing-media'::text) AND app_private.agent_may_write_listing_media(name))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "listing_media_agent_update",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((bucket_id = 'listing-media'::text) AND app_private.agent_may_write_listing_media(name))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "listing_media_member_delete",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "((bucket_id = 'listing-media'::text) AND app_private.is_org_member(app_private.storage_org_from_path(name)))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "listing_media_member_insert",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((bucket_id = 'listing-media'::text) AND app_private.is_org_member(app_private.storage_org_from_path(name)))"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "listing_media_member_select",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "((bucket_id = ANY (ARRAY['listing-media'::text, 'tour-media'::text])) AND app_private.is_org_member(app_private.storage_org_from_path(name)))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "listing_media_member_update",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((bucket_id = 'listing-media'::text) AND app_private.is_org_member(app_private.storage_org_from_path(name)))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "tour_media_agent_delete",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "((bucket_id = 'tour-media'::text) AND app_private.agent_may_write_tour_media(name))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "tour_media_agent_insert",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((bucket_id = 'tour-media'::text) AND app_private.agent_may_write_tour_media(name))"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "tour_media_agent_select",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "SELECT",
+      "qual": "((bucket_id = 'tour-media'::text) AND app_private.agent_may_write_tour_media(name))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "tour_media_agent_update",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((bucket_id = 'tour-media'::text) AND app_private.agent_may_write_tour_media(name))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "tour_media_member_delete",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "DELETE",
+      "qual": "((bucket_id = 'tour-media'::text) AND app_private.is_org_member(app_private.storage_org_from_path(name)))",
+      "with_check": null
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "tour_media_member_insert",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((bucket_id = 'tour-media'::text) AND app_private.is_org_member(app_private.storage_org_from_path(name)))"
+    },
+    {
+      "schemaname": "storage",
+      "tablename": "objects",
+      "policyname": "tour_media_member_update",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((bucket_id = 'tour-media'::text) AND app_private.is_org_member(app_private.storage_org_from_path(name)))",
+      "with_check": null
+    }
+  ],
+  "grants": [
+    {
+      "table_name": "agent_profiles",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "agent_profiles",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "agent_profiles",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "agent_referral_codes",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "agent_referral_codes",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "agent_referral_codes",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "agent_tasks",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "agent_tasks",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "agent_tasks",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "agent_tasks",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "application_documents",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "application_documents",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "application_documents",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "application_documents",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "application_documents",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "application_documents",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "application_documents",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "application_drafts",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "application_drafts",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "application_drafts",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "applications",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "applications",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "applications",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "applications",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "applications",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "applications",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "applications",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "content_pages",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "conversations",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "conversations",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "conversations",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "identity_capture_limits",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "identity_capture_limits",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "identity_capture_limits",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "identity_evidence_uploads",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "identity_evidence_uploads",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "identity_evidence_uploads",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "identity_verification_sessions",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "identity_verification_sessions",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "identity_verification_sessions",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "inquiries",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "inquiries",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "inquiries",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "invoice_lines",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "invoice_lines",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "invoice_lines",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "invoice_lines",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "invoice_lines",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "invoice_lines",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "invoice_lines",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "invoices",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "invoices",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "invoices",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "invoices",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "invoices",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "invoices",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "invoices",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "lead_assignments",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "lead_assignments",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "lead_assignments",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "lead_referrals",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "lead_referrals",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "ledger_entries",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "ledger_entries",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "ledger_entries",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "ledger_entries",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "ledger_entries",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "ledger_entries",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "ledger_entries",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "listing_change_proposals",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "listing_change_proposals",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "listing_change_proposals",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "listing_representations",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "listing_representations",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "listing_representations",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "listing_sale_terms",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "listing_sale_terms",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "listing_sale_terms",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "listing_view_events",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "listing_view_events",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "listings",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "listings",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "listings",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "listings",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "listings",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "listings",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "listings",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "media_assets",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "media_assets",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "media_assets",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "media_assets",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "media_assets",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "media_assets",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "media_assets",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "messages",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "messages",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "notifications",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "notifications",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "notifications",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "occupancies",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "occupancies",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "occupancies",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "occupancies",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "occupancies",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "occupancies",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "occupancies",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "organization_members",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "organization_members",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "organization_members",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "organization_members",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "organization_members",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "organization_members",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "organization_members",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "organizations",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "organizations",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "organizations",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "organizations",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "organizations",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "organizations",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "organizations",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "payment_applications",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "payment_applications",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "payment_applications",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "payment_applications",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "payment_applications",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "payment_applications",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "payment_applications",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "payment_notification_outbox",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "payment_notification_outbox",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "payment_notification_outbox",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "payments",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "payments",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "payments",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "payments",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "payments",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "payments",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "payments",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "policy_acceptances",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "policy_acceptances",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "properties",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "properties",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "properties",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "properties",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "properties",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "properties",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "properties",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "provider_events",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "provider_events",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "provider_events",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "provider_events",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "provider_events",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "provider_events",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "provider_events",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "rentable_resources",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "rentable_resources",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "rentable_resources",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "rentable_resources",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "rentable_resources",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "rentable_resources",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "rentable_resources",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "reservations",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "reservations",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "reservations",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "reservations",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "reservations",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "reservations",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "reservations",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "resource_night_status",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "resource_night_status",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "resource_night_status",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "resource_night_status",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "resource_night_status",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "resource_night_status",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "resource_night_status",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "saved_listings",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "saved_listings",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "saved_listings",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "saved_listings",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "saved_listings",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "saved_listings",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "saved_listings",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "stays",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "stays",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "stays",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "stays",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "stays",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "stays",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "stays",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "support_requests",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "support_requests",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "tour_hotspots",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "tour_hotspots",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "tour_hotspots",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "tour_hotspots",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "tour_hotspots",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "tour_hotspots",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "tour_hotspots",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "tour_scenes",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "tour_scenes",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "tour_scenes",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "tour_scenes",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "tour_scenes",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "tour_scenes",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "tour_scenes",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "user_capabilities",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "user_capabilities",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "user_capabilities",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "user_capabilities",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "user_capabilities",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "user_capabilities",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "user_capabilities",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "user_profiles",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "user_profiles",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "user_profiles",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "user_profiles",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "user_profiles",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "user_profiles",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "user_profiles",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "viewings",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "viewings",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "viewings",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "virtual_tours",
+      "grantee": "rental_app",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "virtual_tours",
+      "grantee": "rental_app",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "virtual_tours",
+      "grantee": "rental_app",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "virtual_tours",
+      "grantee": "rental_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "virtual_tours",
+      "grantee": "rental_app",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "virtual_tours",
+      "grantee": "rental_app",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "virtual_tours",
+      "grantee": "rental_app",
+      "privilege_type": "UPDATE"
+    }
+  ],
+  "securityDefiners": [
+    {
+      "schema": "app_private",
+      "name": "agent_has_customer",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "agent_invited_to_listing",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "agent_may_view_commercial",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "agent_may_write_listing_media",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "agent_may_write_tour_media",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "agent_represents_listing",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "agent_represents_property",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "agent_represents_resource",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "agent_response_samples",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "current_app_agent",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "current_app_is_platform_admin",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "current_auth_agent",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "customer_assigned_agent",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "due_lead_assignments",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "guest_can_see_listing",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "guest_can_see_property",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "guest_can_see_resource",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "is_org_member",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "lead_assignment_candidates",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "matching_viewings",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "organization_has_customer",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "organization_works_with_agent",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "resolve_referral_code",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "sale_listing_duplicate_candidates",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    },
+    {
+      "schema": "app_private",
+      "name": "viewing_taken_slots",
+      "owner": "postgres",
+      "security_definer": true,
+      "config": [
+        "search_path=public, pg_temp"
+      ]
+    }
+  ]
+}
