@@ -1,0 +1,61 @@
+(node:25522) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/admin/Documents/GitHub/rental-business-software/apps/owner-web/components/owner/insight-palette.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/admin/Documents/GitHub/rental-business-software/apps/owner-web/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "url": "http://127.0.0.1:3204/",
+  "errors": [],
+  "metrics": [
+    "11",
+    "1",
+    "4",
+    "₱18,500",
+    "0",
+    "2"
+  ],
+  "geometry": [
+    {
+      "class": "sticky top-0 hidden h-dvh w-[264px] shrink-0 border-r border-border bg-background lg:block owner-sidebar",
+      "x": 0,
+      "y": 0,
+      "width": 310,
+      "height": 990
+    },
+    {
+      "class": "dashboard-header",
+      "x": 310,
+      "y": 68,
+      "width": 1280,
+      "height": 153
+    },
+    {
+      "class": "dashboard-primary-metrics",
+      "x": 330,
+      "y": 221,
+      "width": 1242,
+      "height": 140
+    },
+    {
+      "class": "dashboard-secondary-metrics",
+      "x": 330,
+      "y": 374,
+      "width": 1242,
+      "height": 133
+    },
+    {
+      "class": "dashboard-activity-grid",
+      "x": 330,
+      "y": 520,
+      "width": 1242,
+      "height": 338
+    },
+    {
+      "class": "dashboard-insights",
+      "x": 330,
+      "y": 872,
+      "width": 1242,
+      "height": 170
+    }
+  ]
+}
+Owner dashboard browser checks passed

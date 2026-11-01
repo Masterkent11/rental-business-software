@@ -42,7 +42,7 @@ export default function AgentClientsPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {clients.map((client) => (
-                  <tr key={client.customerId}>
+                  <tr key={client.customerId} id={`search-client-${client.customerId}`}>
                     <td className="px-5 py-3 font-medium">{client.customerName}</td>
                     <td className="max-w-[220px] truncate px-3 py-3 text-muted">{client.latestListingTitle}</td>
                     <td className="px-3 py-3">

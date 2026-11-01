@@ -24,10 +24,10 @@ export function AnalyticsView() {
   const agent = scope.kind === "AGENT";
 
   return (
-    <Page>
+    <Page className="partner-analytics">
       <TopBar title="Analytics" caption="Counted from real inquiries, viewings and bookings over the last 12 weeks." />
       {loading && !data ? (
-        <div className="grid gap-4 sm:grid-cols-4">
+        <div className="analytics-summary grid gap-4 sm:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-28 rounded-2xl" />
           ))}
@@ -58,8 +58,8 @@ function AnalyticsBody({ agent }: { agent: boolean }) {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="analytics-body flex flex-col gap-8">
+      <div className="analytics-summary grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Inquiries" value={sum.inquiries} />
         <Stat label="Viewings" value={sum.viewings} hint={`${sum.completedViewings} completed`} />
         <Stat label={agent ? "Closed deals" : "Bookings"} value={agent ? data.inquiriesByStatus.CLOSED : sum.bookings} />
@@ -69,15 +69,15 @@ function AnalyticsBody({ agent }: { agent: boolean }) {
       <section>
         <SectionHeading title="Weekly activity" caption="Inquiries, viewings and bookings created each week." />
         <Card className="p-5">
-          <div className="flex h-48 items-end gap-2" role="img" aria-label="Weekly activity chart">
+          <div className="analytics-chart flex h-48 items-end gap-2" role="img" aria-label="Weekly activity chart">
             {data.weekly.map((week) => (
               <div key={week.weekStart} className="flex flex-1 flex-col items-center gap-1.5">
-                <div className="flex h-40 w-full items-end justify-center gap-0.5">
+                <div className="analytics-bars flex h-40 w-full items-end justify-center gap-0.5">
                   <span className="w-1/4 rounded-t bg-foreground" style={{ height: `${(week.inquiries / peak) * 100}%` }} title={`${week.inquiries} inquiries`} />
                   <span className="w-1/4 rounded-t bg-[#1d4ed8]" style={{ height: `${(week.viewings / peak) * 100}%` }} title={`${week.viewings} viewings`} />
                   {agent ? null : <span className="w-1/4 rounded-t bg-success" style={{ height: `${(week.bookings / peak) * 100}%` }} title={`${week.bookings} bookings`} />}
                 </div>
-                <span className="text-[10.5px] text-muted">{weekLabel(week.weekStart)}</span>
+                <span className="analytics-week-label text-[10.5px] text-muted">{weekLabel(week.weekStart)}</span>
               </div>
             ))}
           </div>

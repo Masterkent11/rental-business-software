@@ -1,0 +1,135 @@
+{
+  "date": "2026-11-01",
+  "tickets": [
+    64,
+    139,
+    140
+  ],
+  "sprint": {
+    "name": "Partner Experience",
+    "start": "2026-11-01",
+    "end": "2026-11-14"
+  },
+  "checks": {
+    "apiTypecheck": "PASS",
+    "apiLint": "PASS",
+    "apiBuild": "PASS",
+    "webTypecheck": "PASS",
+    "webLint": "PASS",
+    "webBuild": "PASS",
+    "webUnit": {
+      "passed": 91,
+      "skipped": 0
+    },
+    "apiUnit": {
+      "passed": 444,
+      "skipped": 251,
+      "note": "Database tests require isolated PostgreSQL; three relevant suites separately executed below."
+    },
+    "databaseIntegration": {
+      "passed": 29,
+      "skipped": 0,
+      "suites": 3,
+      "realHttpControllers": true,
+      "fixtureDatabase": "Disposable loopback PostgreSQL, UTF8",
+      "migrationBaselineCounts": [
+        4,
+        1,
+        1,
+        7
+      ],
+      "restoredBaselineCounts": [
+        4,
+        1,
+        1,
+        7
+      ]
+    },
+    "browser": {
+      "partnerShell": "PASS",
+      "agentRegression": "PASS",
+      "ownerRegression": "PASS",
+      "viewports": [
+        "375x812",
+        "834x1112",
+        "1440x900",
+        "1920x1080"
+      ],
+      "scope": "Browser auth, provider and API requests intercepted with synthetic fixtures. Separate HTTP and PostgreSQL suite uses actual controllers and local database."
+    },
+    "existingApiSmoke": {
+      "health": 200,
+      "unauthenticatedSearch": 401,
+      "unauthenticatedBranding": 401
+    }
+  },
+  "configuredDatabase": {
+    "readOnlySchemaCheck": {
+      "brandingSchema": false,
+      "tenantLifecycleHelper": false
+    },
+    "remoteMigrationsApplied": false,
+    "pendingBrandingMigration": "20261101052951_partner_workspace_branding.sql"
+  },
+  "limitations": [
+    "Hosted authenticated browser end to end and real Supabase logo persistence NOT RUN.",
+    "Jira WSP publication unavailable; no Jira key claimed.",
+    "No remote migration, commit, push, merge or deployment.",
+    "Client and Task row navigation retains existing list window limits documented in implementation.md."
+  ],
+  "trackerVerification": {
+    "featureIssues": {
+      "139": {
+        "status": "In Review",
+        "parent": 62,
+        "iteration": "Partner Experience"
+      },
+      "140": {
+        "status": "In Review",
+        "parent": 62,
+        "iteration": "Partner Experience"
+      }
+    },
+    "existingUiIssue": 64,
+    "publication": "GitHub readback verified; Jira unavailable"
+  },
+  "headerPlacementCorrection": {
+    "scope": "Frontend layout only; no API or database change",
+    "tickets": [
+      64,
+      139
+    ],
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "build": "PASS",
+    "unit": {
+      "passed": 91,
+      "skipped": 0
+    },
+    "browser": "PASS both portals at four viewports, absolute toolbar inside banner, no preceding toolbar, search beside greeting in same row and no overlap",
+    "dashboardRegressions": {
+      "owner": "PASS",
+      "agent": "PASS"
+    },
+    "gitDiffCheck": "PASS"
+  },
+  "avatarVerificationCorrection": {
+    "scope": "Frontend presentation only; authority unchanged",
+    "ticket": 64,
+    "placement": "Sidebar and mobile drawer profile avatar edge, no header status",
+    "verified": "Blue scalloped check, white check and separation ring, accessible workspace label",
+    "unverified": "Plain avatar, details in Account",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "build": "PASS",
+    "unit": {
+      "passed": 91,
+      "skipped": 0
+    },
+    "browser": "PASS unverified Owner/Agent at four sizes, verified Owner/Agent desktop and mobile drawer, blue color and avatar bounds, no toolbar seal, single row search retained",
+    "regressions": {
+      "owner": "PASS",
+      "agent": "PASS"
+    }
+  }
+}

@@ -1,0 +1,145 @@
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/tests/local-supabase-stubs.sql:80: WARNING:  wal_level is insufficient to publish logical changes
+HINT:  Set wal_level to "logical" before creating subscriptions.
+ rebuild_resource_paths 
+------------------------
+ 
+(1 row)
+
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000300_storage_and_hardening.sql:10: NOTICE:  policy "listing_media_member_insert" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000300_storage_and_hardening.sql:11: NOTICE:  policy "listing_media_member_update" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000300_storage_and_hardening.sql:12: NOTICE:  policy "listing_media_member_delete" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000300_storage_and_hardening.sql:13: NOTICE:  policy "tour_media_member_insert" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000300_storage_and_hardening.sql:14: NOTICE:  policy "tour_media_member_update" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000300_storage_and_hardening.sql:67: NOTICE:  policy "organizations_insert" for relation "organizations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000600_participant_read_policies.sql:1: NOTICE:  schema "app_private" already exists, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000600_participant_read_policies.sql:117: NOTICE:  policy "own_occupancy" for relation "occupancies" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000600_participant_read_policies.sql:122: NOTICE:  policy "participant_read" for relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000600_participant_read_policies.sql:127: NOTICE:  policy "participant_read" for relation "rentable_resources" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000600_participant_read_policies.sql:132: NOTICE:  policy "participant_read" for relation "properties" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000600_participant_read_policies.sql:137: NOTICE:  policy "participant_read" for relation "media_assets" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000600_participant_read_policies.sql:142: NOTICE:  policy "organization_customer_read" for relation "user_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000700_reconcile_policy_drift.sql:1: NOTICE:  policy "org_isolation" for relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000700_reconcile_policy_drift.sql:6: NOTICE:  policy "organizations_owner_update" for relation "organizations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000800_storage_member_select.sql:1: NOTICE:  policy "listing_media_member_select" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:2: NOTICE:  constraint "listings_intent_check" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:6: NOTICE:  constraint "listings_kind_matches_intent" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:9: NOTICE:  constraint "listings_sale_price_private" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:16: NOTICE:  constraint "listings_lot_area_sqm_check" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:20: NOTICE:  constraint "listings_parking_slots_check" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:24: NOTICE:  constraint "listings_sale_status_check" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:28: NOTICE:  constraint "listings_sale_status_intent" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:47: NOTICE:  constraint "properties_latitude_check" of relation "properties" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:49: NOTICE:  constraint "properties_longitude_check" of relation "properties" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:51: NOTICE:  constraint "properties_coordinates_paired" of relation "properties" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:55: NOTICE:  constraint "properties_location_privacy_check" of relation "properties" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:78: NOTICE:  policy "org_isolation" for relation "listing_sale_terms" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:73: NOTICE:  trigger "agent_profiles_verification_guard" for relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:116: NOTICE:  policy "agent_public_read" for relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:119: NOTICE:  policy "own_agent_profile" for relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:124: NOTICE:  policy "platform_admin_read" for relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:129: NOTICE:  policy "platform_admin_manage" for relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:162: NOTICE:  policy "org_isolation" for relation "listing_representations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:167: NOTICE:  policy "representation_public_read" for relation "listing_representations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:173: NOTICE:  policy "agent_own_representation" for relation "listing_representations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:257: NOTICE:  policy "agent_represented_read" for relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:262: NOTICE:  policy "agent_represented_read" for relation "rentable_resources" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:267: NOTICE:  policy "agent_represented_read" for relation "properties" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:272: NOTICE:  policy "agent_represented_read" for relation "media_assets" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:277: NOTICE:  policy "agent_represented_read" for relation "virtual_tours" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:282: NOTICE:  policy "agent_commercial_read" for relation "listing_sale_terms" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:13: NOTICE:  policy "agent_conversation" for relation "conversations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:18: NOTICE:  policy "agent_messages" for relation "messages" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:65: NOTICE:  policy "org_isolation" for relation "inquiries" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:69: NOTICE:  policy "own_inquiry" for relation "inquiries" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:73: NOTICE:  policy "agent_inquiry" for relation "inquiries" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:123: NOTICE:  policy "org_isolation" for relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:127: NOTICE:  policy "own_viewing" for relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:131: NOTICE:  policy "agent_viewing" for relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:151: NOTICE:  policy "agent_own_task" for relation "agent_tasks" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:211: NOTICE:  policy "agent_customer_read" for relation "user_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:249: NOTICE:  policy "participant_realtime_read" for relation "inquiries" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:258: NOTICE:  policy "participant_realtime_read" for relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:2: NOTICE:  constraint "virtual_tours_provider_check" of relation "virtual_tours" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:6: NOTICE:  constraint "virtual_tours_external_model_format" of relation "virtual_tours" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:10: NOTICE:  constraint "virtual_tours_external_model_required" of relation "virtual_tours" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:20: NOTICE:  constraint "tour_scenes_initial_view_check" of relation "tour_scenes" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:30: NOTICE:  constraint "media_assets_label_length" of relation "media_assets" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "listing_media_agent_insert" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "listing_media_agent_update" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "listing_media_agent_select" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "listing_media_agent_delete" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "tour_media_agent_insert" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "tour_media_agent_update" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "tour_media_agent_select" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "tour_media_agent_delete" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "tour_media_member_delete" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261009000100_discovery_attributes_and_search.sql:4: NOTICE:  constraint "listings_furnishing_check" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261009000100_discovery_attributes_and_search.sql:44: NOTICE:  policy "own_listing_views" for relation "listing_view_events" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261009000200_content_pages_and_consent.sql:22: NOTICE:  policy "content_public_read" for relation "content_pages" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261009000200_content_pages_and_consent.sql:48: NOTICE:  policy "own_policy_acceptances" for relation "policy_acceptances" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261009000200_content_pages_and_consent.sql:80: NOTICE:  policy "support_request_submit" for relation "support_requests" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261009000200_content_pages_and_consent.sql:85: NOTICE:  policy "own_support_requests" for relation "support_requests" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:2: NOTICE:  constraint "listing_representations_type_check" of relation "listing_representations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:11: NOTICE:  constraint "listing_representations_initiated_by_check" of relation "listing_representations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:15: NOTICE:  constraint "listing_representations_validity_check" of relation "listing_representations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:32: NOTICE:  constraint "agent_profiles_lead_capacity_check" of relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:83: NOTICE:  policy "org_isolation" for relation "lead_assignments" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:87: NOTICE:  policy "own_lead_assignment" for relation "lead_assignments" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:91: NOTICE:  policy "agent_lead_assignment" for relation "lead_assignments" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:113: NOTICE:  policy "assigned_agent_read" for relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:134: NOTICE:  policy "organization_agent_read" for relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:153: NOTICE:  policy "agent_own_referral_code" for relation "agent_referral_codes" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:170: NOTICE:  policy "own_lead_referral" for relation "lead_referrals" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:174: NOTICE:  policy "agent_lead_referral" for relation "lead_referrals" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:192: NOTICE:  constraint "viewings_preferred_window_check" of relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:196: NOTICE:  constraint "viewings_schedule_present" of relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:200: NOTICE:  constraint "viewings_confirmed_has_time" of relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:204: NOTICE:  constraint "viewings_matching_has_no_agent" of relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:206: NOTICE:  constraint "viewings_notice_length" of relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:242: NOTICE:  policy "org_isolation" for relation "listing_change_proposals" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:246: NOTICE:  policy "agent_own_proposal" for relation "listing_change_proposals" does not exist, skipping
+              set_config              
+--------------------------------------
+ 00000000-0000-4000-9000-000000000704
+(1 row)
+
+       resource       | records 
+----------------------+---------
+ organizations        |       4
+ agent_profiles       |       1
+ organization_members |       1
+ listings             |       7
+(4 rows)
+
+          check_name          | mismatches 
+------------------------------+------------
+ representation_listing_owner |          0
+ conversation_listing_owner   |          0
+ inquiry_listing_owner        |          0
+ viewing_listing_owner        |          0
+ media_listing_owner          |          0
+ resource_parent_owner        |          0
+ resource_root_owner          |          0
+(7 rows)
+
+ unreviewed_dual_memberships 
+-----------------------------
+                           0
+(1 row)
+
+Migration preserved organization, Agent, membership and listing counts: [4, 1, 1, 7]
+
+> api@0.1.0 test
+> vitest run src/infrastructure/postgres/__tests__/partner-shell.integration.test.ts src/infrastructure/postgres/__tests__/tenant-boundaries.integration.test.ts src/infrastructure/postgres/__tests__/agent-workspace-security.integration.test.ts
+
+
+ RUN  v4.1.12 /Users/admin/Documents/GitHub/rental-business-software/apps/api
+
+
+ Test Files  3 passed (3)
+      Tests  29 passed (29)
+   Start at  14:23:29
+   Duration  3.56s (transform 444ms, setup 0ms, import 2.44s, tests 818ms, environment 0ms)
+
+Baseline restore rehearsal preserved counts: [4, 1, 1, 7]
+Disposable cluster cleanup scheduled; server log: /var/folders/yc/1h_0z1vj1qzc3cjnd3zl31qr0000gn/T//wsp-audit-pg.le4vK0.log

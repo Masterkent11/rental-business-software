@@ -1,0 +1,59 @@
+{
+  "date": "2026-11-01",
+  "branch": "codex/agent-marketing-phase-one",
+  "ticket": "https://github.com/Masterkent11/rental-business-software/issues/139",
+  "scope": "Local uncommitted shared header and sidebar presentation; no authentication policy, API or database changes",
+  "checks": {
+    "typecheck": "PASS",
+    "lint": "PASS with two pre-existing unused variable warnings in messages-inbox.tsx",
+    "unit": {
+      "passed": 93,
+      "failed": 0,
+      "skipped": 0
+    },
+    "productionBuild": "PASS",
+    "partnerBrowser": {
+      "status": "PASS",
+      "cases": 30,
+      "browserErrors": [],
+      "viewportWidths": [
+        320,
+        375,
+        834,
+        1364,
+        1440,
+        1672,
+        1920
+      ]
+    },
+    "googleReloadBrowser": "PASS",
+    "authenticationBrowser": "PASS",
+    "marketingBrowser": "PASS",
+    "diffCheck": "PASS"
+  },
+  "desktopGeometry": {
+    "headerHeight": 72,
+    "sidebarWidth": 244,
+    "navigationGap": 6,
+    "navigationMinHeight": 44,
+    "navigationPadding": "10px 14px",
+    "notificationVerticalSeparators": false
+  },
+  "evidence": {
+    "partnerScreenshots": 39,
+    "googleScreenshots": 8,
+    "authScreenshots": 15,
+    "marketingScreenshots": 8
+  },
+  "limitations": [
+    "Browser providers and APIs use synthetic interception; hosted authenticated Agent Google acceptance is not claimed",
+    "Subscription badge omitted because no authoritative plan data source exists",
+    "Direct booking and viewing record search is not added; existing resource search and page shortcuts preserved",
+    "No Jira connection; no Jira publication claimed",
+    "No remote migration, commit, push, merge or deployment"
+  ],
+  "preservation": {
+    "stagedDiffSha256": "23f1480b8e7b7cf826b2654db41da947b6a3f78a4209e9d49f05f5890748c22d",
+    "unrelatedAuthCssPreserved": true
+  }
+}

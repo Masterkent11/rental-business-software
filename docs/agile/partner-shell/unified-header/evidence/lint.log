@@ -1,0 +1,11 @@
+
+> owner-web@0.1.0 lint
+> eslint
+
+
+/Users/admin/Documents/GitHub/rental-business-software/apps/owner-web/components/owner/messages-inbox.tsx
+    9:10  warning  'Badge' is defined but never used              @typescript-eslint/no-unused-vars
+  167:60  warning  'realtime' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 2 problems (0 errors, 2 warnings)
+

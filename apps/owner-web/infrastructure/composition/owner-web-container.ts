@@ -1,3 +1,5 @@
+import { ApiPartnerShellAdapter } from "../http/api-partner-shell.adapter";
+import { PartnerShellUseCases } from "../../application/use-cases/partner/partner-shell.use-cases";
 import {ApiMarketingAdapter} from "../http/api-marketing.adapter";
 import {MarketingUseCases} from "../../application/use-cases/marketing/marketing.use-cases";
 import { SupabasePartnerAccessAdapter } from "../auth/supabase-partner-access.adapter";
@@ -116,6 +118,7 @@ export class OwnerWebContainer {
   readonly photoStorage: PhotoStoragePort = new SupabasePhotoStorageAdapter();
   readonly partnerRepository: PartnerRepositoryPort = new ApiPartnerRepositoryAdapter(this.httpClient);
   readonly fileReader = new BrowserFileReaderAdapter();
+  readonly partnerShell = new PartnerShellUseCases(new ApiPartnerShellAdapter(this.httpClient),this.fileReader);
   readonly marketing = new MarketingUseCases(new ApiMarketingAdapter(this.httpClient),this.fileReader);
 
   readonly getCurrentSessionUseCase = new GetCurrentSessionUseCase(this.sessionPort);

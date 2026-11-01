@@ -42,7 +42,7 @@ export default function ApplicationsPage() {
     <Page>
       <TopBar title="Applications" caption={loading ? "Loading…" : `${waiting.length} waiting for your decision`} />
 
-      <div className="mb-5 flex items-start gap-3 rounded-2xl border border-warning/25 bg-warning-soft/60 p-4">
+      <div className="mb-5 flex items-start gap-3  bg-warning-soft/60 p-4">
         <ShieldCheck className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden />
         <p className="text-[13px] leading-relaxed text-foreground">
           Approving an application places a 72-hour hold on the unit while the applicant arranges advance and deposit. Until then, the unit stays open on the marketplace.
