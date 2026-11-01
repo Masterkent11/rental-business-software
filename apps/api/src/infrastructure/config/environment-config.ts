@@ -26,6 +26,8 @@ export function loadEnvironmentConfig(env: NodeJS.ProcessEnv = process.env): Env
   const appEnv = (env.APP_ENV ?? 'development') as AppEnvironment;
   if (!APP_ENVS.includes(appEnv)) problems.push(`APP_ENV must be one of ${APP_ENVS.join(', ')}`);
 
+  if (env.TENANT_BOUNDARIES_ENABLED && !['true','false'].includes(env.TENANT_BOUNDARIES_ENABLED)) problems.push('TENANT_BOUNDARIES_ENABLED must be true or false');
+
   const databaseUrl = env.DATABASE_URL ?? '';
   if (!databaseUrl) problems.push('DATABASE_URL is required');
 

@@ -1,3 +1,4 @@
+import { authorizeAdministration } from '@/application/administration/authorize-administration/authorize-administration.use-case.ts';
 import { reviewIdentityEvidence } from '@/application/verification/review-identity-evidence/review-identity-evidence.use-case.ts';
 import { decideIdentityReview } from '@/application/verification/decide-identity-review/decide-identity-review.use-case.ts';
 import type { Principal } from '@/domain/identity/identity.ts';
@@ -109,7 +110,9 @@ describe('custom verification lifecycle', () => {
 });
 
 describe('manual identity review', () => {
-  const reviewer: Principal = { userId: 'admin', displayName: 'Reviewer', organizationId: null,
+  const audit={purpose:'Synthetic identity review',requestId:'review-one'};
+  const authorize=authorizeAdministration({permitted:async()=>true,audit:async()=>{},monitor:async()=>[]});
+  const reviewer: Principal = { userId: 'admin', displayName: 'Reviewer', organizationId: null, assuranceLevel:'aal2',
     capabilities: [{ capability: 'PLATFORM_ADMIN', organizationId: null }] };
   const pending = () => session({ status: 'MANUAL_REVIEW', captureId: 'c1', frontPath: 'u1/s1/front.jpg', reviewed: details,
     challenge: { id: 'h', expiresAt: '2099-01-01T00:00:00Z', instruction: 'UP' },
@@ -118,24 +121,24 @@ describe('manual identity review', () => {
   it('prevents renters and owners from reading evidence or marking identity verified', async () => {
     const { repo, storage } = setup(pending());
     const renter = { ...reviewer, capabilities: [] };
-    await expect(reviewIdentityEvidence(repo, storage)(renter, 'u1', 's1')).rejects.toThrow('Only platform');
-    await expect(decideIdentityReview(repo)(renter, decision)).rejects.toThrow('Only platform');
+    await expect(reviewIdentityEvidence(repo, storage,authorize)(renter, 'u1', 's1',audit)).rejects.toThrow('Only platform');
+    await expect(decideIdentityReview(repo,authorize)(renter, decision,audit)).rejects.toThrow('Only platform');
     expect(repo.get).not.toHaveBeenCalled();
     expect(storage.reviewUrl).not.toHaveBeenCalled();
   });
   it('returns short-lived private evidence only to authorized reviewers', async () => {
     const { repo, storage } = setup(pending());
-    const view = await reviewIdentityEvidence(repo, storage)(reviewer, 'u1', 's1');
+    const view = await reviewIdentityEvidence(repo, storage,authorize)(reviewer, 'u1', 's1',audit);
     expect(view.evidence).toHaveLength(5);
     expect(storage.reviewUrl).toHaveBeenCalledWith('u1', 'u1/s1/front.jpg', 60);
   });
   it('records an explicit reviewer decision, rejects stale decisions and replays', async () => {
     const { repo } = setup(pending());
-    await expect(decideIdentityReview(repo)(reviewer, { ...decision, version: 0 })).rejects.toThrow(VerificationConflictError);
-    await expect(decideIdentityReview(repo)(reviewer, { ...decision, validUntil: null })).rejects.toThrow(VerificationInputError);
-    const approved = await decideIdentityReview(repo)(reviewer, decision);
+    await expect(decideIdentityReview(repo,authorize)(reviewer, { ...decision, version: 0 },audit)).rejects.toThrow(VerificationConflictError);
+    await expect(decideIdentityReview(repo,authorize)(reviewer, { ...decision, validUntil: null },audit)).rejects.toThrow(VerificationInputError);
+    const approved = await decideIdentityReview(repo,authorize)(reviewer, decision,audit);
     expect(approved.status).toBe('VERIFIED'); expect(approved.review?.reviewerId).toBe('admin');
-    await expect(decideIdentityReview(repo)(reviewer, decision)).rejects.toThrow(VerificationConflictError);
+    await expect(decideIdentityReview(repo,authorize)(reviewer, decision,audit)).rejects.toThrow(VerificationConflictError);
   });
   it('routes the trusted provider pending decision to manual review without showing success', async () => {
     const current = pending();

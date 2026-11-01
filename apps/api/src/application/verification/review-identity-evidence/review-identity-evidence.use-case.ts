@@ -1,12 +1,13 @@
 import type { VerificationRepository } from '@/application/ports/repositories/verification-repository.port.ts';
 import type { VerificationEvidenceStorage } from '@/application/ports/storage/verification-evidence.port.ts';
-import { hasCapability, type Principal } from '@/domain/identity/identity.ts';
-import { OrganizationForbiddenError } from '@/application/identity/resolve-principal/resolve-principal.use-case.ts';
+import { type Principal } from '@/domain/identity/identity.ts';
+import type { authorizeAdministration } from '@/application/administration/authorize-administration/authorize-administration.use-case.ts';
+import type { AdministrativeAudit } from '@/domain/administration/administration.ts';
 import { assertVerificationState } from '@/domain/verification/verification.ts';
 
-export const reviewIdentityEvidence = (repo: VerificationRepository, storage: VerificationEvidenceStorage) =>
-  async (principal: Principal, userId: string, sessionId: string) => {
-    if (!hasCapability(principal, 'PLATFORM_ADMIN')) throw new OrganizationForbiddenError('Only platform identity reviewers may access evidence.');
+export const reviewIdentityEvidence = (repo: VerificationRepository, storage: VerificationEvidenceStorage, authorize: ReturnType<typeof authorizeAdministration>) =>
+  async (principal: Principal, userId: string, sessionId: string, audit: AdministrativeAudit) => {
+    await authorize(principal,'IDENTITY_REVIEW',audit,userId);
     const session = await repo.get(userId, sessionId);
     assertVerificationState(session, ['MANUAL_REVIEW'], new Date());
     const captures = [

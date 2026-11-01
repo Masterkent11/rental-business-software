@@ -1,3 +1,5 @@
+import { AUTHORIZE_ADMINISTRATION } from '@/modules/administration/administration.tokens.ts';
+import type { authorizeAdministration } from '@/application/administration/authorize-administration/authorize-administration.use-case.ts';
 import { reviewIdentityEvidence } from '@/application/verification/review-identity-evidence/review-identity-evidence.use-case.ts';
 import { decideIdentityReview } from '@/application/verification/decide-identity-review/decide-identity-review.use-case.ts';
 import { Inject, Logger, Module, type OnApplicationBootstrap, type OnModuleDestroy } from '@nestjs/common';
@@ -31,8 +33,8 @@ import { cancelVerification } from '@/application/verification/cancel-verificati
   imports: [IdentityModule],
   controllers: [VerificationController],
   providers: [
-    { provide: REVIEW_IDENTITY_EVIDENCE, inject: [VERIFICATION_REPOSITORY, VERIFICATION_EVIDENCE], useFactory: (repo: VerificationRepository, storage: VerificationEvidenceStorage) => reviewIdentityEvidence(repo, storage) },
-    { provide: DECIDE_IDENTITY_REVIEW, inject: [VERIFICATION_REPOSITORY], useFactory: (repo: VerificationRepository) => decideIdentityReview(repo) },
+    { provide: REVIEW_IDENTITY_EVIDENCE, inject: [VERIFICATION_REPOSITORY, VERIFICATION_EVIDENCE, AUTHORIZE_ADMINISTRATION], useFactory: (repo: VerificationRepository, storage: VerificationEvidenceStorage, policy: ReturnType<typeof authorizeAdministration>) => reviewIdentityEvidence(repo, storage,policy) },
+    { provide: DECIDE_IDENTITY_REVIEW, inject: [VERIFICATION_REPOSITORY, AUTHORIZE_ADMINISTRATION], useFactory: (repo: VerificationRepository, policy: ReturnType<typeof authorizeAdministration>) => decideIdentityReview(repo,policy) },
     { provide: VERIFICATION_EVIDENCE, useFactory: supabaseVerificationEvidence },
     { provide: VERIFICATION_IDS, useFactory: () => new UuidGenerator() },
     { provide: VERIFICATION_REPOSITORY, useFactory: postgresVerificationRepository },
