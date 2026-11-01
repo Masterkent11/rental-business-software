@@ -1,0 +1,290 @@
+{
+  "status": "PASS",
+  "environment": "Local production build with synthetic API and Auth fixtures",
+  "viewports": [
+    {
+      "width": 1672,
+      "height": 941,
+      "bounds": [
+        {
+          "class": "dashboard-metric-art",
+          "x": 337,
+          "y": 199,
+          "width": 93.625,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 607.796875,
+          "y": 199,
+          "width": 93.625,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 878.59375,
+          "y": 199,
+          "width": 93.625,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 1149.390625,
+          "y": 199,
+          "width": 93.625,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 1420.1875,
+          "y": 199,
+          "width": 93.625,
+          "height": 106
+        },
+        {
+          "class": "dashboard-panel agent-dashboard-panel agent-response-panel",
+          "x": 1022.0625,
+          "y": 668.890625,
+          "width": 641.921875,
+          "height": 232
+        },
+        {
+          "class": "",
+          "x": 1458.984375,
+          "y": 730.78125,
+          "width": 180,
+          "height": 140
+        }
+      ]
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "bounds": [
+        {
+          "class": "dashboard-metric-art",
+          "x": 337,
+          "y": 199,
+          "width": 94,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 657.390625,
+          "y": 199,
+          "width": 94,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 977.796875,
+          "y": 199,
+          "width": 94,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 1298.1875,
+          "y": 199,
+          "width": 94,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 1618.59375,
+          "y": 199,
+          "width": 94,
+          "height": 106
+        },
+        {
+          "class": "dashboard-panel agent-dashboard-panel agent-response-panel",
+          "x": 1150.546875,
+          "y": 668.890625,
+          "width": 761.4375,
+          "height": 232
+        },
+        {
+          "class": "",
+          "x": 1706.984375,
+          "y": 730.78125,
+          "width": 180,
+          "height": 140
+        }
+      ]
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "bounds": [
+        {
+          "class": "dashboard-metric-art",
+          "x": 337,
+          "y": 205.796875,
+          "width": 80.625,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 561.390625,
+          "y": 205.796875,
+          "width": 80.625,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 785.796875,
+          "y": 205.796875,
+          "width": 80.625,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 1010.1875,
+          "y": 205.796875,
+          "width": 80.625,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 1234.59375,
+          "y": 205.796875,
+          "width": 80.625,
+          "height": 106
+        },
+        {
+          "class": "dashboard-panel agent-dashboard-panel agent-response-panel",
+          "x": 901.875,
+          "y": 682.484375,
+          "width": 530.125,
+          "height": 232
+        },
+        {
+          "class": "",
+          "x": 1227,
+          "y": 744.375,
+          "width": 180,
+          "height": 140
+        }
+      ]
+    },
+    {
+      "width": 834,
+      "height": 1112,
+      "bounds": [
+        {
+          "class": "dashboard-metric-art",
+          "x": 31,
+          "y": 209,
+          "width": 56,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 301.65625,
+          "y": 209,
+          "width": 56,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 572.328125,
+          "y": 209,
+          "width": 56,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 31,
+          "y": 363,
+          "width": 56,
+          "height": 106
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 301.65625,
+          "y": 363,
+          "width": 56,
+          "height": 106
+        },
+        {
+          "class": "dashboard-panel agent-dashboard-panel agent-response-panel",
+          "x": 16,
+          "y": 1386.28125,
+          "width": 802,
+          "height": 232
+        },
+        {
+          "class": "",
+          "x": 613,
+          "y": 1448.171875,
+          "width": 180,
+          "height": 140
+        }
+      ]
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "bounds": [
+        {
+          "class": "dashboard-metric-art",
+          "x": 27,
+          "y": 228,
+          "width": 44,
+          "height": 64
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 203.5,
+          "y": 228,
+          "width": 44,
+          "height": 64
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 27,
+          "y": 378,
+          "width": 44,
+          "height": 64
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 203.5,
+          "y": 378,
+          "width": 44,
+          "height": 64
+        },
+        {
+          "class": "dashboard-metric-art",
+          "x": 27,
+          "y": 528,
+          "width": 44,
+          "height": 64
+        },
+        {
+          "class": "dashboard-panel agent-dashboard-panel agent-response-panel",
+          "x": 16,
+          "y": 1555.5,
+          "width": 343,
+          "height": 232
+        },
+        {
+          "class": "",
+          "x": 234,
+          "y": 1616.5,
+          "width": 110,
+          "height": 130
+        }
+      ]
+    }
+  ],
+  "checks": [
+    "Empty and populated actual UI",
+    "SVG decoding and containment",
+    "Responsive document overflow",
+    "Error recovery without fabricated zeros",
+    "Owner and Agent direct route boundaries",
+    "Static sidebar and explicit authorized Account switching"
+  ],
+  "errors": []
+}

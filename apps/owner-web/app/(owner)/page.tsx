@@ -1,11 +1,10 @@
 "use client";
 
-import Image from "next/image";
+import { DashboardHeader } from "@/components/owner/dashboard-header";
 import { useShallow } from "zustand/react/shallow";
 import { isOpenInquiry } from "@/domain/inquiries/inquiry";
 import { useEffect } from "react";
-import { Plus } from "lucide-react";
-import { LinkBtn } from "@/components/owner/ui";
+import { ListingCreationActions } from "@/components/owner/listing-creation-actions";
 import { DashboardMetric } from "@/components/owner/dashboard-metric";
 import { UpcomingStaysPanel, RecentMessagesPanel } from "@/components/owner/dashboard-activity";
 import { OwnerInsights } from "@/components/owner/dashboard-insights";
@@ -44,10 +43,7 @@ export default function DashboardPage() {
   const published = matched ? dashboard.listings.filter(item => item.state === "PUBLISHED").length : 0;
   const drafts = matched ? dashboard.listings.filter(item => item.state === "DRAFT").length : 0;
   return <main className="owner-dashboard">
-    <header className="dashboard-header"><Image className="dashboard-header-art" src="/assets/dashboard/owner-header-banner.jpg" alt="" fill sizes="(min-width: 1024px) calc(100vw - 310px), 100vw" preload />
-      <div className="dashboard-greeting"><h1>Good day, {user?.displayName.trim().split(/\s+/)[0] || "there"}</h1><p>Here&apos;s what&apos;s happening across your properties.</p></div>
-      <div className="dashboard-header-actions"><LinkBtn href="/properties/new?intent=sale" variant="outline"><Plus aria-hidden size={20} />Property for sale</LinkBtn><LinkBtn href="/properties/new"><Plus aria-hidden size={20} />Rental</LinkBtn></div>
-    </header>
+    <DashboardHeader name={user?.displayName ?? ""} caption="Here's what's happening across your properties."><ListingCreationActions /></DashboardHeader>
     <div className="dashboard-body"><div className="dashboard-primary-metrics">
       <DashboardMetric label="Published listings" illustration="published-listings" value={published} hint={drafts ? `${drafts} drafts in progress` : "All caught up"} href="/properties?state=PUBLISHED" loading={waiting} error={matched ? dashboard.error : null} onRetry={retry} />
       <DashboardMetric label="Upcoming stays" illustration="upcoming-stays" value={dashboard.upcomingTotal} hint="Confirmed and paid" href="/bookings?bucket=UPCOMING" loading={waiting} error={matched ? dashboard.error : null} onRetry={retry} />

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="192" viewBox="0 0 320 192" role="img" aria-labelledby="title">
+<title id="title">No inquiries yet</title>
+<defs>
+<linearGradient id="e-silver" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#F2F5F8"/><stop offset="1" stop-color="#CBD7E3"/></linearGradient>
+<linearGradient id="e-steel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#B2C1D1"/><stop offset="1" stop-color="#7E93AA"/></linearGradient>
+<linearGradient id="e-ink" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#46576B"/><stop offset="1" stop-color="#263448"/></linearGradient>
+<linearGradient id="e-paper" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFFFFF"/><stop offset="1" stop-color="#EDF1F6"/></linearGradient>
+</defs>
+<circle cx="160" cy="96" r="84" fill="#F2F5F8"/>
+<path d="M82 75 160 28 238 75v89H82Z" fill="url(#e-steel)" stroke="#748BA1" stroke-width="1.6" stroke-linejoin="round"/>
+<rect x="103" y="46" width="114" height="105" rx="4" fill="url(#e-paper)" stroke="#BBC8D5" stroke-width="1.4"/>
+<path d="M125 72h70M125 90h70M125 108h48" stroke="#596F86" stroke-width="4" stroke-linecap="round"/>
+<path d="m82 76 78 56 78-56v88H82z" fill="url(#e-steel)"/>
+<path d="m82 164 78-64 78 64" fill="#CBD7E3" stroke="#94A7B9" stroke-width="1.5"/>
+<path d="m82 76 78 56 78-56" stroke="#6F8398" stroke-width="2" fill="none"/>
+</svg>
