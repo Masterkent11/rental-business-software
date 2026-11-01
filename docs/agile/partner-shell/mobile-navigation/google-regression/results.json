@@ -1,0 +1,86 @@
+{
+  "results": [
+    {
+      "route": "/sign-in",
+      "width": 375,
+      "height": 812,
+      "checking": "visible and disabled",
+      "refreshFailure": "visible with retry",
+      "retry": "enabled",
+      "explicitDisabled": "hidden",
+      "requests": 4
+    },
+    {
+      "route": "/sign-up?role=AGENT",
+      "width": 375,
+      "height": 812,
+      "checking": "visible and disabled",
+      "refreshFailure": "visible with retry",
+      "retry": "enabled",
+      "explicitDisabled": "hidden",
+      "requests": 8
+    },
+    {
+      "route": "/sign-in",
+      "width": 834,
+      "height": 1112,
+      "checking": "visible and disabled",
+      "refreshFailure": "visible with retry",
+      "retry": "enabled",
+      "explicitDisabled": "hidden",
+      "requests": 4
+    },
+    {
+      "route": "/sign-up?role=AGENT",
+      "width": 834,
+      "height": 1112,
+      "checking": "visible and disabled",
+      "refreshFailure": "visible with retry",
+      "retry": "enabled",
+      "explicitDisabled": "hidden",
+      "requests": 8
+    },
+    {
+      "route": "/sign-in",
+      "width": 1440,
+      "height": 900,
+      "checking": "visible and disabled",
+      "refreshFailure": "visible with retry",
+      "retry": "enabled",
+      "explicitDisabled": "hidden",
+      "requests": 4
+    },
+    {
+      "route": "/sign-up?role=AGENT",
+      "width": 1440,
+      "height": 900,
+      "checking": "visible and disabled",
+      "refreshFailure": "visible with retry",
+      "retry": "enabled",
+      "explicitDisabled": "hidden",
+      "requests": 8
+    },
+    {
+      "route": "/sign-in",
+      "width": 1920,
+      "height": 1080,
+      "checking": "visible and disabled",
+      "refreshFailure": "visible with retry",
+      "retry": "enabled",
+      "explicitDisabled": "hidden",
+      "requests": 4
+    },
+    {
+      "route": "/sign-up?role=AGENT",
+      "width": 1920,
+      "height": 1080,
+      "checking": "visible and disabled",
+      "refreshFailure": "visible with retry",
+      "retry": "enabled",
+      "explicitDisabled": "hidden",
+      "requests": 8
+    }
+  ],
+  "pageErrors": [],
+  "scope": "Synthetic provider settings; live Google consent and membership are separate acceptance"
+}
