@@ -1,0 +1,64 @@
+{
+  "file": "apps/owner-web/components/marketing/marketing.css",
+  "differences": [
+    {
+      "before": {
+        "selector": ".marketing-warning,.marketing-error",
+        "parent": "",
+        "decl": [
+          [
+            "padding",
+            "14px",
+            false
+          ],
+          [
+            "background",
+            "#fff5ef",
+            false
+          ],
+          [
+            "border",
+            "1px solid #ecd6c5",
+            false
+          ],
+          [
+            "border-radius",
+            "10px",
+            false
+          ],
+          [
+            "font-size",
+            "13px",
+            false
+          ],
+          [
+            "line-height",
+            "1.6",
+            false
+          ]
+        ]
+      },
+      "after": {
+        "selector": ".marketing-warning,.marketing-error",
+        "parent": "",
+        "decl": [
+          [
+            "padding",
+            "14px",
+            false
+          ],
+          [
+            "font-size",
+            "13px",
+            false
+          ],
+          [
+            "line-height",
+            "1.6",
+            false
+          ]
+        ]
+      }
+    }
+  ]
+}

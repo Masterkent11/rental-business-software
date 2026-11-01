@@ -1,0 +1,300 @@
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/tests/local-supabase-stubs.sql:80: WARNING:  wal_level is insufficient to publish logical changes
+HINT:  Set wal_level to "logical" before creating subscriptions.
+ rebuild_resource_paths 
+------------------------
+ 
+(1 row)
+
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000300_storage_and_hardening.sql:10: NOTICE:  policy "listing_media_member_insert" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000300_storage_and_hardening.sql:11: NOTICE:  policy "listing_media_member_update" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000300_storage_and_hardening.sql:12: NOTICE:  policy "listing_media_member_delete" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000300_storage_and_hardening.sql:13: NOTICE:  policy "tour_media_member_insert" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000300_storage_and_hardening.sql:14: NOTICE:  policy "tour_media_member_update" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000300_storage_and_hardening.sql:67: NOTICE:  policy "organizations_insert" for relation "organizations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000600_participant_read_policies.sql:1: NOTICE:  schema "app_private" already exists, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000600_participant_read_policies.sql:117: NOTICE:  policy "own_occupancy" for relation "occupancies" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000600_participant_read_policies.sql:122: NOTICE:  policy "participant_read" for relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000600_participant_read_policies.sql:127: NOTICE:  policy "participant_read" for relation "rentable_resources" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000600_participant_read_policies.sql:132: NOTICE:  policy "participant_read" for relation "properties" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000600_participant_read_policies.sql:137: NOTICE:  policy "participant_read" for relation "media_assets" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000600_participant_read_policies.sql:142: NOTICE:  policy "organization_customer_read" for relation "user_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000700_reconcile_policy_drift.sql:1: NOTICE:  policy "org_isolation" for relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000700_reconcile_policy_drift.sql:6: NOTICE:  policy "organizations_owner_update" for relation "organizations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261007000800_storage_member_select.sql:1: NOTICE:  policy "listing_media_member_select" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:2: NOTICE:  constraint "listings_intent_check" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:6: NOTICE:  constraint "listings_kind_matches_intent" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:9: NOTICE:  constraint "listings_sale_price_private" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:16: NOTICE:  constraint "listings_lot_area_sqm_check" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:20: NOTICE:  constraint "listings_parking_slots_check" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:24: NOTICE:  constraint "listings_sale_status_check" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:28: NOTICE:  constraint "listings_sale_status_intent" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:47: NOTICE:  constraint "properties_latitude_check" of relation "properties" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:49: NOTICE:  constraint "properties_longitude_check" of relation "properties" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:51: NOTICE:  constraint "properties_coordinates_paired" of relation "properties" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:55: NOTICE:  constraint "properties_location_privacy_check" of relation "properties" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000100_sale_listings_and_geo.sql:78: NOTICE:  policy "org_isolation" for relation "listing_sale_terms" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:73: NOTICE:  trigger "agent_profiles_verification_guard" for relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:116: NOTICE:  policy "agent_public_read" for relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:119: NOTICE:  policy "own_agent_profile" for relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:124: NOTICE:  policy "platform_admin_read" for relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:129: NOTICE:  policy "platform_admin_manage" for relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:162: NOTICE:  policy "org_isolation" for relation "listing_representations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:167: NOTICE:  policy "representation_public_read" for relation "listing_representations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:173: NOTICE:  policy "agent_own_representation" for relation "listing_representations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:257: NOTICE:  policy "agent_represented_read" for relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:262: NOTICE:  policy "agent_represented_read" for relation "rentable_resources" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:267: NOTICE:  policy "agent_represented_read" for relation "properties" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:272: NOTICE:  policy "agent_represented_read" for relation "media_assets" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:277: NOTICE:  policy "agent_represented_read" for relation "virtual_tours" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000200_agents_and_representation.sql:282: NOTICE:  policy "agent_commercial_read" for relation "listing_sale_terms" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:13: NOTICE:  policy "agent_conversation" for relation "conversations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:18: NOTICE:  policy "agent_messages" for relation "messages" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:65: NOTICE:  policy "org_isolation" for relation "inquiries" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:69: NOTICE:  policy "own_inquiry" for relation "inquiries" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:73: NOTICE:  policy "agent_inquiry" for relation "inquiries" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:123: NOTICE:  policy "org_isolation" for relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:127: NOTICE:  policy "own_viewing" for relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:131: NOTICE:  policy "agent_viewing" for relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:151: NOTICE:  policy "agent_own_task" for relation "agent_tasks" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:211: NOTICE:  policy "agent_customer_read" for relation "user_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:249: NOTICE:  policy "participant_realtime_read" for relation "inquiries" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000300_inquiries_viewings_agent_messaging.sql:258: NOTICE:  policy "participant_realtime_read" for relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:2: NOTICE:  constraint "virtual_tours_provider_check" of relation "virtual_tours" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:6: NOTICE:  constraint "virtual_tours_external_model_format" of relation "virtual_tours" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:10: NOTICE:  constraint "virtual_tours_external_model_required" of relation "virtual_tours" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:20: NOTICE:  constraint "tour_scenes_initial_view_check" of relation "tour_scenes" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:30: NOTICE:  constraint "media_assets_label_length" of relation "media_assets" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "listing_media_agent_insert" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "listing_media_agent_update" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "listing_media_agent_select" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "listing_media_agent_delete" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "tour_media_agent_insert" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "tour_media_agent_update" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "tour_media_agent_select" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "tour_media_agent_delete" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261008000400_tour_providers_floor_plans.sql:123: NOTICE:  policy "tour_media_member_delete" for relation "storage.objects" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261009000100_discovery_attributes_and_search.sql:4: NOTICE:  constraint "listings_furnishing_check" of relation "listings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261009000100_discovery_attributes_and_search.sql:44: NOTICE:  policy "own_listing_views" for relation "listing_view_events" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261009000200_content_pages_and_consent.sql:22: NOTICE:  policy "content_public_read" for relation "content_pages" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261009000200_content_pages_and_consent.sql:48: NOTICE:  policy "own_policy_acceptances" for relation "policy_acceptances" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261009000200_content_pages_and_consent.sql:80: NOTICE:  policy "support_request_submit" for relation "support_requests" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261009000200_content_pages_and_consent.sql:85: NOTICE:  policy "own_support_requests" for relation "support_requests" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:2: NOTICE:  constraint "listing_representations_type_check" of relation "listing_representations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:11: NOTICE:  constraint "listing_representations_initiated_by_check" of relation "listing_representations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:15: NOTICE:  constraint "listing_representations_validity_check" of relation "listing_representations" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:32: NOTICE:  constraint "agent_profiles_lead_capacity_check" of relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:83: NOTICE:  policy "org_isolation" for relation "lead_assignments" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:87: NOTICE:  policy "own_lead_assignment" for relation "lead_assignments" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:91: NOTICE:  policy "agent_lead_assignment" for relation "lead_assignments" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:113: NOTICE:  policy "assigned_agent_read" for relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:134: NOTICE:  policy "organization_agent_read" for relation "agent_profiles" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:153: NOTICE:  policy "agent_own_referral_code" for relation "agent_referral_codes" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:170: NOTICE:  policy "own_lead_referral" for relation "lead_referrals" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:174: NOTICE:  policy "agent_lead_referral" for relation "lead_referrals" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:192: NOTICE:  constraint "viewings_preferred_window_check" of relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:196: NOTICE:  constraint "viewings_schedule_present" of relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:200: NOTICE:  constraint "viewings_confirmed_has_time" of relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:204: NOTICE:  constraint "viewings_matching_has_no_agent" of relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:206: NOTICE:  constraint "viewings_notice_length" of relation "viewings" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:242: NOTICE:  policy "org_isolation" for relation "listing_change_proposals" does not exist, skipping
+psql:/Users/admin/Documents/GitHub/rental-business-software/supabase/migrations/20261010000100_representation_assignment_viewing_requests.sql:246: NOTICE:  policy "agent_own_proposal" for relation "listing_change_proposals" does not exist, skipping
+              set_config              
+--------------------------------------
+ 00000000-0000-4000-9000-000000000704
+(1 row)
+
+       resource       | records 
+----------------------+---------
+ organizations        |       4
+ agent_profiles       |       1
+ organization_members |       1
+ listings             |       7
+(4 rows)
+
+          check_name          | mismatches 
+------------------------------+------------
+ representation_listing_owner |          0
+ conversation_listing_owner   |          0
+ inquiry_listing_owner        |          0
+ viewing_listing_owner        |          0
+ media_listing_owner          |          0
+ resource_parent_owner        |          0
+ resource_root_owner          |          0
+(7 rows)
+
+ unreviewed_dual_memberships 
+-----------------------------
+                           0
+(1 row)
+
+Migration preserved organization, Agent, membership and listing counts: [4, 1, 1, 7]
+
+> api@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.12 /Users/admin/Documents/GitHub/rental-business-software/apps/api
+
+ ❯ src/infrastructure/postgres/__tests__/applications.integration.test.ts (26 tests | 25 failed) 270ms
+     × submits against a published long-term listing 108ms
+     × places no hold 7ms
+     × accepts a hybrid resource, which is let by the month as well 6ms
+     × refuses a second live application for the same place 6ms
+     × allows applying again once the first is withdrawn 6ms
+     × lets one person hold applications for different places 5ms
+       × carries the listing and rent the application is about 11ms
+       × shows one applicant nothing of another's 5ms
+       × approves, recording who and when 5ms
+       × rejects with the reason the applicant will read 5ms
+       × refuses to decide twice 5ms
+       × refuses to decide an application the applicant already withdrew 5ms
+       × refuses to decide another organization's application 5ms
+       × places a hold even when no fee was paid 7ms
+       × surfaces the deadline to the applicant 5ms
+       × places no hold on rejection 5ms
+       × refuses an approval that would double-book the place 8ms
+       × records an attachment against an open application 5ms
+       × rejects an attachment path for foreign-organization 5ms
+       × rejects an attachment path for foreign-application 6ms
+       × rejects an attachment path for traversal 5ms
+       × rejects an attachment path for encoded-traversal 5ms
+       × never signs a foreign path persisted by an older attachment flow 5ms
+       × refuses an attachment after a decision 6ms
+       × refuses an attachment from somebody else 5ms
+ ❯ src/infrastructure/postgres/__tests__/marketplace-flow.integration.test.ts (19 tests | 1 failed) 218ms
+     × confirms a paid booking that both sides can see, and keeps customers apart 27ms
+ ❯ src/infrastructure/postgres/__tests__/payments.integration.test.ts (28 tests | 1 failed) 424ms
+       × recovers durable notifications after delivery failure and restart without repeating money effects 28ms
+ ❯ src/infrastructure/postgres/__tests__/rental-policy.integration.test.ts (5 tests | 3 failed) 92ms
+     × requires explicit pending policy, deduplicates submission, and gates approval 28ms
+     × reuses a valid reviewed identity after private evidence has expired, never another user’s 7ms
+     × keeps legitimate post-application communication after withdrawal 1ms
+ ❯ src/infrastructure/postgres/__tests__/reservations.integration.test.ts (13 tests | 13 failed) 124ms
+     × refuses a reservation where the owner offers none 30ms
+     × places a hold covering the tenancy asked for 8ms
+     × refuses a second live reservation on one application 7ms
+     × becomes active on payment, and creates no stay 7ms
+     × accepts only one of two concurrent payments for the same reservation fee 8ms
+     × settles a payment racing owner rejection without losing the fee outcome 6ms
+     × allows only one terminal application decision when withdrawal races rejection 6ms
+       × credits the fee on approval and keeps the place 6ms
+       × refunds the fee on rejection and releases the place 6ms
+       × forfeits the fee on withdrawal and releases the place 6ms
+       × leaves an unpaid reservation with nothing to settle, and frees the place 6ms
+       × prices an unpaid reservation for payment 6ms
+       × records the outcome once, not on every read 5ms
+ ❯ src/infrastructure/postgres/__tests__/verification.integration.test.ts (5 tests | 1 failed) 230ms
+     × requires valid verification, sends nothing early, and submits once on retry 14ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 44 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > submits against a published long-term listing
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > places no hold
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > accepts a hybrid resource, which is let by the month as well
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > refuses a second live application for the same place
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > allows applying again once the first is withdrawn
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > lets one person hold applications for different places
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > the applicant view > carries the listing and rent the application is about
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > the applicant view > shows one applicant nothing of another's
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > the owner decision > approves, recording who and when
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > the owner decision > rejects with the reason the applicant will read
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > the owner decision > refuses to decide twice
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > the owner decision > refuses to decide an application the applicant already withdrew
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > the owner decision > refuses to decide another organization's application
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > approval takes the place off the market > places a hold even when no fee was paid
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > approval takes the place off the market > surfaces the deadline to the applicant
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > approval takes the place off the market > places no hold on rejection
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > approval takes the place off the market > refuses an approval that would double-book the place
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > documents > records an attachment against an open application
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > documents > rejects an attachment path for foreign-organization
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > documents > rejects an attachment path for foreign-application
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > documents > rejects an attachment path for traversal
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > documents > rejects an attachment path for encoded-traversal
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > documents > never signs a foreign path persisted by an older attachment flow
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > documents > refuses an attachment after a decision
+ FAIL  src/infrastructure/postgres/__tests__/applications.integration.test.ts > applications against real PostgreSQL > documents > refuses an attachment from somebody else
+ FAIL  src/infrastructure/postgres/__tests__/rental-policy.integration.test.ts > rental policy and messaging against PostgreSQL > requires explicit pending policy, deduplicates submission, and gates approval
+ FAIL  src/infrastructure/postgres/__tests__/reservations.integration.test.ts > reservations against real PostgreSQL > refuses a reservation where the owner offers none
+ FAIL  src/infrastructure/postgres/__tests__/reservations.integration.test.ts > reservations against real PostgreSQL > places a hold covering the tenancy asked for
+ FAIL  src/infrastructure/postgres/__tests__/reservations.integration.test.ts > reservations against real PostgreSQL > refuses a second live reservation on one application
+ FAIL  src/infrastructure/postgres/__tests__/reservations.integration.test.ts > reservations against real PostgreSQL > becomes active on payment, and creates no stay
+ FAIL  src/infrastructure/postgres/__tests__/reservations.integration.test.ts > reservations against real PostgreSQL > accepts only one of two concurrent payments for the same reservation fee
+ FAIL  src/infrastructure/postgres/__tests__/reservations.integration.test.ts > reservations against real PostgreSQL > settles a payment racing owner rejection without losing the fee outcome
+ FAIL  src/infrastructure/postgres/__tests__/reservations.integration.test.ts > reservations against real PostgreSQL > allows only one terminal application decision when withdrawal races rejection
+ FAIL  src/infrastructure/postgres/__tests__/reservations.integration.test.ts > reservations against real PostgreSQL > the three outcomes > credits the fee on approval and keeps the place
+ FAIL  src/infrastructure/postgres/__tests__/reservations.integration.test.ts > reservations against real PostgreSQL > the three outcomes > refunds the fee on rejection and releases the place
+ FAIL  src/infrastructure/postgres/__tests__/reservations.integration.test.ts > reservations against real PostgreSQL > the three outcomes > forfeits the fee on withdrawal and releases the place
+ FAIL  src/infrastructure/postgres/__tests__/reservations.integration.test.ts > reservations against real PostgreSQL > the three outcomes > leaves an unpaid reservation with nothing to settle, and frees the place
+ FAIL  src/infrastructure/postgres/__tests__/reservations.integration.test.ts > reservations against real PostgreSQL > the three outcomes > prices an unpaid reservation for payment
+ FAIL  src/infrastructure/postgres/__tests__/reservations.integration.test.ts > reservations against real PostgreSQL > the three outcomes > records the outcome once, not on every read
+ FAIL  src/infrastructure/postgres/__tests__/verification.integration.test.ts > verification isolation and submission transactions > requires valid verification, sends nothing early, and submits once on retry
+PostgresError: new row violates row-level security policy "partner_organization_lifecycle" for table "applications"
+ ❯ ErrorResponse node_modules/postgres/src/connection.js:815:30
+ ❯ handle node_modules/postgres/src/connection.js:489:6
+ ❯ Socket.data node_modules/postgres/src/connection.js:324:9
+ ❯ cachedError node_modules/postgres/src/query.js:170:23
+ ❯ new Query node_modules/postgres/src/query.js:36:24
+ ❯ sql node_modules/postgres/src/index.js:112:11
+ ❯ src/infrastructure/postgres/repositories/postgres-application.repository.ts:107:51
+    105|           await tx`select set_config('app.organization_id', ${resource…
+    106|
+    107|           const [row] = await tx<ApplicationRow[]>`
+       |                                                   ^
+    108|             insert into applications (
+    109|               organization_id, resource_id, applicant_id,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/44]⎯
+
+ FAIL  src/infrastructure/postgres/__tests__/marketplace-flow.integration.test.ts > marketplace vertical flow against real PostgreSQL > confirms a paid booking that both sides can see, and keeps customers apart
+ FAIL  src/infrastructure/postgres/__tests__/payments.integration.test.ts > payments against real PostgreSQL > confirming a payment > recovers durable notifications after delivery failure and restart without repeating money effects
+PostgresError: new row violates row-level security policy "partner_organization_lifecycle" for table "notifications"
+ ❯ ErrorResponse node_modules/postgres/src/connection.js:815:30
+ ❯ handle node_modules/postgres/src/connection.js:489:6
+ ❯ Socket.data node_modules/postgres/src/connection.js:324:9
+ ❯ cachedError node_modules/postgres/src/query.js:170:23
+ ❯ new Query node_modules/postgres/src/query.js:36:24
+ ❯ sql node_modules/postgres/src/index.js:112:11
+ ❯ src/infrastructure/postgres/repositories/postgres-payment-notification-outbox.repository.ts:15:17
+     13|       for (const row of rows) {
+     14|         await tx`select set_config('app.organization_id', ${row.organi…
+     15|         await tx`insert into notifications(id, user_id, organization_i…
+       |                 ^
+     16|           values (${row.id}, ${row.user_id}, ${row.user_id ? null : ro…
+     17|           on conflict(id) do nothing`;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/44]⎯
+
+ FAIL  src/infrastructure/postgres/__tests__/rental-policy.integration.test.ts > rental policy and messaging against PostgreSQL > reuses a valid reviewed identity after private evidence has expired, never another user’s
+AssertionError: expected 'MANUAL_REVIEW' to be 'VERIFIED' // Object.is equality
+
+Expected: "VERIFIED"
+Received: "MANUAL_REVIEW"
+
+ ❯ src/infrastructure/postgres/__tests__/rental-policy.integration.test.ts:65:27
+     63|     const draft = await repo.saveDraft(user, input);
+     64|     const reused = await repo.resume(user, draft.id);
+     65|     expect(reused.status).toBe('VERIFIED'); expect(reused.evidence).to…
+       |                           ^
+     66|     const foreignDraft = await repo.saveDraft(other, input);
+     67|     expect((await repo.resume(other, foreignDraft.id)).status).toBe('C…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/44]⎯
+
+ FAIL  src/infrastructure/postgres/__tests__/rental-policy.integration.test.ts > rental policy and messaging against PostgreSQL > keeps legitimate post-application communication after withdrawal
+TypeError: Cannot read properties of null (reading 'id')
+ ❯ src/infrastructure/postgres/__tests__/rental-policy.integration.test.ts:76:52
+     74|   it('keeps legitimate post-application communication after withdrawal…
+     75|     const draft = (await repo.findDraft(other, resource))!;
+     76|     const session = await repo.resume(other, draft.id);
+       |                                                    ^
+     77|     await repo.save({ ...session, status: 'MANUAL_REVIEW' }, session.v…
+     78|     const application = await applications.submit({ ...input, applican…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/44]⎯
+
+
+ Test Files  6 failed | 67 passed (73)
+      Tests  44 failed | 651 passed (695)
+   Start at  05:29:09
+   Duration  18.85s (transform 938ms, setup 0ms, import 5.15s, tests 7.54s, environment 3ms)
+
