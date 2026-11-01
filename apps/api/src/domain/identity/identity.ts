@@ -18,6 +18,7 @@ export interface HeldCapability {
  * `userId`.
  */
 export interface Principal {
+  readonly assuranceLevel?: 'aal1' | 'aal2';
   readonly userId: string;
   readonly displayName: string;
   readonly capabilities: readonly HeldCapability[];

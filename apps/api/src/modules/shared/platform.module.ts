@@ -104,13 +104,13 @@ const SHARED = [
     { provide: SHARED_MEDIA_STORAGE, useFactory: (): MediaStorage => supabaseMediaStorage() },
     {
       provide: LISTING_GATE,
-      inject: [REPRESENTATION_REPOSITORY],
-      useFactory: (representations: RepresentationRepository) => partnerListingGate(representations),
+      inject: [REPRESENTATION_REPOSITORY, CLOCK],
+      useFactory: (representations: RepresentationRepository, clock: Clock) => partnerListingGate(representations, clock),
     },
     {
       provide: TOUR_GATE,
-      inject: [REPRESENTATION_REPOSITORY],
-      useFactory: (representations: RepresentationRepository) => partnerTourGate(representations),
+      inject: [REPRESENTATION_REPOSITORY, CLOCK],
+      useFactory: (representations: RepresentationRepository, clock: Clock) => partnerTourGate(representations, clock),
     },
   ],
   exports: SHARED,

@@ -1,6 +1,6 @@
 import type { IdentityProvider } from '@/application/ports/providers/identity-provider.port.ts';
 import type { UserRepository } from '@/application/ports/repositories/user-repository.port.ts';
-import type { Principal } from '@/domain/identity/identity.ts';
+import { hasCapability, type Principal } from '@/domain/identity/identity.ts';
 
 export type { Principal };
 
@@ -10,6 +10,7 @@ export class OrganizationForbiddenError extends Error {}
 export interface ResolvePrincipalInput {
   readonly authorization: string | undefined;
   readonly organizationId: string | null;
+  readonly requiredCapability?: 'AGENT';
 }
 
 /**
@@ -29,6 +30,8 @@ export const resolvePrincipal =
       input.organizationId,
     );
 
+    if (loaded.deactivated) throw new UnauthenticatedError('Your account is unavailable');
+
     if (!loaded.profile) {
       await users.createProfile({
         id: verified.userId,
@@ -39,12 +42,17 @@ export const resolvePrincipal =
       loaded = await users.loadPrincipal(verified.userId, input.organizationId);
     }
 
+    if (!loaded.profile || loaded.deactivated) throw new UnauthenticatedError('Your account is unavailable');
+
+    if (input.requiredCapability && (!loaded.agentAvailable || !hasCapability({ userId: verified.userId, displayName: loaded.profile.displayName, capabilities: loaded.capabilities, organizationId: input.organizationId }, input.requiredCapability))) throw new OrganizationForbiddenError('Your Agent workspace is unavailable');
+
     if (input.organizationId !== null && loaded.isMember !== true) {
       throw new OrganizationForbiddenError('Not a member of that organization');
     }
 
     return {
       userId: verified.userId,
+      assuranceLevel: verified.assuranceLevel ?? 'aal1',
       displayName: loaded.profile?.displayName ?? '',
       capabilities: loaded.capabilities,
       organizationId: input.organizationId,

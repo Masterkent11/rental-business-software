@@ -119,7 +119,7 @@ export class AgentTourController {
   ) {}
 
   private principal(auth: string | undefined) {
-    return this.resolve({ authorization: auth, organizationId: null });
+    return this.resolve({ authorization: auth, organizationId: null, requiredCapability: 'AGENT' });
   }
 
   @Post('listings/:listingId/tour')

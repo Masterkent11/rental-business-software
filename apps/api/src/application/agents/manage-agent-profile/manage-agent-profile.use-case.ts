@@ -1,3 +1,4 @@
+import { assertPartnerEnrollment } from '@/domain/identity/partner-onboarding.ts';
 import type { AgentRepository } from '@/application/ports/repositories/agent-repository.port.ts';
 import {
   AgentProfileNotFoundError,
@@ -16,7 +17,7 @@ export const getMyAgentProfile =
 export const registerAgentProfile =
   (agents: AgentRepository) =>
   async (input: { readonly principal: Principal; readonly profile: AgentProfileInput }): Promise<AgentProfile> =>
-    agents.create(input.principal.userId, normaliseAgentProfile(input.profile));
+    { assertPartnerEnrollment(input.principal,'AGENT'); return agents.create(input.principal.userId, normaliseAgentProfile(input.profile)); }
 
 export const updateAgentProfile =
   (agents: AgentRepository) =>

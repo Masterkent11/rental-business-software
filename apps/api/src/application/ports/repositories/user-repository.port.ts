@@ -38,6 +38,8 @@ export interface OrganizationMembershipView {
 }
 
 export interface PrincipalData {
+  readonly deactivated?: boolean;
+  readonly agentAvailable?: boolean;
   readonly profile: UserProfile | null;
   readonly capabilities: readonly HeldCapability[];
   readonly isMember: boolean | null;

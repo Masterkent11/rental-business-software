@@ -6,13 +6,14 @@ import type { ViewingRepository } from '@/application/ports/repositories/viewing
 import type { Clock } from '@/application/ports/providers/clock.port.ts';
 import {
   AgentProfileNotFoundError,
+  RepresentationForbiddenError,
   responseMetrics,
   type AgentProfile,
   type AgentResponseMetrics,
 } from '@/domain/agents/agent.ts';
 import { agentWorkload, type AgentWorkload } from '@/domain/agents/agent-dashboard.ts';
 import type { Inquiry } from '@/domain/inquiries/inquiry.ts';
-import type { Principal } from '@/domain/identity/identity.ts';
+import { hasCapability, type Principal } from '@/domain/identity/identity.ts';
 
 export interface AgentDashboard {
   readonly agent: AgentProfile;
@@ -35,8 +36,10 @@ export const getAgentDashboard =
     clock: Clock,
   ) =>
   async (input: { readonly principal: Principal }): Promise<AgentDashboard> => {
+    if (!hasCapability(input.principal, 'AGENT')) throw new RepresentationForbiddenError('An Agent workspace is required');
     const agent = await agents.findByUser(input.principal.userId);
     if (!agent) throw new AgentProfileNotFoundError('Set up your agent profile first');
+    if (agent.userId !== input.principal.userId || agent.verificationState === 'SUSPENDED') throw new RepresentationForbiddenError('Your Agent workspace is unavailable');
     const now = clock.now();
     const [allInquiries, upcoming, openTasks, reps, samples] = await Promise.all([
       inquiries.listForAgent(input.principal.userId, {}),

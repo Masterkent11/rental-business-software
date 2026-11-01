@@ -93,7 +93,7 @@ export class AgentListingsController {
   ) {}
 
   private principal(auth: string | undefined) {
-    return this.resolve({ authorization: auth, organizationId: null });
+    return this.resolve({ authorization: auth, organizationId: null, requiredCapability: 'AGENT' });
   }
 
   private async view(principal: Awaited<ReturnType<AgentListingsController['principal']>>, listingId: string) {

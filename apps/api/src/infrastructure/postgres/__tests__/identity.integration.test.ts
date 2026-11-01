@@ -86,11 +86,12 @@ suite('identity against real PostgreSQL', { timeout: 30_000 }, () => {
     expect(await users.capabilitiesFor(BEN)).toHaveLength(1);
   });
 
-  it('omits a revoked capability', async () => {
-    await withUser(ANA, (tx) => tx`
+  it.skipIf(!process.env.TEST_ADMIN_DATABASE_URL)('omits a revoked capability', async () => {
+    const admin=postgres(process.env.TEST_ADMIN_DATABASE_URL!,{max:1});
+    try { await admin`
       insert into user_capabilities (user_id, capability, organization_id, source_type, revoked_at)
       values (${ANA}, 'STAFF', ${ORG_SANTOS}, 'MEMBERSHIP', now())
-    `);
+    `; } finally {await admin.end();}
 
     const held = await users.capabilitiesFor(ANA);
     expect(held.some((c) => c.capability === 'STAFF')).toBe(false);

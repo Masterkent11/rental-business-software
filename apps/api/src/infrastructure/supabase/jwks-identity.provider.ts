@@ -39,6 +39,7 @@ export function jwksIdentityProvider(
         if (typeof payload.sub !== 'string' || !payload.sub) return null;
 
         return {
+          assuranceLevel: payload.aal === 'aal2' ? 'aal2' : 'aal1',
           userId: payload.sub,
           email: typeof payload.email === 'string' ? payload.email : null,
           mobile: typeof payload.phone === 'string' && payload.phone

@@ -1,3 +1,4 @@
+import { OnboardingUnavailableError } from '@/domain/identity/partner-onboarding.ts';
 import type postgres from 'postgres';
 import type {
   AgentRepository,
@@ -10,7 +11,7 @@ import type {
   AgentVerificationState,
 } from '@/domain/agents/agent.ts';
 import { AgentProfileExistsError } from '@/domain/agents/agent.ts';
-import { withScope, withUser } from '@/infrastructure/postgres/db.ts';
+import { withAdministration, withScope, withUser } from '@/infrastructure/postgres/db.ts';
 
 interface AgentRow {
   id: string;
@@ -102,6 +103,9 @@ export const postgresAgentRepository = (): AgentRepository => ({
 
   async create(userId: string, input: AgentProfileInput) {
     return withUser(userId, async (tx) => {
+      await tx`select pg_advisory_xact_lock(hashtextextended(${userId},103))`;
+      const [opposite] = await tx`select user_id from organization_members where user_id=${userId} limit 1`;
+      if (opposite) throw new OnboardingUnavailableError('An additional partner role requires explicit platform provisioning.');
       try {
         const [row] = await tx<AgentRow[]>`
           insert into agent_profiles (
@@ -163,8 +167,8 @@ export const postgresAgentRepository = (): AgentRepository => ({
     });
   },
 
-  async pendingVerification(adminUserId: string) {
-    return withUser(adminUserId, async (tx) => {
+  async pendingVerification(adminUserId,context) {
+    return withAdministration(adminUserId,context, async (tx) => {
       const rows = await tx<AgentRow[]>`
         select ${COLUMNS(tx)} from agent_profiles
          where verification_state = 'PENDING'
@@ -175,15 +179,15 @@ export const postgresAgentRepository = (): AgentRepository => ({
     });
   },
 
-  async findForAdmin(adminUserId: string, agentId: string) {
-    return withUser(adminUserId, async (tx) => {
+  async findForAdmin(adminUserId, agentId,context) {
+    return withAdministration(adminUserId,context, async (tx) => {
       const [row] = await tx<AgentRow[]>`select ${COLUMNS(tx)} from agent_profiles where id = ${agentId}`;
       return row ? toAgent(row) : null;
     });
   },
 
   async decideVerification(input) {
-    return withUser(input.adminUserId, async (tx) => {
+    return withAdministration(input.adminUserId,input.context, async (tx) => {
       await tx`select set_config('app.verification_actor', ${input.adminUserId}, true)`;
       const [row] = await tx<AgentRow[]>`
         update agent_profiles set
