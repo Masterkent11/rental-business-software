@@ -1,0 +1,94 @@
+{
+  "recordedAt": "2026-11-01 Asia/Manila",
+  "phase0": "DOCUMENTED",
+  "phase1": "IN REVIEW",
+  "phase2To4": "NOT AUTHORIZED",
+  "frontend": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "productionBuild": "passed",
+    "unitTests": {
+      "passed": 77,
+      "skipped": 0
+    },
+    "marketingBrowser": {
+      "viewports": 4,
+      "captures": 8,
+      "checks": [
+        "Agent only navigation",
+        "keyboard internal navigation",
+        "persisted upload and draft browser fixtures",
+        "draft edit duplicate delete",
+        "referenced media deletion refusal",
+        "channels calendar performance truthful availability",
+        "error retry",
+        "Owner direct route guard",
+        "dual workspace explicit choice and switch"
+      ],
+      "pageErrors": [],
+      "provider": "intercepted synthetic API responses; separate real PostgreSQL tests"
+    },
+    "authBrowser": "passed, eight auth captures and both role flows"
+  },
+  "backend": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "build": "passed",
+    "focusedTests": {
+      "passed": 35,
+      "files": 5
+    },
+    "storageAndArchitectureTests": {
+      "passed": 30,
+      "files": 2,
+      "overlapsFocusedStorageTests": true
+    },
+    "broadIsolatedDatabaseSuite": {
+      "passed": 638,
+      "failed": 1,
+      "knownBaselineFailure": "invoices.integration.test.ts:161, claimedCentavos expected 1000000 but received 0; reproduced before marketing; finance untouched"
+    },
+    "liveLocalHealth": 200,
+    "liveLocalUnauthenticatedMarketing": 401
+  },
+  "testBoundaries": {
+    "database": "disposable local PostgreSQL clusters",
+    "browser": "implemented production build with intercepted synthetic API responses",
+    "storage": "mocked HTTP contract and port tests; no hosted upload",
+    "providers": "no social provider integration or publishing"
+  },
+  "github": {
+    "parentsVerified": 25,
+    "unrelatedProjectFieldsPreserved": true,
+    "allIssuesRemainOpen": true,
+    "noneDone": true,
+    "noIterationAssigned": true,
+    "phase0": "DOCUMENTED",
+    "phase1": "IN REVIEW",
+    "phase2To4": "NOT AUTHORIZED",
+    "editedExisting": [
+      17,
+      56,
+      58,
+      62,
+      64,
+      86,
+      103,
+      107,
+      112,
+      113
+    ]
+  },
+  "newMarketingCodeComments": 0,
+  "packageOrLockfileChanges": false,
+  "remoteMigrationApplied": false,
+  "commitCreated": false,
+  "pushed": false,
+  "deployed": false,
+  "remainingGates": [
+    "Reviewed marketing migration and private bucket rollout",
+    "Configured environment acceptance",
+    "Existing Storybook foundation and release acceptance",
+    "Native screen reader and broader media playback acceptance"
+  ]
+}

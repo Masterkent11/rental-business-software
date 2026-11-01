@@ -1,0 +1,252 @@
+{
+  "epic": "https://github.com/Masterkent11/rental-business-software/issues/114",
+  "records": [
+    {
+      "key": "WSP.EPIC.AGENT.MARKETING",
+      "number": 114,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/114",
+      "parent": 12,
+      "phase": 1,
+      "status": "In Progress",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEH_o"
+    },
+    {
+      "key": "MKT-001",
+      "number": 115,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/115",
+      "parent": 114,
+      "phase": 0,
+      "status": "In Review",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEIFE"
+    },
+    {
+      "key": "MKT-001.DELIVERY",
+      "number": 116,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/116",
+      "parent": 115,
+      "phase": 0,
+      "status": "In Review",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEILI"
+    },
+    {
+      "key": "MKT-002",
+      "number": 117,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/117",
+      "parent": 114,
+      "phase": 1,
+      "status": "In Review",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEIRA"
+    },
+    {
+      "key": "MKT-002.DELIVERY",
+      "number": 118,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/118",
+      "parent": 117,
+      "phase": 1,
+      "status": "In Review",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEIV8"
+    },
+    {
+      "key": "MKT-003",
+      "number": 119,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/119",
+      "parent": 114,
+      "phase": 1,
+      "status": "In Review",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEIcw"
+    },
+    {
+      "key": "MKT-003.DELIVERY",
+      "number": 120,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/120",
+      "parent": 119,
+      "phase": 1,
+      "status": "In Review",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEIlE"
+    },
+    {
+      "key": "MKT-004",
+      "number": 121,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/121",
+      "parent": 114,
+      "phase": 1,
+      "status": "In Review",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEIr4"
+    },
+    {
+      "key": "MKT-004.DELIVERY",
+      "number": 122,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/122",
+      "parent": 121,
+      "phase": 1,
+      "status": "In Review",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEIx4"
+    },
+    {
+      "key": "MKT-005",
+      "number": 123,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/123",
+      "parent": 114,
+      "phase": 2,
+      "status": "Blocked",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEI6o"
+    },
+    {
+      "key": "MKT-005.DELIVERY",
+      "number": 124,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/124",
+      "parent": 123,
+      "phase": 2,
+      "status": "Blocked",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEJCA"
+    },
+    {
+      "key": "MKT-006",
+      "number": 125,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/125",
+      "parent": 114,
+      "phase": 2,
+      "status": "Blocked",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEJHA"
+    },
+    {
+      "key": "MKT-006.DELIVERY",
+      "number": 126,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/126",
+      "parent": 125,
+      "phase": 2,
+      "status": "Blocked",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEJNA"
+    },
+    {
+      "key": "MKT-007",
+      "number": 127,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/127",
+      "parent": 114,
+      "phase": 2,
+      "status": "Blocked",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEJSA"
+    },
+    {
+      "key": "MKT-007.DELIVERY",
+      "number": 128,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/128",
+      "parent": 127,
+      "phase": 2,
+      "status": "Blocked",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEJYI"
+    },
+    {
+      "key": "MKT-008",
+      "number": 129,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/129",
+      "parent": 114,
+      "phase": 3,
+      "status": "Blocked",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEJdc"
+    },
+    {
+      "key": "MKT-008.DELIVERY",
+      "number": 130,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/130",
+      "parent": 129,
+      "phase": 3,
+      "status": "Blocked",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEJi8"
+    },
+    {
+      "key": "MKT-009",
+      "number": 131,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/131",
+      "parent": 114,
+      "phase": 3,
+      "status": "Blocked",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEJoU"
+    },
+    {
+      "key": "MKT-009.DELIVERY",
+      "number": 132,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/132",
+      "parent": 131,
+      "phase": 3,
+      "status": "Blocked",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEJtw"
+    },
+    {
+      "key": "MKT-010",
+      "number": 133,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/133",
+      "parent": 114,
+      "phase": 4,
+      "status": "Blocked",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEJzc"
+    },
+    {
+      "key": "MKT-010.DELIVERY",
+      "number": 134,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/134",
+      "parent": 133,
+      "phase": 4,
+      "status": "Blocked",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEJ4U"
+    },
+    {
+      "key": "MKT-011",
+      "number": 135,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/135",
+      "parent": 114,
+      "phase": 1,
+      "status": "In Review",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEJ9U"
+    },
+    {
+      "key": "MKT-011.DELIVERY",
+      "number": 136,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/136",
+      "parent": 135,
+      "phase": 1,
+      "status": "In Review",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEKCI"
+    },
+    {
+      "key": "MKT-012",
+      "number": 137,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/137",
+      "parent": 114,
+      "phase": 1,
+      "status": "Blocked",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEKGw"
+    },
+    {
+      "key": "MKT-012.DELIVERY",
+      "number": 138,
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/138",
+      "parent": 137,
+      "phase": 1,
+      "status": "Blocked",
+      "item_id": "PVTI_lAHOAyP2LM4BphFMzhFEKMw"
+    }
+  ],
+  "verification": {
+    "parentsVerified": 25,
+    "unrelatedProjectFieldsPreserved": true,
+    "allIssuesRemainOpen": true,
+    "noneDone": true,
+    "noIterationAssigned": true,
+    "phase0": "DOCUMENTED",
+    "phase1": "IN REVIEW",
+    "phase2To4": "NOT AUTHORIZED",
+    "editedExisting": [
+      17,
+      56,
+      58,
+      62,
+      64,
+      86,
+      103,
+      107,
+      112,
+      113
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "status": "DOCUMENTED",
+  "date": "2026-11-01 Asia/Manila",
+  "records": 25,
+  "nativeParentsVerified": true,
+  "unrelatedProjectFieldsPreserved": true,
+  "reviewedExisting": [
+    12,
+    17,
+    56,
+    57,
+    58,
+    62,
+    63,
+    64,
+    86,
+    87,
+    88,
+    103,
+    107,
+    112,
+    113
+  ],
+  "editedExisting": [
+    17,
+    56,
+    62,
+    86,
+    103,
+    107,
+    112,
+    113
+  ],
+  "phase1Authorized": true,
+  "phase2To4Authorized": false,
+  "providerBlockers": "Meta official guides rate limited, no provider reviews/credentials approved"
+}
