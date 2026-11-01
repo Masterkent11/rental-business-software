@@ -1,3 +1,6 @@
+import { PartnerInputError,PartnerUnavailableError } from '@/domain/partners/partner-shell.ts';
+import { MarketingInvalidError,MarketingForbiddenError,MarketingNotFoundError,MarketingConflictError,MarketingUnavailableError } from '@/domain/marketing/marketing.ts';
+import { OnboardingUnavailableError } from '@/domain/identity/partner-onboarding.ts';
 import { PaymentNotPendingError, InvalidPaymentOccupancyError } from '@/domain/payments/payment-errors.ts';
 import { InvoiceNotFoundError, PaymentNotInOrganizationError } from '@/application/ports/repositories/invoice-repository.port.ts';
 import { VerificationConflictError, VerificationInputError, VerificationNotFoundError, VerificationRateLimitError, VerificationRequiredError, VerificationUnavailableError } from '@/domain/verification/verification.ts';
@@ -127,6 +130,14 @@ type Rule = readonly [
 ];
 
 const RULES: readonly Rule[] = [
+  [[PartnerInputError],400,'INVALID_REQUEST',null],
+  [[PartnerUnavailableError],503,'PARTNER_UNAVAILABLE',null],
+  [[MarketingInvalidError], 400, 'INVALID_REQUEST', null],
+  [[MarketingForbiddenError], 403, 'FORBIDDEN', null],
+  [[MarketingNotFoundError], 404, 'NOT_FOUND', null],
+  [[MarketingConflictError], 409, 'CONFLICT', null],
+  [[MarketingUnavailableError], 503, 'MARKETING_UNAVAILABLE', null],
+  [[OnboardingUnavailableError], 409, 'ONBOARDING_UNAVAILABLE', null],
   [[VerificationNotFoundError], 404, 'NOT_FOUND', null],
   [[VerificationInputError], 400, 'INVALID_REQUEST', null],
   [[VerificationConflictError], 409, 'VERIFICATION_CHANGED', null],

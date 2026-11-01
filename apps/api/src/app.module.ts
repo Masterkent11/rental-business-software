@@ -1,3 +1,6 @@
+import { PartnerShellModule } from '@/modules/partners/partner-shell.module.ts';
+import { AdministrationModule } from '@/modules/administration/administration.module.ts';
+import { MarketingModule } from '@/modules/marketing/marketing.module.ts';
 import { Controller, Get, Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { ListingsModule } from './modules/listings/listings.module.ts';
@@ -29,6 +32,8 @@ class HealthController {
 @Module({
   imports: [
     IdentityModule,
+    PartnerShellModule,
+    AdministrationModule,
     PlatformModule,
     ListingsModule,
     MeModule,
@@ -40,6 +45,7 @@ class HealthController {
     MessagingModule,
     NotificationsModule,
     AgentsModule,
+    MarketingModule,
     InquiriesModule,
     ViewingsModule,
     DiscoveryModule,
