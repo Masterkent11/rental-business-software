@@ -1,0 +1,616 @@
+{
+  "viewer": {
+    "login": "Masterkent11"
+  },
+  "repository": {
+    "id": "R_kgDOT8aKiA",
+    "nameWithOwner": "Masterkent11/rental-business-software",
+    "viewerPermission": "ADMIN",
+    "hasIssuesEnabled": true
+  },
+  "user": {
+    "login": "Masterkent11",
+    "projectV2": {
+      "id": "PVT_kwHOAyP2LM4BphFM",
+      "number": 3,
+      "title": "Westayplace: Product & Engineering Delivery",
+      "url": "https://github.com/users/Masterkent11/projects/3",
+      "public": false,
+      "closed": false,
+      "viewerCanUpdate": true,
+      "items": {
+        "totalCount": 1
+      },
+      "fields": {
+        "nodes": [
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8YQA",
+            "name": "Title",
+            "dataType": "TITLE"
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8YQE",
+            "name": "Assignees",
+            "dataType": "ASSIGNEES"
+          },
+          {
+            "id": "PVTSSF_lAHOAyP2LM4BphFMzhn8YQI",
+            "name": "Status",
+            "dataType": "SINGLE_SELECT",
+            "options": [
+              {
+                "id": "f75ad846",
+                "name": "Backlog",
+                "color": "GREEN",
+                "description": "This item hasn't been started"
+              },
+              {
+                "id": "61e4505c",
+                "name": "Ready",
+                "color": "BLUE",
+                "description": "This is ready to be picked up"
+              },
+              {
+                "id": "47fc9ee4",
+                "name": "In Progress",
+                "color": "YELLOW",
+                "description": "This is actively being worked on"
+              },
+              {
+                "id": "df73e18b",
+                "name": "In Review",
+                "color": "PURPLE",
+                "description": "This item is in review"
+              },
+              {
+                "id": "c8214a4a",
+                "name": "Ready for QA",
+                "color": "BLUE",
+                "description": "Ready for QA"
+              },
+              {
+                "id": "6a6ef23b",
+                "name": "In QA",
+                "color": "BLUE",
+                "description": "In QA"
+              },
+              {
+                "id": "994a7499",
+                "name": "Ready for Release",
+                "color": "BLUE",
+                "description": "Ready for Release"
+              },
+              {
+                "id": "98236657",
+                "name": "Done",
+                "color": "ORANGE",
+                "description": "This has been completed"
+              },
+              {
+                "id": "858eb364",
+                "name": "Blocked",
+                "color": "BLUE",
+                "description": "Blocked"
+              }
+            ]
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8YQM",
+            "name": "Labels",
+            "dataType": "LABELS"
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8YQQ",
+            "name": "Linked pull requests",
+            "dataType": "LINKED_PULL_REQUESTS"
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8YQU",
+            "name": "Milestone",
+            "dataType": "MILESTONE"
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8YQY",
+            "name": "Repository",
+            "dataType": "REPOSITORY"
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8YQg",
+            "name": "Reviewers",
+            "dataType": "REVIEWERS"
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8YQk",
+            "name": "Parent issue",
+            "dataType": "PARENT_ISSUE"
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8YQo",
+            "name": "Sub-issues progress",
+            "dataType": "SUB_ISSUES_PROGRESS"
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8YQs",
+            "name": "Created",
+            "dataType": "CREATED"
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8YQw",
+            "name": "Updated",
+            "dataType": "UPDATED"
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8YQ0",
+            "name": "Closed",
+            "dataType": "CLOSED"
+          },
+          {
+            "id": "PVTSSF_lAHOAyP2LM4BphFMzhn8YnQ",
+            "name": "Priority",
+            "dataType": "SINGLE_SELECT",
+            "options": [
+              {
+                "id": "79628723",
+                "name": "P0",
+                "color": "RED",
+                "description": ""
+              },
+              {
+                "id": "0a877460",
+                "name": "P1",
+                "color": "ORANGE",
+                "description": ""
+              },
+              {
+                "id": "da944a9c",
+                "name": "P2",
+                "color": "YELLOW",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "id": "PVTSSF_lAHOAyP2LM4BphFMzhn8YnU",
+            "name": "Size",
+            "dataType": "SINGLE_SELECT",
+            "options": [
+              {
+                "id": "6c6483d2",
+                "name": "XS",
+                "color": "GREEN",
+                "description": ""
+              },
+              {
+                "id": "f784b110",
+                "name": "S",
+                "color": "PURPLE",
+                "description": ""
+              },
+              {
+                "id": "7515a9f1",
+                "name": "M",
+                "color": "RED",
+                "description": ""
+              },
+              {
+                "id": "817d0097",
+                "name": "L",
+                "color": "YELLOW",
+                "description": ""
+              },
+              {
+                "id": "db339eb2",
+                "name": "XL",
+                "color": "PINK",
+                "description": ""
+              }
+            ]
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8YnY",
+            "name": "Story Points",
+            "dataType": "NUMBER"
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8Ync",
+            "name": "Start date",
+            "dataType": "DATE"
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8Yng",
+            "name": "Target date",
+            "dataType": "DATE"
+          },
+          {
+            "id": "PVTSSF_lAHOAyP2LM4BphFMzhn8rno",
+            "name": "Application Surface",
+            "dataType": "SINGLE_SELECT",
+            "options": [
+              {
+                "id": "7fc95495",
+                "name": "All Surfaces",
+                "color": "BLUE",
+                "description": "All Surfaces"
+              },
+              {
+                "id": "07037fc9",
+                "name": "Backend API",
+                "color": "BLUE",
+                "description": "Backend API"
+              },
+              {
+                "id": "8627de55",
+                "name": "Customer Flutter",
+                "color": "BLUE",
+                "description": "Customer Flutter"
+              },
+              {
+                "id": "131fc08c",
+                "name": "Infrastructure",
+                "color": "BLUE",
+                "description": "Infrastructure"
+              },
+              {
+                "id": "a1694cf9",
+                "name": "Owner Web",
+                "color": "BLUE",
+                "description": "Owner Web"
+              },
+              {
+                "id": "cb2c19f7",
+                "name": "QA",
+                "color": "BLUE",
+                "description": "QA"
+              },
+              {
+                "id": "fde6a7f0",
+                "name": "Storybook",
+                "color": "BLUE",
+                "description": "Storybook"
+              }
+            ]
+          },
+          {
+            "id": "PVTSSF_lAHOAyP2LM4BphFMzhn8rn4",
+            "name": "Technical Layer",
+            "dataType": "SINGLE_SELECT",
+            "options": [
+              {
+                "id": "b7fb3e43",
+                "name": "Backend",
+                "color": "BLUE",
+                "description": "Backend"
+              },
+              {
+                "id": "d0f121be",
+                "name": "Cross Stack",
+                "color": "BLUE",
+                "description": "Cross Stack"
+              },
+              {
+                "id": "b061fd95",
+                "name": "Design System",
+                "color": "BLUE",
+                "description": "Design System"
+              },
+              {
+                "id": "a0ce4591",
+                "name": "Frontend",
+                "color": "BLUE",
+                "description": "Frontend"
+              },
+              {
+                "id": "cbf16749",
+                "name": "Infrastructure",
+                "color": "BLUE",
+                "description": "Infrastructure"
+              },
+              {
+                "id": "96b0874b",
+                "name": "Quality",
+                "color": "BLUE",
+                "description": "Quality"
+              }
+            ]
+          },
+          {
+            "id": "PVTSSF_lAHOAyP2LM4BphFMzhn8rn8",
+            "name": "Work Type",
+            "dataType": "SINGLE_SELECT",
+            "options": [
+              {
+                "id": "d80806de",
+                "name": "Epic",
+                "color": "BLUE",
+                "description": "Epic"
+              },
+              {
+                "id": "dc9a26c3",
+                "name": "Initiative",
+                "color": "BLUE",
+                "description": "Initiative"
+              },
+              {
+                "id": "95c62f15",
+                "name": "Story",
+                "color": "BLUE",
+                "description": "Story"
+              },
+              {
+                "id": "54be2a2d",
+                "name": "Task",
+                "color": "BLUE",
+                "description": "Task"
+              }
+            ]
+          },
+          {
+            "id": "PVTSSF_lAHOAyP2LM4BphFMzhn8roA",
+            "name": "Product Domain",
+            "dataType": "SINGLE_SELECT",
+            "options": [
+              {
+                "id": "34f102f9",
+                "name": "Booking",
+                "color": "BLUE",
+                "description": "Booking"
+              },
+              {
+                "id": "f81ea15d",
+                "name": "Delivery",
+                "color": "BLUE",
+                "description": "Delivery"
+              },
+              {
+                "id": "f0920589",
+                "name": "Engagement",
+                "color": "BLUE",
+                "description": "Engagement"
+              },
+              {
+                "id": "639de443",
+                "name": "Identity",
+                "color": "BLUE",
+                "description": "Identity"
+              },
+              {
+                "id": "87e611eb",
+                "name": "Inventory",
+                "color": "BLUE",
+                "description": "Inventory"
+              },
+              {
+                "id": "49d2f826",
+                "name": "Partners",
+                "color": "BLUE",
+                "description": "Partners"
+              },
+              {
+                "id": "9e6ee7b6",
+                "name": "Tenancy",
+                "color": "BLUE",
+                "description": "Tenancy"
+              },
+              {
+                "id": "cbe73218",
+                "name": "Tours",
+                "color": "BLUE",
+                "description": "Tours"
+              }
+            ]
+          },
+          {
+            "id": "PVTSSF_lAHOAyP2LM4BphFMzhn8roc",
+            "name": "Record Classification",
+            "dataType": "SINGLE_SELECT",
+            "options": [
+              {
+                "id": "40016389",
+                "name": "Current Delivery",
+                "color": "BLUE",
+                "description": "Current Delivery"
+              },
+              {
+                "id": "e2d5f9f1",
+                "name": "Historical Implementation",
+                "color": "BLUE",
+                "description": "Historical Implementation"
+              },
+              {
+                "id": "e719f0d2",
+                "name": "Partial Implementation",
+                "color": "BLUE",
+                "description": "Partial Implementation"
+              },
+              {
+                "id": "84647086",
+                "name": "Planned Feature",
+                "color": "BLUE",
+                "description": "Planned Feature"
+              }
+            ]
+          },
+          {
+            "id": "PVTSSF_lAHOAyP2LM4BphFMzhn8rog",
+            "name": "Target Release",
+            "dataType": "SINGLE_SELECT",
+            "options": [
+              {
+                "id": "81ea8822",
+                "name": "MVP Demo",
+                "color": "BLUE",
+                "description": "MVP Demo"
+              },
+              {
+                "id": "ef85489a",
+                "name": "Production Readiness",
+                "color": "BLUE",
+                "description": "Production Readiness"
+              }
+            ]
+          },
+          {
+            "id": "PVTF_lAHOAyP2LM4BphFMzhn8ros",
+            "name": "Historical Period",
+            "dataType": "TEXT"
+          },
+          {
+            "id": "PVTIF_lAHOAyP2LM4BphFMzhn8rpY",
+            "name": "Iteration",
+            "dataType": "ITERATION",
+            "configuration": {
+              "duration": 14,
+              "startDay": 6,
+              "iterations": [],
+              "completedIterations": []
+            }
+          }
+        ]
+      },
+      "views": {
+        "nodes": [
+          {
+            "id": "PVTV_lAHOAyP2LM4BphFMzgMVAW4",
+            "number": 1,
+            "name": "Product Backlog",
+            "filter": "is:open -status:Done",
+            "layout": "BOARD_LAYOUT"
+          },
+          {
+            "id": "PVTV_lAHOAyP2LM4BphFMzgMVAZs",
+            "number": 2,
+            "name": "Priority board",
+            "filter": null,
+            "layout": "BOARD_LAYOUT"
+          },
+          {
+            "id": "PVTV_lAHOAyP2LM4BphFMzgMVAZw",
+            "number": 3,
+            "name": "Team items",
+            "filter": null,
+            "layout": "TABLE_LAYOUT"
+          },
+          {
+            "id": "PVTV_lAHOAyP2LM4BphFMzgMVAZ0",
+            "number": 4,
+            "name": "Product Roadmap",
+            "filter": "work-type:Initiative,Epic,Story",
+            "layout": "TABLE_LAYOUT"
+          },
+          {
+            "id": "PVTV_lAHOAyP2LM4BphFMzgMVAZ4",
+            "number": 5,
+            "name": "My items",
+            "filter": "assignee:@me",
+            "layout": "TABLE_LAYOUT"
+          },
+          {
+            "id": "PVTV_lAHOAyP2LM4BphFMzgMVDUU",
+            "number": 6,
+            "name": "Active Sprint",
+            "filter": "is:open iteration:@current -status:Done",
+            "layout": "BOARD_LAYOUT"
+          },
+          {
+            "id": "PVTV_lAHOAyP2LM4BphFMzgMVDUc",
+            "number": 7,
+            "name": "Customer Flutter",
+            "filter": "application-surface:\"Customer Flutter\",\"All Surfaces\"",
+            "layout": "TABLE_LAYOUT"
+          },
+          {
+            "id": "PVTV_lAHOAyP2LM4BphFMzgMVDUg",
+            "number": 8,
+            "name": "Owner Web",
+            "filter": "application-surface:\"Owner Web\",\"All Surfaces\"",
+            "layout": "TABLE_LAYOUT"
+          },
+          {
+            "id": "PVTV_lAHOAyP2LM4BphFMzgMVDVA",
+            "number": 9,
+            "name": "Backend API",
+            "filter": "application-surface:\"Backend API\",\"All Surfaces\",Database",
+            "layout": "TABLE_LAYOUT"
+          },
+          {
+            "id": "PVTV_lAHOAyP2LM4BphFMzgMVDVE",
+            "number": 10,
+            "name": "QA and Bugs",
+            "filter": "application-surface:QA",
+            "layout": "TABLE_LAYOUT"
+          },
+          {
+            "id": "PVTV_lAHOAyP2LM4BphFMzgMVDVM",
+            "number": 11,
+            "name": "Historical Completed Work",
+            "filter": "status:Done record-classification:\"Historical Implementation\"",
+            "layout": "TABLE_LAYOUT"
+          },
+          {
+            "id": "PVTV_lAHOAyP2LM4BphFMzgMVDVo",
+            "number": 12,
+            "name": "Release Readiness",
+            "filter": "target-release:\"Production Readiness\"",
+            "layout": "BOARD_LAYOUT"
+          },
+          {
+            "id": "PVTV_lAHOAyP2LM4BphFMzgMVDV0",
+            "number": 13,
+            "name": "Technical Debt",
+            "filter": "product-domain:Delivery -status:Done",
+            "layout": "TABLE_LAYOUT"
+          }
+        ]
+      }
+    }
+  },
+  "project_items": [
+    {
+      "id": "PVTI_lAHOAyP2LM4BphFMzhE5BXk",
+      "isArchived": false,
+      "content": {
+        "id": "I_kwDOT8aKiM8AAAABbUF7Yg",
+        "databaseId": 6127975266,
+        "number": 11,
+        "title": "[STORY][CUSTOMER] Property Discovery and Listings",
+        "state": "OPEN",
+        "repository": {
+          "nameWithOwner": "Masterkent11/rental-business-software"
+        }
+      },
+      "fieldValues": {
+        "nodes": [
+          {},
+          {
+            "text": "[STORY][CUSTOMER] Property Discovery and Listings",
+            "field": {
+              "id": "PVTF_lAHOAyP2LM4BphFMzhn8YQA",
+              "name": "Title"
+            }
+          },
+          {
+            "name": "Backlog",
+            "optionId": "f75ad846",
+            "field": {
+              "id": "PVTSSF_lAHOAyP2LM4BphFMzhn8YQI",
+              "name": "Status"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "repository_issues": [
+    {
+      "number": 11,
+      "id": 6127975266,
+      "node_id": "I_kwDOT8aKiM8AAAABbUF7Yg",
+      "title": "[STORY][CUSTOMER] Property Discovery and Listings",
+      "html_url": "https://github.com/Masterkent11/rental-business-software/issues/11",
+      "state": "open",
+      "labels": [],
+      "created_at": "2026-10-30T22:32:25Z",
+      "closed_at": null
+    }
+  ]
+}

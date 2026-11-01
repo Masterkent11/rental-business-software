@@ -1,0 +1,86 @@
+{
+  "verified_at": "2026-10-31T00:01:03Z",
+  "views": [
+    {
+      "name": "Product Backlog",
+      "url": "https://github.com/users/Masterkent11/projects/3/views/1",
+      "filter": "is:open -status:Done",
+      "expected": 53,
+      "actual": 53,
+      "pass": true
+    },
+    {
+      "name": "Product Roadmap",
+      "url": "https://github.com/users/Masterkent11/projects/3/views/4",
+      "filter": "work-type:Initiative,Epic,Story",
+      "expected": 33,
+      "actual": 33,
+      "pass": true
+    },
+    {
+      "name": "Active Sprint",
+      "url": "https://github.com/users/Masterkent11/projects/3/views/6",
+      "filter": "is:open iteration:@current -status:Done",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "name": "Customer Flutter",
+      "url": "https://github.com/users/Masterkent11/projects/3/views/7",
+      "filter": "application-surface:\"Customer Flutter\",\"All Surfaces\"",
+      "expected": 35,
+      "actual": 35,
+      "pass": true
+    },
+    {
+      "name": "Owner Web",
+      "url": "https://github.com/users/Masterkent11/projects/3/views/8",
+      "filter": "application-surface:\"Owner Web\",\"All Surfaces\"",
+      "expected": 36,
+      "actual": 36,
+      "pass": true
+    },
+    {
+      "name": "Backend API",
+      "url": "https://github.com/users/Masterkent11/projects/3/views/9",
+      "filter": "application-surface:\"Backend API\",\"All Surfaces\",Database",
+      "expected": 59,
+      "actual": 59,
+      "pass": true
+    },
+    {
+      "name": "QA and Bugs",
+      "url": "https://github.com/users/Masterkent11/projects/3/views/10",
+      "filter": "label:qa,bug",
+      "expected": 7,
+      "actual": 7,
+      "pass": true
+    },
+    {
+      "name": "Historical Completed Work",
+      "url": "https://github.com/users/Masterkent11/projects/3/views/11",
+      "filter": "status:Done record-classification:\"Historical Implementation\"",
+      "expected": 33,
+      "actual": 33,
+      "pass": true
+    },
+    {
+      "name": "Release Readiness",
+      "url": "https://github.com/users/Masterkent11/projects/3/views/12",
+      "filter": "target-release:\"Production Readiness\"",
+      "expected": 12,
+      "actual": 12,
+      "pass": true
+    },
+    {
+      "name": "Technical Debt",
+      "url": "https://github.com/users/Masterkent11/projects/3/views/13",
+      "filter": "product-domain:Delivery -status:Done",
+      "expected": 10,
+      "actual": 10,
+      "pass": true
+    }
+  ],
+  "pass": true
+}

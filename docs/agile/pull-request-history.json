@@ -1,0 +1,92 @@
+[
+  {
+    "baseRefName": "master",
+    "headRefName": "story-book/agile/31-10-2026",
+    "mergedAt": "2026-10-30T22:10:46Z",
+    "number": 10,
+    "state": "MERGED",
+    "title": "added agile storybook",
+    "url": "https://github.com/Masterkent11/rental-business-software/pull/10"
+  },
+  {
+    "baseRefName": "master",
+    "headRefName": "implementation/UI-UX/Figma/24-10-2026",
+    "mergedAt": "2026-10-24T12:17:23Z",
+    "number": 9,
+    "state": "MERGED",
+    "title": "update git ignore",
+    "url": "https://github.com/Masterkent11/rental-business-software/pull/9"
+  },
+  {
+    "baseRefName": "master",
+    "headRefName": "feature/demo/mvp/07/10/2026",
+    "mergedAt": "2026-10-23T18:37:07Z",
+    "number": 8,
+    "state": "MERGED",
+    "title": "Feature/demo/mvp/07/10/2026",
+    "url": "https://github.com/Masterkent11/rental-business-software/pull/8"
+  },
+  {
+    "baseRefName": "master",
+    "headRefName": "feature/demo/mvp/07/10/2026",
+    "mergedAt": "2026-10-22T14:21:37Z",
+    "number": 7,
+    "state": "MERGED",
+    "title": "Feature/demo/mvp/07/10/2026",
+    "url": "https://github.com/Masterkent11/rental-business-software/pull/7"
+  },
+  {
+    "baseRefName": "master",
+    "headRefName": "feature/demo/mvp/07/10/2026",
+    "mergedAt": "2026-10-09T16:33:04Z",
+    "number": 6,
+    "state": "MERGED",
+    "title": "Feature/demo/mvp/07/10/2026",
+    "url": "https://github.com/Masterkent11/rental-business-software/pull/6"
+  },
+  {
+    "baseRefName": "master",
+    "headRefName": "feature/demo/mvp/07/10/2026",
+    "mergedAt": "2026-10-07T16:29:19Z",
+    "number": 5,
+    "state": "MERGED",
+    "title": "update the customer_app and owner-web",
+    "url": "https://github.com/Masterkent11/rental-business-software/pull/5"
+  },
+  {
+    "baseRefName": "master",
+    "headRefName": "feature/dummy/screen/30-09-2026",
+    "mergedAt": "2026-10-07T05:18:20Z",
+    "number": 4,
+    "state": "MERGED",
+    "title": "Feature/dummy/screen/30 09 2026",
+    "url": "https://github.com/Masterkent11/rental-business-software/pull/4"
+  },
+  {
+    "baseRefName": "master",
+    "headRefName": "feature/owner-web/api/26-08-2026",
+    "mergedAt": "2026-08-30T19:13:08Z",
+    "number": 3,
+    "state": "MERGED",
+    "title": "Feature/owner web/api/26 08 2026",
+    "url": "https://github.com/Masterkent11/rental-business-software/pull/3"
+  },
+  {
+    "baseRefName": "master",
+    "headRefName": "feature/apps/owner-web/components/26-08-2026",
+    "mergedAt": "2026-08-26T09:55:41Z",
+    "number": 2,
+    "state": "MERGED",
+    "title": "added features",
+    "url": "https://github.com/Masterkent11/rental-business-software/pull/2"
+  },
+  {
+    "baseRefName": "master",
+    "headRefName": "customer-app/home-page/23-08-2026",
+    "mergedAt": "2026-08-26T08:50:57Z",
+    "number": 1,
+    "state": "MERGED",
+    "title": "Customer app/home page/23 08 2026",
+    "url": "https://github.com/Masterkent11/rental-business-software/pull/1"
+  }
+]
