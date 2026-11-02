@@ -15,5 +15,5 @@ export function PartnerEntry({ setup = false }: { setup?: boolean }) {
       !setup && hasPartnerVisit() ? "/sign-in" : "/onboarding/role";
     router.replace(`${destination}?returnTo=${encodeURIComponent(path)}`);
   }, [router, pathname, params, setup]);
-  return <AuthLoading message="Opening your workspace…" />;
+  return <AuthLoading message="Opening your workspace…" fullPage />;
 }

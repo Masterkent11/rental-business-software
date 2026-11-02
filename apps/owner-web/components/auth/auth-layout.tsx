@@ -1,5 +1,6 @@
 "use client";
 
+import loadingStyles from "./auth-loading.module.css";
 import { useAuthDraft } from "./use-auth-draft";
 import Link from "next/link";
 import Image from "next/image";
@@ -190,12 +191,17 @@ export function AuthError({ message }: { message: string | null }) {
 }
 export function AuthLoading({
   message = "Restoring your session…",
+  fullPage = false,
 }: {
   message?: string;
+  fullPage?: boolean;
 }) {
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background px-6 text-center text-[14px] text-muted" role="status">
-      <Loader2 className="animate-spin" size={24} />
+    <div
+      className={`${loadingStyles.loading}${fullPage ? ` ${loadingStyles.page}` : ""}`}
+      role="status"
+    >
+      <Loader2 className="animate-spin" size={24} aria-hidden="true" />
       <p>{message}</p>
     </div>
   );

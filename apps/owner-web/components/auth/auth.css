@@ -464,18 +464,6 @@
   background: #0c2248;
 }
 
-.auth-loading {
-  min-height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 15px;
-  padding: 24px;
-  color: var(--auth-muted);
-  font-size: 14px;
-}
-
 .auth-success {
   text-align: center;
   padding: 18px 0;
@@ -1308,7 +1296,7 @@
   .auth-input-wrap input {
     height: 48px;
     border-radius: 11px;
-    font-size: 15px;
+    font-size: 16px;
     padding-left: 43px;
     padding-right: 45px;
   }
