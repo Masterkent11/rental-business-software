@@ -205,6 +205,7 @@ export function postgresApplicationRepository(): ApplicationRepository {
         assertOwnerMayDecide(current.state, next);
 
         if (next === 'APPROVED') {
+          const [context] = await tx<{ actor: string }[]>`select coalesce(current_setting('app.user_id', true), '') as actor`;
           await tx`select set_config('app.user_id', ${current.applicant_id}, true)`;
           const [identity] = await tx`select 1 from application_drafts d
             join identity_verification_sessions s on s.draft_id = d.id and s.user_id = d.user_id
@@ -212,6 +213,7 @@ export function postgresApplicationRepository(): ApplicationRepository {
               (s.status = 'VERIFIED' and s.expires_at > now()
                 and (s.data->'review'->>'approved' is distinct from 'true' or (s.data->'review'->>'validUntil')::timestamptz > now())) or
               (s.data->'review'->>'approved' = 'true' and (s.data->'review'->>'validUntil')::timestamptz > now()))`;
+          await tx`select set_config('app.user_id', ${context!.actor}, true)`;
           if (!identity) throw new VerificationRequiredError('The applicant must complete identity verification before approval.');
         }
         const decided = next === 'APPROVED' || next === 'REJECTED';

@@ -18,13 +18,16 @@ if folder.name.startswith('wsp-audit-pg.') and (folder / '.westayplace-audit-dis
 PY_CLEANUP
 }
 trap cleanup EXIT
-initdb -D "$TASK_PGDATA" --auth=trust --username=postgres --locale=C >/dev/null
+initdb -D "$TASK_PGDATA" --auth=trust --username=postgres --locale=C --encoding=UTF8 >/dev/null
 touch "$TASK_PGDATA/.westayplace-audit-disposable"
 pg_ctl -D "$TASK_PGDATA" -o "-p $TASK_PGPORT -h 127.0.0.1 -k /tmp" -l "$TASK_PGDATA/server.log" start >/dev/null
 createdb -h 127.0.0.1 -p "$TASK_PGPORT" -U postgres "$TASK_DATABASE"
 PSQL=(psql -X -q -v ON_ERROR_STOP=1 -h 127.0.0.1 -p "$TASK_PGPORT" -U postgres -d "$TASK_DATABASE")
 "${PSQL[@]}" -f "$ROOT/supabase/tests/local-supabase-stubs.sql"
 for migration in "$ROOT"/supabase/migrations/*.sql; do
+  if [[ "$(basename "$migration")" == "20261101034546_partner_tenant_boundaries.sql" ]]; then
+    "${PSQL[@]}" -f "$ROOT/supabase/tests/fixtures/legacy-partner-memberships.sql"
+  fi
   "${PSQL[@]}" -f "$migration"
 done
 "${PSQL[@]}" -c 'grant select, insert, update, delete on all tables in schema public to rental_app'

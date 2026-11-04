@@ -30,24 +30,12 @@ for migration in "$ROOT"/supabase/migrations/*.sql; do
 done
 "${PSQL[@]}" -f "$ROOT/supabase/seed.sql"
 "${PSQL[@]}" -f "$ROOT/supabase/seed-tours.sql"
-"${PSQL[@]}" <<'SQL'
-insert into user_profiles(id,display_name) values ('00000000-0000-4000-9000-000000000701','Synthetic legacy dual member');
-insert into organizations(id,legal_name,trading_name) values ('00000000-0000-4000-9000-000000000702','Synthetic legacy Owner','Synthetic legacy Owner');
-insert into organization_members(user_id,organization_id,role) values ('00000000-0000-4000-9000-000000000701','00000000-0000-4000-9000-000000000702','OWNER');
-insert into agent_profiles(id,user_id,display_name) values ('00000000-0000-4000-9000-000000000703','00000000-0000-4000-9000-000000000701','Synthetic legacy Agent');
-insert into user_capabilities(user_id,capability,organization_id,source_type) values ('00000000-0000-4000-9000-000000000701','OWNER','00000000-0000-4000-9000-000000000702','MEMBERSHIP'),('00000000-0000-4000-9000-000000000701','AGENT',null,'REGISTRATION');
-insert into user_profiles(id,display_name) values ('00000000-0000-4000-9000-000000000704','Synthetic legacy reviewer');
-insert into user_capabilities(user_id,capability,source_type) values ('00000000-0000-4000-9000-000000000704','PLATFORM_ADMIN','PLATFORM');
-begin;
-select set_config('app.verification_actor','00000000-0000-4000-9000-000000000704',true);
-update agent_profiles set verification_state='VERIFIED',verified_at=now(),verified_by='00000000-0000-4000-9000-000000000704' where id='00000000-0000-4000-9000-000000000703';
-commit;
-
-SQL
+"${PSQL[@]}" -f "$ROOT/supabase/tests/fixtures/legacy-partner-memberships.sql"
 "${PSQL[@]}" -f "$ROOT/supabase/tests/partner-tenant-preflight.sql"
 TASK_BASELINE_COUNTS="$("${PSQL[@]}" -Atc "select json_build_array((select count(*) from organizations),(select count(*) from agent_profiles),(select count(*) from organization_members),(select count(*) from listings))")"
 pg_dump -h 127.0.0.1 -p "$TASK_PGPORT" -U postgres -Fc -d "$TASK_DATABASE" -f "$TASK_PGDATA/baseline.dump"
-for migration in "$ROOT"/supabase/migrations/20261101*.sql; do
+for migration in "$ROOT"/supabase/migrations/*.sql; do
+  if [[ "$(basename "$migration")" < "20261101000000" ]]; then continue; fi
   "${PSQL[@]}" --single-transaction -f "$migration"
 done
 TASK_MIGRATED_COUNTS="$("${PSQL[@]}" -Atc "select json_build_array((select count(*) from organizations),(select count(*) from agent_profiles),(select count(*) from organization_members),(select count(*) from listings))")"

@@ -1,0 +1,11 @@
+insert into user_profiles(id,display_name) values ('00000000-0000-4000-9000-000000000701','Synthetic legacy dual member');
+insert into organizations(id,legal_name,trading_name) values ('00000000-0000-4000-9000-000000000702','Synthetic legacy Owner','Synthetic legacy Owner');
+insert into organization_members(user_id,organization_id,role) values ('00000000-0000-4000-9000-000000000701','00000000-0000-4000-9000-000000000702','OWNER');
+insert into agent_profiles(id,user_id,display_name) values ('00000000-0000-4000-9000-000000000703','00000000-0000-4000-9000-000000000701','Synthetic legacy Agent');
+insert into user_capabilities(user_id,capability,organization_id,source_type) values ('00000000-0000-4000-9000-000000000701','OWNER','00000000-0000-4000-9000-000000000702','MEMBERSHIP'),('00000000-0000-4000-9000-000000000701','AGENT',null,'REGISTRATION');
+insert into user_profiles(id,display_name) values ('00000000-0000-4000-9000-000000000704','Synthetic legacy reviewer');
+insert into user_capabilities(user_id,capability,source_type) values ('00000000-0000-4000-9000-000000000704','PLATFORM_ADMIN','PLATFORM');
+begin;
+select set_config('app.verification_actor','00000000-0000-4000-9000-000000000704',true);
+update agent_profiles set verification_state='VERIFIED',verified_at=now(),verified_by='00000000-0000-4000-9000-000000000704' where id='00000000-0000-4000-9000-000000000703';
+commit;
