@@ -1,0 +1,19 @@
+{
+  "base": "http://localhost:3203",
+  "surface": "Previously built local production preview, before incomplete visual/state draft edits; intercepted synthetic provider/API fixture, not live API authorization evidence",
+  "results": [
+    {
+      "scenario": "Owner only direct /agent returns to Owner root; no Agent selector",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Agent only direct Owner root returns to /agent; no Owner selector",
+      "result": "PASS"
+    },
+    {
+      "scenario": "Explicit dual fixture requires chooser and offers only two server supplied workspaces",
+      "result": "PASS"
+    }
+  ],
+  "pageErrors": []
+}

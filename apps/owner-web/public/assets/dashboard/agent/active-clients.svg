@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"><title>Active Clients</title><defs>
+<linearGradient id="silver" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#F2F5F8"/><stop offset="1" stop-color="#CBD7E3"/></linearGradient>
+<linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#B2C1D1"/><stop offset="1" stop-color="#7E93AA"/></linearGradient>
+<linearGradient id="ink" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#46576B"/><stop offset="1" stop-color="#263448"/></linearGradient>
+<linearGradient id="paper" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFFFFF"/><stop offset="1" stop-color="#EDF1F6"/></linearGradient>
+</defs>
+
+<path d="M11 82h74" stroke="#B6C5D5" stroke-width="1.4" stroke-linecap="round"/>
+
+<path d="M10 79v-7c0-10 6-16 15-16s15 6 15 16v7z" fill="url(#steel)" stroke="#71859C" stroke-width=".85"/>
+<path d="M20 58l5 7 5-7-5-3z" fill="url(#paper)"/>
+<path d="M25 64l-3 10 3 5 3-5z" fill="#52677E"/>
+<path d="M17 39c0-10 16-12 17 0l-1 6c-1 8-5 11-9 11-5 0-8-4-8-10z" fill="url(#silver)" stroke="#8193A7" stroke-width="1"/>
+<path d="M15 43c-1-10 6-16 13-15 8 2 10 9 8 15l-3-4c-2-3-5-4-8-5-4 3-8 4-10 9z" fill="#576A80"/>
+
+<path d="M58 79v-7c0-10 6-16 15-16s15 6 15 16v7z" fill="url(#steel)" stroke="#71859C" stroke-width=".85"/>
+<path d="M68 58l5 7 5-7-5-3z" fill="url(#paper)"/>
+<path d="M73 64l-3 10 3 5 3-5z" fill="#52677E"/>
+<path d="M65 40c0-9 16-11 17 0l-1 6c-1 8-5 11-9 11-5 0-8-5-8-10z" fill="url(#silver)" stroke="#8193A7" stroke-width="1"/>
+<path d="M64 43c-1-11 6-16 13-15 8 2 10 8 8 15l-3-4c-3-3-6-4-9-5-4 3-7 4-9 9z" fill="#596D83"/>
+
+<path d="M29 83V71c0-12 8-21 19-21s19 9 19 21v12z" fill="url(#ink)" stroke="#263448" stroke-width="1"/>
+<path d="M38 54l10 11 10-11-10-6z" fill="url(#paper)"/>
+<path d="M48 62l-4 15 4 6 4-6z" fill="#8295AA"/>
+<path d="M39 63l-5 20h9l3-15zM57 63l5 20h-9l-3-15z" fill="#5C7087" opacity=".78"/>
+<path d="M35 32c0-14 26-15 26 0l-2 11c-2 8-6 12-11 12-6 0-10-5-11-12z" fill="url(#silver)" stroke="#6D8096" stroke-width="1.2"/>
+<path d="M35 38c-4-18 7-25 17-23 9 1 13 10 10 23l-3-6c-4-1-8-5-10-8-4 6-9 7-14 8z" fill="url(#ink)"/>
+<path d="M47 84v-2M33 80v4M63 80v4" stroke="#43576B" stroke-width=".8"/>
+
+</svg>

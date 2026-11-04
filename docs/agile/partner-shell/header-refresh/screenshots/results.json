@@ -1,0 +1,768 @@
+{
+  "verification": [
+    {
+      "role": "AGENT",
+      "width": 320,
+      "height": 755,
+      "geometry": {
+        "width": 320,
+        "content": 320,
+        "search": {
+          "x": 48,
+          "y": 12,
+          "width": 133.15625,
+          "height": 44
+        },
+        "header": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 168.484375
+        },
+        "greeting": {
+          "x": 16,
+          "y": 72,
+          "width": 288,
+          "height": 28.796875
+        },
+        "notifications": {
+          "x": 189.15625,
+          "y": 12,
+          "width": 36,
+          "height": 44
+        },
+        "identity": {
+          "x": 233.15625,
+          "y": 12,
+          "width": 74.84375,
+          "height": 44
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "AGENT",
+      "width": 375,
+      "height": 812,
+      "geometry": {
+        "width": 375,
+        "content": 375,
+        "search": {
+          "x": 48,
+          "y": 12,
+          "width": 188.15625,
+          "height": 44
+        },
+        "header": {
+          "x": 0,
+          "y": 0,
+          "width": 375,
+          "height": 168.484375
+        },
+        "greeting": {
+          "x": 16,
+          "y": 72,
+          "width": 343,
+          "height": 28.796875
+        },
+        "notifications": {
+          "x": 244.15625,
+          "y": 12,
+          "width": 36,
+          "height": 44
+        },
+        "identity": {
+          "x": 288.15625,
+          "y": 12,
+          "width": 74.84375,
+          "height": 44
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "AGENT",
+      "width": 834,
+      "height": 1112,
+      "geometry": {
+        "width": 834,
+        "content": 834,
+        "search": {
+          "x": 58,
+          "y": 13,
+          "width": 560,
+          "height": 44
+        },
+        "header": {
+          "x": 0,
+          "y": 0,
+          "width": 834,
+          "height": 190
+        },
+        "greeting": {
+          "x": 20,
+          "y": 74,
+          "width": 794,
+          "height": 34.5
+        },
+        "notifications": {
+          "x": 632.359375,
+          "y": 12,
+          "width": 48,
+          "height": 46
+        },
+        "identity": {
+          "x": 690.359375,
+          "y": 13,
+          "width": 123.640625,
+          "height": 44
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "AGENT",
+      "width": 1440,
+      "height": 900,
+      "geometry": {
+        "width": 1440,
+        "content": 1440,
+        "search": {
+          "x": 800.734375,
+          "y": 40,
+          "width": 415.625,
+          "height": 44
+        },
+        "header": {
+          "x": 308,
+          "y": 0,
+          "width": 1132,
+          "height": 171
+        },
+        "greeting": {
+          "x": 340,
+          "y": 38,
+          "width": 433.109375,
+          "height": 50.59375
+        },
+        "notifications": {
+          "x": 1228.359375,
+          "y": 39,
+          "width": 48,
+          "height": 46
+        },
+        "identity": {
+          "x": 1288.359375,
+          "y": 40,
+          "width": 123.640625,
+          "height": 44
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "AGENT",
+      "width": 1920,
+      "height": 1080,
+      "geometry": {
+        "width": 1920,
+        "content": 1920,
+        "search": {
+          "x": 1252,
+          "y": 40,
+          "width": 444.359375,
+          "height": 44
+        },
+        "header": {
+          "x": 308,
+          "y": 0,
+          "width": 1612,
+          "height": 171
+        },
+        "greeting": {
+          "x": 340,
+          "y": 38,
+          "width": 653.90625,
+          "height": 50.59375
+        },
+        "notifications": {
+          "x": 1708.359375,
+          "y": 39,
+          "width": 48,
+          "height": 46
+        },
+        "identity": {
+          "x": 1768.359375,
+          "y": 40,
+          "width": 123.640625,
+          "height": 44
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "AGENT",
+      "width": 320,
+      "height": 755,
+      "route": "account",
+      "row": {
+        "search": {
+          "x": 48,
+          "y": 8,
+          "width": 133.15625,
+          "height": 44
+        },
+        "notification": {
+          "x": 189.15625,
+          "y": 8,
+          "width": 36,
+          "height": 44
+        },
+        "identity": {
+          "x": 233.15625,
+          "y": 8,
+          "width": 74.84375,
+          "height": 44
+        },
+        "overflow": false
+      }
+    },
+    {
+      "role": "AGENT",
+      "width": 375,
+      "height": 812,
+      "route": "account",
+      "row": {
+        "search": {
+          "x": 48,
+          "y": 8,
+          "width": 188.15625,
+          "height": 44
+        },
+        "notification": {
+          "x": 244.15625,
+          "y": 8,
+          "width": 36,
+          "height": 44
+        },
+        "identity": {
+          "x": 288.15625,
+          "y": 8,
+          "width": 74.84375,
+          "height": 44
+        },
+        "overflow": false
+      }
+    },
+    {
+      "role": "AGENT",
+      "width": 834,
+      "height": 1112,
+      "route": "account",
+      "row": {
+        "search": {
+          "x": 54,
+          "y": 11,
+          "width": 560,
+          "height": 44
+        },
+        "notification": {
+          "x": 636.359375,
+          "y": 10,
+          "width": 48,
+          "height": 46
+        },
+        "identity": {
+          "x": 694.359375,
+          "y": 11,
+          "width": 123.640625,
+          "height": 44
+        },
+        "overflow": false
+      }
+    },
+    {
+      "role": "AGENT",
+      "width": 1440,
+      "height": 900,
+      "route": "account",
+      "row": {
+        "search": {
+          "x": 336,
+          "y": 11.5,
+          "width": 560,
+          "height": 44
+        },
+        "notification": {
+          "x": 1224.359375,
+          "y": 10.5,
+          "width": 48,
+          "height": 46
+        },
+        "identity": {
+          "x": 1288.359375,
+          "y": 11.5,
+          "width": 123.640625,
+          "height": 44
+        },
+        "overflow": false
+      }
+    },
+    {
+      "role": "AGENT",
+      "width": 1920,
+      "height": 1080,
+      "route": "account",
+      "row": {
+        "search": {
+          "x": 336,
+          "y": 11.5,
+          "width": 560,
+          "height": 44
+        },
+        "notification": {
+          "x": 1704.359375,
+          "y": 10.5,
+          "width": 48,
+          "height": 46
+        },
+        "identity": {
+          "x": 1768.359375,
+          "y": 11.5,
+          "width": 123.640625,
+          "height": 44
+        },
+        "overflow": false
+      }
+    },
+    {
+      "role": "AGENT",
+      "verified": true,
+      "avatarBadge": {
+        "avatar": {
+          "x": 1292.359375,
+          "y": 44,
+          "width": 36,
+          "height": 36
+        },
+        "badge": {
+          "x": 1313.359375,
+          "y": 64,
+          "width": 18,
+          "height": 18
+        },
+        "color": "rgb(24, 119, 242)"
+      },
+      "mobileDrawer": "PASS"
+    },
+    {
+      "role": "OWNER",
+      "width": 320,
+      "height": 755,
+      "geometry": {
+        "width": 320,
+        "content": 320,
+        "search": {
+          "x": 48,
+          "y": 12,
+          "width": 133.15625,
+          "height": 44
+        },
+        "header": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 233.171875
+        },
+        "greeting": {
+          "x": 16,
+          "y": 72,
+          "width": 288,
+          "height": 28.796875
+        },
+        "notifications": {
+          "x": 189.15625,
+          "y": 12,
+          "width": 36,
+          "height": 44
+        },
+        "identity": {
+          "x": 233.15625,
+          "y": 12,
+          "width": 74.84375,
+          "height": 44
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "OWNER",
+      "width": 375,
+      "height": 812,
+      "geometry": {
+        "width": 375,
+        "content": 375,
+        "search": {
+          "x": 48,
+          "y": 12,
+          "width": 188.15625,
+          "height": 44
+        },
+        "header": {
+          "x": 0,
+          "y": 0,
+          "width": 375,
+          "height": 220
+        },
+        "greeting": {
+          "x": 16,
+          "y": 72,
+          "width": 343,
+          "height": 28.796875
+        },
+        "notifications": {
+          "x": 244.15625,
+          "y": 12,
+          "width": 36,
+          "height": 44
+        },
+        "identity": {
+          "x": 288.15625,
+          "y": 12,
+          "width": 74.84375,
+          "height": 44
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "OWNER",
+      "width": 834,
+      "height": 1112,
+      "geometry": {
+        "width": 834,
+        "content": 834,
+        "search": {
+          "x": 58,
+          "y": 13,
+          "width": 560,
+          "height": 44
+        },
+        "header": {
+          "x": 0,
+          "y": 0,
+          "width": 834,
+          "height": 240
+        },
+        "greeting": {
+          "x": 20,
+          "y": 74,
+          "width": 794,
+          "height": 34.5
+        },
+        "notifications": {
+          "x": 632.359375,
+          "y": 12,
+          "width": 48,
+          "height": 46
+        },
+        "identity": {
+          "x": 690.359375,
+          "y": 13,
+          "width": 123.640625,
+          "height": 44
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "OWNER",
+      "width": 1440,
+      "height": 900,
+      "geometry": {
+        "width": 1440,
+        "content": 1440,
+        "search": {
+          "x": 801.8125,
+          "y": 40,
+          "width": 414.546875,
+          "height": 44
+        },
+        "header": {
+          "x": 310,
+          "y": 0,
+          "width": 1130,
+          "height": 171
+        },
+        "greeting": {
+          "x": 342,
+          "y": 38,
+          "width": 432.1875,
+          "height": 48.296875
+        },
+        "notifications": {
+          "x": 1228.359375,
+          "y": 39,
+          "width": 48,
+          "height": 46
+        },
+        "identity": {
+          "x": 1288.359375,
+          "y": 40,
+          "width": 123.640625,
+          "height": 44
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "OWNER",
+      "width": 1920,
+      "height": 1080,
+      "geometry": {
+        "width": 1920,
+        "content": 1920,
+        "search": {
+          "x": 1252,
+          "y": 40,
+          "width": 444.359375,
+          "height": 44
+        },
+        "header": {
+          "x": 310,
+          "y": 0,
+          "width": 1610,
+          "height": 171
+        },
+        "greeting": {
+          "x": 342,
+          "y": 38,
+          "width": 653,
+          "height": 48.296875
+        },
+        "notifications": {
+          "x": 1708.359375,
+          "y": 39,
+          "width": 48,
+          "height": 46
+        },
+        "identity": {
+          "x": 1768.359375,
+          "y": 40,
+          "width": 123.640625,
+          "height": 44
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "OWNER",
+      "width": 320,
+      "height": 755,
+      "route": "account",
+      "row": {
+        "search": {
+          "x": 48,
+          "y": 8,
+          "width": 133.15625,
+          "height": 44
+        },
+        "notification": {
+          "x": 189.15625,
+          "y": 8,
+          "width": 36,
+          "height": 44
+        },
+        "identity": {
+          "x": 233.15625,
+          "y": 8,
+          "width": 74.84375,
+          "height": 44
+        },
+        "overflow": false
+      }
+    },
+    {
+      "role": "OWNER",
+      "width": 375,
+      "height": 812,
+      "route": "account",
+      "row": {
+        "search": {
+          "x": 48,
+          "y": 8,
+          "width": 188.15625,
+          "height": 44
+        },
+        "notification": {
+          "x": 244.15625,
+          "y": 8,
+          "width": 36,
+          "height": 44
+        },
+        "identity": {
+          "x": 288.15625,
+          "y": 8,
+          "width": 74.84375,
+          "height": 44
+        },
+        "overflow": false
+      }
+    },
+    {
+      "role": "OWNER",
+      "width": 834,
+      "height": 1112,
+      "route": "account",
+      "row": {
+        "search": {
+          "x": 54,
+          "y": 11,
+          "width": 560,
+          "height": 44
+        },
+        "notification": {
+          "x": 636.359375,
+          "y": 10,
+          "width": 48,
+          "height": 46
+        },
+        "identity": {
+          "x": 694.359375,
+          "y": 11,
+          "width": 123.640625,
+          "height": 44
+        },
+        "overflow": false
+      }
+    },
+    {
+      "role": "OWNER",
+      "width": 1440,
+      "height": 900,
+      "route": "account",
+      "row": {
+        "search": {
+          "x": 338,
+          "y": 11.5,
+          "width": 560,
+          "height": 44
+        },
+        "notification": {
+          "x": 1224.359375,
+          "y": 10.5,
+          "width": 48,
+          "height": 46
+        },
+        "identity": {
+          "x": 1288.359375,
+          "y": 11.5,
+          "width": 123.640625,
+          "height": 44
+        },
+        "overflow": false
+      }
+    },
+    {
+      "role": "OWNER",
+      "width": 1920,
+      "height": 1080,
+      "route": "account",
+      "row": {
+        "search": {
+          "x": 338,
+          "y": 11.5,
+          "width": 560,
+          "height": 44
+        },
+        "notification": {
+          "x": 1704.359375,
+          "y": 10.5,
+          "width": 48,
+          "height": 46
+        },
+        "identity": {
+          "x": 1768.359375,
+          "y": 11.5,
+          "width": 123.640625,
+          "height": 44
+        },
+        "overflow": false
+      }
+    },
+    {
+      "role": "OWNER",
+      "verified": true,
+      "avatarBadge": {
+        "avatar": {
+          "x": 1292.359375,
+          "y": 44,
+          "width": 36,
+          "height": 36
+        },
+        "badge": {
+          "x": 1313.359375,
+          "y": 64,
+          "width": 18,
+          "height": 18
+        },
+        "color": "rgb(24, 119, 242)"
+      },
+      "mobileDrawer": "PASS"
+    }
+  ],
+  "searches": [
+    {
+      "query": "cebu",
+      "org": null,
+      "role": "AGENT"
+    },
+    {
+      "query": "slow",
+      "org": null,
+      "role": "AGENT"
+    },
+    {
+      "query": "absent",
+      "org": null,
+      "role": "AGENT"
+    },
+    {
+      "query": "mark",
+      "org": null,
+      "role": "AGENT"
+    },
+    {
+      "query": "cebu",
+      "org": "91000000-0000-4000-8000-000000000001",
+      "role": "OWNER"
+    },
+    {
+      "query": "slow",
+      "org": "91000000-0000-4000-8000-000000000001",
+      "role": "OWNER"
+    },
+    {
+      "query": "absent",
+      "org": "91000000-0000-4000-8000-000000000001",
+      "role": "OWNER"
+    },
+    {
+      "query": "mark",
+      "org": "91000000-0000-4000-8000-000000000001",
+      "role": "OWNER"
+    }
+  ],
+  "browserErrors": [],
+  "scope": "Synthetic browser provider and API interception; actual HTTP/PostgreSQL verified separately"
+}

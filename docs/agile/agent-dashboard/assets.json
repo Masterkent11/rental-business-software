@@ -1,0 +1,108 @@
+{
+  "sourceArchive": "/Users/admin/Downloads/Westayplace_Agent_Dashboard_All_Raw_SVG_Assets_Navy_FINAL.zip",
+  "sourceLimitations": "Native editable stylistic recreations supplied in asset pack, not original source exact traced paths; visual acceptance still required",
+  "assets": [
+    {
+      "source": "kpi/new-inquiries.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/new-inquiries.svg",
+      "sha256": "2c106d5bef17f699eb8fa053959109ddb6014912e2733f932d028cea1b7ad5c3"
+    },
+    {
+      "source": "kpi/active-clients.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/active-clients.svg",
+      "sha256": "a837971e989560920465da1d86ba36681af26c50f7016504924d3c2a794042c9"
+    },
+    {
+      "source": "kpi/viewings-today.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/viewings-today.svg",
+      "sha256": "ca06fff4d9eed9b0aaa20c996d999321a3eb0d3bbc11fbb60b2089101f066844"
+    },
+    {
+      "source": "kpi/follow-ups-due.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/follow-ups.svg",
+      "sha256": "bafd1d618a8fd6dec1d6e168b0c552bf5704208db30a3ec37c279a05ee6d2723"
+    },
+    {
+      "source": "kpi/deals-in-progress.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/deals.svg",
+      "sha256": "094b042c89f5a6ff3aad141418f593e6b3e20fd792bb283eadaafb5eab32cf33",
+      "localCorrection": "Corrected palm stacking order so the blue thumb stays visible over the receiving palm; preserved cuff joins and wrapped finger contours."
+    },
+    {
+      "source": "illustrations/today-activities-large.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/no-activities.svg",
+      "sha256": "464c39c0cf1394db7a9cdd30e2769d4a6f6653c076b5dd15661c267b99e2879f"
+    },
+    {
+      "source": "illustrations/response-large.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/response.svg",
+      "sha256": "e8752c18f04c46fdf861bb69f6d3476a0512590b7f9cc0903693b01418027537",
+      "localCorrection": "Rebuilt paired speech bubbles and tightened illustration bounds for centered alignment within the Response panel."
+    },
+    {
+      "source": "illustrations/latest-inquiries-large.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/empty-inquiries.svg",
+      "sha256": "8419f67ca1cdb6dabd0fac0fa5710031a78532c4e4b1f6acd064b558eba8e2c5"
+    },
+    {
+      "source": "navigation/account.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/navigation/account.svg",
+      "sha256": "1f662a9118e9d82e8e13e332363fba83841499d9e6862e74567cd8a2bcbe6ab5"
+    },
+    {
+      "source": "navigation/agent-profile.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/navigation/agent-profile.svg",
+      "sha256": "aad7a37e900490f445b9c61c8a9dafec4ffbf27f8555431bbc2098fa35f2079d"
+    },
+    {
+      "source": "navigation/analytics.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/navigation/analytics.svg",
+      "sha256": "c3003944db7918752e8c036116e8a7c04c888564cdadbcc7131dccc7ba759abc"
+    },
+    {
+      "source": "navigation/clients.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/navigation/clients.svg",
+      "sha256": "27ed389c38301ffdf24b8104ef44a4cc0c746eeb9f7a3ae98e423d0535b241a2"
+    },
+    {
+      "source": "navigation/dashboard.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/navigation/dashboard.svg",
+      "sha256": "32ac3fd74799b223c5d185a884ef03e171c886f84f82be51d394161e0b00abcb"
+    },
+    {
+      "source": "navigation/leads.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/navigation/leads.svg",
+      "sha256": "86482135c5896af7ff218323e0ddba1ea48b2e9082221f3ff3eab84b43ce6fcf"
+    },
+    {
+      "source": "navigation/marketing-hub.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/navigation/marketing-hub.svg",
+      "sha256": "42d8c95b203dca1e285092cba25969624a2596aebc998c71ce704c1c7cbc90d5"
+    },
+    {
+      "source": "navigation/messages.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/navigation/messages.svg",
+      "sha256": "2225eafc57e00f87cde5fb33f140b0171658253f509885a54f5806a4d176572b"
+    },
+    {
+      "source": "navigation/represented-properties.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/navigation/represented-properties.svg",
+      "sha256": "7b2146c0b571e2122139f4a3107881ffb9cea8421ba448d3e071ebed3c1e4644"
+    },
+    {
+      "source": "navigation/tasks.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/navigation/tasks.svg",
+      "sha256": "b613dbac4d00d6866d9123bb1d083605c97564949d1e6b279b653745a37fc43a"
+    },
+    {
+      "source": "navigation/viewings.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/navigation/viewings.svg",
+      "sha256": "3232bf3e8ea4b68077cf51497e2088ce98404232e9e00421778da7ddbdc20240"
+    },
+    {
+      "source": "navigation/virtual-tours.svg",
+      "path": "apps/owner-web/public/assets/dashboard/agent/navigation/virtual-tours.svg",
+      "sha256": "a2ed19b3fa6a453e584fc8da5c32f737896ffb297420ee7709110a58a8b5d748"
+    }
+  ]
+}

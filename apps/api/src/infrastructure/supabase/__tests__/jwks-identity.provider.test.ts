@@ -76,7 +76,7 @@ describe('jwksIdentityProvider', () => {
     const verified = await provider.verify(token);
 
     expect(verified).toEqual({
-      userId: 'aaaaaaaa-0000-0000-0000-000000000001',
+      userId: 'aaaaaaaa-0000-0000-0000-000000000001', assuranceLevel:'aal1',
       email: 'ana@example.test',
       mobile: null,
       displayName: null,
@@ -129,4 +129,10 @@ describe('jwksIdentityProvider', () => {
     const provider = jwksIdentityProvider(baseUrl);
     expect(await provider.verify('not-a-token')).toBeNull();
   });
+  it('only a verified top level MFA claim establishes aal2',async()=>{
+    const provider=jwksIdentityProvider(baseUrl);
+    expect((await provider.verify(await sign({sub:'u-1',aal:'aal2'})))?.assuranceLevel).toBe('aal2');
+    expect((await provider.verify(await sign({sub:'u-1',user_metadata:{aal:'aal2'}})))?.assuranceLevel).toBe('aal1');
+  });
+
 });

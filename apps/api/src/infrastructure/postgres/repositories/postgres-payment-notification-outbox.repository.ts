@@ -15,6 +15,7 @@ export const postgresPaymentNotificationOutbox = (): PaymentNotificationOutbox =
         await tx`insert into notifications(id, user_id, organization_id, kind, title, body, link)
           values (${row.id}, ${row.user_id}, ${row.user_id ? null : row.organization_id}, ${row.kind}, ${row.title}, ${row.body}, ${row.link})
           on conflict(id) do nothing`;
+        await tx`select set_config('app.user_id', '', true)`;
         await tx`delete from payment_notification_outbox where id = ${row.id}`;
       }
       return rows.length;

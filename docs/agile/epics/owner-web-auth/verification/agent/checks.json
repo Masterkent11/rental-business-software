@@ -1,0 +1,23 @@
+{
+  "checkedOn": "2026-11-01 Asia/Manila",
+  "scope": "audit only",
+  "apiHealthHttpStatus": 200,
+  "unauthenticatedAgentProfileHttpStatus": 401,
+  "existingAgentTests": {
+    "files": 2,
+    "passed": 28,
+    "failed": 0,
+    "skipped": 0,
+    "database": "disposable local PostgreSQL",
+    "scope": [
+      "Agent domain",
+      "Partner marketplace integration"
+    ]
+  },
+  "browserCases": 2,
+  "browserProvider": "synthetic intercepted provider and API responses",
+  "productCodeChanges": 0,
+  "remoteWrites": 0,
+  "remoteMigrationApplied": false,
+  "deploymentPerformed": false
+}

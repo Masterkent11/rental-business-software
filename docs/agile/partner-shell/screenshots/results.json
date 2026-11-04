@@ -1,0 +1,320 @@
+{
+  "verification": [
+    {
+      "role": "AGENT",
+      "width": 375,
+      "height": 812,
+      "geometry": {
+        "width": 375,
+        "content": 375,
+        "search": {
+          "x": 195.5,
+          "y": 68,
+          "width": 163.5,
+          "height": 44
+        },
+        "header": {
+          "x": 0,
+          "y": 0,
+          "width": 375,
+          "height": 190
+        },
+        "greeting": {
+          "x": 16,
+          "y": 68,
+          "width": 171.5,
+          "height": 44
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "AGENT",
+      "width": 834,
+      "height": 1112,
+      "geometry": {
+        "width": 834,
+        "content": 834,
+        "search": {
+          "x": 425,
+          "y": 68,
+          "width": 389,
+          "height": 44
+        },
+        "header": {
+          "x": 0,
+          "y": 0,
+          "width": 834,
+          "height": 190
+        },
+        "greeting": {
+          "x": 20,
+          "y": 74,
+          "width": 381,
+          "height": 34.5
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "AGENT",
+      "width": 1440,
+      "height": 900,
+      "geometry": {
+        "width": 1440,
+        "content": 1440,
+        "search": {
+          "x": 800.734375,
+          "y": 40,
+          "width": 551.265625,
+          "height": 44
+        },
+        "header": {
+          "x": 308,
+          "y": 0,
+          "width": 1132,
+          "height": 171
+        },
+        "greeting": {
+          "x": 340,
+          "y": 38,
+          "width": 433.109375,
+          "height": 50.59375
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "AGENT",
+      "width": 1920,
+      "height": 1080,
+      "geometry": {
+        "width": 1920,
+        "content": 1920,
+        "search": {
+          "x": 1252,
+          "y": 40,
+          "width": 580,
+          "height": 44
+        },
+        "header": {
+          "x": 308,
+          "y": 0,
+          "width": 1612,
+          "height": 171
+        },
+        "greeting": {
+          "x": 340,
+          "y": 38,
+          "width": 653.90625,
+          "height": 50.59375
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "AGENT",
+      "verified": true,
+      "avatarBadge": {
+        "avatar": {
+          "x": 30,
+          "y": 806,
+          "width": 40,
+          "height": 40
+        },
+        "badge": {
+          "x": 52,
+          "y": 826,
+          "width": 23,
+          "height": 23
+        },
+        "color": "rgb(24, 119, 242)"
+      },
+      "mobileDrawer": "PASS"
+    },
+    {
+      "role": "OWNER",
+      "width": 375,
+      "height": 812,
+      "geometry": {
+        "width": 375,
+        "content": 375,
+        "search": {
+          "x": 195.5,
+          "y": 68,
+          "width": 163.5,
+          "height": 44
+        },
+        "header": {
+          "x": 0,
+          "y": 0,
+          "width": 375,
+          "height": 240
+        },
+        "greeting": {
+          "x": 16,
+          "y": 68,
+          "width": 171.5,
+          "height": 44
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "OWNER",
+      "width": 834,
+      "height": 1112,
+      "geometry": {
+        "width": 834,
+        "content": 834,
+        "search": {
+          "x": 425,
+          "y": 68,
+          "width": 389,
+          "height": 44
+        },
+        "header": {
+          "x": 0,
+          "y": 0,
+          "width": 834,
+          "height": 240
+        },
+        "greeting": {
+          "x": 20,
+          "y": 74,
+          "width": 381,
+          "height": 34.5
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "OWNER",
+      "width": 1440,
+      "height": 900,
+      "geometry": {
+        "width": 1440,
+        "content": 1440,
+        "search": {
+          "x": 801.8125,
+          "y": 40,
+          "width": 550.1875,
+          "height": 44
+        },
+        "header": {
+          "x": 310,
+          "y": 0,
+          "width": 1130,
+          "height": 171
+        },
+        "greeting": {
+          "x": 342,
+          "y": 38,
+          "width": 432.1875,
+          "height": 48.296875
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "OWNER",
+      "width": 1920,
+      "height": 1080,
+      "geometry": {
+        "width": 1920,
+        "content": 1920,
+        "search": {
+          "x": 1252,
+          "y": 40,
+          "width": 580,
+          "height": 44
+        },
+        "header": {
+          "x": 310,
+          "y": 0,
+          "width": 1610,
+          "height": 171
+        },
+        "greeting": {
+          "x": 342,
+          "y": 38,
+          "width": 653,
+          "height": 48.296875
+        },
+        "toolbarIntegrated": true,
+        "toolbarPosition": "absolute"
+      }
+    },
+    {
+      "role": "OWNER",
+      "verified": true,
+      "avatarBadge": {
+        "avatar": {
+          "x": 36,
+          "y": 794,
+          "width": 52,
+          "height": 52
+        },
+        "badge": {
+          "x": 70,
+          "y": 826,
+          "width": 23,
+          "height": 23
+        },
+        "color": "rgb(24, 119, 242)"
+      },
+      "mobileDrawer": "PASS"
+    }
+  ],
+  "searches": [
+    {
+      "query": "cebu",
+      "org": null,
+      "role": "AGENT"
+    },
+    {
+      "query": "slow",
+      "org": null,
+      "role": "AGENT"
+    },
+    {
+      "query": "absent",
+      "org": null,
+      "role": "AGENT"
+    },
+    {
+      "query": "mark",
+      "org": null,
+      "role": "AGENT"
+    },
+    {
+      "query": "cebu",
+      "org": "91000000-0000-4000-8000-000000000001",
+      "role": "OWNER"
+    },
+    {
+      "query": "slow",
+      "org": "91000000-0000-4000-8000-000000000001",
+      "role": "OWNER"
+    },
+    {
+      "query": "absent",
+      "org": "91000000-0000-4000-8000-000000000001",
+      "role": "OWNER"
+    },
+    {
+      "query": "mark",
+      "org": "91000000-0000-4000-8000-000000000001",
+      "role": "OWNER"
+    }
+  ],
+  "browserErrors": [],
+  "scope": "Synthetic browser provider and API interception; actual HTTP/PostgreSQL verified separately"
+}

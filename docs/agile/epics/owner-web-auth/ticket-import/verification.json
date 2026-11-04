@@ -1,0 +1,26 @@
+{
+  "recorded_on": "2026-11-01",
+  "timezone": "Asia/Manila",
+  "planning_records": 9,
+  "native_links_verified": 9,
+  "project_items": 101,
+  "repository_issues": 101,
+  "existing_issues_preserved": 92,
+  "changed_existing_issues": [],
+  "unique_keys": true,
+  "all_new_issues_open": true,
+  "manifest_matches_remote_bodies": true,
+  "reference_copies_byte_identical": true,
+  "source_code_changes": false,
+  "test_baseline": {
+    "runtime": "Node 24.19.0",
+    "tests": 16,
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "live_auth_e2e": false
+  },
+  "gate_a": "CLOSED; owner approval pending",
+  "new_visual_screenshots": "0/8",
+  "deployment": "NOT DEPLOYED"
+}

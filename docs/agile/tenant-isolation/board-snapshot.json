@@ -1,0 +1,1160 @@
+{
+  "title": "Westayplace: Product & Engineering Delivery",
+  "url": "https://github.com/users/Masterkent11/projects/3",
+  "verifiedItems": 128,
+  "inspectedRecords": [
+    {
+      "number": 14,
+      "title": "[EPIC] Protect customer identity and organization access",
+      "state": "OPEN",
+      "parent": 12,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[EPIC] Protect customer identity and organization access"
+        },
+        {
+          "field": "Status",
+          "value": "In Review"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "All Surfaces"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Cross Stack"
+        },
+        {
+          "field": "Work Type",
+          "value": "Epic"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Identity"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Current Delivery"
+        },
+        {
+          "field": "Target Release",
+          "value": "MVP Demo"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Historical and planned work; no assigned active sprint"
+        }
+      ]
+    },
+    {
+      "number": 32,
+      "title": "[STORY][BACKEND API] Enforce organization and representation access boundaries",
+      "state": "OPEN",
+      "parent": 14,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[STORY][BACKEND API] Enforce organization and representation access boundaries"
+        },
+        {
+          "field": "Status",
+          "value": "In Review"
+        },
+        {
+          "field": "Priority",
+          "value": "P0"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Backend API"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Cross Stack"
+        },
+        {
+          "field": "Work Type",
+          "value": "Story"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Identity"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Historical Implementation"
+        },
+        {
+          "field": "Target Release",
+          "value": "MVP Demo"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Sprints 1 and 2 scope; October security hardening reconstructed"
+        }
+      ]
+    },
+    {
+      "number": 33,
+      "title": "[TASK][BACKEND API] Implement enforce organization and representation access boundaries API and data contracts",
+      "state": "CLOSED",
+      "parent": 32,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[TASK][BACKEND API] Implement enforce organization and representation access boundaries API and data contracts"
+        },
+        {
+          "field": "Status",
+          "value": "Done"
+        },
+        {
+          "field": "Priority",
+          "value": "P0"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Backend API"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Backend"
+        },
+        {
+          "field": "Work Type",
+          "value": "Task"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Identity"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Historical Implementation"
+        },
+        {
+          "field": "Target Release",
+          "value": "MVP Demo"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Sprints 1 and 2 scope; October security hardening reconstructed"
+        }
+      ]
+    },
+    {
+      "number": 34,
+      "title": "[TASK][OWNER WEB] Invalidate privileged portal state after workspace and session changes",
+      "state": "CLOSED",
+      "parent": 32,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[TASK][OWNER WEB] Invalidate privileged portal state after workspace and session changes"
+        },
+        {
+          "field": "Status",
+          "value": "Done"
+        },
+        {
+          "field": "Priority",
+          "value": "P0"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Owner Web"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Frontend"
+        },
+        {
+          "field": "Work Type",
+          "value": "Task"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Identity"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Historical Implementation"
+        },
+        {
+          "field": "Target Release",
+          "value": "MVP Demo"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Sprints 1 and 2 scope; October security hardening reconstructed"
+        }
+      ]
+    },
+    {
+      "number": 56,
+      "title": "[STORY][OWNER WEB] Delegate listing representation to authorized agents",
+      "state": "OPEN",
+      "parent": 17,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[STORY][OWNER WEB] Delegate listing representation to authorized agents"
+        },
+        {
+          "field": "Status",
+          "value": "In Review"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Owner Web"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Cross Stack"
+        },
+        {
+          "field": "Work Type",
+          "value": "Story"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Partners"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Historical Implementation"
+        },
+        {
+          "field": "Target Release",
+          "value": "MVP Demo"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Reconstructed October partner marketplace delivery"
+        }
+      ]
+    },
+    {
+      "number": 57,
+      "title": "[TASK][BACKEND API] Implement delegate listing representation to authorized agents API and data contracts",
+      "state": "CLOSED",
+      "parent": 56,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[TASK][BACKEND API] Implement delegate listing representation to authorized agents API and data contracts"
+        },
+        {
+          "field": "Status",
+          "value": "Done"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Backend API"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Backend"
+        },
+        {
+          "field": "Work Type",
+          "value": "Task"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Partners"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Historical Implementation"
+        },
+        {
+          "field": "Target Release",
+          "value": "MVP Demo"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Reconstructed October partner marketplace delivery"
+        }
+      ]
+    },
+    {
+      "number": 58,
+      "title": "[TASK][OWNER WEB] Implement delegate listing representation to authorized agents user experience",
+      "state": "OPEN",
+      "parent": 56,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[TASK][OWNER WEB] Implement delegate listing representation to authorized agents user experience"
+        },
+        {
+          "field": "Status",
+          "value": "In Review"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Owner Web"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Frontend"
+        },
+        {
+          "field": "Work Type",
+          "value": "Task"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Partners"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Historical Implementation"
+        },
+        {
+          "field": "Target Release",
+          "value": "MVP Demo"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Reconstructed October partner marketplace delivery"
+        }
+      ]
+    },
+    {
+      "number": 62,
+      "title": "[STORY][OWNER WEB] Provide owner and agent operational dashboards",
+      "state": "OPEN",
+      "parent": 17,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[STORY][OWNER WEB] Provide owner and agent operational dashboards"
+        },
+        {
+          "field": "Status",
+          "value": "In Review"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Owner Web"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Cross Stack"
+        },
+        {
+          "field": "Work Type",
+          "value": "Story"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Partners"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Historical Implementation"
+        },
+        {
+          "field": "Target Release",
+          "value": "MVP Demo"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Reconstructed October partner dashboard delivery"
+        }
+      ]
+    },
+    {
+      "number": 63,
+      "title": "[TASK][BACKEND API] Implement provide owner and agent operational dashboards API and data contracts",
+      "state": "OPEN",
+      "parent": 62,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[TASK][BACKEND API] Implement provide owner and agent operational dashboards API and data contracts"
+        },
+        {
+          "field": "Status",
+          "value": "In Review"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Backend API"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Backend"
+        },
+        {
+          "field": "Work Type",
+          "value": "Task"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Partners"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Historical Implementation"
+        },
+        {
+          "field": "Target Release",
+          "value": "MVP Demo"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Reconstructed October partner dashboard delivery"
+        }
+      ]
+    },
+    {
+      "number": 64,
+      "title": "[TASK][OWNER WEB] Implement provide owner and agent operational dashboards user experience",
+      "state": "OPEN",
+      "parent": 62,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[TASK][OWNER WEB] Implement provide owner and agent operational dashboards user experience"
+        },
+        {
+          "field": "Status",
+          "value": "In Review"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Owner Web"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Frontend"
+        },
+        {
+          "field": "Work Type",
+          "value": "Task"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Partners"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Historical Implementation"
+        },
+        {
+          "field": "Target Release",
+          "value": "MVP Demo"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Reconstructed October partner dashboard delivery"
+        }
+      ]
+    },
+    {
+      "number": 83,
+      "title": "[STORY][ALL SURFACES] Close production payment identity and mobile distribution gates",
+      "state": "OPEN",
+      "parent": 20,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[STORY][ALL SURFACES] Close production payment identity and mobile distribution gates"
+        },
+        {
+          "field": "Status",
+          "value": "Backlog"
+        },
+        {
+          "field": "Priority",
+          "value": "P0"
+        },
+        {
+          "field": "Application Surface",
+          "value": "All Surfaces"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Cross Stack"
+        },
+        {
+          "field": "Work Type",
+          "value": "Story"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Delivery"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Planned Feature"
+        },
+        {
+          "field": "Target Release",
+          "value": "Production Readiness"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Planned feature; no assigned sprint or release date"
+        }
+      ]
+    },
+    {
+      "number": 86,
+      "title": "[STORY][STORYBOOK] Establish Storybook documentation for reusable portal components",
+      "state": "OPEN",
+      "parent": 20,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[STORY][STORYBOOK] Establish Storybook documentation for reusable portal components"
+        },
+        {
+          "field": "Status",
+          "value": "Backlog"
+        },
+        {
+          "field": "Priority",
+          "value": "P2"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Storybook"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Cross Stack"
+        },
+        {
+          "field": "Work Type",
+          "value": "Story"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Delivery"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Planned Feature"
+        },
+        {
+          "field": "Target Release",
+          "value": "Production Readiness"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Planned feature; no assigned sprint"
+        }
+      ]
+    },
+    {
+      "number": 87,
+      "title": "[TASK][STORYBOOK] Configure Storybook against established portal UI primitives",
+      "state": "OPEN",
+      "parent": 86,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[TASK][STORYBOOK] Configure Storybook against established portal UI primitives"
+        },
+        {
+          "field": "Status",
+          "value": "Backlog"
+        },
+        {
+          "field": "Priority",
+          "value": "P2"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Storybook"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Design System"
+        },
+        {
+          "field": "Work Type",
+          "value": "Task"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Delivery"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Planned Feature"
+        },
+        {
+          "field": "Target Release",
+          "value": "Production Readiness"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Planned feature; no assigned sprint"
+        }
+      ]
+    },
+    {
+      "number": 88,
+      "title": "[TASK][STORYBOOK] Document loading empty error and interaction component states",
+      "state": "OPEN",
+      "parent": 86,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[TASK][STORYBOOK] Document loading empty error and interaction component states"
+        },
+        {
+          "field": "Status",
+          "value": "Backlog"
+        },
+        {
+          "field": "Priority",
+          "value": "P2"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Storybook"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Design System"
+        },
+        {
+          "field": "Work Type",
+          "value": "Task"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Delivery"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Planned Feature"
+        },
+        {
+          "field": "Target Release",
+          "value": "Production Readiness"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Planned feature; no assigned sprint"
+        }
+      ]
+    },
+    {
+      "number": 100,
+      "title": "[TASK][DATABASE] Persist scoped agent profiles and listing representation permissions",
+      "state": "CLOSED",
+      "parent": 56,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[TASK][DATABASE] Persist scoped agent profiles and listing representation permissions"
+        },
+        {
+          "field": "Status",
+          "value": "Done"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Database"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Database"
+        },
+        {
+          "field": "Work Type",
+          "value": "Task"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Partners"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Historical Implementation"
+        },
+        {
+          "field": "Target Release",
+          "value": "MVP Demo"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Reconstructed October partner marketplace delivery"
+        }
+      ]
+    },
+    {
+      "number": 101,
+      "title": "[TASK][DATABASE] Enforce persisted viewing requests and representation assignments",
+      "state": "CLOSED",
+      "parent": 59,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "[TASK][DATABASE] Enforce persisted viewing requests and representation assignments"
+        },
+        {
+          "field": "Status",
+          "value": "Done"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Database"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Database"
+        },
+        {
+          "field": "Work Type",
+          "value": "Task"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Partners"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Historical Implementation"
+        },
+        {
+          "field": "Target Release",
+          "value": "MVP Demo"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Reconstructed October inquiry and viewing delivery"
+        }
+      ]
+    },
+    {
+      "number": 103,
+      "title": "Owner Web Sign In / Sign Up \u2014 1:1 Authentication Experience",
+      "state": "OPEN",
+      "parent": 12,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "Owner Web Sign In / Sign Up \u2014 1:1 Authentication Experience"
+        },
+        {
+          "field": "Status",
+          "value": "In Progress"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Owner Web"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Cross Stack"
+        },
+        {
+          "field": "Work Type",
+          "value": "Epic"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Identity"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Planned Feature"
+        },
+        {
+          "field": "Target Release",
+          "value": "Production Readiness"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Planned 2026-11-01; owner approval pending; no assigned sprint"
+        }
+      ]
+    },
+    {
+      "number": 104,
+      "title": "AUTH-001 Existing authentication, repository and Agile audit",
+      "state": "OPEN",
+      "parent": 103,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "AUTH-001 Existing authentication, repository and Agile audit"
+        },
+        {
+          "field": "Status",
+          "value": "In Review"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Owner Web"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Cross Stack"
+        },
+        {
+          "field": "Work Type",
+          "value": "Task"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Identity"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Planned Feature"
+        },
+        {
+          "field": "Target Release",
+          "value": "Production Readiness"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Planned 2026-11-01; owner approval pending; no assigned sprint"
+        }
+      ]
+    },
+    {
+      "number": 109,
+      "title": "AUTH-006 Authentication regression, accessibility, and security",
+      "state": "OPEN",
+      "parent": 103,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "AUTH-006 Authentication regression, accessibility, and security"
+        },
+        {
+          "field": "Status",
+          "value": "In Review"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Owner Web"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Cross Stack"
+        },
+        {
+          "field": "Work Type",
+          "value": "Task"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Identity"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Planned Feature"
+        },
+        {
+          "field": "Target Release",
+          "value": "Production Readiness"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Planned 2026-11-01; owner approval pending; no assigned sprint"
+        }
+      ]
+    },
+    {
+      "number": 111,
+      "title": "AUTH-008 QA acceptance criteria and approval gate",
+      "state": "OPEN",
+      "parent": 103,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "AUTH-008 QA acceptance criteria and approval gate"
+        },
+        {
+          "field": "Status",
+          "value": "In Progress"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Owner Web"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Quality"
+        },
+        {
+          "field": "Work Type",
+          "value": "Task"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Identity"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Planned Feature"
+        },
+        {
+          "field": "Target Release",
+          "value": "Production Readiness"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Planned 2026-11-01; owner approval pending; no assigned sprint"
+        }
+      ]
+    },
+    {
+      "number": 112,
+      "title": "Owner Workspace Provisioning",
+      "state": "OPEN",
+      "parent": 109,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "Owner Workspace Provisioning"
+        },
+        {
+          "field": "Status",
+          "value": "In Review"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Backend API"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Cross Stack"
+        },
+        {
+          "field": "Work Type",
+          "value": "Task"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Identity"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Planned Feature"
+        },
+        {
+          "field": "Target Release",
+          "value": "Production Readiness"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Planned 2026-11-01; owner approval pending; no assigned sprint"
+        }
+      ]
+    },
+    {
+      "number": 113,
+      "title": "Agent Onboarding Role Reliability",
+      "state": "OPEN",
+      "parent": 107,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "Agent Onboarding Role Reliability"
+        },
+        {
+          "field": "Status",
+          "value": "Backlog"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Owner Web"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Cross Stack"
+        },
+        {
+          "field": "Work Type",
+          "value": "Bug"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Identity"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Planned Feature"
+        },
+        {
+          "field": "Target Release",
+          "value": "Production Readiness"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Planned 2026-11-01; owner approval pending; no assigned sprint"
+        }
+      ]
+    },
+    {
+      "number": 135,
+      "title": "Marketing Authorization and Privacy",
+      "state": "OPEN",
+      "parent": 114,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "Marketing Authorization and Privacy"
+        },
+        {
+          "field": "Status",
+          "value": "In Review"
+        },
+        {
+          "field": "Priority",
+          "value": "P0"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Owner Web"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Cross Stack"
+        },
+        {
+          "field": "Work Type",
+          "value": "Story"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Partners"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Current Delivery"
+        },
+        {
+          "field": "Target Release",
+          "value": "Production Readiness"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Current planning and delivery; no iteration assigned"
+        }
+      ]
+    },
+    {
+      "number": 137,
+      "title": "Marketing Testing and Release Acceptance",
+      "state": "OPEN",
+      "parent": 114,
+      "fields": [
+        {
+          "field": "Title",
+          "value": "Marketing Testing and Release Acceptance"
+        },
+        {
+          "field": "Status",
+          "value": "Blocked"
+        },
+        {
+          "field": "Priority",
+          "value": "P1"
+        },
+        {
+          "field": "Application Surface",
+          "value": "Owner Web"
+        },
+        {
+          "field": "Technical Layer",
+          "value": "Cross Stack"
+        },
+        {
+          "field": "Work Type",
+          "value": "Story"
+        },
+        {
+          "field": "Product Domain",
+          "value": "Partners"
+        },
+        {
+          "field": "Record Classification",
+          "value": "Current Delivery"
+        },
+        {
+          "field": "Target Release",
+          "value": "Production Readiness"
+        },
+        {
+          "field": "Historical Period",
+          "value": "Current planning and delivery; no iteration assigned"
+        }
+      ]
+    }
+  ],
+  "mutationsDuringGovernanceAudit": 0
+}

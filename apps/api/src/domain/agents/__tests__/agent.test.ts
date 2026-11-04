@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   InvalidAgentProfileError,
+  DEFAULT_TERMS,
   InvalidRepresentationTransitionError,
   InvalidVerificationRequestError,
   RepresentationForbiddenError,
   assertActiveRepresentationAllows,
+  assertRepresentationCurrent,
   assertMayRequestVerification,
   isAssignable,
   nextRepresentationState,
@@ -137,5 +139,20 @@ describe('agent workload', () => {
     expect(workload.followUpsDue).toBe(1);
     expect(workload.today.map((item) => item.kind)).toEqual(['FOLLOW_UP', 'VIEWING']);
     expect(workload.today[0]!.status).toBe('OVERDUE');
+  });
+});
+
+
+describe('representation validity interval', () => {
+  const now = new Date('2026-11-01T00:00:00Z');
+  it('allows the start boundary and an open ended accepted grant', () => {
+    expect(() => assertRepresentationCurrent({ terms: { ...DEFAULT_TERMS, validFrom: now, validUntil: null } }, now)).not.toThrow();
+  });
+  it.each([
+    { validFrom: new Date('2026-11-02T00:00:00Z'), validUntil: null },
+    { validFrom: null, validUntil: now },
+    { validFrom: null, validUntil: new Date('2026-10-31T23:59:59Z') },
+  ])('rejects a future or expired grant', dates => {
+    expect(() => assertRepresentationCurrent({ terms: { ...DEFAULT_TERMS, ...dates } }, now)).toThrow(RepresentationForbiddenError);
   });
 });

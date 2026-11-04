@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">For sale — house</title>
+  <desc id="desc">A white house with a deep-blue roof and a bright blue front door, matching the Westayplace listing icon.</desc>
+  <defs>
+    <linearGradient id="roof" x1="0" y1="0" x2=".9" y2="1">
+      <stop offset="0" stop-color="#1B5595"/>
+      <stop offset=".50" stop-color="#123B76"/>
+      <stop offset="1" stop-color="#061F51"/>
+    </linearGradient>
+    <linearGradient id="roofHighlight" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#4097E4" stop-opacity=".95"/>
+      <stop offset="1" stop-color="#9CC9F7" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="wall" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset=".65" stop-color="#F6FBFF"/>
+      <stop offset="1" stop-color="#DFECFA"/>
+    </linearGradient>
+    <linearGradient id="door" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#0E67D0"/>
+      <stop offset=".45" stop-color="#188BFF"/>
+      <stop offset="1" stop-color="#1272E5"/>
+    </linearGradient>
+    <linearGradient id="doorEdge" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#D7E9FF"/>
+      <stop offset="1" stop-color="#F7FCFF"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="170%" height="175%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4.4" result="blur"/>
+      <feOffset dy="4" result="offset"/>
+      <feComponentTransfer in="offset" result="alpha"><feFuncA type="linear" slope=".25"/></feComponentTransfer>
+      <feMerge><feMergeNode in="alpha"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="roofShadow" x="-30%" y="-40%" width="160%" height="185%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.5" result="blur"/>
+      <feOffset dy="2.5" result="offset"/>
+      <feComponentTransfer in="offset" result="alpha"><feFuncA type="linear" slope=".25"/></feComponentTransfer>
+      <feMerge><feMergeNode in="alpha"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- House body: bright, softly beveled, no colored tile or red mark -->
+  <path d="M27 60.5 63.5 28l36.5 32.5v37.7a8.8 8.8 0 0 1-8.8 8.8H35.8a8.8 8.8 0 0 1-8.8-8.8Z" fill="url(#wall)" filter="url(#shadow)"/>
+  <path d="M33 64 63.5 37l30.5 27v33.5a3.7 3.7 0 0 1-3.7 3.7H36.7a3.7 3.7 0 0 1-3.7-3.7Z" fill="#FFFFFF" opacity=".42"/>
+  <!-- Beveled dark navy roof, with only a restrained cobalt highlight -->
+  <path d="M12.5 67.2a6.9 6.9 0 0 1 .6-9.8L59.1 15.6a6.7 6.7 0 0 1 8.9 0l46 41.8a6.9 6.9 0 0 1-9.3 10.2L63.5 30.1 22.3 67.6a6.9 6.9 0 0 1-9.8-.4Z" fill="url(#roof)" filter="url(#roofShadow)"/>
+  <path d="M17.2 61.9 61.3 21.5a3.4 3.4 0 0 1 4.5 0l43.4 39.9" fill="none" stroke="url(#roofHighlight)" stroke-width="2.8" stroke-linecap="round" opacity=".72"/>
+  <!-- Blue front door: white trim, blue inset, slim edge highlight -->
+  <rect x="58.3" y="66.3" width="35.2" height="41" rx="3.5" fill="url(#doorEdge)"/>
+  <rect x="62.1" y="69.5" width="27.8" height="37.8" rx="2" fill="url(#door)"/>
+  <path d="M65.1 72v31.6" stroke="#61AEFF" stroke-width="1.4" opacity=".8"/>
+  <path d="M90.3 71.1v34.5" stroke="#0A4FBD" stroke-width="1.2" opacity=".35"/>
+</svg>

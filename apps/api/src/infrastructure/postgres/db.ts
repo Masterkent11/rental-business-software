@@ -1,3 +1,4 @@
+import type { AdministrativeContext } from '@/domain/administration/administration.ts';
 import postgres from 'postgres';
 
 /**
@@ -89,3 +90,10 @@ export async function withUserAndScope<T>(
 }
 
 export const escapeLike = (value: string): string => value.replace(/[\\%_]/g, (character) => `\\${character}`);
+
+export async function withAdministration<T>(userId: string, context: AdministrativeContext, work: (tx: postgres.TransactionSql) => Promise<T>): Promise<T> {
+ return withUser(userId,async tx=>{
+ await tx`select set_config('app.assurance_level',${context.assuranceLevel},true),set_config('app.admin_purpose',${context.purpose},true),set_config('app.request_id',${context.requestId},true)`;
+ return work(tx);
+ });
+}

@@ -1,0 +1,511 @@
+{
+  "schema_version": 1,
+  "phase": "planning only",
+  "recorded_on": "2026-11-01",
+  "timezone": "Asia/Manila",
+  "repository": "Masterkent11/rental-business-software",
+  "project_url": "https://github.com/users/Masterkent11/projects/3",
+  "approval": "AWAITING OWNER APPROVAL",
+  "product_changes_authorized": false,
+  "existing_issues_reviewed": 92,
+  "issues": [
+    {
+      "key": "WSP-AUTH-EPIC-01",
+      "title": "Owner Web Sign In / Sign Up — 1:1 Authentication Experience",
+      "status": "Blocked",
+      "priority": "P1",
+      "surface": "Owner Web",
+      "layer": "Cross Stack",
+      "domain": "Identity",
+      "release": "Production Readiness",
+      "classification": "Planned Feature",
+      "work_type": "Epic",
+      "parent_number": 12,
+      "body": "Planning key: WSP-AUTH-EPIC-01\n\n## Objective and user story\n\nAs a property owner or property agent, I want an accessible, responsive and trustworthy authentication experience matching the supplied visual references, so that I can access or create the correct partner workspace without losing security or existing membership behavior.\n\n## Scope and current behavior\n\n- Scope: Owner Web only, apps/owner-web; existing NestJS identity/authorization contracts in apps/api are integration constraints.\n- Current: real Supabase email/password sign-in plus backend /me and owner/agent workspace resolution. Signup, Google OAuth, callback/recovery and legal routes are absent from Owner Web.\n- Target: reference-based Sign In and Sign Up at 375×812, 834×1112, 1440×900 and 1920×1080, with owner/agent onboarding intent from the supplied role pack.\n- Phone/iPad use a full photo hero and frosted lower form; laptop/desktop use a white auth panel and photographic promo with floating villa card. Device/browser mockup chrome is excluded from the app.\n- Preserve one identity, live membership authorization, existing one/multiple/no-workspace handling, logout and private-state invalidation.\n- Existing related identity epic #14 and boundary story #32/#34 are preserved. Existing customer auth #29–#31 is not this redesign.\n- Storybook foundation remains in #86–#88; AUTH-007 covers auth-specific states only.\n- Out of scope: consumer Flutter redesign, replacing credential storage, silently enabling Google, unapproved backend/schema/dependency/provider changes, commits/pushes, merge or deployment during planning.\n\n## Mandatory planning and approval status\n\nThe supplied Phase 1 task explicitly says DO NOT START DEVELOPMENT and requires review of the complete plan followed by explicit owner approval. Gate A is CLOSED. This epic records development intent and planning only; it does not represent design/security approval or implemented UI.\n\nOwner approval: AWAITING OWNER APPROVAL. Design acceptance: pending. Security approval: pending. Implementation: NOT STARTED. New visual screenshots: 0/8. Live auth E2E: not run. Deployment: NOT DEPLOYED.\n\nUser confirmed on 2026-11-01 that only composite auth mockups are available and requested missing originals in the plan. Exact source villa/pool photo, floating-card asset/content, exact fonts and original auth brand variants remain unresolved; do not claim final pixel identity or substitute role imagery.\n\n## Classification\n\n- Work Type: Epic; Application Surface: Owner Web; Technical Layer: Cross Stack; Product Domain: Identity.\n- Priority: P1; Delivery Status: Blocked; Record Classification: Planned Feature; Target Release: Production Readiness, no date.\n- Proposed estimates are individually reviewable in children; no epic estimate, developer assignment or sprint is fabricated.\n- Native parent: existing product initiative #12. Related #14 remains a separate preserved epic.\n\n## Children and sequence\n\nAUTH-001 audit → AUTH-002 visual/assets → AUTH-006 contract/security decisions + AUTH-008 owner Gate A → AUTH-003 Sign In → AUTH-004 Sign Up/role intent → AUTH-005 viewport verification → AUTH-007 auth coverage → AUTH-008 final acceptance. Storybook foundation dependencies remain #86–#88. Actual native child issue numbers are verified in the planning mapping.\n\n## Acceptance criteria\n\n- AC-01: Audit, route/contract inventory, immutable reference hashes, ticket mapping and missing assets are reviewable before product code changes.\n- AC-02: Owner explicitly approves this complete plan and reconciles visual/functionality/provider/provisioning decisions before implementation; no invented approvals.\n- AC-03: Both auth forms match approved compositions at all four exact CSS viewports, with 8/8 actual reviewed screenshots and explicit accepted differences.\n- AC-04: Every visible control works through real approved contracts; no fake OAuth, legal links, credentials or success states.\n- AC-05: Client role choice grants no server authority; membership, JWT verification, cross-organization controls and agent verification remain enforced.\n- AC-06: Signup confirmation, password recovery, callbacks, redirects and configured Google states have actual functional/security evidence.\n- AC-07: Keyboard, focus, labels, error announcements, reflow, zoom, safe areas and on-screen keyboard checks pass.\n- AC-08: Required tests/checks, real PR/CI links, reviewer approval and asset exceptions are recorded before Done. Release approval remains separate.\n\n## User walkthrough\n\n1. Proposed after approval: I open Sign In or choose to create a partner account.\n2. I use email/password or real approved Google and receive usable validation/loading/error feedback.\n3. If registering, I follow the approved owner/agent intent and confirmation/membership setup without gaining privileges from role selection.\n4. The backend resolves my actual accessible workspaces; I choose among them when needed.\n5. I reach an allowed destination, recover access if needed and can sign out without leaving previous private data visible.\n\n## Technical and QA boundaries\n\nReuse Next App Router, established form/design primitives, session use cases/port/adapter, Supabase identity and NestJS modular monolith. A verified new backend gap requires its own linked AUTH-006 decision/subtask, threat model, tests and specifically approved migration/rollback if needed. No competing auth architecture.\n\nCurrent baseline verification on installed Node 24.19.0: 16 existing session/domain tests passed, zero failed/skipped. This is not live auth E2E, a new UI matrix or a security approval.\n\n## Documents and evidence\n\nPlanning package: docs/agile/epics/owner-web-auth/ with README.md, audit.md, route-contract-inventory.md, visual-spec.md, asset-register.md/json, auth-decisions.md, qa-plan.md, dependencies-and-risks.md, approval-gate.md, visual-differences.md and complete ticket payloads/mapping. These files are local and not committed/pushed in Phase 1.\n\nAudit baseline: 9b5689c2d0a0a0079dad83e92ad838d8f708cf65; recorded 2026-11-01 Asia/Manila. Canonical tracker is existing GitHub Project 3; no verified Jira WSP source of truth.\n\n## Actual child issue mapping\n\n- [AUTH-001 #104](https://github.com/Masterkent11/rental-business-software/issues/104) — In Review; open planning record.\n- [AUTH-002 #105](https://github.com/Masterkent11/rental-business-software/issues/105) — Blocked; open planning record.\n- [AUTH-003 #106](https://github.com/Masterkent11/rental-business-software/issues/106) — Backlog; open planning record.\n- [AUTH-004 #107](https://github.com/Masterkent11/rental-business-software/issues/107) — Backlog; open planning record.\n- [AUTH-005 #108](https://github.com/Masterkent11/rental-business-software/issues/108) — Backlog; open planning record.\n- [AUTH-006 #109](https://github.com/Masterkent11/rental-business-software/issues/109) — Blocked; open planning record.\n- [AUTH-007 #110](https://github.com/Masterkent11/rental-business-software/issues/110) — Blocked; open planning record.\n- [AUTH-008 #111](https://github.com/Masterkent11/rental-business-software/issues/111) — In Review; open planning record.\n\nGate A remains CLOSED. This mapping is not implementation or owner approval.\n"
+    },
+    {
+      "key": "AUTH-001",
+      "title": "AUTH-001 Existing authentication, repository and Agile audit",
+      "status": "In Review",
+      "layer": "Cross Stack",
+      "points": 2,
+      "dependencies": [],
+      "objective": "Establish the factual route, session, workspace, architecture and canonical tracker baseline before design changes.",
+      "scope": [
+        "Inspect actual Owner Web routes, session store/use cases/adapter, shared UI, API identity boundary and repository rules.",
+        "Reconcile all open/closed issues and prior sprint records; map this scoped redesign without recreating completed identity work.",
+        "Document current runtime and baseline regression results, and distinguish source evidence from unverified hosted state."
+      ],
+      "subtasks": [
+        "Read AGENTS and governance/CI/architecture documents.",
+        "Trace sign-in to Supabase and GET /me; inventory absent flows.",
+        "Reconcile GitHub Project 3 and related #14, #29–#34, #86–#88.",
+        "Review the audit with the owner and maintain provenance."
+      ],
+      "ac": [
+        "Audit names the real files, installed versions, current branch/commit and preserved uncommitted work.",
+        "Canonical Project 3 and repository access are verified; no Jira source of truth is asserted without evidence.",
+        "Original issue identities, completed tasks and historical sprint records remain intact.",
+        "Existing sign-in and owner/agent workspace behavior are documented without claiming missing OAuth/signup flows exist.",
+        "Baseline command/runtime/counts and explicit E2E limitations are recorded."
+      ],
+      "walkthrough": [
+        "As a reviewer, I open audit.md and route-contract-inventory.md.",
+        "I follow the source paths to verify credentials, sessions and membership resolution.",
+        "I inspect related live issues and the provisional-to-actual ticket mapping.",
+        "I approve or return corrections without authorizing product implementation implicitly."
+      ],
+      "verification": [
+        "Review source inventory and all existing issue matches.",
+        "Read supported Node 24.19.0 baseline: 16 passed, zero failed/skipped; live E2E not run."
+      ],
+      "blockers": [
+        "Owner audit review pending; implementation gate remains closed."
+      ],
+      "documents": [
+        "audit.md",
+        "route-contract-inventory.md"
+      ],
+      "priority": "P1",
+      "surface": "Owner Web",
+      "work_type": "Task",
+      "classification": "Planned Feature",
+      "domain": "Identity",
+      "release": "Production Readiness",
+      "parent_key": "WSP-AUTH-EPIC-01",
+      "body": "Planning key: AUTH-001\n\n## Parent and classification\n\n- Parent: [WSP-AUTH-EPIC-01 #103](https://github.com/Masterkent11/rental-business-software/issues/103); native parent relationship is verified in Project 3.\n- Work Type: Task. Application Surface: Owner Web. Technical Layer: Cross Stack. Product Domain: Identity.\n- Priority: P1. Status: In Review. Record Classification: Planned Feature.\n- Proposed story points: 2, for team review only; no project estimate committed.\n- Iteration and assignee: unassigned. Target release: Production Readiness, without an invented date.\n- Dependencies: none before audit.\n\n## Objective\n\nEstablish the factual route, session, workspace, architecture and canonical tracker baseline before design changes.\n\n## Scope\n\n- Inspect actual Owner Web routes, session store/use cases/adapter, shared UI, API identity boundary and repository rules.\n- Reconcile all open/closed issues and prior sprint records; map this scoped redesign without recreating completed identity work.\n- Document current runtime and baseline regression results, and distinguish source evidence from unverified hosted state.\n\n## Subtasks\n\n- [ ] Read AGENTS and governance/CI/architecture documents.\n- [ ] Trace sign-in to Supabase and GET /me; inventory absent flows.\n- [ ] Reconcile GitHub Project 3 and related #14, #29–#34, #86–#88.\n- [ ] Review the audit with the owner and maintain provenance.\n\n## Acceptance criteria\n\n- AC-01: Audit names the real files, installed versions, current branch/commit and preserved uncommitted work.\n- AC-02: Canonical Project 3 and repository access are verified; no Jira source of truth is asserted without evidence.\n- AC-03: Original issue identities, completed tasks and historical sprint records remain intact.\n- AC-04: Existing sign-in and owner/agent workspace behavior are documented without claiming missing OAuth/signup flows exist.\n- AC-05: Baseline command/runtime/counts and explicit E2E limitations are recorded.\n\n## User walkthrough\n\n1. As a reviewer, I open audit.md and route-contract-inventory.md.\n2. I follow the source paths to verify credentials, sessions and membership resolution.\n3. I inspect related live issues and the provisional-to-actual ticket mapping.\n4. I approve or return corrections without authorizing product implementation implicitly.\n\n## Verification\n\n- Review source inventory and all existing issue matches.\n- Read supported Node 24.19.0 baseline: 16 passed, zero failed/skipped; live E2E not run.\n\n## Blockers and approval\n\n- Owner audit review pending; implementation gate remains closed.\n\nOwner approval of the complete implementation plan: AWAITING OWNER APPROVAL. No product code, CSS, route, backend, dependency, provider or schema change is authorized by completion of this planning ticket. No implementation is marked Done. Live auth E2E and new visual acceptance have not run.\n\n## Evidence and documents\n\n- Audited baseline: 9b5689c2d0a0a0079dad83e92ad838d8f708cf65, planning recorded 2026-11-01 Asia/Manila.\n- Local planning files, not yet committed or pushed: docs/agile/epics/owner-web-auth/audit.md, docs/agile/epics/owner-web-auth/route-contract-inventory.md.\n- Auth references preserved as assets/auth-mobile-reference.png and assets/auth-responsive-matrix.png in that package.\n- User confirmed composite-only authentication sources; missing originals remain listed, not silently substituted.\n",
+      "parent_number": 103
+    },
+    {
+      "key": "AUTH-002",
+      "title": "AUTH-002 Mockup specification, measurements, and asset inventory",
+      "status": "Blocked",
+      "layer": "Design System",
+      "points": 3,
+      "dependencies": [
+        "AUTH-001"
+      ],
+      "objective": "Define a reviewable 1:1 visual contract and exact asset provenance for auth and role onboarding.",
+      "scope": [
+        "Preserve both auth composites byte-for-byte and inventory dimensions/hashes.",
+        "Document phone/iPad photo-and-glass composition and distinct laptop/desktop splits.",
+        "Inventory the supplied role pack, existing fonts/brand assets and missing original auth imagery."
+      ],
+      "subtasks": [
+        "Register immutable source references and SHA-256 hashes.",
+        "Record approximate source bounds separately from proposed CSS tokens.",
+        "List original photo/card/font/logo gaps and role inpainting/vector limits.",
+        "Obtain owner decisions for each asset exception and unreadable marketing text."
+      ],
+      "ac": [
+        "Both copied references match original hashes and remain unchanged.",
+        "All eight target route/viewport combinations are specified; app output excludes simulated device/browser chrome.",
+        "The supplied role pack path and original 1585×992 reference are recorded, with role photo distinguished from auth photo.",
+        "Composite-only availability and missing original photo/card are explicit ASSET_BLOCKED items.",
+        "No generated/reconstructed substitute is represented as pixel-identical original artwork.",
+        "Every initial metric is labeled measured approximation or proposal; final exact parity remains unclaimed."
+      ],
+      "walkthrough": [
+        "As the product owner, I open visual-spec.md beside both original composites.",
+        "I compare phone/tablet and laptop/desktop composition rules.",
+        "I inspect asset-register.md and the supplied role-screen reference.",
+        "I resolve missing assets or explicitly approve named limitations."
+      ],
+      "verification": [
+        "Compare source/copy SHA-256 and dimensions.",
+        "Human review of typography, photo crop, panel proportions, controls and role asset provenance."
+      ],
+      "blockers": [
+        "Original auth photo, villa thumbnail/content, exact font/brand sources missing.",
+        "Owner has confirmed composite-only availability; no substitute or parity exception approved."
+      ],
+      "documents": [
+        "visual-spec.md",
+        "asset-register.md",
+        "asset-register.json",
+        "visual-differences.md"
+      ],
+      "priority": "P1",
+      "surface": "Owner Web",
+      "work_type": "Task",
+      "classification": "Planned Feature",
+      "domain": "Identity",
+      "release": "Production Readiness",
+      "parent_key": "WSP-AUTH-EPIC-01",
+      "body": "Planning key: AUTH-002\n\n## Parent and classification\n\n- Parent: [WSP-AUTH-EPIC-01 #103](https://github.com/Masterkent11/rental-business-software/issues/103); native parent relationship is verified in Project 3.\n- Work Type: Task. Application Surface: Owner Web. Technical Layer: Design System. Product Domain: Identity.\n- Priority: P1. Status: Blocked. Record Classification: Planned Feature.\n- Proposed story points: 3, for team review only; no project estimate committed.\n- Iteration and assignee: unassigned. Target release: Production Readiness, without an invented date.\n- Dependencies: AUTH-001.\n\n## Objective\n\nDefine a reviewable 1:1 visual contract and exact asset provenance for auth and role onboarding.\n\n## Scope\n\n- Preserve both auth composites byte-for-byte and inventory dimensions/hashes.\n- Document phone/iPad photo-and-glass composition and distinct laptop/desktop splits.\n- Inventory the supplied role pack, existing fonts/brand assets and missing original auth imagery.\n\n## Subtasks\n\n- [ ] Register immutable source references and SHA-256 hashes.\n- [ ] Record approximate source bounds separately from proposed CSS tokens.\n- [ ] List original photo/card/font/logo gaps and role inpainting/vector limits.\n- [ ] Obtain owner decisions for each asset exception and unreadable marketing text.\n\n## Acceptance criteria\n\n- AC-01: Both copied references match original hashes and remain unchanged.\n- AC-02: All eight target route/viewport combinations are specified; app output excludes simulated device/browser chrome.\n- AC-03: The supplied role pack path and original 1585×992 reference are recorded, with role photo distinguished from auth photo.\n- AC-04: Composite-only availability and missing original photo/card are explicit ASSET_BLOCKED items.\n- AC-05: No generated/reconstructed substitute is represented as pixel-identical original artwork.\n- AC-06: Every initial metric is labeled measured approximation or proposal; final exact parity remains unclaimed.\n\n## User walkthrough\n\n1. As the product owner, I open visual-spec.md beside both original composites.\n2. I compare phone/tablet and laptop/desktop composition rules.\n3. I inspect asset-register.md and the supplied role-screen reference.\n4. I resolve missing assets or explicitly approve named limitations.\n\n## Verification\n\n- Compare source/copy SHA-256 and dimensions.\n- Human review of typography, photo crop, panel proportions, controls and role asset provenance.\n\n## Blockers and approval\n\n- Original auth photo, villa thumbnail/content, exact font/brand sources missing.\n- Owner has confirmed composite-only availability; no substitute or parity exception approved.\n\nOwner approval of the complete implementation plan: AWAITING OWNER APPROVAL. No product code, CSS, route, backend, dependency, provider or schema change is authorized by completion of this planning ticket. No implementation is marked Done. Live auth E2E and new visual acceptance have not run.\n\n## Evidence and documents\n\n- Audited baseline: 9b5689c2d0a0a0079dad83e92ad838d8f708cf65, planning recorded 2026-11-01 Asia/Manila.\n- Local planning files, not yet committed or pushed: docs/agile/epics/owner-web-auth/visual-spec.md, docs/agile/epics/owner-web-auth/asset-register.md, docs/agile/epics/owner-web-auth/asset-register.json, docs/agile/epics/owner-web-auth/visual-differences.md.\n- Auth references preserved as assets/auth-mobile-reference.png and assets/auth-responsive-matrix.png in that package.\n- User confirmed composite-only authentication sources; missing originals remain listed, not silently substituted.\n",
+      "parent_number": 103
+    },
+    {
+      "key": "AUTH-003",
+      "title": "AUTH-003 Sign In interface implementation plan",
+      "status": "Backlog",
+      "layer": "Frontend",
+      "points": 5,
+      "dependencies": [
+        "AUTH-001",
+        "AUTH-002",
+        "AUTH-006",
+        "AUTH-008 approval"
+      ],
+      "objective": "Plan and, only after Gate A, deliver responsive Sign In matching the approved reference while preserving real session/workspace behavior.",
+      "scope": [
+        "Reuse existing session use case/adapter and shared form primitives; extract shared auth presentation only where useful.",
+        "Plan full-photo/glass mobile+iPad and white-panel/photo-promo laptop+desktop layouts.",
+        "Preserve existing recovery/navigation and workspace boundaries under the approved new route/deep-link policy."
+      ],
+      "subtasks": [
+        "Review proposed public auth route and protected-return handling.",
+        "Specify reusable layout/brand/field/button/glass primitives and locally scoped auth tokens.",
+        "After approval implement email/password visibility, validation, loading and safe failures.",
+        "Verify real provider action only where approved/configured and compare Sign In screenshots."
+      ],
+      "ac": [
+        "No product code changes occur until the complete-plan Gate A is explicitly opened.",
+        "At each required viewport the Sign In hierarchy, copy, crop and form composition match the approved visual spec or recorded approved differences.",
+        "Email/password sign-in uses existing Supabase identity plus /me, never hardcoded credentials or manufactured success.",
+        "Blank/invalid/busy/error/confirmation-required states are usable; repeated submit sends once; visibility has an accessible functional control.",
+        "Successful login preserves allowed deep links and existing one/multiple/no-workspace behavior; inaccessible scopes remain denied server-side.",
+        "Forgot password and signup navigation work; configured Google has a real flow, otherwise its explicit design decision is honored.",
+        "Existing dashboard/sidebar styling and organization access controls do not regress."
+      ],
+      "walkthrough": [
+        "Proposed after approval: As an owner or agent, I open an approved protected link or Sign In route.",
+        "I enter credentials, optionally reveal the password, and submit.",
+        "I recover from a validation/service error or use real recovery/Google when approved.",
+        "I enter only a workspace returned by the backend and reach an allowed destination."
+      ],
+      "verification": [
+        "Sign In screenshots at 375×812, 834×1112, 1440×900, 1920×1080.",
+        "Keyboard/error/busy/deep-link and workspace regressions plus approved real auth test account walkthrough."
+      ],
+      "blockers": [
+        "Gate A closed, exact auth assets missing, callback/recovery/Google decisions pending."
+      ],
+      "documents": [
+        "visual-spec.md",
+        "auth-decisions.md",
+        "route-contract-inventory.md",
+        "qa-plan.md"
+      ],
+      "priority": "P1",
+      "surface": "Owner Web",
+      "work_type": "Task",
+      "classification": "Planned Feature",
+      "domain": "Identity",
+      "release": "Production Readiness",
+      "parent_key": "WSP-AUTH-EPIC-01",
+      "body": "Planning key: AUTH-003\n\n## Parent and classification\n\n- Parent: [WSP-AUTH-EPIC-01 #103](https://github.com/Masterkent11/rental-business-software/issues/103); native parent relationship is verified in Project 3.\n- Work Type: Task. Application Surface: Owner Web. Technical Layer: Frontend. Product Domain: Identity.\n- Priority: P1. Status: Backlog. Record Classification: Planned Feature.\n- Proposed story points: 5, for team review only; no project estimate committed.\n- Iteration and assignee: unassigned. Target release: Production Readiness, without an invented date.\n- Dependencies: AUTH-001, AUTH-002, AUTH-006, AUTH-008 approval.\n\n## Objective\n\nPlan and, only after Gate A, deliver responsive Sign In matching the approved reference while preserving real session/workspace behavior.\n\n## Scope\n\n- Reuse existing session use case/adapter and shared form primitives; extract shared auth presentation only where useful.\n- Plan full-photo/glass mobile+iPad and white-panel/photo-promo laptop+desktop layouts.\n- Preserve existing recovery/navigation and workspace boundaries under the approved new route/deep-link policy.\n\n## Subtasks\n\n- [ ] Review proposed public auth route and protected-return handling.\n- [ ] Specify reusable layout/brand/field/button/glass primitives and locally scoped auth tokens.\n- [ ] After approval implement email/password visibility, validation, loading and safe failures.\n- [ ] Verify real provider action only where approved/configured and compare Sign In screenshots.\n\n## Acceptance criteria\n\n- AC-01: No product code changes occur until the complete-plan Gate A is explicitly opened.\n- AC-02: At each required viewport the Sign In hierarchy, copy, crop and form composition match the approved visual spec or recorded approved differences.\n- AC-03: Email/password sign-in uses existing Supabase identity plus /me, never hardcoded credentials or manufactured success.\n- AC-04: Blank/invalid/busy/error/confirmation-required states are usable; repeated submit sends once; visibility has an accessible functional control.\n- AC-05: Successful login preserves allowed deep links and existing one/multiple/no-workspace behavior; inaccessible scopes remain denied server-side.\n- AC-06: Forgot password and signup navigation work; configured Google has a real flow, otherwise its explicit design decision is honored.\n- AC-07: Existing dashboard/sidebar styling and organization access controls do not regress.\n\n## User walkthrough\n\n1. Proposed after approval: As an owner or agent, I open an approved protected link or Sign In route.\n2. I enter credentials, optionally reveal the password, and submit.\n3. I recover from a validation/service error or use real recovery/Google when approved.\n4. I enter only a workspace returned by the backend and reach an allowed destination.\n\n## Verification\n\n- Sign In screenshots at 375×812, 834×1112, 1440×900, 1920×1080.\n- Keyboard/error/busy/deep-link and workspace regressions plus approved real auth test account walkthrough.\n\n## Blockers and approval\n\n- Gate A closed, exact auth assets missing, callback/recovery/Google decisions pending.\n\nOwner approval of the complete implementation plan: AWAITING OWNER APPROVAL. No product code, CSS, route, backend, dependency, provider or schema change is authorized by completion of this planning ticket. No implementation is marked Done. Live auth E2E and new visual acceptance have not run.\n\n## Evidence and documents\n\n- Audited baseline: 9b5689c2d0a0a0079dad83e92ad838d8f708cf65, planning recorded 2026-11-01 Asia/Manila.\n- Local planning files, not yet committed or pushed: docs/agile/epics/owner-web-auth/visual-spec.md, docs/agile/epics/owner-web-auth/auth-decisions.md, docs/agile/epics/owner-web-auth/route-contract-inventory.md, docs/agile/epics/owner-web-auth/qa-plan.md.\n- Auth references preserved as assets/auth-mobile-reference.png and assets/auth-responsive-matrix.png in that package.\n- User confirmed composite-only authentication sources; missing originals remain listed, not silently substituted.\n",
+      "parent_number": 103
+    },
+    {
+      "key": "AUTH-004",
+      "title": "AUTH-004 Sign Up interface implementation plan",
+      "status": "Backlog",
+      "layer": "Cross Stack",
+      "points": 8,
+      "dependencies": [
+        "AUTH-001",
+        "AUTH-002",
+        "AUTH-006",
+        "AUTH-008 approval",
+        "AUTH-003 shared presentation"
+      ],
+      "objective": "Plan functional registration and role intent without granting workspace authority from a client selection.",
+      "scope": [
+        "Plan Full name, Email and Password plus real provider registration and confirmation semantics.",
+        "Use the supplied owner/agent role-screen pack for approved onboarding intent; preserve existing post-login workspace selection.",
+        "Identify owner invitation/provisioning gap and approved legal destinations without inventing backend endpoints."
+      ],
+      "subtasks": [
+        "Approve the role-intent/account/confirmation sequence and missing role steps/breakpoints.",
+        "Specify typed registration and confirmation-needed/session-return states.",
+        "Choose existing owner membership path or separately review the missing provisioning contract.",
+        "After approval implement form/navigation/legal flows and reuse auth presentation."
+      ],
+      "ac": [
+        "Signup remains a future capability until Gate A and required contract decisions are approved.",
+        "Full name/email/password validate under the approved provider policy; demo screenshot values never become prefilled credentials.",
+        "Registration accepted without session shows accurate confirmation instructions, not an authenticated workspace.",
+        "Role selection is exclusive and accessible and stores intent only; it cannot create OWNER/STAFF authority or verify agents.",
+        "Agent setup reuses its real contract; owner setup follows an approved membership/provisioning path and is recoverable/idempotent where required.",
+        "Terms/privacy navigate to approved content, back/sign-in routes work and no placeholder controls exist.",
+        "Phone/iPad and laptop/desktop Sign Up layouts match the approved spec with documented asset constraints.",
+        "No schema, dependency or provider settings change occurs without separate explicit approval."
+      ],
+      "walkthrough": [
+        "Proposed after approval: As a new partner, I choose an approved owner/agent onboarding intent.",
+        "I continue to account details, enter name/email/password or use approved Google signup.",
+        "I read legal content and submit once.",
+        "I complete required confirmation, then follow the approved membership/profile setup; I never gain privileges just by selecting a role."
+      ],
+      "verification": [
+        "Signup screenshot matrix and name/email/password/duplicate/account-existing cases.",
+        "Real controlled confirmation-required and immediate-session cases only in an approved test environment.",
+        "Role tampering, no-workspace, double-role, cross-org and interruption/retry checks."
+      ],
+      "blockers": [
+        "Owner self-provisioning endpoint not found; product must choose membership path or approve a separate backend gap.",
+        "Later role steps/mobile reference, provider policy, legal content and exact assets pending."
+      ],
+      "documents": [
+        "auth-decisions.md",
+        "visual-spec.md",
+        "route-contract-inventory.md",
+        "dependencies-and-risks.md"
+      ],
+      "priority": "P1",
+      "surface": "Owner Web",
+      "work_type": "Task",
+      "classification": "Planned Feature",
+      "domain": "Identity",
+      "release": "Production Readiness",
+      "parent_key": "WSP-AUTH-EPIC-01",
+      "body": "Planning key: AUTH-004\n\n## Parent and classification\n\n- Parent: [WSP-AUTH-EPIC-01 #103](https://github.com/Masterkent11/rental-business-software/issues/103); native parent relationship is verified in Project 3.\n- Work Type: Task. Application Surface: Owner Web. Technical Layer: Cross Stack. Product Domain: Identity.\n- Priority: P1. Status: Backlog. Record Classification: Planned Feature.\n- Proposed story points: 8, for team review only; no project estimate committed.\n- Iteration and assignee: unassigned. Target release: Production Readiness, without an invented date.\n- Dependencies: AUTH-001, AUTH-002, AUTH-006, AUTH-008 approval, AUTH-003 shared presentation.\n\n## Objective\n\nPlan functional registration and role intent without granting workspace authority from a client selection.\n\n## Scope\n\n- Plan Full name, Email and Password plus real provider registration and confirmation semantics.\n- Use the supplied owner/agent role-screen pack for approved onboarding intent; preserve existing post-login workspace selection.\n- Identify owner invitation/provisioning gap and approved legal destinations without inventing backend endpoints.\n\n## Subtasks\n\n- [ ] Approve the role-intent/account/confirmation sequence and missing role steps/breakpoints.\n- [ ] Specify typed registration and confirmation-needed/session-return states.\n- [ ] Choose existing owner membership path or separately review the missing provisioning contract.\n- [ ] After approval implement form/navigation/legal flows and reuse auth presentation.\n\n## Acceptance criteria\n\n- AC-01: Signup remains a future capability until Gate A and required contract decisions are approved.\n- AC-02: Full name/email/password validate under the approved provider policy; demo screenshot values never become prefilled credentials.\n- AC-03: Registration accepted without session shows accurate confirmation instructions, not an authenticated workspace.\n- AC-04: Role selection is exclusive and accessible and stores intent only; it cannot create OWNER/STAFF authority or verify agents.\n- AC-05: Agent setup reuses its real contract; owner setup follows an approved membership/provisioning path and is recoverable/idempotent where required.\n- AC-06: Terms/privacy navigate to approved content, back/sign-in routes work and no placeholder controls exist.\n- AC-07: Phone/iPad and laptop/desktop Sign Up layouts match the approved spec with documented asset constraints.\n- AC-08: No schema, dependency or provider settings change occurs without separate explicit approval.\n\n## User walkthrough\n\n1. Proposed after approval: As a new partner, I choose an approved owner/agent onboarding intent.\n2. I continue to account details, enter name/email/password or use approved Google signup.\n3. I read legal content and submit once.\n4. I complete required confirmation, then follow the approved membership/profile setup; I never gain privileges just by selecting a role.\n\n## Verification\n\n- Signup screenshot matrix and name/email/password/duplicate/account-existing cases.\n- Real controlled confirmation-required and immediate-session cases only in an approved test environment.\n- Role tampering, no-workspace, double-role, cross-org and interruption/retry checks.\n\n## Blockers and approval\n\n- Owner self-provisioning endpoint not found; product must choose membership path or approve a separate backend gap.\n- Later role steps/mobile reference, provider policy, legal content and exact assets pending.\n\nOwner approval of the complete implementation plan: AWAITING OWNER APPROVAL. No product code, CSS, route, backend, dependency, provider or schema change is authorized by completion of this planning ticket. No implementation is marked Done. Live auth E2E and new visual acceptance have not run.\n\n## Evidence and documents\n\n- Audited baseline: 9b5689c2d0a0a0079dad83e92ad838d8f708cf65, planning recorded 2026-11-01 Asia/Manila.\n- Local planning files, not yet committed or pushed: docs/agile/epics/owner-web-auth/auth-decisions.md, docs/agile/epics/owner-web-auth/visual-spec.md, docs/agile/epics/owner-web-auth/route-contract-inventory.md, docs/agile/epics/owner-web-auth/dependencies-and-risks.md.\n- Auth references preserved as assets/auth-mobile-reference.png and assets/auth-responsive-matrix.png in that package.\n- User confirmed composite-only authentication sources; missing originals remain listed, not silently substituted.\n",
+      "parent_number": 103
+    },
+    {
+      "key": "AUTH-005",
+      "title": "AUTH-005 Responsive layouts and viewport verification",
+      "status": "Backlog",
+      "layer": "Quality",
+      "points": 5,
+      "dependencies": [
+        "AUTH-002",
+        "AUTH-003",
+        "AUTH-004"
+      ],
+      "objective": "Verify the eight required authentication compositions and responsive usability without hiding fields behind glass or the keyboard.",
+      "scope": [
+        "Define deterministic screenshot capture for the exact four CSS viewport sizes and both experiences.",
+        "Check small/short screens, safe areas, zoom/text scale, orientations and focus/keyboard behavior.",
+        "Track visual differences against corresponding content regions instead of claiming a score from composite mockups."
+      ],
+      "subtasks": [
+        "Agree browser/DPR/font/state baselines and source-region mapping.",
+        "Capture eight route/viewport screenshots after implementation.",
+        "Review crop, font metrics, density, panel ratios, glass/controls/icons and every unresolved asset limit.",
+        "Exercise 320px reflow, 200% zoom, keyboard and portrait iPad composition."
+      ],
+      "ac": [
+        "8/8 actual screenshot artifacts exist at the specified viewports before visual acceptance is claimed.",
+        "834×1112 remains a portrait photo/glass composition and laptop/desktop retain their separate approved panel proportions.",
+        "No horizontal page overflow at 320px and no essential action hidden at short height, zoom or keyboard open.",
+        "Images/fonts are loaded before capture and screenshots omit reference device/browser chrome.",
+        "Reviewer records differences and dispositions; missing assets are not waived silently.",
+        "Role-screen adaptations are compared only against explicitly approved additional references."
+      ],
+      "walkthrough": [
+        "As a reviewer, I open the screenshot index and matching reference regions.",
+        "I compare each of eight default screens and key interaction states.",
+        "I resize/rotate/zoom, focus the lowest input and use the keyboard.",
+        "I accept or reject each discrepancy explicitly."
+      ],
+      "verification": [
+        "Eight default images plus state screenshots, overflow assertions and human visual comparison.",
+        "Additional 320×568, 390×844, 768×1024, 1024×768 and 200% zoom."
+      ],
+      "blockers": [
+        "New UI not implemented; 0/8 screenshots captured. Exact assets and font approval unresolved."
+      ],
+      "documents": [
+        "qa-plan.md",
+        "visual-spec.md",
+        "visual-differences.md"
+      ],
+      "priority": "P1",
+      "surface": "Owner Web",
+      "work_type": "Task",
+      "classification": "Planned Feature",
+      "domain": "Identity",
+      "release": "Production Readiness",
+      "parent_key": "WSP-AUTH-EPIC-01",
+      "body": "Planning key: AUTH-005\n\n## Parent and classification\n\n- Parent: [WSP-AUTH-EPIC-01 #103](https://github.com/Masterkent11/rental-business-software/issues/103); native parent relationship is verified in Project 3.\n- Work Type: Task. Application Surface: Owner Web. Technical Layer: Quality. Product Domain: Identity.\n- Priority: P1. Status: Backlog. Record Classification: Planned Feature.\n- Proposed story points: 5, for team review only; no project estimate committed.\n- Iteration and assignee: unassigned. Target release: Production Readiness, without an invented date.\n- Dependencies: AUTH-002, AUTH-003, AUTH-004.\n\n## Objective\n\nVerify the eight required authentication compositions and responsive usability without hiding fields behind glass or the keyboard.\n\n## Scope\n\n- Define deterministic screenshot capture for the exact four CSS viewport sizes and both experiences.\n- Check small/short screens, safe areas, zoom/text scale, orientations and focus/keyboard behavior.\n- Track visual differences against corresponding content regions instead of claiming a score from composite mockups.\n\n## Subtasks\n\n- [ ] Agree browser/DPR/font/state baselines and source-region mapping.\n- [ ] Capture eight route/viewport screenshots after implementation.\n- [ ] Review crop, font metrics, density, panel ratios, glass/controls/icons and every unresolved asset limit.\n- [ ] Exercise 320px reflow, 200% zoom, keyboard and portrait iPad composition.\n\n## Acceptance criteria\n\n- AC-01: 8/8 actual screenshot artifacts exist at the specified viewports before visual acceptance is claimed.\n- AC-02: 834×1112 remains a portrait photo/glass composition and laptop/desktop retain their separate approved panel proportions.\n- AC-03: No horizontal page overflow at 320px and no essential action hidden at short height, zoom or keyboard open.\n- AC-04: Images/fonts are loaded before capture and screenshots omit reference device/browser chrome.\n- AC-05: Reviewer records differences and dispositions; missing assets are not waived silently.\n- AC-06: Role-screen adaptations are compared only against explicitly approved additional references.\n\n## User walkthrough\n\n1. As a reviewer, I open the screenshot index and matching reference regions.\n2. I compare each of eight default screens and key interaction states.\n3. I resize/rotate/zoom, focus the lowest input and use the keyboard.\n4. I accept or reject each discrepancy explicitly.\n\n## Verification\n\n- Eight default images plus state screenshots, overflow assertions and human visual comparison.\n- Additional 320×568, 390×844, 768×1024, 1024×768 and 200% zoom.\n\n## Blockers and approval\n\n- New UI not implemented; 0/8 screenshots captured. Exact assets and font approval unresolved.\n\nOwner approval of the complete implementation plan: AWAITING OWNER APPROVAL. No product code, CSS, route, backend, dependency, provider or schema change is authorized by completion of this planning ticket. No implementation is marked Done. Live auth E2E and new visual acceptance have not run.\n\n## Evidence and documents\n\n- Audited baseline: 9b5689c2d0a0a0079dad83e92ad838d8f708cf65, planning recorded 2026-11-01 Asia/Manila.\n- Local planning files, not yet committed or pushed: docs/agile/epics/owner-web-auth/qa-plan.md, docs/agile/epics/owner-web-auth/visual-spec.md, docs/agile/epics/owner-web-auth/visual-differences.md.\n- Auth references preserved as assets/auth-mobile-reference.png and assets/auth-responsive-matrix.png in that package.\n- User confirmed composite-only authentication sources; missing originals remain listed, not silently substituted.\n",
+      "parent_number": 103
+    },
+    {
+      "key": "AUTH-006",
+      "title": "AUTH-006 Authentication regression, accessibility, and security",
+      "status": "Blocked",
+      "layer": "Cross Stack",
+      "points": 8,
+      "dependencies": [
+        "AUTH-001",
+        "AUTH-008 scoped architecture approval"
+      ],
+      "objective": "Resolve real identity/authorization gaps and define regressions before any new signup, recovery or callback implementation.",
+      "scope": [
+        "Compare current browser session implementation with documented SSR intent; choose one coherent reviewed approach.",
+        "Plan Google, email confirmation, password recovery, safe return navigation and actual owner/agent membership boundaries.",
+        "Review accessibility, error disclosure and secret handling and scope backend work only when justified."
+      ],
+      "subtasks": [
+        "Record a reviewed session/callback technical decision and threat model.",
+        "Verify intended environment redirect/provider/confirmation/SMTP settings without exposing keys.",
+        "Approve owner onboarding membership/provisioning behavior; create a separate technical subtask if backend change is needed.",
+        "After approval test provider errors, expired/reused callbacks, access revocation, cross-org and logout races.",
+        "Review labels, focus, error announcements, contrast, autocomplete and role-radio keyboard behavior."
+      ],
+      "ac": [
+        "The selected architecture reconciles docs and implementation without two competing session sources.",
+        "Server authority comes from JWT validation and live DB membership, never user_metadata or role intent.",
+        "External/protocol-relative/encoded-bypass return URLs and invalid callback state/code are refused.",
+        "Signup confirmation-needed and recovery states are accurate, with no token logging or account-existence disclosure in reset acknowledgement.",
+        "Google is real and configured before accepted use; provider/config/dependency/schema changes require separate scoped approval.",
+        "Any backend gap has a linked decision/subtask, negative auth tests, contract/threat model and approved migration/rollback if needed.",
+        "Keyboard/screen-reader/error/contrast/200% zoom checks have actual evidence before acceptance.",
+        "Existing session lifetime/workspace isolation and realtime/API behavior pass regressions."
+      ],
+      "walkthrough": [
+        "As a security reviewer, I trace login/callback/provider identity into /me and workspace membership.",
+        "I attempt disallowed redirects, invalid tokens and unauthorized organization access.",
+        "I exercise confirmation/recovery failures and logout while requests are pending.",
+        "I review accessibility and approve only evidenced behavior and specifically scoped changes."
+      ],
+      "verification": [
+        "Baseline session/domain tests currently 16 passed; new live auth/E2E/security checks remain planned.",
+        "Approved non-production users for actual sign-in/signup/recovery; simulated tests separately labeled."
+      ],
+      "blockers": [
+        "No reviewed session/provisioning/social-login decision or provider configuration evidence.",
+        "No permission to mutate provider settings or backend/schema in this phase."
+      ],
+      "documents": [
+        "auth-decisions.md",
+        "qa-plan.md",
+        "route-contract-inventory.md",
+        "approval-gate.md"
+      ],
+      "priority": "P1",
+      "surface": "Owner Web",
+      "work_type": "Task",
+      "classification": "Planned Feature",
+      "domain": "Identity",
+      "release": "Production Readiness",
+      "parent_key": "WSP-AUTH-EPIC-01",
+      "body": "Planning key: AUTH-006\n\n## Parent and classification\n\n- Parent: [WSP-AUTH-EPIC-01 #103](https://github.com/Masterkent11/rental-business-software/issues/103); native parent relationship is verified in Project 3.\n- Work Type: Task. Application Surface: Owner Web. Technical Layer: Cross Stack. Product Domain: Identity.\n- Priority: P1. Status: Blocked. Record Classification: Planned Feature.\n- Proposed story points: 8, for team review only; no project estimate committed.\n- Iteration and assignee: unassigned. Target release: Production Readiness, without an invented date.\n- Dependencies: AUTH-001, AUTH-008 scoped architecture approval.\n\n## Objective\n\nResolve real identity/authorization gaps and define regressions before any new signup, recovery or callback implementation.\n\n## Scope\n\n- Compare current browser session implementation with documented SSR intent; choose one coherent reviewed approach.\n- Plan Google, email confirmation, password recovery, safe return navigation and actual owner/agent membership boundaries.\n- Review accessibility, error disclosure and secret handling and scope backend work only when justified.\n\n## Subtasks\n\n- [ ] Record a reviewed session/callback technical decision and threat model.\n- [ ] Verify intended environment redirect/provider/confirmation/SMTP settings without exposing keys.\n- [ ] Approve owner onboarding membership/provisioning behavior; create a separate technical subtask if backend change is needed.\n- [ ] After approval test provider errors, expired/reused callbacks, access revocation, cross-org and logout races.\n- [ ] Review labels, focus, error announcements, contrast, autocomplete and role-radio keyboard behavior.\n\n## Acceptance criteria\n\n- AC-01: The selected architecture reconciles docs and implementation without two competing session sources.\n- AC-02: Server authority comes from JWT validation and live DB membership, never user_metadata or role intent.\n- AC-03: External/protocol-relative/encoded-bypass return URLs and invalid callback state/code are refused.\n- AC-04: Signup confirmation-needed and recovery states are accurate, with no token logging or account-existence disclosure in reset acknowledgement.\n- AC-05: Google is real and configured before accepted use; provider/config/dependency/schema changes require separate scoped approval.\n- AC-06: Any backend gap has a linked decision/subtask, negative auth tests, contract/threat model and approved migration/rollback if needed.\n- AC-07: Keyboard/screen-reader/error/contrast/200% zoom checks have actual evidence before acceptance.\n- AC-08: Existing session lifetime/workspace isolation and realtime/API behavior pass regressions.\n\n## User walkthrough\n\n1. As a security reviewer, I trace login/callback/provider identity into /me and workspace membership.\n2. I attempt disallowed redirects, invalid tokens and unauthorized organization access.\n3. I exercise confirmation/recovery failures and logout while requests are pending.\n4. I review accessibility and approve only evidenced behavior and specifically scoped changes.\n\n## Verification\n\n- Baseline session/domain tests currently 16 passed; new live auth/E2E/security checks remain planned.\n- Approved non-production users for actual sign-in/signup/recovery; simulated tests separately labeled.\n\n## Blockers and approval\n\n- No reviewed session/provisioning/social-login decision or provider configuration evidence.\n- No permission to mutate provider settings or backend/schema in this phase.\n\nOwner approval of the complete implementation plan: AWAITING OWNER APPROVAL. No product code, CSS, route, backend, dependency, provider or schema change is authorized by completion of this planning ticket. No implementation is marked Done. Live auth E2E and new visual acceptance have not run.\n\n## Evidence and documents\n\n- Audited baseline: 9b5689c2d0a0a0079dad83e92ad838d8f708cf65, planning recorded 2026-11-01 Asia/Manila.\n- Local planning files, not yet committed or pushed: docs/agile/epics/owner-web-auth/auth-decisions.md, docs/agile/epics/owner-web-auth/qa-plan.md, docs/agile/epics/owner-web-auth/route-contract-inventory.md, docs/agile/epics/owner-web-auth/approval-gate.md.\n- Auth references preserved as assets/auth-mobile-reference.png and assets/auth-responsive-matrix.png in that package.\n- User confirmed composite-only authentication sources; missing originals remain listed, not silently substituted.\n",
+      "parent_number": 103
+    },
+    {
+      "key": "AUTH-007",
+      "title": "AUTH-007 Storybook and visual regression coverage",
+      "status": "Blocked",
+      "layer": "Design System",
+      "points": 5,
+      "dependencies": [
+        "AUTH-003",
+        "AUTH-004",
+        "AUTH-005",
+        "existing #86, #87, #88"
+      ],
+      "objective": "Add authentication-specific visual/interaction coverage through the already planned Storybook foundation without duplicating it.",
+      "scope": [
+        "Reuse existing UI primitives and the canonical future Storybook setup tracked in #86–#88.",
+        "Specify Sign In/Sign Up and shared auth component states with synthetic, isolated contracts.",
+        "Keep provider/session operations mocked in component stories while separating real E2E acceptance."
+      ],
+      "subtasks": [
+        "Reconcile foundation readiness with #86–#88; do not open another setup ticket.",
+        "List auth state stories for default, focus, invalid, loading, service error and configured/unavailable provider.",
+        "After setup and approval implement isolated auth stories and visual checks.",
+        "Attach screenshot/state evidence and accessibility interactions to the auth epic."
+      ],
+      "ac": [
+        "No new Storybook installation or dependency is made in planning.",
+        "Foundation work remains owned by #86–#88 and AUTH-007 owns only auth-specific coverage.",
+        "Stories cover both forms and shared primitives with empty/focus/invalid/busy/error/provider states.",
+        "Stories cannot call production Auth, send email, create users or expose tokens.",
+        "Visual tests use approved assets and controlled viewports; mocked story success is never claimed as live auth success.",
+        "Coverage/evidence is linked to actual PR/CI only when those exist."
+      ],
+      "walkthrough": [
+        "Proposed after approval: As a maintainer, I open the existing approved Storybook catalog.",
+        "I select an auth form and switch states without contacting production.",
+        "I inspect focus, loading, errors and responsive composition.",
+        "I run the approved visual checks and link their actual artifacts."
+      ],
+      "verification": [
+        "Auth-specific component/interaction/visual tests after canonical setup.",
+        "Separate component fixture results from provider integration runs."
+      ],
+      "blockers": [
+        "No Storybook configuration or stories found; foundation #86–#88 is planned.",
+        "UI and dependencies not approved for development."
+      ],
+      "documents": [
+        "audit.md",
+        "qa-plan.md",
+        "dependencies-and-risks.md"
+      ],
+      "priority": "P2",
+      "surface": "Owner Web",
+      "work_type": "Task",
+      "classification": "Planned Feature",
+      "domain": "Identity",
+      "release": "Production Readiness",
+      "parent_key": "WSP-AUTH-EPIC-01",
+      "body": "Planning key: AUTH-007\n\n## Parent and classification\n\n- Parent: [WSP-AUTH-EPIC-01 #103](https://github.com/Masterkent11/rental-business-software/issues/103); native parent relationship is verified in Project 3.\n- Work Type: Task. Application Surface: Owner Web. Technical Layer: Design System. Product Domain: Identity.\n- Priority: P2. Status: Blocked. Record Classification: Planned Feature.\n- Proposed story points: 5, for team review only; no project estimate committed.\n- Iteration and assignee: unassigned. Target release: Production Readiness, without an invented date.\n- Dependencies: AUTH-003, AUTH-004, AUTH-005, existing #86, #87, #88.\n\n## Objective\n\nAdd authentication-specific visual/interaction coverage through the already planned Storybook foundation without duplicating it.\n\n## Scope\n\n- Reuse existing UI primitives and the canonical future Storybook setup tracked in #86–#88.\n- Specify Sign In/Sign Up and shared auth component states with synthetic, isolated contracts.\n- Keep provider/session operations mocked in component stories while separating real E2E acceptance.\n\n## Subtasks\n\n- [ ] Reconcile foundation readiness with #86–#88; do not open another setup ticket.\n- [ ] List auth state stories for default, focus, invalid, loading, service error and configured/unavailable provider.\n- [ ] After setup and approval implement isolated auth stories and visual checks.\n- [ ] Attach screenshot/state evidence and accessibility interactions to the auth epic.\n\n## Acceptance criteria\n\n- AC-01: No new Storybook installation or dependency is made in planning.\n- AC-02: Foundation work remains owned by #86–#88 and AUTH-007 owns only auth-specific coverage.\n- AC-03: Stories cover both forms and shared primitives with empty/focus/invalid/busy/error/provider states.\n- AC-04: Stories cannot call production Auth, send email, create users or expose tokens.\n- AC-05: Visual tests use approved assets and controlled viewports; mocked story success is never claimed as live auth success.\n- AC-06: Coverage/evidence is linked to actual PR/CI only when those exist.\n\n## User walkthrough\n\n1. Proposed after approval: As a maintainer, I open the existing approved Storybook catalog.\n2. I select an auth form and switch states without contacting production.\n3. I inspect focus, loading, errors and responsive composition.\n4. I run the approved visual checks and link their actual artifacts.\n\n## Verification\n\n- Auth-specific component/interaction/visual tests after canonical setup.\n- Separate component fixture results from provider integration runs.\n\n## Blockers and approval\n\n- No Storybook configuration or stories found; foundation #86–#88 is planned.\n- UI and dependencies not approved for development.\n\nOwner approval of the complete implementation plan: AWAITING OWNER APPROVAL. No product code, CSS, route, backend, dependency, provider or schema change is authorized by completion of this planning ticket. No implementation is marked Done. Live auth E2E and new visual acceptance have not run.\n\n## Evidence and documents\n\n- Audited baseline: 9b5689c2d0a0a0079dad83e92ad838d8f708cf65, planning recorded 2026-11-01 Asia/Manila.\n- Local planning files, not yet committed or pushed: docs/agile/epics/owner-web-auth/audit.md, docs/agile/epics/owner-web-auth/qa-plan.md, docs/agile/epics/owner-web-auth/dependencies-and-risks.md.\n- Auth references preserved as assets/auth-mobile-reference.png and assets/auth-responsive-matrix.png in that package.\n- User confirmed composite-only authentication sources; missing originals remain listed, not silently substituted.\n",
+      "parent_number": 103
+    },
+    {
+      "key": "AUTH-008",
+      "title": "AUTH-008 QA acceptance criteria and approval gate",
+      "status": "In Review",
+      "layer": "Quality",
+      "points": 3,
+      "dependencies": [
+        "AUTH-001",
+        "AUTH-002",
+        "AUTH-006 decision review",
+        "AUTH-003 through AUTH-007 for final acceptance"
+      ],
+      "objective": "Make owner/design/security and release approvals explicit and prevent planning completion being misreported as implemented UI.",
+      "scope": [
+        "Maintain Gate A before code, Gate B visual/functional acceptance and Gate C changed backend/security review where applicable.",
+        "Review epic/eight-ticket plan, missing assets, decisions and exact acceptance evidence.",
+        "Retain branch/PR/check/review and production deployment as distinct authorization events."
+      ],
+      "subtasks": [
+        "Present the complete plan and required owner decisions.",
+        "Record actual owner approval or corrections with scope and date on the epic.",
+        "After implementation reconcile all eight screenshots, auth E2E, accessibility/security evidence and unresolved deviations.",
+        "Require real PR/CI links and reviews before completion; no auto-merge or deployment."
+      ],
+      "ac": [
+        "Gate A stays closed until the owner reviews the complete plan and explicitly approves implementation scope.",
+        "No approval comment/identity/date is fabricated; screenshot-target intent alone is not complete-plan approval.",
+        "All unfinished implementation issues remain open and are not marked Done.",
+        "Exact asset limitations, Google/recovery placement, role provisioning, legal content and architecture decisions receive explicit dispositions.",
+        "Final acceptance includes 8/8 reviewed screenshots and actual functional/accessibility/security results with clear blockers.",
+        "No commit, push, merge or deployment occurs in this planning phase.",
+        "Final report ends AWAITING OWNER APPROVAL — NO DEVELOPMENT STARTED."
+      ],
+      "walkthrough": [
+        "As the owner, I open the full plan and ticket mapping.",
+        "I review missing assets and architecture/flow decisions.",
+        "I explicitly approve a scoped implementation plan or request corrections.",
+        "Later, I review actual test/screenshot/PR evidence before authorizing completion or release."
+      ],
+      "verification": [
+        "Check approval record, status matrix, reference hashes and file-change boundary.",
+        "Confirm there is no product diff or claimed PR/deployment in Phase 1."
+      ],
+      "blockers": [
+        "Complete-plan owner approval, final visual acceptance and security signoff are absent."
+      ],
+      "documents": [
+        "approval-gate.md",
+        "qa-plan.md",
+        "planning-report.md"
+      ],
+      "priority": "P1",
+      "surface": "Owner Web",
+      "work_type": "Task",
+      "classification": "Planned Feature",
+      "domain": "Identity",
+      "release": "Production Readiness",
+      "parent_key": "WSP-AUTH-EPIC-01",
+      "body": "Planning key: AUTH-008\n\n## Parent and classification\n\n- Parent: [WSP-AUTH-EPIC-01 #103](https://github.com/Masterkent11/rental-business-software/issues/103); native parent relationship is verified in Project 3.\n- Work Type: Task. Application Surface: Owner Web. Technical Layer: Quality. Product Domain: Identity.\n- Priority: P1. Status: In Review. Record Classification: Planned Feature.\n- Proposed story points: 3, for team review only; no project estimate committed.\n- Iteration and assignee: unassigned. Target release: Production Readiness, without an invented date.\n- Dependencies: AUTH-001, AUTH-002, AUTH-006 decision review, AUTH-003 through AUTH-007 for final acceptance.\n\n## Objective\n\nMake owner/design/security and release approvals explicit and prevent planning completion being misreported as implemented UI.\n\n## Scope\n\n- Maintain Gate A before code, Gate B visual/functional acceptance and Gate C changed backend/security review where applicable.\n- Review epic/eight-ticket plan, missing assets, decisions and exact acceptance evidence.\n- Retain branch/PR/check/review and production deployment as distinct authorization events.\n\n## Subtasks\n\n- [ ] Present the complete plan and required owner decisions.\n- [ ] Record actual owner approval or corrections with scope and date on the epic.\n- [ ] After implementation reconcile all eight screenshots, auth E2E, accessibility/security evidence and unresolved deviations.\n- [ ] Require real PR/CI links and reviews before completion; no auto-merge or deployment.\n\n## Acceptance criteria\n\n- AC-01: Gate A stays closed until the owner reviews the complete plan and explicitly approves implementation scope.\n- AC-02: No approval comment/identity/date is fabricated; screenshot-target intent alone is not complete-plan approval.\n- AC-03: All unfinished implementation issues remain open and are not marked Done.\n- AC-04: Exact asset limitations, Google/recovery placement, role provisioning, legal content and architecture decisions receive explicit dispositions.\n- AC-05: Final acceptance includes 8/8 reviewed screenshots and actual functional/accessibility/security results with clear blockers.\n- AC-06: No commit, push, merge or deployment occurs in this planning phase.\n- AC-07: Final report ends AWAITING OWNER APPROVAL — NO DEVELOPMENT STARTED.\n\n## User walkthrough\n\n1. As the owner, I open the full plan and ticket mapping.\n2. I review missing assets and architecture/flow decisions.\n3. I explicitly approve a scoped implementation plan or request corrections.\n4. Later, I review actual test/screenshot/PR evidence before authorizing completion or release.\n\n## Verification\n\n- Check approval record, status matrix, reference hashes and file-change boundary.\n- Confirm there is no product diff or claimed PR/deployment in Phase 1.\n\n## Blockers and approval\n\n- Complete-plan owner approval, final visual acceptance and security signoff are absent.\n\nOwner approval of the complete implementation plan: AWAITING OWNER APPROVAL. No product code, CSS, route, backend, dependency, provider or schema change is authorized by completion of this planning ticket. No implementation is marked Done. Live auth E2E and new visual acceptance have not run.\n\n## Evidence and documents\n\n- Audited baseline: 9b5689c2d0a0a0079dad83e92ad838d8f708cf65, planning recorded 2026-11-01 Asia/Manila.\n- Local planning files, not yet committed or pushed: docs/agile/epics/owner-web-auth/approval-gate.md, docs/agile/epics/owner-web-auth/qa-plan.md, docs/agile/epics/owner-web-auth/planning-report.md.\n- Auth references preserved as assets/auth-mobile-reference.png and assets/auth-responsive-matrix.png in that package.\n- User confirmed composite-only authentication sources; missing originals remain listed, not silently substituted.\n",
+      "parent_number": 103
+    }
+  ]
+}

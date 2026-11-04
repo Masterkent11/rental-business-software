@@ -1,0 +1,66 @@
+{
+  "project_url": "https://github.com/users/Masterkent11/projects/3",
+  "workflows": [
+    {
+      "name": "Auto-add sub-issues to project",
+      "number": 10,
+      "enabled": true
+    },
+    {
+      "name": "Auto-add to project",
+      "number": 13,
+      "enabled": true
+    },
+    {
+      "name": "Auto-close issue",
+      "number": 9,
+      "enabled": true
+    },
+    {
+      "name": "Item added to project",
+      "number": 12,
+      "enabled": true
+    },
+    {
+      "name": "Item closed",
+      "number": 7,
+      "enabled": true
+    },
+    {
+      "name": "Item reopened",
+      "number": 14,
+      "enabled": true
+    },
+    {
+      "name": "Pull request linked to issue",
+      "number": 11,
+      "enabled": true
+    },
+    {
+      "name": "Pull request merged",
+      "number": 8,
+      "enabled": true
+    }
+  ],
+  "observed_configuration": {
+    "Auto-add to project": {
+      "repository": "Masterkent11/rental-business-software",
+      "filter": "is:issue"
+    },
+    "Auto-add sub-issues to project": {
+      "enabled": true
+    },
+    "Item reopened": {
+      "status": "Ready",
+      "change": "Enabled native workflow"
+    },
+    "Pull request linked to issue": {
+      "status": "In Progress",
+      "change": "Preserved"
+    },
+    "Pull request merged": {
+      "status": "Ready for QA",
+      "change": "Changed from Done to preserve acceptance stages"
+    }
+  }
+}

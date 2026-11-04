@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
 import Link from "next/link";
@@ -160,6 +160,8 @@ function InquiryBoardContent() {
   const search = useSearchParams();
   const scope = useSessionStore((s) => s.scope);
   const { inquiries: allInquiries, inquiriesLoaded, inquiriesError, selectedInquiryId, view, selectInquiry, setView, loadInquiries } = useEngagementStore();
+  const requestedInquiry = search.get("inquiry");
+  useEffect(()=>{if(requestedInquiry && allInquiries.some(item=>item.id===requestedInquiry))selectInquiry(requestedInquiry);},[requestedInquiry,allInquiries,selectInquiry]);
   if (!scope) return null;
   const agent = scope.kind === "AGENT";
   const messagesPath = agent ? "/agent/messages" : "/messages";

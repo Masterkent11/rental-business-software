@@ -149,7 +149,7 @@ function Properties() {
           title="Properties"
           caption="Manage your properties, showcase them to tenants, and track their performance."
         >
-          <div className="flex flex-wrap gap-2">
+          <div className="properties-create-actions flex flex-wrap gap-2">
             <LinkBtn href="/properties/new?intent=sale" variant="outline">
               <Plus className="size-4" aria-hidden /> Property for sale
             </LinkBtn>
@@ -244,10 +244,13 @@ function Properties() {
             </Btn>
           </div>
           <Btn
+            aria-label="View map"
+            aria-pressed={view === "map"}
+            className="property-map-button"
             variant={view === "map" ? "primary" : "outline"}
             onClick={() => setView(view === "map" ? "list" : "map")}
           >
-            <MapIcon className="size-5" /> View map
+            <MapIcon className="size-5" aria-hidden /> <span className="property-map-label">View map</span>
           </Btn>
         </div>
         {filtersOpen && (

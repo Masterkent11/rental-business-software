@@ -1,0 +1,106 @@
+{
+  "date": "2026-11-01",
+  "timezone": "Asia/Manila",
+  "branch": "codex/agent-marketing-phase-one",
+  "localOnly": true,
+  "gitCommitCreated": false,
+  "push": false,
+  "remoteMigrationsApplied": false,
+  "deployment": false,
+  "frontend": {
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "build": "PASS",
+    "tests": {
+      "passed": 85,
+      "skipped": 0
+    },
+    "browserSuites": [
+      "Agent overview",
+      "Owner dashboard",
+      "Marketing Hub"
+    ],
+    "viewports": [
+      [
+        375,
+        812
+      ],
+      [
+        834,
+        1112
+      ],
+      [
+        1440,
+        900
+      ],
+      [
+        1672,
+        941
+      ],
+      [
+        1920,
+        1080
+      ]
+    ],
+    "providerFixtureBoundary": "Browser Auth and API requests intercepted; not a hosted authorization test"
+  },
+  "api": {
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "build": "PASS",
+    "unit": {
+      "passed": 437,
+      "skipped": 242
+    },
+    "isolatedDatabase": {
+      "passed": 68,
+      "suites": 7,
+      "skipped": 0,
+      "includesRealHTTPControllers": true
+    },
+    "localSmoke": {
+      "health": 200,
+      "unauthenticatedAgent": 401,
+      "unauthenticatedAdmin": 401
+    }
+  },
+  "rehearsal": {
+    "countsBeforeAndAfter": [
+      4,
+      1,
+      1,
+      7
+    ],
+    "countsOrder": [
+      "organizations",
+      "agent_profiles",
+      "organization_members",
+      "listings"
+    ],
+    "mismatchChecks": 7,
+    "mismatches": 0,
+    "baselineRestore": "PASS",
+    "environment": "Disposable loopback PostgreSQL with synthetic fixtures only"
+  },
+  "migrations": [
+    {
+      "path": "supabase/migrations/20261101034546_partner_tenant_boundaries.sql",
+      "sha256": "552a48ee0a37ca36a7a7aa8500780c5c3b0417e658c853af86553082bc030df0"
+    },
+    {
+      "path": "supabase/migrations/20261101034547_platform_administration_permissions.sql",
+      "sha256": "c2426b6421651fdb913e944a0d36757b8a26d9f191c2132f680378f6d8b99895"
+    }
+  ],
+  "notRun": [
+    "Configured project preflight and migration",
+    "Hosted Realtime transport and Storage provider revocation",
+    "Real admin MFA enrollment",
+    "Production backup restore and release monitoring",
+    "Future Super Admin UI"
+  ],
+  "tickets": [
+    "https://github.com/Masterkent11/rental-business-software/issues/32",
+    "https://github.com/Masterkent11/rental-business-software/issues/64"
+  ]
+}

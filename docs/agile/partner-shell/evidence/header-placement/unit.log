@@ -1,0 +1,119 @@
+
+> owner-web@0.1.0 test
+> node --experimental-strip-types --test __tests__/*.test.mjs
+
+✔ Agent A late dashboard cannot appear after logout and Agent B login (153.689042ms)
+✔ only the latest same account Agent read may commit (66.741834ms)
+✔ old Agent mutation acknowledgement cannot update the new account or report success (42.959083ms)
+✔ Owner context cannot load the Agent dashboard (78.077375ms)
+✔ workspace switch revalidates and refuses revoked membership (45.562917ms)
+✔ a forged workspace key cannot create an organization or start a switch (43.01075ms)
+✔ logout during workspace revalidation cannot restore a previous identity (26.774375ms)
+✔ auth identity signout event clears Agent private state immediately (28.631208ms)
+✔ collection orchestration preserves authoritative centavos and rejects missing organization (34.478625ms)
+✔ engagement commands keep transition and validation decisions in existing use cases (19.100708ms)
+✔ booking status commands preserve the organization and delegate authoritative decisions (5.474209ms)
+✔ Architecture: domain layer must be pure TypeScript (no Zod, React, Supabase, Zustand) (28.548542ms)
+✔ Architecture: application layer must not import infrastructure, React, Zustand, or Supabase (18.71075ms)
+✔ Architecture: Zustand stores must not directly import concrete infrastructure adapters (6.944584ms)
+✔ Architecture: components must not import @supabase/supabase-js directly (34.040416ms)
+✔ Architecture: Composition Root is the single accepted location for adapter-to-port wiring (0.111833ms)
+✔ Frontend Governance: Zero useState usage in Owner Web (Zustand strictly required) (25.125125ms)
+✔ recent conversations sort, exclude empty threads and deduplicate without mutating input (0.869ms)
+✔ booking trend preserves missing data and calculates only the supplied weekly window (13.554ms)
+✔ HTTP timeout and caller cancellation are distinct from offline failures (172.260333ms)
+✔ marketing belongs only to Agent navigation with one sidebar destination (0.978792ms)
+✔ file validation rejects unsupported and oversized files before reading (0.407667ms)
+✔ workspace changes erase marketing state and fence a late response (120.3885ms)
+✔ a slower previous load cannot replace a fresh snapshot (61.403666ms)
+✔ a failed upload refreshes failed media without reporting success (54.451459ms)
+✔ MVP Lifecycle: Step 1 - Owner A Authentication & Tenant Session Resolution (4.496833ms)
+✔ MVP Lifecycle: Step 2 - Owner A Dashboard & Property Creation (0.911ms)
+✔ MVP Lifecycle: Step 3 - Owner A Listing Creation & Publishing (7.091042ms)
+✔ MVP Lifecycle: Step 4 - Owner A Application Decision Flow (13.108958ms)
+✔ MVP Lifecycle: Step 5 - Switch to Owner B (Zero Cross-Tenant Leakage) (0.397084ms)
+✔ MVP Lifecycle: Step 6 - IDOR Protection (Owner A cannot access or mutate Owner B resources) (1.170292ms)
+(node:36271) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/admin/Documents/GitHub/rental-business-software/apps/owner-web/domain/messaging/conversation.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/admin/Documents/GitHub/rental-business-software/apps/owner-web/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Realtime: an echoed message replaces its optimistic copy instead of duplicating it (1.071542ms)
+✔ Realtime: duplicate events and API responses for the same message collapse to one (0.076834ms)
+✔ Realtime: messages are ordered by server time even when events arrive out of order (0.41075ms)
+✔ Inbox: the conversation with the newest message moves to the top (17.040958ms)
+✔ Listings: lifecycle actions follow the listing state (0.193458ms)
+✔ Photos: type, size and count are validated before upload (0.192709ms)
+✔ Wizard: each step validates only its own fields (0.260875ms)
+✔ Wizard: pesos convert to integer centavos and mode-specific fields are normalised (0.185458ms)
+(node:36272) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/admin/Documents/GitHub/rental-business-software/apps/owner-web/domain/session/partner-access.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/admin/Documents/GitHub/rental-business-software/apps/owner-web/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ registration rejects invalid fields before contacting the provider (3.723417ms)
+✔ unsafe external return destinations never reach navigation (0.3255ms)
+✔ only owner and agent intent is accepted (0.165875ms)
+✔ workspace setup validates its role-specific data before writing (0.843584ms)
+(node:36273) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/admin/Documents/GitHub/rental-business-software/apps/owner-web/domain/workspace/workspace.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/admin/Documents/GitHub/rental-business-software/apps/owner-web/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Workspaces: an owner who is also an agent gets both workspaces from one sign-in (1.975708ms)
+✔ Workspaces: a single workspace is opened directly and an unknown remembered key prompts again (0.210417ms)
+✔ Workspaces: scope and routes follow the active workspace (0.270042ms)
+✔ Navigation: each workspace shows its own sidebar and every link stays inside it (0.291417ms)
+✔ Inquiries: closed leads cannot move, others never go back to New (0.2405ms)
+✔ Viewings: partner actions depend on status, role and whether the viewing has started (77.566167ms)
+✔ Viewings: confirmation times stay inside the preferred window in 15-minute steps, Manila time (0.184708ms)
+✔ Tour studio: a clicked point maps to a direction that projects back to the same pixel (0.273458ms)
+✔ Tour studio: panoramas must be 2:1 equirectangular JPEG, PNG, or WebP under 30MB (0.108417ms)
+✔ Sale wizard: location is required, internal price is optional and never negative (0.383458ms)
+✔ Sale wizard: a lot needs a lot area while other sale types need a floor area (0.162292ms)
+✔ Rental wizard: coordinates stay optional for rentals (0.057417ms)
+✔ Agent profile: verification can only be requested with a license, and only the platform verifies (0.148291ms)
+✔ search destinations and navigation remain within portal boundaries (1.90025ms)
+✔ search uses current scope, abort signal and canonical route for each result (1.871292ms)
+✔ image validation rejects invalid files before reading or uploading and uses Owner scope (0.668583ms)
+✔ search debounce cancels previous query and ignores late results (859.555667ms)
+✔ disposal synchronously clears branding and results and ignores late logo upload (0.755541ms)
+✔ search failure preserves role appropriate shortcuts and exposes explicit error (282.6455ms)
+✔ properties suppress duplicate mutations and preserve activity when an action response omits it (127.565833ms)
+✔ properties presentation and private rows reset on workspace switch (40.440333ms)
+✔ property filters are staged until Apply, reset pagination and clear both selections (47.649125ms)
+✔ property query composes location, type, status and text filters (0.963458ms)
+✔ property sorting uses actual activity and never sorts sale rows by private prices (0.185833ms)
+✔ property sorting handles missing dates and preserves repository input order (8.667292ms)
+✔ a late initialization cannot restore identity after sign-out (100.923709ms)
+✔ a refresh from the previous identity cannot replace a new sign-in (37.518291ms)
+✔ duplicate sign-in taps invoke authentication once (25.525458ms)
+(node:36278) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/admin/Documents/GitHub/rental-business-software/apps/owner-web/components/owner/insight-palette.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/admin/Documents/GitHub/rental-business-software/apps/owner-web/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ sparkline preserves chronological values and renders smooth gradient areas in each reference color (20.455334ms)
+✔ zero and sparse data remain finite and all chart decoration and animation stays disabled (4.296458ms)
+✔ analytics accepts only the newest same-scope response, including A/B/A switches (58.4635ms)
+✔ message pagination cannot append old workspace messages to the current thread (31.746208ms)
+✔ message send acknowledgement from the previous workspace is ignored (17.46975ms)
+✔ engagement old mutation failure cannot surface in a new workspace (16.28075ms)
+✔ notifications ignore a late old-organization response (4.413208ms)
+✔ message open errors and read acknowledgements cannot affect a newly opened thread (13.353ms)
+✔ stopped message subscriptions cannot deliver into a later lifetime (12.689833ms)
+✔ engagement loaders reject old A responses after A/B/A and retain current form state (9.88475ms)
+✔ dashboard reset invalidates pending financial data and preserves direct collection loading (4.129417ms)
+✔ dashboard retains only the latest org previews and does not turn failed collections into zero (2.969709ms)
+✔ booking list responses and closed detail requests cannot restore another organization data (6.674625ms)
+✔ listing responses and actions from prior organizations cannot replace current rows (13.076791ms)
+✔ replayed realtime messages increment unread counts only once (9.6055ms)
+✔ booking pagination and bucket presets preserve their public command arguments on first load (4.359667ms)
+✔ Multi-Tenancy: Owner A loads ONLY Owner A properties (0.466083ms)
+✔ Multi-Tenancy: Owner B loads ONLY Owner B properties (0.080416ms)
+✔ Multi-Tenancy: IDOR attempt with unauthorized organization ID throws 403 error (0.332042ms)
+✔ Multi-Tenancy: Empty organization ID is rejected before reaching infrastructure (0.088167ms)
+ℹ tests 91
+ℹ suites 0
+ℹ pass 91
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2149.369666

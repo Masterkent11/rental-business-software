@@ -1,0 +1,2842 @@
+[
+  {
+    "role": "OWNER",
+    "route": "search-panel",
+    "width": 375,
+    "height": 812,
+    "styles": {
+      "elements": {
+        ".dashboard-header": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 375,
+            "height": 240
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "68px 16px 24px",
+          "gap": "20px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "block"
+        },
+        ".partner-toolbar": {
+          "rect": {
+            "x": 16,
+            "y": 12,
+            "width": 343,
+            "height": 100
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(12, 33, 70)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "12px 16px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 195.5,
+            "y": 68,
+            "width": 163.5,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 10px",
+          "gap": "6px",
+          "outline": "rgb(69, 106, 169) solid 2px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 230.5,
+            "y": 81,
+            "width": 87.5,
+            "height": 18
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "400",
+          "lineHeight": "18px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".partner-search-summary": {
+          "rect": {
+            "x": 24,
+            "y": 122,
+            "width": 333,
+            "height": 43
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "400",
+          "lineHeight": "18px",
+          "color": "rgb(83, 103, 128)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "12px 16px",
+          "gap": "8px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "flex"
+        },
+        ".partner-search-panel": {
+          "rect": {
+            "x": 23,
+            "y": 121,
+            "width": 335,
+            "height": 107
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "14px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "none"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "OWNER",
+    "route": "search-panel",
+    "width": 834,
+    "height": 1112,
+    "styles": {
+      "elements": {
+        ".dashboard-header": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 834,
+            "height": 240
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "74px 20px 24px",
+          "gap": "20px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "block"
+        },
+        ".partner-toolbar": {
+          "rect": {
+            "x": 20,
+            "y": 12,
+            "width": 794,
+            "height": 100
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(12, 33, 70)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "12px 16px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 425,
+            "y": 68,
+            "width": 389,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 10px",
+          "gap": "6px",
+          "outline": "rgb(69, 106, 169) solid 2px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 460,
+            "y": 80.25,
+            "width": 313,
+            "height": 19.5
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".partner-search-summary": {
+          "rect": {
+            "x": 294,
+            "y": 122,
+            "width": 518,
+            "height": 43
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "400",
+          "lineHeight": "18px",
+          "color": "rgb(83, 103, 128)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "12px 16px",
+          "gap": "8px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "flex"
+        },
+        ".partner-search-panel": {
+          "rect": {
+            "x": 293,
+            "y": 121,
+            "width": 520,
+            "height": 107
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "14px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "none"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "OWNER",
+    "route": "search-panel",
+    "width": 1440,
+    "height": 900,
+    "styles": {
+      "elements": {
+        ".dashboard-header": {
+          "rect": {
+            "x": 310,
+            "y": 0,
+            "width": 1130,
+            "height": 171
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "38px 28px 24px 32px",
+          "gap": "20px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "block"
+        },
+        ".partner-toolbar": {
+          "rect": {
+            "x": 801.8125,
+            "y": 38,
+            "width": 610.1875,
+            "height": 48
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(12, 33, 70)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "12px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "flex"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 801.8125,
+            "y": 40,
+            "width": 550.1875,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 14px",
+          "gap": "10px",
+          "outline": "rgb(69, 106, 169) solid 2px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 844.8125,
+            "y": 51.5,
+            "width": 458.1875,
+            "height": 21
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "lineHeight": "21px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".partner-search-summary": {
+          "rect": {
+            "x": 803.8125,
+            "y": 94,
+            "width": 546.1875,
+            "height": 43
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "400",
+          "lineHeight": "18px",
+          "color": "rgb(83, 103, 128)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "12px 16px",
+          "gap": "8px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "flex"
+        },
+        ".partner-search-panel": {
+          "rect": {
+            "x": 802.8125,
+            "y": 93,
+            "width": 548.1875,
+            "height": 107
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "14px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 310,
+            "height": 900
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "block"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 35,
+            "y": 103,
+            "width": 48,
+            "height": 48
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 70,
+            "y": 826,
+            "width": 23,
+            "height": 23
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "OWNER",
+    "route": "search-panel",
+    "width": 1920,
+    "height": 1080,
+    "styles": {
+      "elements": {
+        ".dashboard-header": {
+          "rect": {
+            "x": 310,
+            "y": 0,
+            "width": 1610,
+            "height": 171
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "38px 28px 24px 32px",
+          "gap": "20px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "block"
+        },
+        ".partner-toolbar": {
+          "rect": {
+            "x": 1252,
+            "y": 38,
+            "width": 640,
+            "height": 48
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(12, 33, 70)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "12px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "flex"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 1252,
+            "y": 40,
+            "width": 580,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 14px",
+          "gap": "10px",
+          "outline": "rgb(69, 106, 169) solid 2px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 1295,
+            "y": 51.5,
+            "width": 488,
+            "height": 21
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "lineHeight": "21px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".partner-search-summary": {
+          "rect": {
+            "x": 1254,
+            "y": 94,
+            "width": 576,
+            "height": 43
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "400",
+          "lineHeight": "18px",
+          "color": "rgb(83, 103, 128)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "12px 16px",
+          "gap": "8px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "flex"
+        },
+        ".partner-search-panel": {
+          "rect": {
+            "x": 1253,
+            "y": 93,
+            "width": 578,
+            "height": 107
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "14px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 310,
+            "height": 1080
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "block"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 35,
+            "y": 103,
+            "width": 48,
+            "height": 48
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 70,
+            "y": 1006,
+            "width": 23,
+            "height": 23
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "OWNER",
+    "route": "account-logo",
+    "width": 375,
+    "height": 812,
+    "styles": {
+      "elements": {
+        ".partner-toolbar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 375,
+            "height": 119
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "10px 16px",
+          "gap": "8px 12px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "grid"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 16,
+            "y": 64,
+            "width": 343,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(247, 249, 252)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 10px",
+          "gap": "6px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 51,
+            "y": 76.25,
+            "width": 297,
+            "height": 19.5
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "none"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "OWNER",
+    "route": "account-logo",
+    "width": 834,
+    "height": 1112,
+    "styles": {
+      "elements": {
+        ".partner-toolbar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 834,
+            "height": 67
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "10px 16px",
+          "gap": "10px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "flex"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 127,
+            "y": 11,
+            "width": 560,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(247, 249, 252)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 10px",
+          "gap": "6px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 162,
+            "y": 23.25,
+            "width": 514,
+            "height": 19.5
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "none"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "OWNER",
+    "route": "account-logo",
+    "width": 1440,
+    "height": 900,
+    "styles": {
+      "elements": {
+        ".partner-toolbar": {
+          "rect": {
+            "x": 310,
+            "y": 0,
+            "width": 1130,
+            "height": 68
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "10px 28px",
+          "gap": "16px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "flex"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 338,
+            "y": 11.5,
+            "width": 560,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(247, 249, 252)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 14px",
+          "gap": "10px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 381,
+            "y": 23,
+            "width": 502,
+            "height": 21
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "lineHeight": "21px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 310,
+            "height": 900
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "block"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 35,
+            "y": 103,
+            "width": 48,
+            "height": 48
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 70,
+            "y": 826,
+            "width": 23,
+            "height": 23
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "OWNER",
+    "route": "account-logo",
+    "width": 1920,
+    "height": 1080,
+    "styles": {
+      "elements": {
+        ".partner-toolbar": {
+          "rect": {
+            "x": 310,
+            "y": 0,
+            "width": 1610,
+            "height": 68
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "10px 28px",
+          "gap": "16px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "flex"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 338,
+            "y": 11.5,
+            "width": 560,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(247, 249, 252)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 14px",
+          "gap": "10px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 381,
+            "y": 23,
+            "width": 502,
+            "height": 21
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "lineHeight": "21px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 310,
+            "height": 1080
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "block"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 35,
+            "y": 103,
+            "width": 48,
+            "height": 48
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 70,
+            "y": 1006,
+            "width": 23,
+            "height": 23
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "AGENT",
+    "route": "search-panel",
+    "width": 375,
+    "height": 812,
+    "styles": {
+      "elements": {
+        ".dashboard-header": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 375,
+            "height": 190
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "68px 16px 24px",
+          "gap": "12px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "block"
+        },
+        ".partner-toolbar": {
+          "rect": {
+            "x": 16,
+            "y": 12,
+            "width": 343,
+            "height": 100
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(12, 33, 70)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "12px 16px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 195.5,
+            "y": 68,
+            "width": 163.5,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 10px",
+          "gap": "6px",
+          "outline": "rgb(69, 106, 169) solid 2px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 230.5,
+            "y": 81,
+            "width": 87.5,
+            "height": 18
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "400",
+          "lineHeight": "18px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".partner-search-summary": {
+          "rect": {
+            "x": 24,
+            "y": 122,
+            "width": 333,
+            "height": 43
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "400",
+          "lineHeight": "18px",
+          "color": "rgb(83, 103, 128)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "12px 16px",
+          "gap": "8px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "flex"
+        },
+        ".partner-search-panel": {
+          "rect": {
+            "x": 23,
+            "y": 121,
+            "width": 335,
+            "height": 107
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "14px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "none"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "AGENT",
+    "route": "search-panel",
+    "width": 834,
+    "height": 1112,
+    "styles": {
+      "elements": {
+        ".dashboard-header": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 834,
+            "height": 190
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "74px 20px 24px",
+          "gap": "12px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "block"
+        },
+        ".partner-toolbar": {
+          "rect": {
+            "x": 20,
+            "y": 12,
+            "width": 794,
+            "height": 100
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(12, 33, 70)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "12px 16px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 425,
+            "y": 68,
+            "width": 389,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 10px",
+          "gap": "6px",
+          "outline": "rgb(69, 106, 169) solid 2px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 460,
+            "y": 80.25,
+            "width": 313,
+            "height": 19.5
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".partner-search-summary": {
+          "rect": {
+            "x": 294,
+            "y": 122,
+            "width": 518,
+            "height": 43
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "400",
+          "lineHeight": "18px",
+          "color": "rgb(83, 103, 128)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "12px 16px",
+          "gap": "8px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "flex"
+        },
+        ".partner-search-panel": {
+          "rect": {
+            "x": 293,
+            "y": 121,
+            "width": 520,
+            "height": 107
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "14px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "none"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "AGENT",
+    "route": "search-panel",
+    "width": 1440,
+    "height": 900,
+    "styles": {
+      "elements": {
+        ".dashboard-header": {
+          "rect": {
+            "x": 308,
+            "y": 0,
+            "width": 1132,
+            "height": 171
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "38px 28px 24px 32px",
+          "gap": "20px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "block"
+        },
+        ".partner-toolbar": {
+          "rect": {
+            "x": 800.734375,
+            "y": 38,
+            "width": 611.265625,
+            "height": 48
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(12, 33, 70)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "12px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "flex"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 800.734375,
+            "y": 40,
+            "width": 551.265625,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 14px",
+          "gap": "10px",
+          "outline": "rgb(69, 106, 169) solid 2px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 843.734375,
+            "y": 51.5,
+            "width": 459.265625,
+            "height": 21
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "lineHeight": "21px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".partner-search-summary": {
+          "rect": {
+            "x": 802.734375,
+            "y": 94,
+            "width": 547.265625,
+            "height": 43
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "400",
+          "lineHeight": "18px",
+          "color": "rgb(83, 103, 128)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "12px 16px",
+          "gap": "8px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "flex"
+        },
+        ".partner-search-panel": {
+          "rect": {
+            "x": 801.734375,
+            "y": 93,
+            "width": 549.265625,
+            "height": 107
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "14px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 308,
+            "height": 900
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "block"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 29,
+            "y": 96.25,
+            "width": 48,
+            "height": 48
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 52,
+            "y": 826,
+            "width": 23,
+            "height": 23
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "AGENT",
+    "route": "search-panel",
+    "width": 1920,
+    "height": 1080,
+    "styles": {
+      "elements": {
+        ".dashboard-header": {
+          "rect": {
+            "x": 308,
+            "y": 0,
+            "width": 1612,
+            "height": 171
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "38px 28px 24px 32px",
+          "gap": "20px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "block"
+        },
+        ".partner-toolbar": {
+          "rect": {
+            "x": 1252,
+            "y": 38,
+            "width": 640,
+            "height": 48
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(12, 33, 70)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "12px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "flex"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 1252,
+            "y": 40,
+            "width": 580,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 14px",
+          "gap": "10px",
+          "outline": "rgb(69, 106, 169) solid 2px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 1295,
+            "y": 51.5,
+            "width": 488,
+            "height": 21
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "lineHeight": "21px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".partner-search-summary": {
+          "rect": {
+            "x": 1254,
+            "y": 94,
+            "width": 576,
+            "height": 43
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "400",
+          "lineHeight": "18px",
+          "color": "rgb(83, 103, 128)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "12px 16px",
+          "gap": "8px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "flex"
+        },
+        ".partner-search-panel": {
+          "rect": {
+            "x": 1253,
+            "y": 93,
+            "width": 578,
+            "height": 107
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "14px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 308,
+            "height": 1080
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "block"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 29,
+            "y": 96.25,
+            "width": 48,
+            "height": 48
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 52,
+            "y": 1006,
+            "width": 23,
+            "height": 23
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "AGENT",
+    "route": "account-logo",
+    "width": 375,
+    "height": 812,
+    "styles": {
+      "elements": {
+        ".partner-toolbar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 375,
+            "height": 119
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "10px 16px",
+          "gap": "8px 12px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "grid"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 16,
+            "y": 64,
+            "width": 343,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(247, 249, 252)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 10px",
+          "gap": "6px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 51,
+            "y": 76.25,
+            "width": 297,
+            "height": 19.5
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "none"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "AGENT",
+    "route": "account-logo",
+    "width": 834,
+    "height": 1112,
+    "styles": {
+      "elements": {
+        ".partner-toolbar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 834,
+            "height": 67
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "10px 16px",
+          "gap": "10px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "flex"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 127,
+            "y": 11,
+            "width": 560,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(247, 249, 252)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 10px",
+          "gap": "6px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 162,
+            "y": 23.25,
+            "width": 514,
+            "height": 19.5
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "400",
+          "lineHeight": "19.5px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "none"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "AGENT",
+    "route": "account-logo",
+    "width": 1440,
+    "height": 900,
+    "styles": {
+      "elements": {
+        ".partner-toolbar": {
+          "rect": {
+            "x": 308,
+            "y": 0,
+            "width": 1132,
+            "height": 68
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "10px 28px",
+          "gap": "16px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "flex"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 336,
+            "y": 11.5,
+            "width": 560,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(247, 249, 252)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 14px",
+          "gap": "10px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 379,
+            "y": 23,
+            "width": 502,
+            "height": 21
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "lineHeight": "21px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 308,
+            "height": 900
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "block"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 29,
+            "y": 96.25,
+            "width": 48,
+            "height": 48
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 52,
+            "y": 826,
+            "width": 23,
+            "height": 23
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  },
+  {
+    "role": "AGENT",
+    "route": "account-logo",
+    "width": 1920,
+    "height": 1080,
+    "styles": {
+      "elements": {
+        ".partner-toolbar": {
+          "rect": {
+            "x": 308,
+            "y": 0,
+            "width": 1612,
+            "height": 68
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(255, 255, 255)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "10px 28px",
+          "gap": "16px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "flex"
+        },
+        ".partner-search": {
+          "rect": {
+            "x": 336,
+            "y": 11.5,
+            "width": 560,
+            "height": 44
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgb(247, 249, 252)",
+          "border": "1px solid rgb(217, 227, 240)",
+          "borderRadius": "12px",
+          "padding": "0px 14px",
+          "gap": "10px",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "relative",
+          "display": "flex"
+        },
+        ".partner-search input": {
+          "rect": {
+            "x": 379,
+            "y": 23,
+            "width": 502,
+            "height": 21
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "14px",
+          "fontWeight": "400",
+          "lineHeight": "21px",
+          "color": "rgb(12, 33, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "rgb(12, 33, 70) none 3px",
+          "position": "static",
+          "display": "block"
+        },
+        ".owner-sidebar": {
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 308,
+            "height": 1080
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(8, 30, 70)",
+          "background": "rgb(247, 251, 254)",
+          "border": "",
+          "borderRadius": "0px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "sticky",
+          "display": "block"
+        },
+        ".partner-logo": {
+          "rect": {
+            "x": 29,
+            "y": 96.25,
+            "width": 48,
+            "height": 48
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(59, 86, 123)",
+          "background": "rgb(240, 244, 250)",
+          "border": "1px solid rgb(220, 229, 240)",
+          "borderRadius": "12px",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "static",
+          "display": "grid"
+        },
+        ".partner-verification-seal": {
+          "rect": {
+            "x": 52,
+            "y": 1006,
+            "width": 23,
+            "height": 23
+          },
+          "font": "\"SF Pro Display\", \"SF Pro Text\", -apple-system, \"system-ui\", Geist, \"Geist Fallback\", \"Helvetica Neue\", Inter, \"Segoe UI\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "color": "rgb(24, 119, 242)",
+          "background": "rgb(255, 255, 255)",
+          "border": "0px solid rgb(234, 240, 247)",
+          "borderRadius": "50%",
+          "padding": "0px",
+          "gap": "normal",
+          "outline": "oklab(0.54613 -0.0266538 -0.213537 / 0.5) none 3px",
+          "position": "absolute",
+          "display": "grid"
+        }
+      },
+      "staleConsumers": {
+        ".owner-workspace-selector p:first-child": 0,
+        ".owner-workspace-selector select": 0,
+        ".owner-workspace-selector p:last-child": 0,
+        ".owner-workspace-selector label>span:last-child": 0,
+        ".owner-workspace-image": 0,
+        ".owner-workspace .fixed.right-6.top-4": 0,
+        ".agent-workspace .agent-workspace-avatar": 0
+      },
+      "overflow": false
+    }
+  }
+]

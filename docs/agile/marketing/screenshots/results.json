@@ -1,0 +1,17 @@
+{
+  "viewports": 4,
+  "captures": 8,
+  "checks": [
+    "Agent only navigation",
+    "keyboard internal navigation",
+    "persisted upload and draft browser fixtures",
+    "draft edit duplicate delete",
+    "referenced media deletion refusal",
+    "channels calendar performance truthful availability",
+    "error retry",
+    "Owner direct route guard",
+    "dual workspace explicit choice and switch"
+  ],
+  "pageErrors": [],
+  "provider": "intercepted synthetic API responses; separate real PostgreSQL tests"
+}

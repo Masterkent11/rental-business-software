@@ -1,3 +1,5 @@
+import { AUTHORIZE_ADMINISTRATION } from '@/modules/administration/administration.tokens.ts';
+import type { authorizeAdministration } from '@/application/administration/authorize-administration/authorize-administration.use-case.ts';
 import { Module } from '@nestjs/common';
 import { PublicAgentsController } from './controllers/public-agents.controller.ts';
 import { AgentWorkspaceController } from './controllers/agent-workspace.controller.ts';
@@ -101,13 +103,13 @@ import {
     { provide: REQUEST_AGENT_VERIFICATION, inject: [AGENT_REPOSITORY], useFactory: (a: AgentRepository) => requestAgentVerification(a) },
     {
       provide: LIST_PENDING_AGENT_VERIFICATIONS,
-      inject: [AGENT_REPOSITORY],
-      useFactory: (a: AgentRepository) => listPendingAgentVerifications(a),
+      inject: [AGENT_REPOSITORY, AUTHORIZE_ADMINISTRATION],
+      useFactory: (a: AgentRepository, policy: ReturnType<typeof authorizeAdministration>) => listPendingAgentVerifications(a,policy),
     },
     {
       provide: DECIDE_AGENT_VERIFICATION,
-      inject: [AGENT_REPOSITORY, NOTIFICATION_REPOSITORY],
-      useFactory: (a: AgentRepository, n: NotificationRepository) => decideAgentVerification(a, n),
+      inject: [AGENT_REPOSITORY, NOTIFICATION_REPOSITORY, AUTHORIZE_ADMINISTRATION],
+      useFactory: (a: AgentRepository, n: NotificationRepository, policy: ReturnType<typeof authorizeAdministration>) => decideAgentVerification(a, n,policy),
     },
     {
       provide: VIEW_PUBLIC_AGENT,

@@ -1,0 +1,19 @@
+{
+  "indexSha256": "23f1480b8e7b7cf826b2654db41da947b6a3f78a4209e9d49f05f5890748c22d",
+  "stagingPreserved": true,
+  "unrelatedAuthCssPreserved": true,
+  "branch": "codex/partner-mobile-navigation",
+  "screenshots": {
+    "evidence": 0,
+    "google-regression": 8,
+    "header-regression": 39,
+    "screens": 77,
+    "marketing-regression": 8,
+    "before": 14,
+    "after": 28,
+    "auth-regression": 15
+  },
+  "productionWrites": false,
+  "push": false,
+  "commit": false
+}

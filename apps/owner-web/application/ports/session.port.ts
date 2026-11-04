@@ -6,4 +6,5 @@ export interface SessionPort {
   signOut(): Promise<void>;
   rememberWorkspace(key: string): void;
   refresh(): Promise<ActiveSession>;
+  watchIdentity(onChange: (userId: string | null) => void): () => void;
 }

@@ -15,6 +15,7 @@ interface ProfileRow {
   display_name: string;
   email: string | null;
   mobile: string | null;
+  deactivated_at?: Date | null;
 }
 
 const toProfile = (row: ProfileRow): UserProfile => ({
@@ -30,34 +31,56 @@ export function postgresUserRepository(): UserRepository {
       // One transaction, one scope-setting, three cheap indexed reads.
       return withUser(userId, async (tx) => {
         const [profile] = await tx<ProfileRow[]>`
-          select id, display_name, email, mobile
+          select id, display_name, email, mobile, deactivated_at
             from user_profiles
-           where id = ${userId} and deactivated_at is null
+           where id = ${userId}
         `;
 
+        if (process.env.TENANT_BOUNDARIES_ENABLED === 'true') {
+          const memberships=await tx<{tenant_id:string;kind:'OWNER'|'AGENT';role:Capability}[]>`select tenant_id,kind,role from app_private.partner_memberships`;
+          const personal=await tx<{capability:Capability;organization_id:string|null}[]>`select capability,organization_id from user_capabilities where user_id=${userId} and revoked_at is null and capability not in ('OWNER','STAFF','AGENT')`;
+          return {
+            deactivated:Boolean(profile?.deactivated_at), profile:profile && !profile.deactivated_at ? toProfile(profile) : null,
+            agentAvailable:memberships.some(m=>m.kind==='AGENT'),
+            isMember:organizationId===null ? null : memberships.some(m=>m.kind==='OWNER' && m.tenant_id===organizationId),
+            capabilities:[...personal.map(c=>({capability:c.capability,organizationId:c.organization_id})),...memberships.map(m=>({capability:m.role,organizationId:m.kind==='OWNER' ? m.tenant_id : null}))]
+          };
+        }
         const capabilities = await tx<
           { capability: Capability; organization_id: string | null }[]
         >`
-          select capability, organization_id
-            from user_capabilities
-           where user_id = ${userId} and revoked_at is null
+          select c.capability, c.organization_id
+            from user_capabilities c
+           where c.user_id = ${userId} and c.revoked_at is null
+             and (c.capability not in ('OWNER','STAFF') or exists (
+               select 1 from organization_members m join organizations o on o.id = m.organization_id
+               where m.user_id = c.user_id and m.organization_id = c.organization_id
+                 and m.role = c.capability and m.revoked_at is null and o.state <> 'SUSPENDED'
+             ))
         `;
 
         let isMember: boolean | null = null;
         if (organizationId !== null) {
           const [row] = await tx<{ n: string }[]>`
             select count(*)::text as n
-              from organization_members
-             where user_id = ${userId}
-               and organization_id = ${organizationId}
-               and revoked_at is null
+              from organization_members m join organizations o on o.id = m.organization_id
+             where m.user_id = ${userId}
+               and m.organization_id = ${organizationId}
+               and m.revoked_at is null and o.state <> 'SUSPENDED'
           `;
           isMember = Number(row?.n ?? '0') > 0;
         }
 
+        const [agent] = await tx<{ available: boolean }[]>`
+          select exists (select 1 from agent_profiles a where a.user_id = ${userId}
+            and a.verification_state <> 'SUSPENDED' and (a.verification_state='VERIFIED' or not exists(select 1 from organization_members m where m.user_id=a.user_id))) as available
+        `;
+        const agentAvailable = agent?.available === true;
         return {
-          profile: profile ? toProfile(profile) : null,
-          capabilities: capabilities.map<HeldCapability>((row) => ({
+          deactivated: Boolean(profile?.deactivated_at),
+          agentAvailable,
+          profile: profile && !profile.deactivated_at ? toProfile(profile) : null,
+          capabilities: capabilities.filter(c => c.capability !== 'AGENT' || agentAvailable).map<HeldCapability>((row) => ({
             capability: row.capability,
             organizationId: row.organization_id,
           })),
@@ -73,7 +96,7 @@ export function postgresUserRepository(): UserRepository {
                  m.organization_id, o.trading_name as name, m.role, o.state
             from organization_members m
             join organizations o on o.id = m.organization_id
-           where m.user_id = ${userId} and m.revoked_at is null
+           where m.user_id = ${userId} and m.revoked_at is null and o.state <> 'SUSPENDED'
            order by m.organization_id, (m.role = 'OWNER') desc
         `,
       );

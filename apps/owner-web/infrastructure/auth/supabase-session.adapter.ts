@@ -20,9 +20,9 @@ function friendlyAuthError(message: string | undefined): string {
     return "Too many attempts. Wait a minute and try again.";
   }
   if (text.includes("fetch") || text.includes("network")) {
-    return "Can't reach the sign-in service. Check your connection.";
+    return "Can't reach the sign in service. Check your connection.";
   }
-  return "Sign-in failed. Please try again.";
+  return "We couldn’t sign you in. Please try again.";
 }
 
 function rememberedWorkspace(): string | null {
@@ -78,6 +78,15 @@ export class SupabaseSessionAdapter implements SessionPort {
     }
   }
 
+  watchIdentity(onChange: (userId: string | null) => void): () => void {
+    let active = true;
+    const { data } = supabaseBrowserClient().auth.onAuthStateChange((event, session) => {
+      if (event === "INITIAL_SESSION" || event === "PASSWORD_RECOVERY") return;
+      queueMicrotask(() => { if (active) onChange(session?.user.id ?? null); });
+    });
+    return () => { active = false; data.subscription.unsubscribe(); };
+  }
+
   async refresh(): Promise<ActiveSession> {
     return this.resolveActiveSession();
   }
@@ -100,16 +109,18 @@ export class SupabaseSessionAdapter implements SessionPort {
           verificationState: me.agentProfile.verificationState,
         }
       : null;
-    const workspaces = workspacesFor(memberships, agent);
+    const eligibleMemberships = memberships.filter(m => me.capabilities.some(c => c.organizationId === m.organizationId && c.capability === m.role));
+    const eligibleAgent = agent?.verificationState !== "SUSPENDED" && me.capabilities.some(c => c.capability === "AGENT") ? agent : null;
+    const workspaces = workspacesFor(eligibleMemberships, eligibleAgent);
     const active = chooseWorkspace(workspaces, rememberedWorkspace());
 
     return {
       user: { id: me.id, displayName: me.displayName, ...(me.email ? { email: me.email } : {}) },
       workspaces,
       activeWorkspaceKey: active?.key ?? null,
-      memberships,
+      memberships: eligibleMemberships,
       capabilities: me.capabilities,
-      agent,
+      agent: eligibleAgent,
     };
   }
 }

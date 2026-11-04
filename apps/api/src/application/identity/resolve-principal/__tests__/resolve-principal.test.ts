@@ -28,7 +28,7 @@ function usersWith(options: {
   memberships?: string[];
   onCreate?: () => void;
 }): UserRepository {
-  const profile =
+  let profile =
     options.profile === undefined
       ? { id: USER, displayName: 'Ana', email: null, mobile: null }
       : options.profile;
@@ -45,7 +45,8 @@ function usersWith(options: {
     findProfile: async () => profile,
     createProfile: async ({ id }) => {
       options.onCreate?.();
-      return { id, displayName: '', email: null, mobile: null };
+      profile = { id, displayName: '', email: null, mobile: null };
+      return profile;
     },
     updateProfile: async () => profile,
     organizationsFor: async () => [],
@@ -161,5 +162,37 @@ describe('resolvePrincipal', () => {
 
     await resolve({ authorization: 'Bearer t', organizationId: null });
     expect(created).toBe(true);
+  });
+});
+
+
+describe('partner lifecycle authorization', () => {
+  it('refuses deactivated identity before trying to create a profile', async () => {
+    let created = false;
+    const users = usersWith({});
+    users.loadPrincipal = async () => ({ profile: null, deactivated: true, capabilities: [], isMember: null });
+    users.createProfile = async () => { created = true; throw new Error('Unexpected write'); };
+    await expect(resolvePrincipal(identityFor(USER), users)({ authorization: 'Bearer t', organizationId: null })).rejects.toBeInstanceOf(UnauthenticatedError);
+    expect(created).toBe(false);
+  });
+  it('fails closed when a missing profile is still unavailable after creation', async () => {
+    const users = usersWith({});
+    users.loadPrincipal = async () => ({ profile: null, capabilities: [], isMember: null });
+    await expect(resolvePrincipal(identityFor(USER), users)({ authorization: 'Bearer t', organizationId: null })).rejects.toBeInstanceOf(UnauthenticatedError);
+  });
+  it.each([
+    { agentAvailable: false, capabilities: [{ capability: 'AGENT' as const, organizationId: null }] },
+    { agentAvailable: true, capabilities: [] },
+  ])('requires current capability and eligible Agent profile', async facts => {
+    const users = usersWith({});
+    users.loadPrincipal = async () => ({ profile: { id: USER, displayName: 'Agent', email: null, mobile: null }, ...facts, isMember: null });
+    await expect(resolvePrincipal(identityFor(USER), users)({ authorization: 'Bearer t', organizationId: null, requiredCapability: 'AGENT' })).rejects.toBeInstanceOf(OrganizationForbiddenError);
+  });
+  it('resolves only the authenticated eligible Agent identity', async () => {
+    const users = usersWith({});
+    users.loadPrincipal = async () => ({ profile: { id: USER, displayName: 'Agent', email: null, mobile: null }, agentAvailable: true, capabilities: [{ capability: 'AGENT', organizationId: null }], isMember: null });
+    const result = await resolvePrincipal(identityFor(USER), users)({ authorization: 'Bearer t', organizationId: null, requiredCapability: 'AGENT' });
+    expect(result.userId).toBe(USER);
+    expect(result.organizationId).toBeNull();
   });
 });

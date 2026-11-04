@@ -6,7 +6,7 @@ let client: SupabaseClient | null = null;
 export function supabaseBrowserClient(): SupabaseClient {
   if (!client) {
     client = createClient(env.supabaseUrl, env.supabasePublishableKey, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: "pkce" },
       realtime: { params: { eventsPerSecond: 20 } },
     });
   }

@@ -1,0 +1,13 @@
+
+> api@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.12 /Users/admin/Documents/GitHub/rental-business-software/apps/api
+
+
+ Test Files  54 passed | 19 skipped (73)
+      Tests  444 passed | 251 skipped (695)
+   Start at  05:19:21
+   Duration  14.28s (transform 1.45s, setup 0ms, import 5.40s, tests 3.14s, environment 3ms)
+

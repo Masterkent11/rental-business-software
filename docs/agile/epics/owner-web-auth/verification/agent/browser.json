@@ -1,0 +1,23 @@
+{
+  "results": [
+    {
+      "case": "normal Agent selection",
+      "finalPath": "/agent",
+      "postRequests": [
+        "/agent/profile"
+      ],
+      "provider": "intercepted synthetic responses",
+      "result": "Agent profile flow completed"
+    },
+    {
+      "case": "shared cached role changed after Agent selection",
+      "finalPath": "/onboarding/setup",
+      "postRequests": [
+        "/me/owner-workspace"
+      ],
+      "provider": "intercepted synthetic responses",
+      "result": "reproduced Owner form and wrong endpoint"
+    }
+  ],
+  "pageErrors": []
+}

@@ -16,7 +16,7 @@ export class AgentReferralsController {
   @HttpCode(200)
   async create(@Param('listingId') listingId: string, @Headers('authorization') auth?: string) {
     if (!z.guid().safeParse(listingId).success) throw new NotFoundException('No such listing');
-    const principal = await this.resolve({ authorization: auth, organizationId: null });
+    const principal = await this.resolve({ authorization: auth, organizationId: null, requiredCapability: 'AGENT' });
     return this.issue({ principal, listingId });
   }
 }

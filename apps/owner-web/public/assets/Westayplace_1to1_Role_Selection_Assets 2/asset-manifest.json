@@ -1,0 +1,44 @@
+{
+  "source": "unmarked AI-generated Westayplace screenshot previously provided in this conversation",
+  "source_file": "a_clean_modern_ui_ux_landing_signup_screen_split.png",
+  "reference_resolution": [
+    1585,
+    992
+  ],
+  "image_panel": {
+    "x": 0,
+    "y": 0,
+    "width": 593,
+    "height": 992
+  },
+  "role_icons": {
+    "property-owner": {
+      "viewBox": "0 0 157 86",
+      "source_crop": [
+        744,
+        536,
+        901,
+        622
+      ],
+      "path_count": 15,
+      "pixel_dark_count": 1532
+    },
+    "property-agent": {
+      "viewBox": "0 0 111 91",
+      "source_crop": [
+        1149,
+        534,
+        1260,
+        625
+      ],
+      "path_count": 8,
+      "pixel_dark_count": 846
+    }
+  },
+  "known_fidelity_limits": [
+    "Photo panel screenshot crop is pixel-for-pixel identical to source but includes flattened logo, copy and carousel UI.",
+    "The cleaned photograph is inpainted only under flattened UI areas; the underlying missing source photo cannot be recovered with exact pixel identity.",
+    "SVG paths are genuine editable vector traces, not original authored vector/source; fine anti-aliasing may differ from the raster source.",
+    "The background SVG is a raster photo embedded in an SVG container, not a vector photograph."
+  ]
+}

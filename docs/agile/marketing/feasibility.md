@@ -1,0 +1,13 @@
+# Publishing feasibility and approval boundaries
+
+Research date 2026 11 01. Phase 0 planning only; no provider implementation.
+
+Facebook targets authorized Pages, not personal profile auto posting. App registration, Page task eligibility, chosen Graph version, Page discovery and scoped tokens, reviewed permissions, revocation and deletion callback policy must be verified before Phase2. Official guides https://developers.facebook.com/docs/pages-api/posts/ and https://developers.facebook.com/docs/video-api/guides/reels-publishing/ returned429 during this audit. Their precise current permissions/version are an explicit verification blocker, not inferred from secondary blogs.
+
+Meta's official Instagram collection https://www.postman.com/meta/instagram/documentation/6yqw8pt/instagram-api describes professional Businesses/Creators, with distinct Instagram Login and Facebook Login contracts. Select the supported model and verify its scopes, professional eligibility, linked Page requirements where applicable, container processing and media_publish behavior before implementation. No app/business review or permissions are claimed obtained.
+
+TikTok official https://developers.tiktok.com/docs/en/content-posting-api-get-started requires approved video.publish scope, user authorization, current creator information and posting outcome checks; unaudited client posts are private until audit. Photos and video use distinct contracts and pull URLs require domain verification. https://developers.tiktok.com/docs/en/content-sharing-guidelines requires actual creator consent and editable posting options. Inbox handoff never equals public publishing.
+
+Design separate future SocialConnection and PublicationDelivery ports from MarketingDraft. Connections distinguish Agent owned and explicitly delegated Owner accounts. Encrypt tokens server side, bind one use OAuth state to actor, allowlist callbacks, record audit events, rotate/disconnect, recheck both destination and property permission at execution. Queue idempotency keys are per draft version/destination; unknown response requires reconciliation before retry. A model has no credential access and MCP is optional.
+
+Costs: reuse current Supabase/PostgreSQL/storage and installed Sharp. Storage/egress scale with file sizes and retention; per Agent quotas bound usage but do not guarantee free hosting. No new paid dependency, transcoder, worker or external service provisioned. Provider reviews and quotas are external blockers with no invented dates or engineering estimates. Phase2 readiness order: scope/login decision, app ownership and approval, secret/consent review, provider sandbox tests, explicit authorization. Phase3 scheduling/TikTok and Phase4 tools remain not authorized.

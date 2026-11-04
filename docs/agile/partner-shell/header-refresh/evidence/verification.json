@@ -1,0 +1,27 @@
+{
+  "recordedAt": "2026-11-01T10:40:29.228475+00:00",
+  "node": "24.19.0",
+  "checks": {
+    "typecheck": "PASS",
+    "lint": "PASS with two existing messages-inbox unused variable warnings",
+    "unit": "93 passed, 0 failed, 0 skipped",
+    "build": "PASS",
+    "diffCheck": "PASS",
+    "headerBrowser": "PASS: Owner and Agent dashboard and Account at 320x755, 375x812, 834x1112, 1440x900 and 1920x1080; search and notification/profile row, popup containment, drawer logout, badge, logo fixture and query races",
+    "googleBrowser": "PASS: Sign in and signup across four viewports, delayed settings, reload failure, retry, explicit disabled provider",
+    "authRegression": "PASS with synthetic provider",
+    "marketingRegression": "PASS with synthetic API"
+  },
+  "scope": "Browser provider/API responses are intercepted synthetic fixtures; these are not real provider/backend/tenant security acceptance.",
+  "liveGoogle": "Earlier local Owner walkthrough reached authenticated dashboard after redirect configuration repair. Separately authorized Agent account walkthrough remains pending user action.",
+  "preserved": {
+    "unrelatedAuthCss": "Not edited by this task; concurrent changes preserved",
+    "originalGitIndexUnchanged": true,
+    "pushMergeDeploy": false,
+    "schemaOrMembershipChanges": false
+  },
+  "tickets": [
+    "https://github.com/Masterkent11/rental-business-software/issues/109",
+    "https://github.com/Masterkent11/rental-business-software/issues/139"
+  ]
+}

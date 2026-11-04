@@ -1,0 +1,34 @@
+{
+  "boundary": "Source level synthetic fixtures. Observed vulnerability assertions passing means the gap was reproduced, not that security acceptance passed. No live account, DB or provider writes.",
+  "baseline": "9b5689c2d0a0a0079dad83e92ad838d8f708cf65",
+  "results": [
+    {
+      "name": "HEAD baseline late Agent A response repopulates store after logout and Agent B login",
+      "result": "PASS"
+    },
+    {
+      "name": "HEAD baseline dashboard accepts capability revoked and suspended own Agent profile",
+      "result": "PASS"
+    },
+    {
+      "name": "Current listing gate accepts ACTIVE representation whose validity expired",
+      "result": "PASS"
+    },
+    {
+      "name": "Resolver denies foreign organization membership despite scoped capability",
+      "result": "PASS"
+    },
+    {
+      "name": "Resolver returns principal after inactive profile remains unavailable",
+      "result": "PASS"
+    },
+    {
+      "name": "Owner scoped capability cannot authorize another Owner tenant",
+      "result": "PASS"
+    },
+    {
+      "name": "Foreign remembered workspace key cannot create Owner B or Agent membership",
+      "result": "PASS"
+    }
+  ]
+}

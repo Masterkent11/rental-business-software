@@ -1,3 +1,5 @@
+import { authorizeAdministration } from '@/application/administration/authorize-administration/authorize-administration.use-case.ts';
+import { postgresAdministrationRepository } from '@/infrastructure/postgres/repositories/postgres-administration.repository.ts';
 import { applySaleListingChanges } from '@/application/listings/sale-listing-changes.rules.ts';
 import { randomUUID } from 'node:crypto';
 import postgres from 'postgres';
@@ -114,6 +116,7 @@ const customer = (userId: string, name: string): Principal => ({
 });
 
 const admin: Principal = {
+  assuranceLevel:'aal2',
   userId: ADMIN,
   displayName: 'Platform admin',
   capabilities: [{ capability: 'PLATFORM_ADMIN', organizationId: null }],
@@ -189,6 +192,7 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
     await adminDb`
       insert into user_capabilities (user_id, capability, source_type) values (${ADMIN}, 'PLATFORM_ADMIN', 'PLATFORM')
     `;
+    await adminDb`insert into app_private.platform_permissions(user_id,permission) values (${ADMIN},'AGENT_REVIEW')`;
   });
 
   afterAll(async () => {
@@ -339,10 +343,10 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
 
     await requestAgentVerification(agents)({ principal: agent(MARIA, 'Maria Santos') });
     await expect(
-      decideAgentVerification(agents, notifications)({ principal: owner(OWNER, SANTOS), agentId: mariaAgentId, decision: 'VERIFY', note: null }),
+      decideAgentVerification(agents, notifications,authorizeAdministration(postgresAdministrationRepository()))({ principal: owner(OWNER, SANTOS), audit:{purpose:'Synthetic denial review',requestId:'integration-denial'}, agentId: mariaAgentId, decision: 'VERIFY', note: null }),
     ).rejects.toBeInstanceOf(OrganizationForbiddenError);
-    const verified = await decideAgentVerification(agents, notifications)({
-      principal: admin,
+    const verified = await decideAgentVerification(agents, notifications,authorizeAdministration(postgresAdministrationRepository()))({
+      principal: admin, audit:{purpose:'Synthetic Agent review',requestId:'integration-review'},
       agentId: mariaAgentId,
       decision: 'VERIFY',
       note: 'License checked',
@@ -352,7 +356,7 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
     const jun = await registerAgentProfile(agents)({ principal: customer(JUN, 'Jun Dela Cruz'), profile: profileFor('Jun Dela Cruz') });
     junAgentId = jun.id;
     await requestAgentVerification(agents)({ principal: agent(JUN, 'Jun Dela Cruz') });
-    await decideAgentVerification(agents, notifications)({ principal: admin, agentId: junAgentId, decision: 'VERIFY', note: null });
+    await decideAgentVerification(agents, notifications,authorizeAdministration(postgresAdministrationRepository()))({ principal: admin, audit:{purpose:'Synthetic Agent review',requestId:'integration-review'}, agentId: junAgentId, decision: 'VERIFY', note: null });
   });
 
   it('the owner assigns agents who must accept before gaining any access', async () => {
@@ -767,17 +771,17 @@ suite('partner marketplace: sale listings, agents, inquiries, viewings', { timeo
       languages: [], publicState: 'PUBLIC' as const };
     const created = await agents.create(userId, profile);
     await agents.requestVerification(userId);
-    await agents.decideVerification({ adminUserId: ADMIN, agentId: created.id, current: 'PENDING', next: 'VERIFIED', note: 'Reviewed' });
+    await agents.decideVerification({ adminUserId: ADMIN, context:{assuranceLevel:'aal2',purpose:'Synthetic Agent review',requestId:'integration-review'}, agentId: created.id, current: 'PENDING', next: 'VERIFIED', note: 'Reviewed' });
     expect((await agents.update(userId, { ...profile, bio: 'New marketing copy' })).verificationState).toBe('VERIFIED');
     const changed = await agents.update(userId, { ...profile, licenseNumber: 'LICENSE-B' });
     expect(changed.verificationState).toBe('UNVERIFIED');
     expect(changed.verifiedAt).toBeNull();
     await agents.requestVerification(userId);
     await agents.update(userId, { ...profile, licenseNumber: 'LICENSE-B', licenseAuthority: 'Authority B' });
-    expect(await agents.decideVerification({ adminUserId: ADMIN, agentId: created.id, current: 'PENDING', next: 'VERIFIED', note: 'Stale review' })).toBeNull();
+    expect(await agents.decideVerification({ adminUserId: ADMIN, context:{assuranceLevel:'aal2',purpose:'Synthetic Agent review',requestId:'integration-review'}, agentId: created.id, current: 'PENDING', next: 'VERIFIED', note: 'Stale review' })).toBeNull();
     await agents.requestVerification(userId);
-    await agents.decideVerification({ adminUserId: ADMIN, agentId: created.id, current: 'PENDING', next: 'VERIFIED', note: null });
-    await agents.decideVerification({ adminUserId: ADMIN, agentId: created.id, current: 'VERIFIED', next: 'SUSPENDED', note: 'Suspended' });
+    await agents.decideVerification({ adminUserId: ADMIN, context:{assuranceLevel:'aal2',purpose:'Synthetic Agent review',requestId:'integration-review'}, agentId: created.id, current: 'PENDING', next: 'VERIFIED', note: null });
+    await agents.decideVerification({ adminUserId: ADMIN, context:{assuranceLevel:'aal2',purpose:'Synthetic Agent review',requestId:'integration-review'}, agentId: created.id, current: 'VERIFIED', next: 'SUSPENDED', note: 'Suspended' });
     expect((await agents.update(userId, { ...profile, licenseNumber: 'LICENSE-C' })).verificationState).toBe('SUSPENDED');
   });
 

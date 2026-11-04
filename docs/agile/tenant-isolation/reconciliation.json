@@ -1,0 +1,791 @@
+{
+  "format": "Westayplace reconciliation drafts, not a direct Jira importer payload",
+  "recordedAt": "2026-11-01 Asia/Manila",
+  "canonicalVerifiedBoard": "https://github.com/users/Masterkent11/projects/3",
+  "jira": {
+    "projectKeyRequested": "WSP",
+    "status": "NOT CONNECTED / NOT VERIFIED",
+    "noServerIssuedKeysInvented": true
+  },
+  "provisionalTenantEpic": {
+    "key": "WSP-TENANCY-EPIC-01",
+    "decision": "Existing security Epic 14 overlaps; propose reuse umbrella 14 linked to auth Epic 103. Do not create duplicate epic until canonical cross tracker review.",
+    "existingEpicUrl": "https://github.com/Masterkent11/rental-business-software/issues/14"
+  },
+  "publicationStatus": "NOT PUBLISHED",
+  "newLiveIssuesCreated": 0,
+  "records": [
+    {
+      "planningKey": "TEN-001",
+      "title": "Audit cross-portal access, authorization, data flows and prior tickets",
+      "type": "Task",
+      "priority": "P0",
+      "status": "Proposed approval required",
+      "boardPublishStatus": "NOT PUBLISHED",
+      "parent": {
+        "existingIssue": 32,
+        "relationship": "proposed planning link only; existing native parents preserved"
+      },
+      "dependencies": [],
+      "relatedExistingIssues": [
+        {
+          "number": 32,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/32"
+        },
+        {
+          "number": 33,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/33"
+        },
+        {
+          "number": 34,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/34"
+        },
+        {
+          "number": 64,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/64"
+        },
+        {
+          "number": 104,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/104"
+        }
+      ],
+      "reconciliation": "Missing bounded scope proposed; publish only after canonical Jira mapping and review",
+      "subtasks": [
+        "Map owner/agent routes and guards",
+        "Trace API/dashboard data queries and membership checks",
+        "Reproduce dropdown defect and test direct URL/API",
+        "Inventory tenant-sensitive tables/storage/realtime"
+      ],
+      "acceptanceCriteria": [
+        "Audit covers UI, NestJS, repositories, Supabase/Postgres, storage and realtime",
+        "Evidence distinguishes proven unauthorized access vs unverified suspicion",
+        "Lists exact existing tickets/Storybook/tests and redacted reproduction evidence"
+      ],
+      "verificationWalkthrough": "Use test fixtures for Owner A/B and Agent A/B, exercise navigation and direct endpoints; attach redacted results and code references.",
+      "impactedPackages": [
+        "apps/owner-web",
+        "apps/api",
+        "supabase as applicable"
+      ],
+      "assignee": null,
+      "iteration": null,
+      "approvedStoryPoints": null,
+      "implementationGate": "Explicit ADR, policy, migration and rollout approval; no security code or DDL before approval",
+      "definitionOfDone": [
+        "Review against actual matrix, no unverified PASS",
+        "Native parent and source of truth verified before publication",
+        "Current CI and scoped negative security evidence linked",
+        "Migration, storage/realtime and release acceptance where applicable",
+        "Production action requires separate approval"
+      ],
+      "riskAndRollback": "Default deny; preserve stable identity/resource IDs and legitimate memberships; feature gate, approved restore/forward recovery; no permissive fallback",
+      "localImplementationStatus": "Audit retained with subsequent implementation evidence",
+      "localEvidence": "docs/architecture/tenant-isolation/implementation.md"
+    },
+    {
+      "planningKey": "TEN-002",
+      "title": "Approve tenant domain and permission ADR",
+      "type": "Story",
+      "priority": "P0",
+      "status": "Proposed approval required",
+      "boardPublishStatus": "NOT PUBLISHED",
+      "parent": {
+        "existingIssue": 14,
+        "relationship": "proposed planning link only; existing native parents preserved"
+      },
+      "dependencies": [
+        "TEN-001"
+      ],
+      "relatedExistingIssues": [
+        {
+          "number": 14,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/14"
+        },
+        {
+          "number": 32,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/32"
+        },
+        {
+          "number": 103,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/103"
+        }
+      ],
+      "reconciliation": "Missing bounded scope proposed; publish only after canonical Jira mapping and review",
+      "subtasks": [
+        "Define identity/tenant/membership/admin domains",
+        "Document ownership and limited collaboration grants",
+        "Map policy decisions to existing ports and use cases",
+        "Obtain explicit owner/security approval"
+      ],
+      "acceptanceCriteria": [
+        "ADR distinguishes user, partner tenant, membership, resource owner and admin",
+        "Role/membership and permission matrix approved with default deny",
+        "Legacy legitimate multi-membership and customer-shared resource cases documented",
+        "No schema/privilege code change before approval"
+      ],
+      "verificationWalkthrough": "Review ADR with actual database schema, route list, business workflows and written approval.",
+      "impactedPackages": [
+        "apps/owner-web",
+        "apps/api",
+        "supabase as applicable"
+      ],
+      "assignee": null,
+      "iteration": null,
+      "approvedStoryPoints": null,
+      "implementationGate": "Explicit ADR, policy, migration and rollout approval; no security code or DDL before approval",
+      "definitionOfDone": [
+        "Review against actual matrix, no unverified PASS",
+        "Native parent and source of truth verified before publication",
+        "Current CI and scoped negative security evidence linked",
+        "Migration, storage/realtime and release acceptance where applicable",
+        "Production action requires separate approval"
+      ],
+      "riskAndRollback": "Default deny; preserve stable identity/resource IDs and legitimate memberships; feature gate, approved restore/forward recovery; no permissive fallback",
+      "localImplementationStatus": "Accepted local ADR amendment using canonical projections",
+      "localEvidence": "docs/architecture/tenant-isolation/implementation.md"
+    },
+    {
+      "planningKey": "TEN-003",
+      "title": "Plan and implement safe tenant membership schema and backfill",
+      "type": "Story",
+      "priority": "P0",
+      "status": "Proposed approval required",
+      "boardPublishStatus": "NOT PUBLISHED",
+      "parent": {
+        "existingIssue": 14,
+        "relationship": "proposed planning link only; existing native parents preserved"
+      },
+      "dependencies": [
+        "TEN-002"
+      ],
+      "relatedExistingIssues": [
+        {
+          "number": 100,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/100"
+        },
+        {
+          "number": 101,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/101"
+        },
+        {
+          "number": 112,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/112"
+        }
+      ],
+      "reconciliation": "Missing bounded scope proposed; publish only after canonical Jira mapping and review",
+      "subtasks": [
+        "Inventory existing identity/organization schema",
+        "Prepare additive migration and ownership backfill",
+        "Add constraints/indexes/status lifecycle",
+        "Rehearse downgrade/restore or forward recovery"
+      ],
+      "acceptanceCriteria": [
+        "Every applicable private resource has enforceable owning tenant or explicit grant",
+        "No ambiguous legacy record is silently assigned to a tenant",
+        "Migration dry-run and rollback documented with counts",
+        "Schema changes reviewed and production execution separately approved"
+      ],
+      "verificationWalkthrough": "Run migration on staging clone/synthetic fixtures, assert tenant IDs, constraints, unassigned counts and restore/rollback steps.",
+      "impactedPackages": [
+        "apps/owner-web",
+        "apps/api",
+        "supabase as applicable"
+      ],
+      "assignee": null,
+      "iteration": null,
+      "approvedStoryPoints": null,
+      "implementationGate": "Explicit ADR, policy, migration and rollout approval; no security code or DDL before approval",
+      "definitionOfDone": [
+        "Review against actual matrix, no unverified PASS",
+        "Native parent and source of truth verified before publication",
+        "Current CI and scoped negative security evidence linked",
+        "Migration, storage/realtime and release acceptance where applicable",
+        "Production action requires separate approval"
+      ],
+      "riskAndRollback": "Default deny; preserve stable identity/resource IDs and legitimate memberships; feature gate, approved restore/forward recovery; no permissive fallback",
+      "localImplementationStatus": "Migration authored and locally rehearsed; remote execution gated",
+      "localEvidence": "docs/architecture/tenant-isolation/implementation.md"
+    },
+    {
+      "planningKey": "TEN-004",
+      "title": "Server-authoritative actor context, policies and portal guards",
+      "type": "Story",
+      "priority": "P0",
+      "status": "Proposed approval required",
+      "boardPublishStatus": "NOT PUBLISHED",
+      "parent": {
+        "existingIssue": 32,
+        "relationship": "proposed planning link only; existing native parents preserved"
+      },
+      "dependencies": [
+        "TEN-002",
+        "TEN-003"
+      ],
+      "relatedExistingIssues": [
+        {
+          "number": 32,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/32"
+        },
+        {
+          "number": 33,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/33"
+        },
+        {
+          "number": 63,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/63"
+        },
+        {
+          "number": 113,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/113"
+        }
+      ],
+      "reconciliation": "Reuse isolation story 32 as canonical policy scope; new lifecycle followup draft, preserve closed task 33 history",
+      "subtasks": [
+        "Implement/repair actor context resolver",
+        "Server-validate membership on each context switch",
+        "Enforce /owner /agent /admin role boundaries",
+        "Revoke and suspend handling"
+      ],
+      "acceptanceCriteria": [
+        "Owner-only user cannot access Agent API/dashboard; reciprocal Agent-only denial",
+        "Forged role/tenant in body/header/cookie/client store confers zero privilege",
+        "Revoked or suspended membership denied at API",
+        "No-membership user sees appropriate pending-access state"
+      ],
+      "verificationWalkthrough": "Run authenticated route + direct API policy tests with synthetic authorized/unauthorized actors; assert 401/403/404 and no data leakage.",
+      "impactedPackages": [
+        "apps/owner-web",
+        "apps/api",
+        "supabase as applicable"
+      ],
+      "assignee": null,
+      "iteration": null,
+      "approvedStoryPoints": null,
+      "implementationGate": "Explicit ADR, policy, migration and rollout approval; no security code or DDL before approval",
+      "definitionOfDone": [
+        "Review against actual matrix, no unverified PASS",
+        "Native parent and source of truth verified before publication",
+        "Current CI and scoped negative security evidence linked",
+        "Migration, storage/realtime and release acceptance where applicable",
+        "Production action requires separate approval"
+      ],
+      "riskAndRollback": "Default deny; preserve stable identity/resource IDs and legitimate memberships; feature gate, approved restore/forward recovery; no permissive fallback",
+      "localImplementationStatus": "Local API and database lifecycle/provisioning guards verified",
+      "localEvidence": "docs/architecture/tenant-isolation/implementation.md"
+    },
+    {
+      "planningKey": "TEN-005",
+      "title": "Tenant-scoped query enforcement, RLS and storage/realtime protection",
+      "type": "Story",
+      "priority": "P0",
+      "status": "Proposed approval required",
+      "boardPublishStatus": "NOT PUBLISHED",
+      "parent": {
+        "existingIssue": 32,
+        "relationship": "proposed planning link only; existing native parents preserved"
+      },
+      "dependencies": [
+        "TEN-003",
+        "TEN-004"
+      ],
+      "relatedExistingIssues": [
+        {
+          "number": 32,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/32"
+        },
+        {
+          "number": 33,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/33"
+        },
+        {
+          "number": 100,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/100"
+        },
+        {
+          "number": 101,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/101"
+        },
+        {
+          "number": 135,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/135"
+        }
+      ],
+      "reconciliation": "Reuse isolation story 32 as canonical boundary scope; proposed hardening followup, preserve historical task 33",
+      "subtasks": [
+        "Audit DB connection credentials and bypass roles",
+        "Scope repository reads/writes and enforce ownership",
+        "Add applicable RLS USING/WITH CHECK and constraints",
+        "Audit signed URLs, subscriptions, caches, analytics and exports"
+      ],
+      "acceptanceCriteria": [
+        "Cross-tenant read/write denied in every relevant endpoint and DB path",
+        "Privileged DB connections documented and protected by server policies",
+        "No leakage through bulk/joins/counts/export/storage/realtime",
+        "Tenant-aware cache keys and revocation behavior tested"
+      ],
+      "verificationWalkthrough": "Run database policy and API matrix for Owner A/B, Agent A/B, including guessed nested IDs, concurrent switches, file access and realtime.",
+      "impactedPackages": [
+        "apps/owner-web",
+        "apps/api",
+        "supabase as applicable"
+      ],
+      "assignee": null,
+      "iteration": null,
+      "approvedStoryPoints": null,
+      "implementationGate": "Explicit ADR, policy, migration and rollout approval; no security code or DDL before approval",
+      "definitionOfDone": [
+        "Review against actual matrix, no unverified PASS",
+        "Native parent and source of truth verified before publication",
+        "Current CI and scoped negative security evidence linked",
+        "Migration, storage/realtime and release acceptance where applicable",
+        "Production action requires separate approval"
+      ],
+      "riskAndRollback": "Default deny; preserve stable identity/resource IDs and legitimate memberships; feature gate, approved restore/forward recovery; no permissive fallback",
+      "localImplementationStatus": "Local RLS, ownership, Storage and authenticated-role policy checks verified; hosted checks pending",
+      "localEvidence": "docs/architecture/tenant-isolation/implementation.md"
+    },
+    {
+      "planningKey": "TEN-006",
+      "title": "Explicit revocable agent-to-property assignment policy (conditional)",
+      "type": "Story",
+      "priority": "P1",
+      "status": "Proposed approval required",
+      "boardPublishStatus": "NOT PUBLISHED",
+      "parent": {
+        "existingIssue": 56,
+        "relationship": "proposed planning link only; existing native parents preserved"
+      },
+      "dependencies": [
+        "TEN-002",
+        "TEN-005"
+      ],
+      "relatedExistingIssues": [
+        {
+          "number": 56,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/56"
+        },
+        {
+          "number": 57,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/57"
+        },
+        {
+          "number": 58,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/58"
+        },
+        {
+          "number": 100,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/100"
+        },
+        {
+          "number": 101,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/101"
+        }
+      ],
+      "reconciliation": "Reuse existing representation story 56; add expiry/revocation acceptance, do not recreate Agent assignment",
+      "subtasks": [
+        "Confirm actual owner/agent collaboration business need",
+        "Define scope per property/action",
+        "Implement grant and revocation if approved",
+        "Test non-granted data denial"
+      ],
+      "acceptanceCriteria": [
+        "No implicit Owner data sharing with Agents",
+        "If approved, only named property and allowed operations are accessible",
+        "Revoke immediately blocks new reads/writes; audit grant transitions",
+        "If not in scope ticket remains deferred without unsafe stub"
+      ],
+      "verificationWalkthrough": "Create explicit grant fixture and verify precise allowed fields; check unrelated properties, payments, and agents remain denied.",
+      "impactedPackages": [
+        "apps/owner-web",
+        "apps/api",
+        "supabase as applicable"
+      ],
+      "assignee": null,
+      "iteration": null,
+      "approvedStoryPoints": null,
+      "implementationGate": "Explicit ADR, policy, migration and rollout approval; no security code or DDL before approval",
+      "definitionOfDone": [
+        "Review against actual matrix, no unverified PASS",
+        "Native parent and source of truth verified before publication",
+        "Current CI and scoped negative security evidence linked",
+        "Migration, storage/realtime and release acceptance where applicable",
+        "Production action requires separate approval"
+      ],
+      "riskAndRollback": "Default deny; preserve stable identity/resource IDs and legitimate memberships; feature gate, approved restore/forward recovery; no permissive fallback",
+      "localImplementationStatus": "Current scoped grants and revocation guards locally verified",
+      "localEvidence": "docs/architecture/tenant-isolation/implementation.md"
+    },
+    {
+      "planningKey": "TEN-007",
+      "title": "Tenant-safe session, workspace selection and route navigation",
+      "type": "Story",
+      "priority": "P0",
+      "status": "Proposed approval required",
+      "boardPublishStatus": "NOT PUBLISHED",
+      "parent": {
+        "existingIssue": 32,
+        "relationship": "proposed planning link only; existing native parents preserved"
+      },
+      "dependencies": [
+        "TEN-004",
+        "TEN-005"
+      ],
+      "relatedExistingIssues": [
+        {
+          "number": 32,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/32"
+        },
+        {
+          "number": 34,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/34"
+        },
+        {
+          "number": 113,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/113"
+        }
+      ],
+      "reconciliation": "New regression followup draft under existing story 32, linked to closed task 34 without rewriting Done history",
+      "subtasks": [
+        "Fetch eligible memberships from trusted backend",
+        "Make active context server-validated",
+        "Clear stores/caches/realtime when switching",
+        "Handle stale, revoked, missing memberships"
+      ],
+      "acceptanceCriteria": [
+        "Selector contains only eligible authorized workspaces",
+        "Cross-tenant context cannot be forced via URL/state/header",
+        "Switching clears old tenant data, queries and subscriptions",
+        "Wrong role and stale membership fail closed"
+      ],
+      "verificationWalkthrough": "E2E context switching tests including malicious tenant hint, stale tab, concurrent in-flight query and revocation.",
+      "impactedPackages": [
+        "apps/owner-web",
+        "apps/api",
+        "supabase as applicable"
+      ],
+      "assignee": null,
+      "iteration": null,
+      "approvedStoryPoints": null,
+      "implementationGate": "Explicit ADR, policy, migration and rollout approval; no security code or DDL before approval",
+      "definitionOfDone": [
+        "Review against actual matrix, no unverified PASS",
+        "Native parent and source of truth verified before publication",
+        "Current CI and scoped negative security evidence linked",
+        "Migration, storage/realtime and release acceptance where applicable",
+        "Production action requires separate approval"
+      ],
+      "riskAndRollback": "Default deny; preserve stable identity/resource IDs and legitimate memberships; feature gate, approved restore/forward recovery; no permissive fallback",
+      "localImplementationStatus": "Static sidebar, explicit Account contexts and session revalidation verified",
+      "localEvidence": "docs/architecture/tenant-isolation/implementation.md"
+    },
+    {
+      "planningKey": "TEN-008",
+      "title": "Fix Owner and Agent sidebar selector and align dashboard shell UI",
+      "type": "Story",
+      "priority": "P1",
+      "status": "Proposed approval required",
+      "boardPublishStatus": "NOT PUBLISHED",
+      "parent": {
+        "existingIssue": 62,
+        "relationship": "proposed planning link only; existing native parents preserved"
+      },
+      "dependencies": [
+        "TEN-001",
+        "TEN-007"
+      ],
+      "relatedExistingIssues": [
+        {
+          "number": 62,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/62"
+        },
+        {
+          "number": 64,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/64"
+        },
+        {
+          "number": 86,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/86"
+        },
+        {
+          "number": 87,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/87"
+        },
+        {
+          "number": 88,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/88"
+        }
+      ],
+      "reconciliation": "Reuse existing dashboard task 64; security switch eligibility remains separate TEN-007",
+      "subtasks": [
+        "Remove dropdown overlap/incorrect native menu presentation",
+        "Reuse existing Westayplace assets and shared shell tokens",
+        "Keep Agent metrics/nav distinct from Owner",
+        "Add responsive and a11y states"
+      ],
+      "acceptanceCriteria": [
+        "Selector is correctly anchored and no label/overlay collision",
+        "Unauthorized Agent option absent from Owner-only user",
+        "Owner design remains stable; Agent shell visually consistent but distinct",
+        "Keyboard/screen reader/focus and all four target viewports pass"
+      ],
+      "verificationWalkthrough": "Attach before/after Owner and Agent screenshots at 375x812, 834x1112, 1440x900, 1920x1080; run keyboard and role visibility checks.",
+      "impactedPackages": [
+        "apps/owner-web",
+        "apps/api",
+        "supabase as applicable"
+      ],
+      "assignee": null,
+      "iteration": null,
+      "approvedStoryPoints": null,
+      "implementationGate": "Explicit ADR, policy, migration and rollout approval; no security code or DDL before approval",
+      "definitionOfDone": [
+        "Review against actual matrix, no unverified PASS",
+        "Native parent and source of truth verified before publication",
+        "Current CI and scoped negative security evidence linked",
+        "Migration, storage/realtime and release acceptance where applicable",
+        "Production action requires separate approval"
+      ],
+      "riskAndRollback": "Default deny; preserve stable identity/resource IDs and legitimate memberships; feature gate, approved restore/forward recovery; no permissive fallback",
+      "localImplementationStatus": "Agent overview and corrected native handshake visually verified locally",
+      "localEvidence": "docs/architecture/tenant-isolation/implementation.md"
+    },
+    {
+      "planningKey": "TEN-009",
+      "title": "Super Admin control-plane ADR and monitoring MVP scope",
+      "type": "Story",
+      "priority": "P1",
+      "status": "Proposed approval required",
+      "boardPublishStatus": "NOT PUBLISHED",
+      "parent": {
+        "existingIssue": 14,
+        "relationship": "proposed planning link only; existing native parents preserved"
+      },
+      "dependencies": [
+        "TEN-002"
+      ],
+      "relatedExistingIssues": [
+        {
+          "number": 14,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/14"
+        }
+      ],
+      "reconciliation": "Missing bounded scope proposed; publish only after canonical Jira mapping and review",
+      "subtasks": [
+        "Define internal admin provisioning/MFA",
+        "Define aggregate monitoring and privileged support policy",
+        "Plan audit schema/retention and alerts",
+        "Document separate admin routes/app/API and delivery Epic"
+      ],
+      "acceptanceCriteria": [
+        "Super Admin is not an Owner/Agent workspace option",
+        "No unrestricted data impersonation or raw secret in client",
+        "Aggregates vs sensitive detail permissions and audit fields specified",
+        "Approved scope explicitly identifies deferred admin implementation"
+      ],
+      "verificationWalkthrough": "Architecture/security review using fake admin/partner identities, including forbidden sensitive admin detail and scope/PII checks.",
+      "impactedPackages": [
+        "apps/owner-web",
+        "apps/api",
+        "supabase as applicable"
+      ],
+      "assignee": null,
+      "iteration": null,
+      "approvedStoryPoints": null,
+      "implementationGate": "Explicit ADR, policy, migration and rollout approval; no security code or DDL before approval",
+      "definitionOfDone": [
+        "Review against actual matrix, no unverified PASS",
+        "Native parent and source of truth verified before publication",
+        "Current CI and scoped negative security evidence linked",
+        "Migration, storage/realtime and release acceptance where applicable",
+        "Production action requires separate approval"
+      ],
+      "riskAndRollback": "Default deny; preserve stable identity/resource IDs and legitimate memberships; feature gate, approved restore/forward recovery; no permissive fallback",
+      "localImplementationStatus": "Scoped MFA admin counts, review gates and audit foundation locally verified",
+      "localEvidence": "docs/architecture/tenant-isolation/implementation.md"
+    },
+    {
+      "planningKey": "TEN-010",
+      "title": "Multi-tenant security regression suite and visual/accessibility QA",
+      "type": "Task",
+      "priority": "P0",
+      "status": "Proposed approval required",
+      "boardPublishStatus": "NOT PUBLISHED",
+      "parent": {
+        "existingIssue": 32,
+        "relationship": "proposed planning link only; existing native parents preserved"
+      },
+      "dependencies": [
+        "TEN-004",
+        "TEN-005",
+        "TEN-007",
+        "TEN-008"
+      ],
+      "relatedExistingIssues": [
+        {
+          "number": 32,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/32"
+        },
+        {
+          "number": 34,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/34"
+        },
+        {
+          "number": 109,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/109"
+        },
+        {
+          "number": 137,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/137"
+        }
+      ],
+      "reconciliation": "Missing bounded scope proposed; publish only after canonical Jira mapping and review",
+      "subtasks": [
+        "Build synthetic tenant fixtures",
+        "Automate HTTP, DB and resource IDOR denial matrix",
+        "Test cache, storage, realtime, exports and session revocation",
+        "Visual regression, Storybook if configured, accessibility"
+      ],
+      "acceptanceCriteria": [
+        "All P0 cross-tenant denial tests repeatably pass",
+        "No test outcomes labeled PASS if not actually run",
+        "UI retains authorized real behaviors and visual reference",
+        "CI evidence linked to canonical ticket and PR"
+      ],
+      "verificationWalkthrough": "Capture command output/test report and screenshots; execute the explicit SECURITY_AND_QA_MATRIX.md suite in staging CI.",
+      "impactedPackages": [
+        "apps/owner-web",
+        "apps/api",
+        "supabase as applicable"
+      ],
+      "assignee": null,
+      "iteration": null,
+      "approvedStoryPoints": null,
+      "implementationGate": "Explicit ADR, policy, migration and rollout approval; no security code or DDL before approval",
+      "definitionOfDone": [
+        "Review against actual matrix, no unverified PASS",
+        "Native parent and source of truth verified before publication",
+        "Current CI and scoped negative security evidence linked",
+        "Migration, storage/realtime and release acceptance where applicable",
+        "Production action requires separate approval"
+      ],
+      "riskAndRollback": "Default deny; preserve stable identity/resource IDs and legitimate memberships; feature gate, approved restore/forward recovery; no permissive fallback",
+      "localImplementationStatus": "Local suite passed; hosted provider and production matrix remain open",
+      "localEvidence": "docs/architecture/tenant-isolation/implementation.md"
+    },
+    {
+      "planningKey": "TEN-011",
+      "title": "Staged migration, security approval, rollout and post-release monitoring",
+      "type": "Task",
+      "priority": "P0",
+      "status": "Proposed approval required",
+      "boardPublishStatus": "NOT PUBLISHED",
+      "parent": {
+        "existingIssue": 14,
+        "relationship": "proposed planning link only; existing native parents preserved"
+      },
+      "dependencies": [
+        "TEN-003",
+        "TEN-010"
+      ],
+      "relatedExistingIssues": [
+        {
+          "number": 83,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/83"
+        },
+        {
+          "number": 111,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/111"
+        }
+      ],
+      "reconciliation": "Missing bounded scope proposed; publish only after canonical Jira mapping and review",
+      "subtasks": [
+        "Migration dry-run and rollback rehearsal",
+        "Review deployment/feature flags and monitoring",
+        "Security + product QA sign-off",
+        "Production release only with explicit authorization"
+      ],
+      "acceptanceCriteria": [
+        "Database restore/rollback documented and tested",
+        "No open P0 tenant isolation findings",
+        "Production readiness checklist and approvals attached",
+        "Audit/log/incident alerts activated and monitored"
+      ],
+      "verificationWalkthrough": "Review stage/prod diff, completed QA matrix, security sign-off and approved deployment record; otherwise keep blocked.",
+      "impactedPackages": [
+        "apps/owner-web",
+        "apps/api",
+        "supabase as applicable"
+      ],
+      "assignee": null,
+      "iteration": null,
+      "approvedStoryPoints": null,
+      "implementationGate": "Explicit ADR, policy, migration and rollout approval; no security code or DDL before approval",
+      "definitionOfDone": [
+        "Review against actual matrix, no unverified PASS",
+        "Native parent and source of truth verified before publication",
+        "Current CI and scoped negative security evidence linked",
+        "Migration, storage/realtime and release acceptance where applicable",
+        "Production action requires separate approval"
+      ],
+      "riskAndRollback": "Default deny; preserve stable identity/resource IDs and legitimate memberships; feature gate, approved restore/forward recovery; no permissive fallback",
+      "localImplementationStatus": "Local baseline restore passed; release remains unauthorized",
+      "localEvidence": "docs/architecture/tenant-isolation/implementation.md"
+    },
+    {
+      "planningKey": "ADM-001",
+      "title": "Implement protected Super Admin monitoring portal (future Epic)",
+      "type": "Story",
+      "priority": "P2",
+      "status": "Proposed approval required",
+      "boardPublishStatus": "NOT PUBLISHED",
+      "parent": {
+        "provisional": "WSP-SUPERADMIN-EPIC-01",
+        "relationship": "separate future Epic, NOT PUBLISHED"
+      },
+      "dependencies": [
+        "TEN-009",
+        "TEN-011"
+      ],
+      "relatedExistingIssues": [
+        {
+          "number": 14,
+          "url": "https://github.com/Masterkent11/rental-business-software/issues/14"
+        }
+      ],
+      "reconciliation": "Missing bounded scope proposed; publish only after canonical Jira mapping and review",
+      "subtasks": [
+        "Build separate admin auth and page shell after approval",
+        "Aggregate partner directory/status/health",
+        "Add admin audit viewer and support governance",
+        "Threat-model privileged operations"
+      ],
+      "acceptanceCriteria": [
+        "Only separately provisioned platform admins enter admin portal",
+        "Only approved metrics visible by default",
+        "Privileged actions audited and protected by MFA/step-up",
+        "No tenant content impersonation by default"
+      ],
+      "verificationWalkthrough": "Run admin and partner negative access matrix, privilege logging and PII minimization review prior to separate release.",
+      "impactedPackages": [
+        "apps/owner-web",
+        "apps/api",
+        "supabase as applicable"
+      ],
+      "assignee": null,
+      "iteration": null,
+      "approvedStoryPoints": null,
+      "implementationGate": "Explicit ADR, policy, migration and rollout approval; no security code or DDL before approval",
+      "definitionOfDone": [
+        "Review against actual matrix, no unverified PASS",
+        "Native parent and source of truth verified before publication",
+        "Current CI and scoped negative security evidence linked",
+        "Migration, storage/realtime and release acceptance where applicable",
+        "Production action requires separate approval"
+      ],
+      "riskAndRollback": "Default deny; preserve stable identity/resource IDs and legitimate memberships; feature gate, approved restore/forward recovery; no permissive fallback",
+      "localImplementationStatus": "Future admin UI remains unimplemented and separately scoped",
+      "localEvidence": "docs/architecture/tenant-isolation/implementation.md"
+    }
+  ],
+  "continuationAuthorization": "User requested remaining local tenant phases on 2026 11 01; remote migrations and release excluded"
+}

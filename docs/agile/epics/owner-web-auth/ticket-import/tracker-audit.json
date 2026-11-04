@@ -1,0 +1,86 @@
+{
+  "recorded_on": "2026-11-01",
+  "repository": "Masterkent11/rental-business-software",
+  "existing_issues": 92,
+  "matching_auth_records": [],
+  "project": {
+    "id": "PVT_kwHOAyP2LM4BphFM",
+    "title": "Westayplace: Product & Engineering Delivery",
+    "url": "https://github.com/users/Masterkent11/projects/3",
+    "public": false,
+    "viewerCanUpdate": true,
+    "items": {
+      "totalCount": 92
+    }
+  },
+  "viewer": "Masterkent11",
+  "repository_permission": "ADMIN",
+  "related_issues": [
+    {
+      "number": 88,
+      "title": "[TASK][STORYBOOK] Document loading empty error and interaction component states",
+      "state": "open",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/88"
+    },
+    {
+      "number": 87,
+      "title": "[TASK][STORYBOOK] Configure Storybook against established portal UI primitives",
+      "state": "open",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/87"
+    },
+    {
+      "number": 86,
+      "title": "[STORY][STORYBOOK] Establish Storybook documentation for reusable portal components",
+      "state": "open",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/86"
+    },
+    {
+      "number": 34,
+      "title": "[TASK][OWNER WEB] Invalidate privileged portal state after workspace and session changes",
+      "state": "closed",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/34"
+    },
+    {
+      "number": 33,
+      "title": "[TASK][BACKEND API] Implement enforce organization and representation access boundaries API and data contracts",
+      "state": "closed",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/33"
+    },
+    {
+      "number": 32,
+      "title": "[STORY][BACKEND API] Enforce organization and representation access boundaries",
+      "state": "open",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/32"
+    },
+    {
+      "number": 31,
+      "title": "[TASK][CUSTOMER FLUTTER] Implement keep customer sessions profiles and saved listings consistent user experience",
+      "state": "closed",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/31"
+    },
+    {
+      "number": 30,
+      "title": "[TASK][BACKEND API] Implement keep customer sessions profiles and saved listings consistent API and data contracts",
+      "state": "closed",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/30"
+    },
+    {
+      "number": 29,
+      "title": "[STORY][CUSTOMER FLUTTER] Keep customer sessions profiles and saved listings consistent",
+      "state": "open",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/29"
+    },
+    {
+      "number": 14,
+      "title": "[EPIC] Protect customer identity and organization access",
+      "state": "open",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/14"
+    },
+    {
+      "number": 12,
+      "title": "[INITIATIVE] Deliver a trustworthy Westayplace property platform",
+      "state": "open",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/12"
+    }
+  ]
+}

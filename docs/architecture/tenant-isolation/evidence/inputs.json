@@ -1,0 +1,27 @@
+{
+  "governanceKitMasterFile": "AGENT_MASTER_PROMPT.md and named ZIP not found in attached local paths; full supplied master prompt pasted text read instead",
+  "inputs": [
+    {
+      "path": "/Users/admin/.codex/attachments/7c76c69d-6987-450d-99f2-bf8d8df08dc4/Pasted text.txt",
+      "sha256": "8dd8588b2d1aef38de92ad7ddd77cfe4eca97ad8fa1dbebe0d5c9d1a6cbe5803"
+    },
+    {
+      "path": "/Users/admin/.codex/attachments/aff0eb15-62ee-4035-b66f-d51ff78eeb18/Pasted text.txt",
+      "sha256": "df440299db912e78a2cd65f67a05edbb87716d4d8f14998cf63784ada614136e"
+    },
+    {
+      "path": "/Users/admin/.codex/attachments/f1c13c37-2850-4a64-8165-429672e26d56/Pasted text.txt",
+      "sha256": "df440299db912e78a2cd65f67a05edbb87716d4d8f14998cf63784ada614136e"
+    },
+    {
+      "path": "/Users/admin/.codex/attachments/a6234471-a444-4814-b5e0-ab8d3199e579/Pasted text.txt",
+      "sha256": "8dd8588b2d1aef38de92ad7ddd77cfe4eca97ad8fa1dbebe0d5c9d1a6cbe5803"
+    }
+  ],
+  "duplicates": "Two equivalent master prompt pastes and two equivalent backlog pastes; deduplicated into twelve draft records",
+  "screenshots": {
+    "agent": "/var/folders/yc/1h_0z1vj1qzc3cjnd3zl31qr0000gn/T/codex-clipboard-22bda058-8c2a-4e2d-a166-cfbe2a2366a3.png",
+    "ownerWithHighlightedWorkspace": "/var/folders/yc/1h_0z1vj1qzc3cjnd3zl31qr0000gn/T/codex-clipboard-7416e29f-38fb-4396-9268-c6f8d1d1d60e.png",
+    "kitNamedThreeReferences": "Exact three kit reference filenames unavailable; do not claim three distinct kit PNGs were inspected"
+  }
+}

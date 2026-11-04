@@ -1,3 +1,8 @@
+import { CreateOwnerWorkspaceController } from '@/modules/me/controllers/create-owner-workspace.controller.ts';
+import { CREATE_OWNER_WORKSPACE, PARTNER_ONBOARDING_REPOSITORY } from '@/modules/me/me.tokens.ts';
+import { createOwnerWorkspace } from '@/application/me/create-owner-workspace/create-owner-workspace.use-case.ts';
+import type { PartnerOnboardingRepository } from '@/application/ports/repositories/partner-onboarding.port.ts';
+import { postgresPartnerOnboardingRepository } from '@/infrastructure/postgres/repositories/postgres-partner-onboarding.repository.ts';
 import { Module } from '@nestjs/common';
 import { AGENT_REPOSITORY } from '@/modules/shared/shared.tokens.ts';
 import type { AgentRepository } from '@/application/ports/repositories/agent-repository.port.ts';
@@ -28,8 +33,10 @@ import type { IdentityProvider } from '@/application/ports/providers/identity-pr
 import type { UserRepository } from '@/application/ports/repositories/user-repository.port.ts';
 
 @Module({
-  controllers: [GetMeController, GetMyStaysController, SavedListingsController],
+  controllers: [CreateOwnerWorkspaceController, GetMeController, GetMyStaysController, SavedListingsController],
   providers: [
+    { provide: PARTNER_ONBOARDING_REPOSITORY, useFactory: () => postgresPartnerOnboardingRepository() },
+    { provide: CREATE_OWNER_WORKSPACE, inject: [PARTNER_ONBOARDING_REPOSITORY], useFactory: (repository: PartnerOnboardingRepository) => createOwnerWorkspace(repository) },
     {
       provide: IDENTITY_PROVIDER,
       useFactory: (): IdentityProvider => jwksIdentityProvider(),

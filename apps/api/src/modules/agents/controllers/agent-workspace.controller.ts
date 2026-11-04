@@ -108,13 +108,13 @@ export class AgentWorkspaceController {
     @Inject(RESOLVE_PRINCIPAL) private readonly resolve: ReturnType<typeof resolvePrincipal>,
   ) {}
 
-  private principal(auth: string | undefined) {
-    return this.resolve({ authorization: auth, organizationId: null });
+  private principal(auth: string | undefined, enrollment = false) {
+    return this.resolve({ authorization: auth, organizationId: null, ...(enrollment ? {} : { requiredCapability: 'AGENT' as const }) });
   }
 
   @Get('profile')
   async profile(@Headers('authorization') auth?: string) {
-    const principal = await this.principal(auth);
+    const principal = await this.principal(auth, true);
     const profile = await this.getProfile({ principal });
     if (!profile) throw new NotFoundException('You have not set up an agent profile yet');
     return toOwnAgentHttpResponse(profile);
@@ -123,7 +123,7 @@ export class AgentWorkspaceController {
   @Post('profile')
   async register(@Body() body: unknown, @Headers('authorization') auth?: string) {
     const input = parse(agentProfileSchema, body);
-    const principal = await this.principal(auth);
+    const principal = await this.principal(auth, true);
     return toOwnAgentHttpResponse(await this.registerProfile({ principal, profile: input }));
   }
 

@@ -1,4 +1,5 @@
-import { BadRequestException, Body, Controller, Get, Headers, HttpCode, Inject, Param, Post } from '@nestjs/common';
+import type { FastifyRequest } from 'fastify';
+import { BadRequestException, Body, Controller, Get, Headers, HttpCode, Inject, Param, Post, Req } from '@nestjs/common';
 import { z } from 'zod';
 import {
   DECIDE_AGENT_VERIFICATION,
@@ -22,21 +23,21 @@ export class AdminAgentsController {
   ) {}
 
   @Get('pending')
-  async list(@Headers('authorization') auth?: string) {
+  async list(@Req() request: FastifyRequest, @Headers('authorization') auth?: string) {
     const principal = await this.resolve({ authorization: auth, organizationId: null });
-    const rows = await this.pending({ principal });
+    const rows = await this.pending({ principal, audit:{purpose:'Agent verification review',requestId:request.id} });
     return { items: rows.map(toOwnAgentHttpResponse) };
   }
 
   @Post(':id/verification')
   @HttpCode(200)
-  async verification(@Param('id') id: string, @Body() body: unknown, @Headers('authorization') auth?: string) {
+  async verification(@Req() request: FastifyRequest, @Param('id') id: string, @Body() body: unknown, @Headers('authorization') auth?: string) {
     if (!z.guid().safeParse(id).success) throw new BadRequestException('Not a valid agent id');
     const parsed = verificationDecisionSchema.safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException(parsed.error.issues[0]?.message ?? 'Invalid request');
     const principal = await this.resolve({ authorization: auth, organizationId: null });
     return toOwnAgentHttpResponse(
-      await this.decide({ principal, agentId: id, decision: parsed.data.decision, note: parsed.data.note }),
+      await this.decide({ principal, audit:{purpose:'Agent verification decision',requestId:request.id}, agentId: id, decision: parsed.data.decision, note: parsed.data.note }),
     );
   }
 }

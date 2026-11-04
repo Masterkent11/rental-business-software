@@ -1,3 +1,9 @@
+import { ApiPartnerShellAdapter } from "../http/api-partner-shell.adapter";
+import { PartnerShellUseCases } from "../../application/use-cases/partner/partner-shell.use-cases";
+import {ApiMarketingAdapter} from "../http/api-marketing.adapter";
+import {MarketingUseCases} from "../../application/use-cases/marketing/marketing.use-cases";
+import { SupabasePartnerAccessAdapter } from "../auth/supabase-partner-access.adapter";
+import { RegisterPartnerUseCase, CompletePartnerSetupUseCase, RequestPartnerPasswordResetUseCase, UpdatePartnerPasswordUseCase } from "../../application/use-cases/session/partner-access.use-cases";
 import { HttpClient } from "../http/http-client";
 import { ApiOwnerRepositoryAdapter } from "../http/api-owner-repository.adapter";
 import { SupabaseSessionAdapter } from "../auth/supabase-session.adapter";
@@ -18,6 +24,7 @@ import {
   RefreshSessionUseCase,
   SignOutUseCase,
   SwitchWorkspaceUseCase,
+  WatchSessionUseCase,
 } from "../../application/use-cases/session/session.use-cases";
 import {
   CreateSaleListingUseCase,
@@ -100,17 +107,25 @@ import {
 
 export class OwnerWebContainer {
   readonly httpClient = new HttpClient();
+  readonly partnerAccess = new SupabasePartnerAccessAdapter(this.httpClient);
+  readonly registerPartner = new RegisterPartnerUseCase(this.partnerAccess);
+  readonly completePartnerSetup = new CompletePartnerSetupUseCase(this.partnerAccess);
+  readonly requestPartnerPasswordReset = new RequestPartnerPasswordResetUseCase(this.partnerAccess);
+  readonly updatePartnerPassword = new UpdatePartnerPasswordUseCase(this.partnerAccess);
   readonly ownerRepository: OwnerRepositoryPort = new ApiOwnerRepositoryAdapter(this.httpClient);
   readonly sessionPort: SessionPort = new SupabaseSessionAdapter(this.httpClient);
   readonly realtime: RealtimePort = new SupabaseRealtimeAdapter();
   readonly photoStorage: PhotoStoragePort = new SupabasePhotoStorageAdapter();
   readonly partnerRepository: PartnerRepositoryPort = new ApiPartnerRepositoryAdapter(this.httpClient);
   readonly fileReader = new BrowserFileReaderAdapter();
+  readonly partnerShell = new PartnerShellUseCases(new ApiPartnerShellAdapter(this.httpClient),this.fileReader);
+  readonly marketing = new MarketingUseCases(new ApiMarketingAdapter(this.httpClient),this.fileReader);
 
   readonly getCurrentSessionUseCase = new GetCurrentSessionUseCase(this.sessionPort);
   readonly signInUseCase = new SignInUseCase(this.sessionPort);
   readonly signOutUseCase = new SignOutUseCase(this.sessionPort);
   readonly switchWorkspaceUseCase = new SwitchWorkspaceUseCase(this.sessionPort);
+  readonly watchSessionUseCase = new WatchSessionUseCase(this.sessionPort);
   readonly refreshSessionUseCase = new RefreshSessionUseCase(this.sessionPort);
 
   readonly loadDashboardUseCase = new LoadDashboardUseCase(this.ownerRepository);

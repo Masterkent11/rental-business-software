@@ -1,0 +1,53 @@
+{
+  "fixture": "Synthetic API interception, no production writes",
+  "results": [
+    {
+      "width": 320,
+      "properties": true,
+      "filters": true,
+      "pagination": true,
+      "tabsKeyboard": true,
+      "bookings": true,
+      "messagesEmpty": true,
+      "analytics": true,
+      "drawer": true
+    },
+    {
+      "width": 375,
+      "properties": true,
+      "filters": true,
+      "pagination": true,
+      "tabsKeyboard": true,
+      "bookings": true,
+      "messagesEmpty": true,
+      "analytics": true,
+      "drawer": true
+    },
+    {
+      "width": 390,
+      "properties": true,
+      "filters": true,
+      "pagination": true,
+      "tabsKeyboard": true,
+      "bookings": true,
+      "messagesEmpty": true,
+      "analytics": true,
+      "drawer": true
+    },
+    {
+      "width": 430,
+      "properties": true,
+      "filters": true,
+      "pagination": true,
+      "tabsKeyboard": true,
+      "bookings": true,
+      "messagesEmpty": true,
+      "analytics": true,
+      "drawer": true
+    }
+  ],
+  "sent": 8,
+  "tours": "All four phone widths, fullscreen and rename",
+  "physicalKeyboard": "Not run; browser viewport resize simulates available height",
+  "errors": []
+}

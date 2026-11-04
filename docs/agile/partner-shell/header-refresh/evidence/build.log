@@ -1,0 +1,68 @@
+
+> owner-web@0.1.0 build
+> next build
+
+▲ Next.js 16.3.1 (Turbopack)
+- Environments: .env.local
+⚠ Warning: Next.js ignored package-lock.json in /Users/admin because it is outside the current Git repository (/Users/admin/Documents/GitHub/rental-business-software).
+ To use this directory, set `turbopack.root` in your Next.js config.
+
+✓ Running next.config.ts took 118ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 2.1s
+  Running TypeScript ...
+  Finished TypeScript in 3.3s ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/36) ...
+  Generating static pages using 7 workers (9/36) 
+  Generating static pages using 7 workers (18/36) 
+  Generating static pages using 7 workers (27/36) 
+✓ Generating static pages using 7 workers (36/36) in 1885ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /account
+├ ○ /agent
+├ ○ /agent/analytics
+├ ○ /agent/clients
+├ ○ /agent/leads
+├ ○ /agent/marketing
+├ ○ /agent/messages
+├ ○ /agent/profile
+├ ○ /agent/properties
+├ ƒ /agent/properties/[id]
+├ ○ /agent/tasks
+├ ○ /agent/tours
+├ ƒ /agent/tours/[listingId]
+├ ○ /agent/viewings
+├ ○ /analytics
+├ ○ /apple-icon.png
+├ ○ /applications
+├ ○ /auth/callback
+├ ○ /bookings
+├ ○ /forgot-password
+├ ○ /icon.png
+├ ○ /inquiries
+├ ○ /legal/privacy
+├ ○ /legal/terms
+├ ○ /messages
+├ ○ /onboarding/role
+├ ○ /onboarding/setup
+├ ○ /payments
+├ ○ /properties
+├ ƒ /properties/[id]
+├ ○ /properties/new
+├ ○ /reset-password
+├ ○ /sign-in
+├ ○ /sign-up
+├ ○ /tours
+├ ƒ /tours/[listingId]
+└ ○ /viewings
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

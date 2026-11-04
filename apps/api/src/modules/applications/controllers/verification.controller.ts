@@ -1,6 +1,7 @@
+import type { FastifyRequest } from 'fastify';
 import type { reviewIdentityEvidence } from '@/application/verification/review-identity-evidence/review-identity-evidence.use-case.ts';
 import type { decideIdentityReview } from '@/application/verification/decide-identity-review/decide-identity-review.use-case.ts';
-import { BadRequestException, Body, Controller, Get, Header, Headers, Inject, Param, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Header, Headers, Inject, Param, Post, Req } from '@nestjs/common';
 import type { z } from 'zod';
 import { RESOLVE_PRINCIPAL } from '@/modules/me/me.tokens.ts';
 import type { resolvePrincipal } from '@/application/identity/resolve-principal/resolve-principal.use-case.ts';
@@ -41,16 +42,16 @@ export class VerificationController {
   ) {}
   @Get('admin/identity-verifications/:userId/:id/evidence')
   @Header('Cache-Control', 'no-store')
-  async reviewEvidence(@Param('userId') userId: string, @Param('id') id: string, @Headers('authorization') auth?: string) {
+  async reviewEvidence(@Req() request: FastifyRequest, @Param('userId') userId: string, @Param('id') id: string, @Headers('authorization') auth?: string) {
     const principal = await this.resolveUseCase({ authorization: auth, organizationId: null });
-    return this.reviewIdentityEvidenceUseCase(principal, parse(verificationId, userId), parse(verificationId, id));
+    return this.reviewIdentityEvidenceUseCase(principal, parse(verificationId, userId), parse(verificationId, id), {purpose:'Identity evidence review',requestId:request.id});
   }
   @Post('admin/identity-verifications/:userId/:id/decision')
   @Header('Cache-Control', 'no-store')
-  async decideReview(@Param('userId') userId: string, @Param('id') id: string, @Body() body: unknown, @Headers('authorization') auth?: string) {
+  async decideReview(@Req() request: FastifyRequest, @Param('userId') userId: string, @Param('id') id: string, @Body() body: unknown, @Headers('authorization') auth?: string) {
     const principal = await this.resolveUseCase({ authorization: auth, organizationId: null });
     return toVerificationResponse(await this.decideIdentityReviewUseCase(principal, { ...parse(identityReviewSchema, body),
-      userId: parse(verificationId, userId), sessionId: parse(verificationId, id) }));
+      userId: parse(verificationId, userId), sessionId: parse(verificationId, id) }, {purpose:'Identity verification decision',requestId:request.id}));
   }
   private async user(auth?: string) { return (await this.resolveUseCase({ authorization: auth, organizationId: null })).userId; }
   @Get('application-drafts/resource/:resourceId')

@@ -6,7 +6,7 @@ import ts from 'typescript';
 const root = path.resolve(import.meta.dirname, '../..');
 const require = createRequire(path.join(root, 'package.json'));
 
-export function loadSource(relativePath, container = {}) {
+export function loadSources(relativePaths, container = {}) {
   const modules = new Map();
   function load(file) {
     if (modules.has(file)) return modules.get(file).exports;
@@ -26,7 +26,11 @@ export function loadSource(relativePath, container = {}) {
     new Function('require','module','exports',source)(localRequire,loadedModule,loadedModule.exports);
     return loadedModule.exports;
   }
-  return load(path.join(root,relativePath));
+  return relativePaths.map(relativePath => load(path.join(root,relativePath)));
+}
+
+export function loadSource(relativePath, container = {}) {
+  return loadSources([relativePath], container)[0];
 }
 
 export function loadStore(name, container) {

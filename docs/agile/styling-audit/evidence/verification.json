@@ -1,0 +1,21 @@
+{
+  "status": "PAUSED AT USER REQUEST",
+  "build": {
+    "status": "PASS",
+    "log": "build.log"
+  },
+  "firstBrowserRun": {
+    "partner": "PASS",
+    "marketing": "PASS",
+    "auth": "PASS"
+  },
+  "decodedImageRerun": {
+    "partner": "PASS",
+    "marketing": "FAIL: timed out waiting for Try again; not investigated after user switched task",
+    "auth": "PASS",
+    "supplemental": "PASS: 16 captures, no horizontal overflow or matched stale selector consumers in captured states"
+  },
+  "fixtureScope": "Synthetic intercepted API and provider responses; no real backend/provider acceptance",
+  "afterComparison": "NOT RUN: no styling refactor",
+  "baselineCurrentness": "Production build before concurrent auth.css change; refresh on resume"
+}

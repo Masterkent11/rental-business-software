@@ -1,0 +1,140 @@
+{
+  "scope": "Synthetic Owner session and API responses, no writes",
+  "results": [
+    {
+      "width": 320,
+      "height": 568,
+      "bounds": [
+        {
+          "x": 16,
+          "y": 168,
+          "width": 139,
+          "height": 56
+        },
+        {
+          "x": 165,
+          "y": 168,
+          "width": 139,
+          "height": 56
+        }
+      ],
+      "mobileIllustrations": true
+    },
+    {
+      "width": 375,
+      "height": 812,
+      "bounds": [
+        {
+          "x": 16,
+          "y": 168,
+          "width": 166.5,
+          "height": 56
+        },
+        {
+          "x": 192.5,
+          "y": 168,
+          "width": 166.5,
+          "height": 56
+        }
+      ],
+      "mobileIllustrations": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "bounds": [
+        {
+          "x": 16,
+          "y": 168,
+          "width": 174,
+          "height": 56
+        },
+        {
+          "x": 200,
+          "y": 168,
+          "width": 174,
+          "height": 56
+        }
+      ],
+      "mobileIllustrations": true
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "bounds": [
+        {
+          "x": 16,
+          "y": 168,
+          "width": 194,
+          "height": 56
+        },
+        {
+          "x": 220,
+          "y": 168,
+          "width": 194,
+          "height": 56
+        }
+      ],
+      "mobileIllustrations": true
+    },
+    {
+      "width": 834,
+      "height": 1112,
+      "bounds": [
+        {
+          "x": 20,
+          "y": 222,
+          "width": 199.34375,
+          "height": 50
+        },
+        {
+          "x": 233.34375,
+          "y": 222,
+          "width": 146,
+          "height": 50
+        }
+      ],
+      "mobileIllustrations": false
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "bounds": [
+        {
+          "x": 1052.65625,
+          "y": 154,
+          "width": 199.34375,
+          "height": 50
+        },
+        {
+          "x": 1266,
+          "y": 154,
+          "width": 146,
+          "height": 50
+        }
+      ],
+      "mobileIllustrations": false
+    },
+    {
+      "width": 1920,
+      "height": 1080,
+      "bounds": [
+        {
+          "x": 1532.65625,
+          "y": 154,
+          "width": 199.34375,
+          "height": 50
+        },
+        {
+          "x": 1746,
+          "y": 154,
+          "width": 146,
+          "height": 50
+        }
+      ],
+      "mobileIllustrations": false
+    }
+  ],
+  "creationRoutes": true,
+  "errors": []
+}

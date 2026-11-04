@@ -7,37 +7,34 @@ import {
   type AgentProfile,
   type VerificationDecision,
 } from '@/domain/agents/agent.ts';
-import { hasCapability, type Principal } from '@/domain/identity/identity.ts';
-import { OrganizationForbiddenError } from '@/application/identity/resolve-principal/resolve-principal.use-case.ts';
-
-const assertPlatformAdmin = (principal: Principal) => {
-  if (!hasCapability(principal, 'PLATFORM_ADMIN')) {
-    throw new OrganizationForbiddenError('Only the platform team can review agent verification');
-  }
-};
+import { type Principal } from '@/domain/identity/identity.ts';
+import type { authorizeAdministration } from '@/application/administration/authorize-administration/authorize-administration.use-case.ts';
+import type { AdministrativeAudit } from '@/domain/administration/administration.ts';
 
 export const listPendingAgentVerifications =
-  (agents: AgentRepository) =>
-  async (input: { readonly principal: Principal }): Promise<readonly AgentProfile[]> => {
-    assertPlatformAdmin(input.principal);
-    return agents.pendingVerification(input.principal.userId);
+  (agents: AgentRepository, authorize: ReturnType<typeof authorizeAdministration>) =>
+  async (input: { readonly principal: Principal; readonly audit: AdministrativeAudit }): Promise<readonly AgentProfile[]> => {
+    const context = await authorize(input.principal,'AGENT_REVIEW',input.audit);
+    return agents.pendingVerification(input.principal.userId,context);
   };
 
 export const decideAgentVerification =
-  (agents: AgentRepository, notifications: NotificationRepository) =>
+  (agents: AgentRepository, notifications: NotificationRepository, authorize: ReturnType<typeof authorizeAdministration>) =>
   async (input: {
     readonly principal: Principal;
     readonly agentId: string;
+    readonly audit: AdministrativeAudit;
     readonly decision: VerificationDecision;
     readonly note: string | null;
   }): Promise<AgentProfile> => {
-    assertPlatformAdmin(input.principal);
-    const current = await agents.findForAdmin(input.principal.userId, input.agentId);
+    const context = await authorize(input.principal,'AGENT_REVIEW',input.audit,input.agentId);
+    const current = await agents.findForAdmin(input.principal.userId, input.agentId,context);
     if (!current) throw new AgentProfileNotFoundError('Agent not found');
     const next = nextVerificationState(current.verificationState, input.decision);
     const note = input.note?.trim().slice(0, 500) || null;
     const updated = await agents.decideVerification({
       adminUserId: input.principal.userId,
+      context,
       agentId: input.agentId,
       current: current.verificationState,
       next,

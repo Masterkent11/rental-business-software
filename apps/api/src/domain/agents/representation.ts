@@ -107,3 +107,10 @@ export function assertActiveRepresentationAllows(
     throw new RepresentationForbiddenError('The owner has not given you permission for that');
   }
 }
+
+export function assertRepresentationCurrent(representation: Pick<Representation, 'terms'>, now: Date): void {
+  if ((representation.terms.validFrom && representation.terms.validFrom.getTime() > now.getTime()) ||
+      (representation.terms.validUntil && representation.terms.validUntil.getTime() <= now.getTime())) {
+    throw new RepresentationForbiddenError('This property representation is not current');
+  }
+}

@@ -199,7 +199,7 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
+    <div className="partner-empty-state flex flex-col items-center justify-center px-6 py-14 text-center">
       <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-surface-secondary text-muted">
         {icon ?? <Inbox className="size-5" aria-hidden />}
       </div>
@@ -212,7 +212,7 @@ export function EmptyState({
 
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div role="alert" className="flex flex-col items-center justify-center px-6 py-12 text-center">
+    <div role="alert" className="partner-error-state flex flex-col items-center justify-center px-6 py-12 text-center">
       <div className="mb-3 flex size-11 items-center justify-center rounded-2xl bg-danger-soft text-danger">
         <AlertTriangle className="size-5" aria-hidden />
       </div>
@@ -348,12 +348,25 @@ export function SegmentedTabs<T extends string>({
   label: string;
 }) {
   return (
-    <div role="tablist" aria-label={label} className="flex flex-wrap gap-1 rounded-xl bg-surface-secondary p-1">
+    <div role="tablist" aria-label={label} className="partner-tabs flex flex-wrap gap-1 rounded-xl bg-surface-secondary p-1">
       {options.map((option) => (
         <button
           key={option.value}
           role="tab"
           aria-selected={value === option.value}
+          tabIndex={value === option.value ? 0 : -1}
+          onKeyDown={(event) => {
+            const index = options.indexOf(option);
+            const next = event.key === "ArrowRight" ? (index + 1) % options.length
+              : event.key === "ArrowLeft" ? (index - 1 + options.length) % options.length
+              : event.key === "Home" ? 0 : event.key === "End" ? options.length - 1 : null;
+            if (next === null) return;
+            event.preventDefault();
+            const target = event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>("[role=tab]")[next];
+            target?.focus();
+            target?.scrollIntoView({ block: "nearest", inline: "nearest" });
+            onChange(options[next]!.value);
+          }}
           onClick={() => onChange(option.value)}
           className={cn(
             "focusable rounded-lg px-3 py-1.5 text-[12.5px] font-medium transition-colors",

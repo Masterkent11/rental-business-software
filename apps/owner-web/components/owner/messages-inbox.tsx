@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, ArrowLeft, CalendarDays, Loader2, MessageSquare, RotateCw, SendHorizontal } from "lucide-react";
 
 import { Page, TopBar } from "@/components/owner/shell";
-import { Badge, Btn, Card, EmptyState, ErrorState, LinkBtn, SkeletonRows } from "@/components/owner/ui";
+import { Btn, Card, EmptyState, ErrorState, LinkBtn, SkeletonRows } from "@/components/owner/ui";
 import { Photo } from "@/components/owner/photo";
 import { formatDate } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -45,14 +45,33 @@ function Thread({ basePath, viewer }: { basePath: string; viewer: "OWNER" | "AGE
     bottom.current?.scrollIntoView({ block: "end" });
   }, [thread.length, activeId]);
 
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    const page = bottom.current?.closest<HTMLElement>(".partner-thread-open");
+    if (!viewport || !page) return;
+    const resize = () => {
+      page.style.setProperty("--chat-height", `${viewport.height}px`);
+      page.style.setProperty("--chat-top", `${viewport.offsetTop}px`);
+    };
+    resize();
+    viewport.addEventListener("resize", resize);
+    viewport.addEventListener("scroll", resize);
+    return () => {
+      viewport.removeEventListener("resize", resize);
+      viewport.removeEventListener("scroll", resize);
+      page.style.removeProperty("--chat-height");
+      page.style.removeProperty("--chat-top");
+    };
+  }, [activeConversation?.id]);
+
   if (!activeConversation && threadLoading) {
     return <div className="flex flex-1 items-center justify-center"><Loader2 className="size-5 animate-spin text-muted" aria-label="Loading conversation" /></div>;
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="partner-thread flex min-h-0 flex-1 flex-col">
       {activeConversation ? (
-        <div className="flex items-center gap-3 border-b border-border px-5 py-3.5">
+        <div className="partner-thread-heading flex items-center gap-3 border-b border-border px-5 py-3.5">
           <Link href={basePath} className="focusable rounded-lg p-1.5 text-muted hover:bg-surface-secondary md:hidden" aria-label="Back to inbox">
             <ArrowLeft className="size-4" aria-hidden />
           </Link>
@@ -74,7 +93,7 @@ function Thread({ basePath, viewer }: { basePath: string; viewer: "OWNER" | "AGE
         </div>
       ) : null}
 
-      <div className="flex-1 overflow-y-auto px-5 py-4" aria-live="polite" aria-relevant="additions">
+      <div className="partner-thread-scroll min-h-0 flex-1 overflow-y-auto px-5 py-4" aria-live="polite" aria-relevant="additions">
         {threadError ? (
           <ErrorState message={threadError} onRetry={() => activeId && void open(activeId)} />
         ) : (
@@ -124,7 +143,7 @@ function Thread({ basePath, viewer }: { basePath: string; viewer: "OWNER" | "AGE
       </div>
 
       <form
-        className="border-t border-border p-3"
+        className="partner-composer border-t border-border p-3"
         onSubmit={(event) => {
           event.preventDefault();
           void send();
@@ -164,7 +183,7 @@ function Inbox({ basePath }: { basePath: string }) {
   const search = useSearchParams();
   const scope = useSessionStore((s) => s.scope);
   const viewer = scope?.kind === "AGENT" ? "AGENT" : "OWNER";
-  const { conversations, loading, loaded, error, activeId, realtime, refresh, open, close } = useMessagesStore();
+  const { conversations, loading, loaded, error, activeId, refresh, open, close } = useMessagesStore();
   const requested = search.get("c");
   const unreadOnly = viewer === "OWNER" && search.get("unread") === "1";
   const visibleConversations = unreadOnly ? conversations.filter(item => item.unreadCount > 0) : conversations;
@@ -178,15 +197,11 @@ function Inbox({ basePath }: { basePath: string }) {
   if (!scope) return null;
 
   return (
-    <Page wide>
+    <Page wide className={cn("partner-messages", requested && "partner-thread-open")}>
       <TopBar title="Messages" caption={viewer === "AGENT" ? "Conversations with buyers and renters about the properties you represent." : "Conversations with customers about your listings and bookings."}>
         {unreadOnly ? <LinkBtn href={basePath} variant="outline">All messages</LinkBtn> : null}
-        <Badge tone={realtime === "live" ? "ok" : realtime === "offline" ? "bad" : "neutral"}>
-          <span className={cn("size-1.5 rounded-full", realtime === "live" ? "bg-success" : realtime === "offline" ? "bg-danger" : "bg-muted")} />
-          {realtime === "live" ? "Live" : realtime === "offline" ? "Offline" : "Connecting"}
-        </Badge>
       </TopBar>
-      <Card className="flex h-[calc(100dvh-170px)] min-h-[520px] overflow-hidden">
+      <Card className="partner-message-frame flex h-[calc(100dvh-170px)] min-h-[520px] overflow-hidden">
         <div className={cn("flex w-full flex-col border-r border-border md:w-[340px] md:shrink-0", requested && "hidden md:flex")}>
           {loading && !loaded ? (
             <SkeletonRows rows={6} />

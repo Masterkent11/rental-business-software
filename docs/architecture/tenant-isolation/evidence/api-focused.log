@@ -1,0 +1,13 @@
+
+> api@0.1.0 test
+> vitest run src/application/identity/resolve-principal/__tests__/resolve-principal.test.ts src/domain/agents/__tests__/agent.test.ts src/infrastructure/supabase/__tests__/jwks-identity.provider.test.ts src/__tests__/architecture.test.ts
+
+
+ RUN  v4.1.12 /Users/admin/Documents/GitHub/rental-business-software/apps/api
+
+
+ Test Files  4 passed (4)
+      Tests  55 passed (55)
+   Start at  09:36:39
+   Duration  615ms (transform 52ms, setup 0ms, import 228ms, tests 109ms, environment 0ms)
+

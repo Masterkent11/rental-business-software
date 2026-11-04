@@ -1,3 +1,4 @@
+import { assertDatabaseIsolation } from '@/infrastructure/postgres/database-isolation.provider.ts';
 import 'reflect-metadata';
 import { readWebhookBody } from './infrastructure/http/webhook-body.adapter.ts';
 import { NestFactory } from '@nestjs/core';
@@ -9,6 +10,7 @@ const config = loadEnvironmentConfig();
 
 const { AppModule } = await import('./app.module.ts');
 const { sql } = await import('./infrastructure/postgres/db.ts');
+await assertDatabaseIsolation(sql);
 
 /**
  * Fastify under Nest, keeping ADR-0002's transport reasoning: long-lived

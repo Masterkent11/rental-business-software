@@ -1,3 +1,4 @@
+import type { AdministrativeContext } from '@/domain/administration/administration.ts';
 import type {
   AgentProfile,
   AgentProfileInput,
@@ -19,15 +20,16 @@ export interface AgentRepository {
   create(userId: string, input: AgentProfileInput): Promise<AgentProfile>;
   update(userId: string, input: AgentProfileInput): Promise<AgentProfile>;
   requestVerification(userId: string): Promise<AgentProfile>;
-  pendingVerification(adminUserId: string): Promise<readonly AgentProfile[]>;
+  pendingVerification(adminUserId: string, context: AdministrativeContext): Promise<readonly AgentProfile[]>;
   decideVerification(input: {
     readonly adminUserId: string;
+    readonly context: AdministrativeContext;
     readonly agentId: string;
     readonly current: AgentVerificationState;
     readonly next: AgentVerificationState;
     readonly note: string | null;
   }): Promise<AgentProfile | null>;
-  findForAdmin(adminUserId: string, agentId: string): Promise<AgentProfile | null>;
+  findForAdmin(adminUserId: string, agentId: string, context: AdministrativeContext): Promise<AgentProfile | null>;
   responseSamples(agentId: string, since: Date): Promise<readonly ResponseSample[]>;
   activeListingCount(agentId: string): Promise<number>;
   publishedListingIds(agentId: string): Promise<readonly string[]>;

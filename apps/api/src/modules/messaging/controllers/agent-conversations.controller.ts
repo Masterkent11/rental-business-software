@@ -57,7 +57,7 @@ export class AgentConversationsController {
   ) {}
 
   private principal(authorization: string | undefined) {
-    return this.resolve({ authorization, organizationId: null });
+    return this.resolve({ authorization, organizationId: null, requiredCapability: 'AGENT' });
   }
 
   @Get()

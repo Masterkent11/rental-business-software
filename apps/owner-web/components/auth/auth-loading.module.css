@@ -1,0 +1,26 @@
+.loading {
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 15px;
+  padding: 24px;
+  color: var(--auth-muted, var(--muted-foreground));
+  font-size: 14px;
+  text-align: center;
+}
+
+.page {
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding: max(24px, env(safe-area-inset-top)) 24px
+    max(24px, env(safe-area-inset-bottom));
+  background: var(--background);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading svg {
+    animation: none;
+  }
+}

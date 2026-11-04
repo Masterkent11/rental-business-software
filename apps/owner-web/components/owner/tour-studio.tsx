@@ -66,11 +66,11 @@ function DraftMarker() {
 
 function Viewer({ scene, scenes, editable }: { scene: TourScene; scenes: readonly TourScene[]; editable: boolean }) {
   const { camera, mode, selectedHotspotId, imageState, fullscreen, busy, setCamera, setViewport, setImageState, placeAt, setMode, setFullscreen, saveInitialView } = useTourStudioStore();
-  const imageUrl = scene.state === "READY" ? (scene.previewUrl ?? scene.sourceUrl) : null;
+  const imageUrl = scene.state === "READY" ? (fullscreen ? (scene.sourceUrl ?? scene.previewUrl) : (scene.previewUrl ?? scene.sourceUrl)) : null;
   const picking = mode === "place" || mode === "move";
 
   return (
-    <div className={cn("flex flex-col overflow-hidden rounded-2xl border border-border bg-black", fullscreen && "fixed inset-0 z-50 rounded-none border-0")}>
+    <div className={cn("tour-viewer flex flex-col overflow-hidden rounded-2xl border border-border bg-black", fullscreen && "is-fullscreen fixed inset-0 z-50 rounded-none border-0")}>
       <PanoramaViewer
         imageUrl={imageUrl}
         camera={camera}
@@ -79,7 +79,7 @@ function Viewer({ scene, scenes, editable }: { scene: TourScene; scenes: readonl
         onImageState={setImageState}
         onPick={editable && picking ? (direction) => void placeAt(direction.yaw, direction.pitch) : undefined}
         picking={editable && picking}
-        className={fullscreen ? "flex-1" : "aspect-[16/9] w-full"}
+        className={cn("tour-viewport", fullscreen ? "flex-1" : "aspect-[16/9] w-full")}
       >
         {imageState === "ready" && imageUrl
           ? scene.hotspots.map((hotspot) => <HotspotMarker key={hotspot.id} hotspot={hotspot} scenes={scenes} selected={hotspot.id === selectedHotspotId} />)
@@ -110,21 +110,21 @@ function Viewer({ scene, scenes, editable }: { scene: TourScene; scenes: readonl
           </div>
         ) : null}
       </PanoramaViewer>
-      <div className="flex flex-wrap items-center gap-2 bg-surface px-3 py-2.5">
+      <div className="tour-viewer-controls flex flex-wrap items-center gap-2 bg-surface px-3 py-2.5">
         {editable ? (
           <>
-            <Btn size="sm" variant={mode === "look" ? "primary" : "ghost"} onClick={() => setMode("look")}>
-              <Move className="size-3.5" aria-hidden /> Look around
+            <Btn aria-label="Look around" aria-pressed={mode === "look"} title="Look around" size="sm" variant={mode === "look" ? "primary" : "ghost"} onClick={() => setMode("look")}>
+              <Move className="size-3.5" aria-hidden /> <span className="tour-control-label">Look around</span>
             </Btn>
-            <Btn size="sm" variant={mode === "place" ? "primary" : "ghost"} onClick={() => setMode("place")} disabled={scene.state !== "READY"}>
-              <Plus className="size-3.5" aria-hidden /> Add hotspot
+            <Btn aria-label="Add hotspot" aria-pressed={mode === "place"} title="Add hotspot" size="sm" variant={mode === "place" ? "primary" : "ghost"} onClick={() => setMode("place")} disabled={scene.state !== "READY"}>
+              <Plus className="size-3.5" aria-hidden /> <span className="tour-control-label">Add hotspot</span>
             </Btn>
-            <Btn size="sm" variant="ghost" onClick={() => void saveInitialView()} busy={busy} disabled={scene.state !== "READY"}>
-              <Crosshair className="size-3.5" aria-hidden /> Use this view as start
+            <Btn aria-label="Use this view as start" title="Use this view as start" size="sm" variant="ghost" onClick={() => void saveInitialView()} busy={busy} disabled={scene.state !== "READY"}>
+              <Crosshair className="size-3.5" aria-hidden /> <span className="tour-control-label">Use this view as start</span>
             </Btn>
           </>
         ) : null}
-        <span className="ml-auto tabular text-[11.5px] text-muted">
+        <span className="tour-camera-readout ml-auto tabular text-[11.5px] text-muted">
           {Math.round(camera.yaw)}° · {Math.round(camera.pitch)}° · {Math.round(camera.fov)}° fov
         </span>
         <Btn size="sm" variant="ghost" onClick={() => setFullscreen(!fullscreen)} aria-label={fullscreen ? "Exit full screen" : "Full screen"}>
@@ -138,7 +138,7 @@ function Viewer({ scene, scenes, editable }: { scene: TourScene; scenes: readonl
 function RoomStrip({ scenes, entryId }: { scenes: readonly TourScene[]; entryId: string | null }) {
   const { sceneId, selectScene } = useTourStudioStore();
   return (
-    <ul className="flex gap-2 overflow-x-auto pb-1" aria-label="Rooms">
+    <ul className="tour-rooms flex gap-2 overflow-x-auto pb-1" aria-label="Rooms">
       {scenes.map((scene) => (
         <li key={scene.id} className="shrink-0">
           <button
@@ -279,10 +279,10 @@ function SceneSettings({ scene, scenes, entryId }: { scene: TourScene; scenes: r
   const { renameDraft, busy, uploading, setRenameDraft, renameScene, setEntry, moveScene, askRemoveScene, replaceScene } = useTourStudioStore();
   const index = scenes.findIndex((s) => s.id === scene.id);
   return (
-    <Card className="flex flex-col gap-4 p-4">
+    <Card className="tour-scene-settings flex flex-col gap-4 p-4">
       <form
         noValidate
-        className="flex items-end gap-2"
+        className="tour-room-name flex items-end gap-2"
         onSubmit={(event) => {
           event.preventDefault();
           void renameScene();
@@ -307,7 +307,7 @@ function SceneSettings({ scene, scenes, entryId }: { scene: TourScene; scenes: r
           if (file) void replaceScene(file);
         }}
       />
-      <div className="flex flex-wrap gap-1.5">
+      <div className="tour-room-actions flex flex-wrap gap-1.5">
         <Btn size="sm" variant="outline" disabled={scene.id === entryId || busy || scene.state !== "READY"} onClick={() => void setEntry(scene.id)}>
           <Flag className="size-3.5" aria-hidden /> {scene.id === entryId ? "Tour starts here" : "Start tour here"}
         </Btn>
@@ -335,10 +335,10 @@ function UploadRoom() {
   const input = useRef<HTMLInputElement>(null);
   const { uploadLabel, uploading, uploadError, setUploadLabel, addScene } = useTourStudioStore();
   return (
-    <Card className="p-4">
+    <Card className="tour-upload p-4">
       <p className="text-[13.5px] font-semibold">Add a room</p>
       <p className="mt-1 text-[12px] text-muted">Upload an equirectangular 360° photo (2:1, at least 2048 px wide, JPEG, PNG, or WebP, up to 30 MB).</p>
-      <div className="mt-3 flex items-end gap-2">
+      <div className="tour-room-name mt-3 flex items-end gap-2">
         <Field label="Room name" htmlFor="newRoom" className="flex-1">
           <TextInput id="newRoom" value={uploadLabel} onChange={(e) => setUploadLabel(e.target.value)} placeholder="Living room" maxLength={60} />
         </Field>
@@ -389,7 +389,7 @@ function Studio({ backPath, backLabel }: { backPath: string; backLabel: string }
   if (!scope) return null;
   if (loading || (!tour && !loadError)) {
     return (
-      <Page wide>
+      <Page wide className="partner-tour-studio">
         <Skeleton className="mb-6 h-9 w-72" />
         <Skeleton className="aspect-[16/9] w-full rounded-2xl" />
       </Page>
@@ -410,7 +410,7 @@ function Studio({ backPath, backLabel }: { backPath: string; backLabel: string }
   const live = tour.state === "PUBLISHED";
 
   return (
-    <Page wide>
+    <Page wide className="partner-tour-studio">
       <LinkBtn href={backPath} variant="ghost" size="sm" className="-ml-2 mb-3">
         <ArrowLeft className="size-4" aria-hidden /> {backLabel}
       </LinkBtn>
@@ -432,7 +432,7 @@ function Studio({ backPath, backLabel }: { backPath: string; backLabel: string }
         {notice ? <p className="rounded-xl bg-success-soft px-3.5 py-2.5 text-[13px] text-success" role="status">{notice}</p> : null}
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
+      <div className="tour-editor grid gap-5 xl:grid-cols-[1fr_360px]">
         <div className="flex min-w-0 flex-col gap-4">
           {scene ? (
             <>

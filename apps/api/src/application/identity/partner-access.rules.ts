@@ -1,9 +1,11 @@
 import type { RepresentationRepository } from '@/application/ports/repositories/representation-repository.port.ts';
+import type { Clock } from '@/application/ports/providers/clock.port.ts';
 import type { PartyScope } from '@/application/ports/repositories/party-scope.port.ts';
 import { hasCapability, type Principal } from '@/domain/identity/identity.ts';
 import {
   RepresentationForbiddenError,
   assertActiveRepresentationAllows,
+  assertRepresentationCurrent,
   type Representation,
   type RepresentationPermission,
 } from '@/domain/agents/agent.ts';
@@ -55,17 +57,18 @@ const assertAgent = (principal: Principal) => {
 };
 
 export const partnerListingGate =
-  (representations: RepresentationRepository): ListingGate =>
+  (representations: RepresentationRepository, clock: Clock = { now: () => new Date() }): ListingGate =>
   async (input) => {
     if (input.organizationId) return ownerListingGate(input);
     assertAgent(input.principal);
     const representation = await representations.currentForAgentListing(input.principal.userId, input.listingId);
     assertActiveRepresentationAllows(representation, input.permission);
+    assertRepresentationCurrent(representation!, clock.now());
     return { organizationId: representation!.organizationId, role: 'AGENT', representation };
   };
 
 export const partnerTourGate =
-  (representations: RepresentationRepository): TourGate =>
+  (representations: RepresentationRepository, clock: Clock = { now: () => new Date() }): TourGate =>
   async (input) => {
     if (input.organizationId) return ownerTourGate(input);
     assertAgent(input.principal);
@@ -75,6 +78,7 @@ export const partnerTourGate =
         ? await representations.currentForAgentResource(input.principal.userId, input.resourceId)
         : null;
     assertActiveRepresentationAllows(representation, 'canManageTour');
+    assertRepresentationCurrent(representation!, clock.now());
     return { organizationId: representation!.organizationId, role: 'AGENT', representation };
   };
 

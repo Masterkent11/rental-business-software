@@ -1,0 +1,162 @@
+{
+  "inspectedAt": "2026-11-01T08:17:57.966740+00:00",
+  "project": {
+    "id": "PVT_kwHOAyP2LM4BphFM",
+    "number": 3,
+    "title": "Westayplace: Product & Engineering Delivery",
+    "url": "https://github.com/users/Masterkent11/projects/3"
+  },
+  "repositoryIssuesRetrieved": 130,
+  "projectItemsRetrieved": 130,
+  "searchScope": "Retrieved GitHub issue titles and bodies, plus Project fields and native parents",
+  "exactWorkstreamMatches": [],
+  "searchTerms": [
+    "Design System V2",
+    "frontend modernization",
+    "STYLE-001",
+    "STYLE-002",
+    "STYLE-003",
+    "STYLE-004",
+    "STYLE-005"
+  ],
+  "jiraStatus": "UNVERIFIED: no connected Jira WSP reader available",
+  "publicationStatus": "NOT PUBLISHED",
+  "proposedParent": "https://github.com/Masterkent11/rental-business-software/issues/20",
+  "relatedRecords": [
+    {
+      "number": 12,
+      "title": "[INITIATIVE] Deliver a trustworthy Westayplace property platform",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/12",
+      "nativeParentNumber": null,
+      "status": "In Progress",
+      "iteration": null,
+      "mutated": false
+    },
+    {
+      "number": 20,
+      "title": "[EPIC] Deliver a verified and supportable product",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/20",
+      "nativeParentNumber": 12,
+      "status": "In Review",
+      "iteration": null,
+      "mutated": false
+    },
+    {
+      "number": 62,
+      "title": "[STORY][OWNER WEB] Provide owner and agent operational dashboards",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/62",
+      "nativeParentNumber": 17,
+      "status": "In Review",
+      "iteration": null,
+      "mutated": false
+    },
+    {
+      "number": 64,
+      "title": "[TASK][OWNER WEB] Implement provide owner and agent operational dashboards user experience",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/64",
+      "nativeParentNumber": 62,
+      "status": "In Review",
+      "iteration": null,
+      "mutated": false
+    },
+    {
+      "number": 86,
+      "title": "[STORY][STORYBOOK] Establish Storybook documentation for reusable portal components",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/86",
+      "nativeParentNumber": 20,
+      "status": "Backlog",
+      "iteration": null,
+      "mutated": false
+    },
+    {
+      "number": 87,
+      "title": "[TASK][STORYBOOK] Configure Storybook against established portal UI primitives",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/87",
+      "nativeParentNumber": 86,
+      "status": "Backlog",
+      "iteration": null,
+      "mutated": false
+    },
+    {
+      "number": 88,
+      "title": "[TASK][STORYBOOK] Document loading empty error and interaction component states",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/88",
+      "nativeParentNumber": 86,
+      "status": "Backlog",
+      "iteration": null,
+      "mutated": false
+    },
+    {
+      "number": 103,
+      "title": "Owner Web Sign In / Sign Up \u2014 1:1 Authentication Experience",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/103",
+      "nativeParentNumber": 12,
+      "status": "In Progress",
+      "iteration": null,
+      "mutated": false
+    },
+    {
+      "number": 110,
+      "title": "AUTH-007 Storybook and visual regression coverage",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/110",
+      "nativeParentNumber": 103,
+      "status": "Blocked",
+      "iteration": null,
+      "mutated": false
+    },
+    {
+      "number": 114,
+      "title": "Deliver Agent Property Marketing and Content Publishing",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/114",
+      "nativeParentNumber": 12,
+      "status": "In Progress",
+      "iteration": null,
+      "mutated": false
+    },
+    {
+      "number": 117,
+      "title": "Marketing Hub Navigation and Portal Separation",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/117",
+      "nativeParentNumber": 114,
+      "status": "In Review",
+      "iteration": null,
+      "mutated": false
+    },
+    {
+      "number": 121,
+      "title": "Property Content Drafts and Previews",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/121",
+      "nativeParentNumber": 114,
+      "status": "In Review",
+      "iteration": null,
+      "mutated": false
+    },
+    {
+      "number": 122,
+      "title": "Implement authorized property selection, owned media selection, caption editing and accessible preview",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/122",
+      "nativeParentNumber": 121,
+      "status": "In Review",
+      "iteration": null,
+      "mutated": false
+    },
+    {
+      "number": 139,
+      "title": "Partner header search with tenant scoped suggestions",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/139",
+      "nativeParentNumber": 62,
+      "status": "In Review",
+      "iteration": null,
+      "mutated": false
+    },
+    {
+      "number": 140,
+      "title": "Partner workspace logo upload for Owner and Agent",
+      "url": "https://github.com/Masterkent11/rental-business-software/issues/140",
+      "nativeParentNumber": 62,
+      "status": "In Review",
+      "iteration": null,
+      "mutated": false
+    }
+  ]
+}

@@ -13,6 +13,7 @@ import {
 import type { AgentClient, AgentDashboard, AgentTask } from "../domain/agents/dashboard";
 
 interface AgentState {
+  reset: () => void;
   dashboard: AgentDashboard | null;
   dashboardError: string | null;
   representations: readonly Representation[];
@@ -72,92 +73,101 @@ const tomorrowAtNine = () => {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T09:00`;
 };
 
-export const useAgentStore = create<AgentState>((set, get) => ({
-  dashboard: null,
-  dashboardError: null,
-  representations: [],
-  representationsLoaded: false,
-  representationsError: null,
-  clients: [],
-  clientsLoaded: false,
-  clientsError: null,
-  tasks: [],
-  tasksLoaded: false,
-  tasksError: null,
-  showDone: false,
-  taskTitle: "",
-  taskDue: tomorrowAtNine(),
-  taskInquiryId: null,
-  profile: null,
-  profileLoaded: false,
-  form: emptyAgentForm(),
-  formErrors: {},
-  drafts: { specialties: "", areasServed: "", languages: "" },
-  saving: false,
-  saveError: null,
-  savedAt: null,
-  busyId: null,
-  actionError: null,
-  confirmEndId: null,
+const emptyAgentState = () => ({
+  dashboard: null, dashboardError: null, representations: [], representationsLoaded: false,
+  representationsError: null, clients: [], clientsLoaded: false, clientsError: null,
+  tasks: [], tasksLoaded: false, tasksError: null, showDone: false, taskTitle: "",
+  taskDue: tomorrowAtNine(), taskInquiryId: null, profile: null, profileLoaded: false,
+  form: emptyAgentForm(), formErrors: {}, drafts: { specialties: "", areasServed: "", languages: "" },
+  saving: false, saveError: null, savedAt: null, busyId: null, actionError: null, confirmEndId: null,
+});
+
+type AgentCommit = (partial: Partial<AgentState> | ((state: AgentState) => Partial<AgentState>)) => void;
+
+export const useAgentStore = create<AgentState>((set, get) => {
+  let epoch = 0;
+  const reads = new Map<string, number>();
+  const scoped = <T>(operation: (commit: AgentCommit) => Promise<T>, fallback: T, enrollment = false): Promise<T> => {
+    const session = useSessionStore.getState();
+    if (session.status !== "authenticated" || !session.user || (!enrollment && session.activeWorkspace?.kind !== "AGENT")) return Promise.resolve(fallback);
+    const version = epoch;
+    const commit: AgentCommit = partial => {
+      if (version === epoch) set(partial);
+    };
+    return operation(commit).then(result => version === epoch ? result : fallback);
+  };
+  const read = (key: string, operation: (commit: AgentCommit) => Promise<void>, enrollment = false) => {
+    const version = (reads.get(key) ?? 0) + 1;
+    reads.set(key, version);
+    return scoped(async commit => {
+      const latest: AgentCommit = partial => {
+        if (reads.get(key) === version) commit(partial);
+      };
+      await operation(latest);
+    }, undefined, enrollment);
+  };
+  return ({
+  ...emptyAgentState(),
+  reset: () => { ++epoch; reads.clear(); set(emptyAgentState()); },
 
   askEnd: (confirmEndId) => set({ confirmEndId, actionError: null }),
 
-  loadDashboard: async () => {
+  loadDashboard: () => read("loadDashboard", async commit => {
     try {
-      set({ dashboard: await container.loadAgentDashboardUseCase.execute(), dashboardError: null });
+      commit({ dashboard: await container.loadAgentDashboardUseCase.execute(), dashboardError: null });
     } catch (error) {
-      set({ dashboardError: messageOf(error, "Could not load your dashboard") });
+      commit({ dashboardError: messageOf(error, "Could not load your dashboard") });
     }
-  },
+  }),
 
-  loadRepresentations: async () => {
+  loadRepresentations: () => read("loadRepresentations", async commit => {
     try {
       const representations = await container.loadAgentRepresentationsUseCase.execute();
-      set({ representations, representationsLoaded: true, representationsError: null });
+      commit({ representations, representationsLoaded: true, representationsError: null });
     } catch (error) {
-      set({ representationsLoaded: true, representationsError: messageOf(error, "Could not load your properties") });
+      commit({ representationsLoaded: true, representationsError: messageOf(error, "Could not load your properties") });
     }
-  },
+  }),
 
-  respond: async (id, accept) => {
-    set({ busyId: id, actionError: null });
+  respond: (id, accept) => scoped(async commit => {
+    commit({ busyId: id, actionError: null });
     try {
       const updated = await container.respondToRepresentationUseCase.execute(id, accept);
-      set((state) => ({ busyId: null, representations: state.representations.map((r) => (r.id === id ? updated : r)) }));
+      commit((state) => ({ busyId: null, representations: state.representations.map((r) => (r.id === id ? updated : r)) }));
       return true;
     } catch (error) {
-      set({ busyId: null, actionError: messageOf(error, "Could not answer the invitation") });
+      commit({ busyId: null, actionError: messageOf(error, "Could not answer the invitation") });
       return false;
     }
-  },
+  }, false),
 
-  endRepresentation: async (id) => {
-    set({ busyId: id, actionError: null });
+  endRepresentation: (id) => scoped(async commit => {
+    commit({ busyId: id, actionError: null });
     try {
       const scope = useSessionStore.getState().scope;
       if (scope?.kind !== "AGENT") throw new Error("Switch to your agent workspace to end a representation");
       const updated = await container.endRepresentationUseCase.execute(scope, id, "Ended by the agent");
-      set((state) => ({ busyId: null, confirmEndId: null, representations: state.representations.map((r) => (r.id === id ? updated : r)) }));
+      commit((state) => ({ busyId: null, confirmEndId: null, representations: state.representations.map((r) => (r.id === id ? updated : r)) }));
     } catch (error) {
-      set({ busyId: null, actionError: messageOf(error, "Could not end the representation") });
+      commit({ busyId: null, actionError: messageOf(error, "Could not end the representation") });
     }
-  },
+  }, undefined),
 
-  loadClients: async () => {
+  loadClients: () => read("loadClients", async commit => {
     try {
-      set({ clients: await container.loadAgentClientsUseCase.execute(), clientsLoaded: true, clientsError: null });
+      commit({ clients: await container.loadAgentClientsUseCase.execute(), clientsLoaded: true, clientsError: null });
     } catch (error) {
-      set({ clientsLoaded: true, clientsError: messageOf(error, "Could not load clients") });
+      commit({ clientsLoaded: true, clientsError: messageOf(error, "Could not load clients") });
     }
-  },
+  }),
 
-  loadTasks: async () => {
+  loadTasks: () => read("loadTasks", async commit => {
     try {
-      set({ tasks: await container.loadAgentTasksUseCase.execute(get().showDone), tasksLoaded: true, tasksError: null });
+      commit({ tasks: await container.loadAgentTasksUseCase.execute(get().showDone), tasksLoaded: true, tasksError: null });
     } catch (error) {
-      set({ tasksLoaded: true, tasksError: messageOf(error, "Could not load tasks") });
+      commit({ tasksLoaded: true, tasksError: messageOf(error, "Could not load tasks") });
     }
-  },
+  }),
 
   setShowDone: (showDone) => {
     set({ showDone });
@@ -167,15 +177,15 @@ export const useAgentStore = create<AgentState>((set, get) => ({
   setTaskField: (key, value) => set({ [key]: value } as Partial<AgentState>),
   setTaskInquiry: (taskInquiryId) => set({ taskInquiryId }),
 
-  addTask: async () => {
-    set({ saving: true, actionError: null });
+  addTask: () => scoped(async commit => {
+    commit({ saving: true, actionError: null });
     try {
       const task = await container.createAgentTaskUseCase.execute({
         title: get().taskTitle,
         dueAt: get().taskDue,
         inquiryId: get().taskInquiryId,
       });
-      set((state) => ({
+      commit((state) => ({
         saving: false,
         taskTitle: "",
         taskDue: tomorrowAtNine(),
@@ -184,42 +194,42 @@ export const useAgentStore = create<AgentState>((set, get) => ({
       }));
       return true;
     } catch (error) {
-      set({ saving: false, actionError: messageOf(error, "Could not add the follow-up") });
+      commit({ saving: false, actionError: messageOf(error, "Could not add the follow-up") });
       return false;
     }
-  },
+  }, false),
 
-  toggleTask: async (task) => {
-    set({ busyId: task.id, actionError: null });
+  toggleTask: (task) => scoped(async commit => {
+    commit({ busyId: task.id, actionError: null });
     try {
       const updated = await container.setAgentTaskDoneUseCase.execute(task.id, task.doneAt === null);
-      set((state) => ({
+      commit((state) => ({
         busyId: null,
         tasks: state.showDone ? state.tasks.map((t) => (t.id === task.id ? updated : t)) : state.tasks.filter((t) => t.id !== task.id || updated.doneAt === null),
       }));
     } catch (error) {
-      set({ busyId: null, actionError: messageOf(error, "Could not update the follow-up") });
+      commit({ busyId: null, actionError: messageOf(error, "Could not update the follow-up") });
     }
-  },
+  }, undefined),
 
-  deleteTask: async (id) => {
-    set({ busyId: id, actionError: null });
+  deleteTask: (id) => scoped(async commit => {
+    commit({ busyId: id, actionError: null });
     try {
       await container.removeAgentTaskUseCase.execute(id);
-      set((state) => ({ busyId: null, tasks: state.tasks.filter((t) => t.id !== id) }));
+      commit((state) => ({ busyId: null, tasks: state.tasks.filter((t) => t.id !== id) }));
     } catch (error) {
-      set({ busyId: null, actionError: messageOf(error, "Could not delete the follow-up") });
+      commit({ busyId: null, actionError: messageOf(error, "Could not delete the follow-up") });
     }
-  },
+  }, undefined),
 
-  loadProfile: async (fallbackName) => {
+  loadProfile: (fallbackName) => read("loadProfile", async commit => {
     try {
       const profile = await container.loadAgentProfileUseCase.execute();
-      set({ profile, profileLoaded: true, form: profile ? agentFormFrom(profile) : emptyAgentForm(fallbackName), saveError: null });
+      commit({ profile, profileLoaded: true, form: profile ? agentFormFrom(profile) : emptyAgentForm(fallbackName), saveError: null });
     } catch (error) {
-      set({ profileLoaded: true, saveError: messageOf(error, "Could not load your profile") });
+      commit({ profileLoaded: true, saveError: messageOf(error, "Could not load your profile") });
     }
-  },
+  }, true),
 
   setFormField: (key, value) =>
     set((state) => ({ form: { ...state.form, [key]: value }, formErrors: { ...state.formErrors, [key]: undefined } })),
@@ -237,32 +247,39 @@ export const useAgentStore = create<AgentState>((set, get) => ({
 
   removeListItem: (key, index) => set((state) => ({ form: { ...state.form, [key]: state.form[key].filter((_, i) => i !== index) } })),
 
-  saveProfile: async () => {
+  saveProfile: () => scoped(async commit => {
     const errors = validateAgentForm(get().form);
     if (Object.keys(errors).length > 0) {
-      set({ formErrors: errors });
+      commit({ formErrors: errors });
       return null;
     }
-    set({ saving: true, saveError: null });
+    commit({ saving: true, saveError: null });
     try {
       const profile = get().profile
         ? await container.updateAgentProfileUseCase.execute(get().form)
         : await container.registerAgentProfileUseCase.execute(get().form);
-      set({ saving: false, profile, form: agentFormFrom(profile), savedAt: Date.now() });
+      commit({ saving: false, profile, form: agentFormFrom(profile), savedAt: Date.now() });
       return profile;
     } catch (error) {
-      set({ saving: false, saveError: messageOf(error, "Could not save your profile") });
+      commit({ saving: false, saveError: messageOf(error, "Could not save your profile") });
       return null;
     }
-  },
+  }, null, true),
 
-  requestVerification: async () => {
-    set({ saving: true, saveError: null });
+  requestVerification: () => scoped(async commit => {
+    commit({ saving: true, saveError: null });
     try {
       const profile = await container.requestAgentVerificationUseCase.execute();
-      set({ saving: false, profile });
+      commit({ saving: false, profile });
     } catch (error) {
-      set({ saving: false, saveError: messageOf(error, "Could not request verification") });
+      commit({ saving: false, saveError: messageOf(error, "Could not request verification") });
     }
-  },
-}));
+  }, undefined),
+  });
+});
+
+useSessionStore.subscribe((state, previous) => {
+  if (state.status !== "authenticated" || state.user?.id !== previous.user?.id || state.activeWorkspace?.key !== previous.activeWorkspace?.key || state.activeWorkspace?.kind === "AGENT" && previous.activeWorkspace?.kind === "AGENT" && state.activeWorkspace.agentId !== previous.activeWorkspace.agentId) {
+    useAgentStore.getState().reset();
+  }
+});

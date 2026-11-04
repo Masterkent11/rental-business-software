@@ -1,3 +1,4 @@
+import { hasCapability } from '@/domain/identity/identity.ts';
 import type { UserRepository } from '@/application/ports/repositories/user-repository.port.ts';
 import type { AgentRepository } from '@/application/ports/repositories/agent-repository.port.ts';
 import type { GetMeInput, GetMeResult } from './get-me.types.ts';
@@ -13,7 +14,7 @@ export function getMe(users: UserRepository, agents?: AgentRepository) {
       principal: input.principal,
       profile,
       organizations,
-      agentProfile,
+      agentProfile: agentProfile?.verificationState !== 'SUSPENDED' && hasCapability(input.principal, 'AGENT') ? agentProfile : null,
     };
   };
 }

@@ -1,3 +1,5 @@
+import { authorizeAdministration } from '@/application/administration/authorize-administration/authorize-administration.use-case.ts';
+import { postgresAdministrationRepository } from '@/infrastructure/postgres/repositories/postgres-administration.repository.ts';
 import { randomUUID } from 'node:crypto';
 import postgres from 'postgres';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -61,6 +63,7 @@ const owner: Principal = {
 };
 
 const admin: Principal = {
+  assuranceLevel:'aal2',
   userId: ADMIN,
   displayName: 'Platform admin',
   capabilities: [{ capability: 'PLATFORM_ADMIN', organizationId: null }],
@@ -129,6 +132,7 @@ suite('lead assignment: one canonical property, several representing agents', { 
       await users.createProfile({ id, email: `${id.slice(0, 8)}@example.test`, mobile: null, displayName: name });
     }
     await adminDb`insert into user_capabilities (user_id, capability, source_type) values (${ADMIN}, 'PLATFORM_ADMIN', 'PLATFORM')`;
+    await adminDb`insert into app_private.platform_permissions(user_id,permission) values (${ADMIN},'AGENT_REVIEW')`;
 
     const created = await createSaleListing(listings)({
       principal: owner,
@@ -183,7 +187,7 @@ suite('lead assignment: one canonical property, several representing agents', { 
       });
       agentIds.push(profile.id);
       await requestAgentVerification(agents)({ principal: agentPrincipal(index) });
-      await decideAgentVerification(agents, notifications)({ principal: admin, agentId: profile.id, decision: 'VERIFY', note: null });
+      await decideAgentVerification(agents, notifications,authorizeAdministration(postgresAdministrationRepository()))({ principal: admin, audit:{purpose:'Synthetic Agent review',requestId:'integration-review'}, agentId: profile.id, decision: 'VERIFY', note: null });
       const invited = await inviteAgentToListing(representations, agents, listings, notifications)({
         principal: owner,
         organizationId: SANTOS,

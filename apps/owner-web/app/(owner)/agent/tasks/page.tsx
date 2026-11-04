@@ -94,7 +94,7 @@ export default function AgentTasksPage() {
             {tasks.map((task) => {
               const overdue = isOverdue(task, now);
               return (
-                <li key={task.id} className="flex items-center gap-4 px-5 py-3.5">
+                <li key={task.id} id={`search-task-${task.id}`} className="flex items-center gap-4 px-5 py-3.5">
                   <input
                     type="checkbox"
                     className="size-4 accent-foreground"

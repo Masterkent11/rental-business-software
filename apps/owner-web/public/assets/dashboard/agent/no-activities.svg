@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="192" viewBox="0 0 320 192" role="img" aria-labelledby="title">
+<title id="title">No activities scheduled</title>
+<defs>
+<linearGradient id="h-silver" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#F2F5F8"/><stop offset="1" stop-color="#CBD7E3"/></linearGradient>
+<linearGradient id="h-steel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#B2C1D1"/><stop offset="1" stop-color="#7E93AA"/></linearGradient>
+<linearGradient id="h-ink" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#46576B"/><stop offset="1" stop-color="#263448"/></linearGradient>
+<linearGradient id="h-paper" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFFFFF"/><stop offset="1" stop-color="#EDF1F6"/></linearGradient>
+</defs>
+
+<circle cx="160" cy="96" r="84" fill="#F2F5F8"/>
+<path d="M50 162h220" stroke="#8C9FB4" stroke-width="1.5" stroke-linecap="round"/>
+<path d="M81 85v76" stroke="#64788D" stroke-width="2"/><circle cx="81" cy="88" r="28" fill="#DCE4EC"/><circle cx="66" cy="106" r="20" fill="url(#h-steel)" opacity=".65"/>
+<path d="M238 82v79" stroke="#64788D" stroke-width="2"/><circle cx="238" cy="86" r="30" fill="#D8E2EB"/><circle cx="252" cy="104" r="21" fill="url(#h-steel)" opacity=".75"/>
+<path d="M103 86 160 40l59 45v75H103Z" fill="url(#h-silver)" stroke="#8A9EB1" stroke-width="1.5"/>
+<path d="M95 89 160 36l68 53" stroke="url(#h-ink)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<path d="M122 106h26v27h-26zM169 106h27v27h-27z" fill="#F5F8FB" stroke="#7990A6" stroke-width="1.4"/>
+<path d="M135 107v25M181 107v25M123 119h25M170 119h25" stroke="#9AABBC" stroke-width="1.2"/>
+<rect x="148" y="139" width="25" height="21" rx="1.5" fill="#8FA1B4"/>
+<rect x="155" y="145" width="3" height="3" rx="1" fill="#F5F7F8"/>
+<path d="M138 74h44" stroke="#8297AB" stroke-width="1.2"/>
+
+<rect x="197" y="115" width="67" height="60" rx="6" fill="url(#h-paper)" stroke="#62788D" stroke-width="2"/>
+<path d="M198 119a5 5 0 0 1 5-5h55a5 5 0 0 1 5 5v15h-65z" fill="url(#h-ink)"/>
+<path d="M214 109v13M248 109v13" stroke="#CBD7E3" stroke-width="5" stroke-linecap="round"/>
+<path d="m212 153 12 10 21-23" stroke="#34475D" stroke-width="4.7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
