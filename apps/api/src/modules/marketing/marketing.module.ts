@@ -26,6 +26,15 @@ import { duplicateMarketingDraft } from "@/application/marketing/duplicate-marke
 import { uploadMarketingMedia } from "@/application/marketing/upload-marketing-media/upload-marketing-media.use-case.ts";
 import { readMarketingMedia } from "@/application/marketing/read-marketing-media/read-marketing-media.use-case.ts";
 import { removeMarketingMedia } from "@/application/marketing/remove-marketing-media/remove-marketing-media.use-case.ts";
+import { loadFacebookChannel } from "@/application/marketing/load-facebook-channel/load-facebook-channel.use-case.ts";
+import { startFacebookConnection } from "@/application/marketing/start-facebook-connection/start-facebook-connection.use-case.ts";
+import { completeFacebookAuthorization } from "@/application/marketing/complete-facebook-authorization/complete-facebook-authorization.use-case.ts";
+import { selectFacebookPage } from "@/application/marketing/select-facebook-page/select-facebook-page.use-case.ts";
+import { disconnectFacebookPage } from "@/application/marketing/disconnect-facebook-page/disconnect-facebook-page.use-case.ts";
+import { postgresFacebookConnectionRepository } from "@/infrastructure/postgres/repositories/postgres-facebook-connection.repository.ts";
+import { facebookConnectionConfig } from "@/infrastructure/config/facebook-connection-config.ts";
+import { facebookConnectionSecrets } from "@/infrastructure/social/facebook-connection-secrets.adapter.ts";
+import { metaFacebookPages } from "@/infrastructure/social/meta-facebook-pages.adapter.ts";
 @Module({
   controllers: [AgentMarketingController],
   providers: [
@@ -58,7 +67,23 @@ import { removeMarketingMedia } from "@/application/marketing/remove-marketing-m
             gate,
             clock,
           );
+        const facebook = postgresFacebookConnectionRepository();
+        const config = facebookConnectionConfig();
+        const meta = config ? metaFacebookPages(config) : null;
+        const secrets = config ? facebookConnectionSecrets(config.key) : null;
         return {
+          facebook: {
+            load: loadFacebookChannel(facebook, access, !!config),
+            start: startFacebookConnection(facebook, access, meta, secrets),
+            complete: completeFacebookAuthorization(
+              facebook,
+              access,
+              meta,
+              secrets,
+            ),
+            select: selectFacebookPage(facebook, access, !!config),
+            disconnect: disconnectFacebookPage(facebook, access),
+          },
           load: loadMarketing(repo, access),
           save: saveMarketingDraft(repo, access),
           get: getMarketingDraft(repo, access),

@@ -3,8 +3,11 @@ import { container } from "../infrastructure/composition/owner-web-container";
 import { useSessionStore } from "./use-session-store";
 import {
   emptyMarketingDraft,
+  marketingDraftFormat,
+  marketingMediaFormat,
   type MarketingDraft,
   type MarketingDraftInput,
+  type MarketingFormat,
   type MarketingSnapshot,
 } from "../domain/marketing/marketing";
 interface MarketingState {
@@ -12,29 +15,50 @@ interface MarketingState {
   snapshot: MarketingSnapshot | null;
   loading: boolean;
   busy: boolean;
+  uploading: boolean;
   problem: string | null;
   notice: string | null;
   editor: MarketingDraftInput;
+  baseline: MarketingDraftInput;
+  format: MarketingFormat;
+  baselineFormat: MarketingFormat;
   editingId: string | undefined;
   version: number | undefined;
   editorOpen: boolean;
-  preview: { url: string; contentType: string; fileName: string } | null;
   setScope: (scope: string | null) => void;
   load: () => Promise<void>;
   edit: (draft?: MarketingDraft) => void;
   closeEditor: () => void;
+  changeFormat: (format: MarketingFormat) => void;
   field: <K extends keyof MarketingDraftInput>(
     key: K,
     value: MarketingDraftInput[K],
   ) => void;
-  save: () => Promise<void>;
+  save: () => Promise<boolean>;
   duplicate: (id: string) => Promise<void>;
   removeDraft: (id: string) => Promise<void>;
-  upload: (file: File) => Promise<void>;
+  upload: (file: File, attach?: boolean) => Promise<void>;
   removeMedia: (id: string) => Promise<void>;
-  readMedia: (id: string) => Promise<void>;
-  closePreview: () => void;
 }
+
+export function isMarketingEditorDirty(state: MarketingState): boolean {
+  return (
+    state.editorOpen &&
+    (state.format !== state.baselineFormat ||
+      JSON.stringify(state.editor) !== JSON.stringify(state.baseline))
+  );
+}
+
+const closedEditor = {
+  editor: emptyMarketingDraft(),
+  baseline: emptyMarketingDraft(),
+  format: "photo" as const,
+  baselineFormat: "photo" as const,
+  editingId: undefined,
+  version: undefined,
+  editorOpen: false,
+};
+
 export const useMarketingStore = create<MarketingState>((set, get) => {
   let epoch = 0;
   let loadSequence = 0;
@@ -57,21 +81,27 @@ export const useMarketingStore = create<MarketingState>((set, get) => {
         set({ problem: message(error), loading: false });
     }
   };
-  const action = async (work: () => Promise<void>) => {
-    if (!get().scope || get().busy) return;
+  const action = async (
+    work: (isCurrent: () => boolean) => Promise<void>,
+    uploading = false,
+  ): Promise<boolean> => {
+    if (!get().scope || get().busy) return false;
     const token = epoch;
-    set({ busy: true, problem: null, notice: null });
+    const isCurrent = () => token === epoch;
+    set({ busy: true, uploading, problem: null, notice: null });
     try {
-      await work();
-      if (epoch === token) await load();
+      await work(isCurrent);
+      if (isCurrent()) await load();
+      return isCurrent();
     } catch (error) {
       if (epoch === token) {
         const problem = message(error);
         await load();
         if (epoch === token) set({ problem });
       }
+      return false;
     } finally {
-      if (epoch === token) set({ busy: false });
+      if (isCurrent()) set({ busy: false, uploading: false });
     }
   };
   return {
@@ -79,13 +109,10 @@ export const useMarketingStore = create<MarketingState>((set, get) => {
     snapshot: null,
     loading: false,
     busy: false,
+    uploading: false,
     problem: null,
     notice: null,
-    editor: emptyMarketingDraft(),
-    editingId: undefined,
-    version: undefined,
-    editorOpen: false,
-    preview: null,
+    ...closedEditor,
     setScope(scope) {
       if (scope === get().scope) return;
       epoch++;
@@ -94,28 +121,30 @@ export const useMarketingStore = create<MarketingState>((set, get) => {
         snapshot: null,
         loading: false,
         busy: false,
+        uploading: false,
         problem: null,
         notice: null,
-        editor: emptyMarketingDraft(),
-        editingId: undefined,
-        version: undefined,
-        editorOpen: false,
-        preview: null,
+        ...closedEditor,
       });
     },
     load,
     edit(draft) {
+      const editor = draft
+        ? {
+            title: draft.title,
+            caption: draft.caption,
+            listingId: draft.listingId,
+            sourcePhotos: draft.sourcePhotos,
+            mediaIds: draft.mediaIds,
+            state: draft.state,
+          }
+        : emptyMarketingDraft();
+      const format = marketingDraftFormat(editor, get().snapshot?.media ?? []);
       set({
-        editor: draft
-          ? {
-              title: draft.title,
-              caption: draft.caption,
-              listingId: draft.listingId,
-              sourcePhotos: draft.sourcePhotos,
-              mediaIds: draft.mediaIds,
-              state: draft.state,
-            }
-          : emptyMarketingDraft(),
+        editor,
+        baseline: editor,
+        format,
+        baselineFormat: format,
         editingId: draft?.id,
         version: draft?.version,
         editorOpen: true,
@@ -124,73 +153,110 @@ export const useMarketingStore = create<MarketingState>((set, get) => {
       });
     },
     closeEditor() {
-      set({ editorOpen: false });
+      set({ ...closedEditor });
+    },
+    changeFormat(format) {
+      if (format === get().format) return;
+      set({
+        format,
+        editor: { ...get().editor, mediaIds: [], sourcePhotos: [] },
+      });
     },
     field(key, value) {
       set({ editor: { ...get().editor, [key]: value } });
     },
     save() {
-      return action(async () => {
-        const { editor, editingId, version } = get(),
-          token = epoch;
+      return action(async (isCurrent) => {
+        const { editor, editingId, version } = get();
         const saved = await container.marketing.save(
           editor,
           editingId,
           version,
         );
-        if (epoch === token)
-          set({
-            editorOpen: false,
-            notice: "Draft saved.",
-            editingId: saved.id,
-            version: saved.version,
-          });
+        if (!isCurrent()) return;
+        set(({ snapshot }) => ({
+          baseline: editor,
+          baselineFormat: get().format,
+          version: saved.version,
+          notice: "Draft saved.",
+          snapshot: snapshot && {
+            ...snapshot,
+            drafts: [
+              saved,
+              ...snapshot.drafts.filter((draft) => draft.id !== saved.id),
+            ],
+          },
+        }));
       });
     },
-    duplicate(id) {
-      return action(async () => {
+    async duplicate(id) {
+      await action(async (isCurrent) => {
         await container.marketing.duplicate(id);
+        if (isCurrent()) set({ notice: "Draft duplicated." });
       });
     },
-    removeDraft(id) {
-      return action(async () => {
+    async removeDraft(id) {
+      await action(async (isCurrent) => {
         await container.marketing.removeDraft(id);
+        if (isCurrent()) set({ notice: "Draft deleted." });
       });
     },
-    upload(file) {
-      return action(async () => {
-        await container.marketing.upload(file);
-      });
+    async upload(file, attach = false) {
+      await action(async (isCurrent) => {
+        const { editor, editorOpen, format } = get();
+        if (
+          attach &&
+          (!editorOpen ||
+            editor.mediaIds.length ||
+            editor.sourcePhotos.length ||
+            marketingMediaFormat(file.type) !== format)
+        )
+          throw new Error(
+            "Choose a matching file after removing the current attachment.",
+          );
+        const asset = await container.marketing.upload(file);
+        if (!isCurrent()) return;
+        set(({ snapshot }) => ({
+          snapshot: snapshot && {
+            ...snapshot,
+            media: [
+              asset,
+              ...snapshot.media.filter((entry) => entry.id !== asset.id),
+            ],
+          },
+          ...(attach && get().editor === editor
+            ? {
+                editor: { ...editor, mediaIds: [asset.id] },
+              }
+            : {}),
+          notice: attach ? "Media uploaded and attached." : "Media uploaded.",
+        }));
+      }, true);
     },
-    removeMedia(id) {
-      return action(async () => {
+    async removeMedia(id) {
+      await action(async (isCurrent) => {
         await container.marketing.removeMedia(id);
+        if (isCurrent()) set({ notice: "Media removed." });
       });
-    },
-    async readMedia(id) {
-      const token = epoch,
-        media = get().snapshot?.media.find((m) => m.id === id);
-      if (!get().scope || !media) return;
-      try {
-        const result = await container.marketing.readMedia(id);
-        if (epoch === token)
-          set({
-            preview: {
-              url: result.url,
-              contentType: media.contentType,
-              fileName: media.fileName,
-            },
-            problem: null,
-          });
-      } catch (error) {
-        if (epoch === token) set({ problem: message(error) });
-      }
-    },
-    closePreview() {
-      set({ preview: null });
     },
   };
 });
+
+function warnBeforeLeaving(event: BeforeUnloadEvent) {
+  event.preventDefault();
+  event.returnValue = true;
+}
+
+if (typeof window !== "undefined") {
+  useMarketingStore.subscribe((state, previous) => {
+    const protect = (value: MarketingState) =>
+      isMarketingEditorDirty(value) || (value.editorOpen && value.busy);
+    if (protect(state) === protect(previous)) return;
+    if (protect(state))
+      window.addEventListener("beforeunload", warnBeforeLeaving);
+    else window.removeEventListener("beforeunload", warnBeforeLeaving);
+  });
+}
 useSessionStore.subscribe((state, previous) => {
   if (
     state.status !== "authenticated" ||

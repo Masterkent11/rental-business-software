@@ -50,6 +50,7 @@ export interface MarketingProperty {
   readonly id: string;
   readonly title: string;
   readonly photos: readonly string[];
+  readonly location?: string;
 }
 export function validateDraft(input: DraftInput): DraftInput {
   const title = input.title.trim(),
