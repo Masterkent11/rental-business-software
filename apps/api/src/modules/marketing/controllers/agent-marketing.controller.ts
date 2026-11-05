@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Headers,
   Inject,
   Param,
@@ -16,6 +17,8 @@ import type { resolvePrincipal } from "@/application/identity/resolve-principal/
 import type { MarketingUseCases } from "@/application/marketing/marketing.types.ts";
 import { MARKETING_USE_CASES } from "@/modules/marketing/marketing.tokens.ts";
 import {
+  facebookAuthorizationSchema,
+  facebookPageSelectionSchema,
   marketingDraftSchema,
   marketingDraftUpdateSchema,
   marketingUploadSchema,
@@ -41,10 +44,55 @@ export class AgentMarketingController {
     @Inject(MARKETING_USE_CASES) private readonly actions: MarketingUseCases,
   ) {}
   private principal(authorization: string | undefined) {
-    return this.resolve({ authorization, organizationId: null, requiredCapability: 'AGENT' });
+    return this.resolve({
+      authorization,
+      organizationId: null,
+      requiredCapability: "AGENT",
+    });
   }
   @Get() async overview(@Headers("authorization") auth?: string) {
     return toMarketingHttp(await this.actions.load(await this.principal(auth)));
+  }
+  @Get("channels/facebook")
+  @Header("Cache-Control", "no-store")
+  async facebookChannel(@Headers("authorization") auth?: string) {
+    return this.actions.facebook.load(await this.principal(auth));
+  }
+  @Post("channels/facebook/start")
+  @Header("Cache-Control", "no-store")
+  async startFacebook(@Headers("authorization") auth?: string) {
+    return this.actions.facebook.start(await this.principal(auth));
+  }
+  @Post("channels/facebook/complete")
+  @Header("Cache-Control", "no-store")
+  async completeFacebook(
+    @Body() body: unknown,
+    @Headers("authorization") auth?: string,
+  ) {
+    const input = parse(facebookAuthorizationSchema, body);
+    return this.actions.facebook.complete(
+      await this.principal(auth),
+      input.state,
+      input.code,
+    );
+  }
+  @Post("channels/facebook/select")
+  @Header("Cache-Control", "no-store")
+  async selectFacebook(
+    @Body() body: unknown,
+    @Headers("authorization") auth?: string,
+  ) {
+    const input = parse(facebookPageSelectionSchema, body);
+    return this.actions.facebook.select(
+      await this.principal(auth),
+      input.selectionId,
+      input.pageId,
+    );
+  }
+  @Delete("channels/facebook")
+  async disconnectFacebook(@Headers("authorization") auth?: string) {
+    await this.actions.facebook.disconnect(await this.principal(auth));
+    return { removed: true };
   }
   @Get("drafts") async drafts(@Headers("authorization") auth?: string) {
     return {

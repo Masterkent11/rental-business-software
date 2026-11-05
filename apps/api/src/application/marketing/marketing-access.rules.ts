@@ -60,7 +60,12 @@ export function marketingAccess(
       throw new MarketingForbiddenError(
         "Choose an approved represented property.",
       );
-    return { id: listing.id, title: listing.title, photos: listing.photos };
+    return {
+      id: listing.id,
+      title: listing.title,
+      photos: listing.photos,
+      location: [listing.areaLabel, listing.cityLabel].filter(Boolean).join(", "),
+    };
   };
   const property = async (principal: Principal, listingId: string) =>
     resolveProperty(principal, await agent(principal), listingId);

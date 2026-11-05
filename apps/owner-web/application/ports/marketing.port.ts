@@ -1,10 +1,20 @@
 import type {
+  FacebookAuthorizationOutcome,
+  FacebookChannel,
   MarketingSnapshot,
   MarketingDraft,
   MarketingDraftInput,
   MarketingMedia,
 } from "../../domain/marketing/marketing";
 export interface MarketingPort {
+  facebookChannel(): Promise<FacebookChannel>;
+  startFacebook(): Promise<string>;
+  completeFacebook(
+    state: string,
+    code: string | null,
+  ): Promise<FacebookAuthorizationOutcome>;
+  selectFacebook(selectionId: string, pageId: string): Promise<FacebookChannel>;
+  disconnectFacebook(): Promise<void>;
   load(): Promise<MarketingSnapshot>;
   save(
     input: MarketingDraftInput,

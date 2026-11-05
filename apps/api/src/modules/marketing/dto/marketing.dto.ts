@@ -19,3 +19,13 @@ export const marketingUploadSchema = z
     data: z.string().min(1).max(16_777_216),
   })
   .strict();
+
+export const facebookAuthorizationSchema = z.strictObject({
+  state: z.string().regex(/^[\w-]{43}$/),
+  code: z.string().min(1).max(4096).nullable(),
+});
+
+export const facebookPageSelectionSchema = z.strictObject({
+  selectionId: z.string().regex(/^[\da-f]{64}$/),
+  pageId: z.string().regex(/^\d{1,64}$/),
+});

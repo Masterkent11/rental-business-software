@@ -88,3 +88,76 @@ test("a failed upload refreshes failed media without reporting success", async (
   assert.equal(store.getState().problem, "Upload did not finish.");
   assert.equal(store.getState().busy, false);
 });
+
+test("draft title is optional and tab links open the composer only from Content", () => {
+  const { emptyMarketingDraft, marketingDraftTitle, marketingHref } =
+    loadSource("domain/marketing/marketing.ts");
+  const draft = emptyMarketingDraft();
+  assert.equal(marketingDraftTitle(draft), "Untitled draft");
+  assert.equal(
+    marketingDraftTitle({ ...draft, caption: " First line\nSecond line" }),
+    "First line",
+  );
+  assert.equal(
+    marketingDraftTitle({
+      ...draft,
+      title: " Custom title ",
+      caption: "Caption",
+    }),
+    "Custom title",
+  );
+  assert.equal(
+    marketingHref("posts", "new"),
+    "/agent/marketing?tab=posts&draft=new",
+  );
+  assert.equal(
+    marketingHref("overview", "new"),
+    "/agent/marketing?tab=overview",
+  );
+});
+
+test("one save can run at a time and a rejected save keeps edits recoverable", async () => {
+  const pending = deferred();
+  let calls = 0;
+  const { useMarketingStore: store, isMarketingEditorDirty } = loadSource(
+    "stores/use-marketing-store.ts",
+    {
+      marketing: {
+        save: () => {
+          calls++;
+          return pending.promise;
+        },
+        load: async () => ({ drafts: [], media: [], properties: [] }),
+      },
+    },
+  );
+  store.getState().setScope("A");
+  store.getState().edit();
+  assert.equal(isMarketingEditorDirty(store.getState()), false);
+  store.getState().field("caption", "Keep this caption");
+  const save = store.getState().save();
+  assert.equal(await store.getState().save(), false);
+  assert.equal(calls, 1);
+  pending.reject(new Error("Draft was updated by someone else."));
+  assert.equal(await save, false);
+  assert.equal(store.getState().problem, "Draft was updated by someone else.");
+  assert.equal(store.getState().editor.caption, "Keep this caption");
+  assert.equal(isMarketingEditorDirty(store.getState()), true);
+});
+
+test("a pending upload cannot attach private media after a workspace change", async () => {
+  const pending = deferred();
+  const { useMarketingStore: store } = loadSource(
+    "stores/use-marketing-store.ts",
+    { marketing: { upload: () => pending.promise } },
+  );
+  store.getState().setScope("A");
+  store.getState().edit();
+  const upload = store.getState().upload({ type: "image/png" }, true);
+  store.getState().setScope("B");
+  store.getState().edit();
+  pending.resolve({ id: "private" });
+  await upload;
+  assert.equal(store.getState().editor.mediaIds.length, 0);
+  assert.equal(store.getState().notice, null);
+});

@@ -1,89 +1,147 @@
 "use client";
-import { FileImage, Film, Upload } from "lucide-react";
+
+import { useMemo } from "react";
+import { createStore, useStore } from "zustand";
+import { FileImage, Film } from "lucide-react";
 import { useMarketingStore } from "@/stores/use-marketing-store";
-import { Btn } from "@/components/owner/ui";
-import { Photo } from "@/components/owner/photo";
+import { Btn, Field, Select, TextInput } from "@/components/owner/ui";
+import { marketingMediaFormat } from "@/domain/marketing/marketing";
+import { MarketingAssetPreview, MarketingUpload } from "./marketing-media";
+
+const stateLabels = {
+  READY: "Ready",
+  FAILED: "Upload failed",
+  DELETING: "Removal pending",
+  PENDING: "Upload pending",
+};
+
 export function MarketingLibrary() {
-  const s = useMarketingStore();
+  const { snapshot, busy, removeMedia } = useMarketingStore();
+  const view = useMemo(
+    () =>
+      createStore(() => ({
+        query: "",
+        format: "all",
+        previewId: undefined as string | undefined,
+      })),
+    [],
+  );
+  const { query, format, previewId } = useStore(view);
+  const media = snapshot?.media ?? [];
+  const matches = media.filter(
+    (asset) =>
+      asset.fileName
+        .toLocaleLowerCase()
+        .includes(query.trim().toLocaleLowerCase()) &&
+      (format === "all" || marketingMediaFormat(asset.contentType) === format),
+  );
+  const preview = media.find(
+    (asset) => asset.id === previewId && asset.state === "READY",
+  );
+
   return (
-    <section>
+    <section aria-labelledby="marketing-library-heading">
       <div className="marketing-section-heading">
         <div>
-          <h2>Media Library</h2>
+          <h2 id="marketing-library-heading">Media Library</h2>
           <p className="marketing-muted">
-            Private files for your drafts. {s.snapshot?.media.length ?? 0} of
-            100 files.
+            {media.length} of 100 private files · 256 MiB per library
           </p>
         </div>
       </div>
-      <label className="marketing-upload">
-        <Upload size={22} aria-hidden />
-        <span>
-          <strong>
-            {s.busy ? "Working on your upload" : "Choose an image or video"}
-          </strong>
-          <span>JPEG, PNG, WebP up to 8 MiB. MP4 up to 12 MiB.</span>
-        </span>
-        <input
-          aria-label="Upload marketing media"
-          type="file"
-          accept="image/jpeg,image/png,image/webp,video/mp4"
-          disabled={s.busy}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) void s.upload(file);
-            e.target.value = "";
-          }}
-        />
-      </label>
+      <MarketingUpload />
       <p className="marketing-muted">
-        Images are normalized to JPEG without embedded metadata. MP4 files are
-        stored without transcoding. Your library is limited to 256 MiB.
+        Images are converted to JPEG with embedded metadata removed. MP4 files
+        retain their original encoding.
       </p>
-      {!s.snapshot?.media.length ? (
+      <div className="marketing-filters">
+        <Field label="Search media" htmlFor="marketing-media-search">
+          <TextInput
+            id="marketing-media-search"
+            type="search"
+            value={query}
+            onChange={(event) => view.setState({ query: event.target.value })}
+          />
+        </Field>
+        <Field label="File type" htmlFor="marketing-media-format">
+          <Select
+            id="marketing-media-format"
+            value={format}
+            onChange={(event) => view.setState({ format: event.target.value })}
+          >
+            <option value="all">All files</option>
+            <option value="photo">Images</option>
+            <option value="video">Videos</option>
+          </Select>
+        </Field>
+      </div>
+      {preview && (
+        <section
+          className="marketing-selected-preview"
+          aria-label="Selected media preview"
+        >
+          <div className="marketing-section-heading">
+            <h3>{preview.fileName}</h3>
+            <Btn
+              variant="secondary"
+              onClick={() => view.setState({ previewId: undefined })}
+            >
+              Close preview
+            </Btn>
+          </div>
+          <MarketingAssetPreview key={preview.id} media={preview} />
+        </section>
+      )}
+      {!matches.length ? (
         <div className="marketing-empty">
-          <FileImage size={30} aria-hidden />
-          <h3>Your library is empty</h3>
-          <p>Upload a file to use in your next draft.</p>
+          <FileImage size={26} aria-hidden />
+          <h3>
+            {media.length ? "No matching files" : "Your library is empty"}
+          </h3>
+          <p>
+            {media.length
+              ? "Try a different search or file type."
+              : "Upload a file here or from the composer."}
+          </p>
         </div>
       ) : (
         <ul className="marketing-media-list">
-          {s.snapshot.media.map((m) => (
-            <li key={m.id}>
+          {matches.map((asset) => (
+            <li key={asset.id}>
               <span className="marketing-file-icon">
-                {m.contentType.startsWith("video/") ? (
+                {marketingMediaFormat(asset.contentType) === "video" ? (
                   <Film aria-hidden />
                 ) : (
                   <FileImage aria-hidden />
                 )}
               </span>
               <div className="marketing-file-name">
-                <strong>{m.fileName}</strong>
+                <strong>{asset.fileName}</strong>
                 <span>
-                  {(m.bytes / 1024 / 1024).toFixed(1)} MiB ·{" "}
-                  {m.contentType === "video/mp4" ? "MP4" : "JPEG"} ·{" "}
-                  {m.state === "READY"
-                    ? "Ready"
-                    : m.state === "FAILED"
-                      ? "Upload failed"
-                      : m.state === "DELETING"
-                        ? "Removal pending"
-                        : "Upload pending"}
+                  {(asset.bytes / 1024 / 1024).toFixed(1)} MiB ·{" "}
+                  {stateLabels[asset.state]}
                 </span>
               </div>
               <div className="marketing-row-actions">
-                {m.state === "READY" ? (
+                {asset.state === "READY" && (
                   <button
                     className="marketing-text-button"
-                    onClick={() => void s.readMedia(m.id)}
+                    onClick={() => view.setState({ previewId: asset.id })}
                   >
                     Preview
                   </button>
-                ) : null}
+                )}
                 <button
                   className="marketing-text-button marketing-delete"
-                  disabled={s.busy}
-                  onClick={() => void s.removeMedia(m.id)}
+                  disabled={busy}
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        `Remove “${asset.fileName}” from Media Library?`,
+                      )
+                    )
+                      void removeMedia(asset.id);
+                  }}
                 >
                   Remove
                 </button>
@@ -92,42 +150,6 @@ export function MarketingLibrary() {
           ))}
         </ul>
       )}
-    </section>
-  );
-}
-export function MarketingMediaPreview() {
-  const s = useMarketingStore();
-  if (!s.preview) return null;
-  return (
-    <section
-      className="marketing-selected-preview"
-      aria-label="Selected media preview"
-    >
-      <div className="marketing-section-heading">
-        <h2>{s.preview.fileName}</h2>
-        <Btn variant="secondary" onClick={s.closePreview}>
-          Close preview
-        </Btn>
-      </div>
-      {s.preview.contentType === "video/mp4" ? (
-        <video
-          controls
-          muted
-          preload="metadata"
-          src={s.preview.url}
-          aria-label={s.preview.fileName}
-        />
-      ) : (
-        <Photo
-          src={s.preview.url}
-          alt={s.preview.fileName}
-          className="aspect-video w-full"
-        />
-      )}
-      <p className="marketing-muted">
-        This private preview link expires shortly. Open Preview again to refresh
-        it.
-      </p>
     </section>
   );
 }
